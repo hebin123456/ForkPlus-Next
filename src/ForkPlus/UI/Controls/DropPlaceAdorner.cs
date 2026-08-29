@@ -1,4 +1,5 @@
 using Avalonia;
+using ForkPlus.UI.WpfCompat;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
@@ -25,7 +26,7 @@ namespace ForkPlus.UI.Controls
 
 		public override void Render(DrawingContext context)
 		{
-			Rect rect = new Rect(base.AdornedElement.RenderSize);
+			Rect rect = new Rect(base.AdornedElement.Bounds.Size);
 			if (_dropPosition == DropPosition.Top)
 			{
 				context.DrawLine(_pen, rect.TopLeft, rect.TopRight);

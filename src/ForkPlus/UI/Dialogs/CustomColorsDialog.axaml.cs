@@ -369,7 +369,7 @@ namespace ForkPlus.UI.Dialogs
 			v = Math.Max(0, Math.Min(1, 1 - y / 160));
 		}
 
-		private void RgbSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		private void RgbSlider_ValueChanged(object sender, global::Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
 		{
 			if (!IsLoaded || _suppressUpdates) return;
 			byte r = (byte)Math.Round(RSlider.Value);

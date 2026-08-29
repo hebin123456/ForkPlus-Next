@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using CommunityToolkit.WinUI.Notifications;
 using ForkPlus.Jobs;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
@@ -169,10 +168,10 @@ namespace ForkPlus.Accounts
 			Refresh();
 		}
 
-		private void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
+		private void OnToastActivated(string argument)
 		{
 			Log.Info("Activated toast notification");
-			string text = WebUtility.HtmlDecode(e.Argument);
+			string text = WebUtility.HtmlDecode(argument);
 			string text2 = "ai-review:";
 			if (text.StartsWith(text2))
 			{

@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -57,6 +58,43 @@ namespace ForkPlus.UI
 		private bool _showHeader = true;
 
 		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
+
+		// ===== WPF 兼容成员（迁移期）=====
+		// WPF Window.LocationChanged 事件 / OnLocationChanged 虚方法：Avalonia 对应 Window.PositionChanged。
+		public event EventHandler LocationChanged;
+
+		private bool _locationChangedHooked;
+
+		protected override void OnOpened(EventArgs e)
+		{
+			base.OnOpened(e);
+			if (!_locationChangedHooked)
+			{
+				_locationChangedHooked = true;
+				PositionChanged += delegate
+				{
+					OnLocationChanged(EventArgs.Empty);
+				};
+			}
+		}
+
+		protected virtual void OnLocationChanged(EventArgs e)
+		{
+			LocationChanged?.Invoke(this, e);
+		}
+
+		// WPF Window.ResizeMode（Avalonia 12 无该属性，映射到 CanResize）。
+		public global::ForkPlus.UI.WpfCompat.ResizeMode ResizeMode
+		{
+			get
+			{
+				return CanResize ? global::ForkPlus.UI.WpfCompat.ResizeMode.CanResize : global::ForkPlus.UI.WpfCompat.ResizeMode.NoResize;
+			}
+			set
+			{
+				CanResize = value != global::ForkPlus.UI.WpfCompat.ResizeMode.NoResize;
+			}
+		}
 
 		public double HeaderHeight
 		{
@@ -219,19 +257,19 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			base.CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, delegate
+			this.AddCommandBinding(new CommandBinding(SystemCommands.MinimizeWindowCommand, delegate
 			{
 				base.WindowState = global::Avalonia.Controls.WindowState.Minimized;
 			}));
-			base.CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand, delegate
+			this.AddCommandBinding(new CommandBinding(SystemCommands.MaximizeWindowCommand, delegate
 			{
 				base.WindowState = global::Avalonia.Controls.WindowState.Maximized;
 			}));
-			base.CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand, delegate
+			this.AddCommandBinding(new CommandBinding(SystemCommands.RestoreWindowCommand, delegate
 			{
 				base.WindowState = global::Avalonia.Controls.WindowState.Normal;
 			}));
-			base.CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, delegate
+			this.AddCommandBinding(new CommandBinding(SystemCommands.CloseWindowCommand, delegate
 			{
 				Close();
 			}));

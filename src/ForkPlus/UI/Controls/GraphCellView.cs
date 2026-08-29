@@ -184,23 +184,11 @@ namespace ForkPlus.UI.Controls
 			if (base.DataContext is DecoratedRevision decoratedRevision)
 			{
 				base.Width = _defaultCellWidth * (double)decoratedRevision.GraphInfo.Lines.Length;
-				GuidelineSet guidelineSet = new GuidelineSet();
+				// WPF 版在此构造 GuidelineSet 并 PushGuidelineSet 做像素对齐（列坐标均为
+				// cellWidth 整数倍，1px 线条需对齐到设备像素中点）。Avalonia 无 GuidelineSet，
+				// TODO 迁移：如需恢复像素级锐利，可在 DrawLine/DrawCommitPoint 内对坐标做
+				// Math.Floor(x)+0.5 半像素偏移；当前先按原始坐标绘制（视觉上可能有轻微模糊）。
 				GraphLine[] lines = decoratedRevision.GraphInfo.Lines;
-				for (int i = 0; i < lines.Length; i++)
-				{
-					GraphLine graphLine = lines[i];
-					AddColumnGuideline(guidelineSet, graphLine.Column);
-					if (graphLine.TopColumn != byte.MaxValue)
-					{
-						AddColumnGuideline(guidelineSet, graphLine.TopColumn);
-					}
-					if (graphLine.BottomColumn != byte.MaxValue)
-					{
-						AddColumnGuideline(guidelineSet, graphLine.BottomColumn);
-					}
-				}
-				drawingContext.PushGuidelineSet(guidelineSet);
-				lines = decoratedRevision.GraphInfo.Lines;
 				foreach (GraphLine line in lines)
 				{
 					DrawLine(drawingContext, line, _defaultCellWidth);
@@ -208,15 +196,11 @@ namespace ForkPlus.UI.Controls
 				bool isMergeCommit = decoratedRevision.GetParents().Length > 1;
 				bool isCollapsed = decoratedRevision.IsCollapsed;
 				DrawCommitPoint(drawingContext, decoratedRevision.GraphInfo, _defaultCellWidth, isMergeCommit, isCollapsed);
-				drawingContext.Pop();
 			}
 			base.Render(drawingContext);
 		}
 
-		private void AddColumnGuideline(GuidelineSet guidelines, int column)
-		{
-			guidelines.GuidelinesX.Add(_defaultCellWidth * (double)column);
-		}
+		// WPF GuidelineSet 辅助已随 PushGuidelineSet 一并移除（见 Render 内注释）
 
 		private void _showPopupTimer_Tick(object sender, EventArgs e)
 		{

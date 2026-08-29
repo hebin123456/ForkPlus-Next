@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
@@ -31,7 +32,7 @@ namespace ForkPlus.UI.UserControls
 
 		public Sha? DstSha => _content?.DstSha;
 
-		public event MouseWheelEventHandler RevisionListViewPreviewMouseWheel
+		public event EventHandler<PointerWheelEventArgs> RevisionListViewPreviewMouseWheel
 		{
 			add
 			{

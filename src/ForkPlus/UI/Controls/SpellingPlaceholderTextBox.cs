@@ -1,4 +1,5 @@
 using System.Globalization;
+using ForkPlus.UI.WpfCompat;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup;

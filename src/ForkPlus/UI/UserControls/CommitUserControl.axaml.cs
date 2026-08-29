@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -1464,16 +1465,16 @@ namespace ForkPlus.UI.UserControls
 
 		private void InitializeKeyBindings()
 		{
-			base.CommandBindings.Add(Commands.Commit.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.Commit.CreateShortcutCommandBinding(delegate
 			{
 				Commands.Commit.Execute(this, CommitAndPush);
 			}));
 			// v3.4.1：WIP 编排为提交绑定 Ctrl+Alt+Enter，避免和 Commit 的 Ctrl+Shift+Enter / Ctrl+Enter 重叠
-			base.CommandBindings.Add(Commands.ComposeWipCommit.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ComposeWipCommit.CreateShortcutCommandBinding(delegate
 			{
 				OpenAiCommitComposer();
 			}));
-			base.CommandBindings.Add(Commands.ToggleAllFilesStageCommand.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ToggleAllFilesStageCommand.CreateShortcutCommandBinding(delegate
 			{
 				if (StageFileUserControl.IsUnstagedListSelected)
 				{

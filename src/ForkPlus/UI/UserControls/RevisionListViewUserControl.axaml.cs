@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -132,15 +133,15 @@ namespace ForkPlus.UI.UserControls
 					e.Handled = true;
 				}
 			};
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl.Commands.CopyRevisionSha.Execute(SelectedRevisions.Map((DecoratedRevision x) => x.ToRevision()));
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyRevisionInfo.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.CopyRevisionInfo.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl.Commands.CopyRevisionInfo.Execute(SelectedRevisions.Map((DecoratedRevision x) => x.ToRevision()));
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateShortcutCommandBinding(delegate
 			{
 				GitModule gitModule2 = RepositoryUserControl.GitModule;
 				if (gitModule2 != null)
@@ -159,7 +160,7 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.RemoveReferenceCommand.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.RemoveReferenceCommand.CreateShortcutCommandBinding(delegate
 			{
 				DecoratedRevision[] array = RevisionListView.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
 				if (array.All((DecoratedRevision x) => x.IsStash()))
@@ -177,7 +178,7 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.ShowRevisionInSeparateWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.ShowRevisionInSeparateWindow.CreateShortcutCommandBinding(delegate
 			{
 				GitModule gitModule = RepositoryUserControl.GitModule;
 				if (gitModule != null)

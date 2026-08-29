@@ -162,7 +162,8 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		private Rect _bounds => new Rect(new Point(0.0, 0.0), new Size(base.RenderSize.Width, base.RenderSize.Height));
+		private Rect _boundsProbe => base.RenderSize;
+	private Rect _bounds => new Rect(new Point(0.0, 0.0), new Size(base.RenderSize.Width, base.RenderSize.Height));
 
 		private Canvas Canvas => ((base.Parent as Grid).Parent as Grid).Parent as Canvas;
 

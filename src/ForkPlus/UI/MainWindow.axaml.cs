@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -325,55 +326,55 @@ namespace ForkPlus.UI
 
 		private void InitializeKeyBindings()
 		{
-			base.CommandBindings.Add(Commands.ActivateCommitView.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ActivateCommitView.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ActivateCommitView.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ActivateRevisionList.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ActivateRevisionList.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ActivateRevisionList.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ActivateRepositoryTab.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ActivateRepositoryTab.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ActivateRepositoryTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ActivateSearchTab.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ActivateSearchTab.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ActivateSearchTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowHead.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowHead.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ShowHead.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ToggleShowReflogInRevisionList.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ToggleShowReflogInRevisionList.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ToggleShowReflogInRevisionList.Execute();
 			}));
-			base.CommandBindings.Add(Commands.CloseActiveTab.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.CloseActiveTab.CreateShortcutCommandBinding(delegate
 			{
 				Commands.CloseActiveTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.NewTab.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.NewTab.CreateShortcutCommandBinding(delegate
 			{
 				Commands.NewTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.OpenRepository.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.OpenRepository.CreateShortcutCommandBinding(delegate
 			{
 				Commands.OpenRepository.Execute();
 			}));
-			base.CommandBindings.Add(Commands.RefreshRepositoryData.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.RefreshRepositoryData.CreateShortcutCommandBinding(delegate
 			{
 				Commands.RefreshRepositoryData.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowCloneWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowCloneWindow.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ShowCloneWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowInitGitMmRepositoryWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowInitGitMmRepositoryWindow.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ShowInitGitMmRepositoryWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowCreateBranchWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowCreateBranchWindow.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl8 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl8 != null)
@@ -381,11 +382,11 @@ namespace ForkPlus.UI
 					Commands.ShowCreateBranchWindow.Execute(activeRepositoryUserControl8, null);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ShowCreateRepositoryWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowCreateRepositoryWindow.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ShowCreateRepositoryWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowCreateTagWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowCreateTagWindow.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl7 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl7 != null)
@@ -393,7 +394,7 @@ namespace ForkPlus.UI
 					Commands.ShowCreateTagWindow.Execute(activeRepositoryUserControl7, null);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ShowFetchWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowFetchWindow.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl6 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl6 != null)
@@ -401,19 +402,19 @@ namespace ForkPlus.UI
 					Commands.ShowFetchWindow.Execute(activeRepositoryUserControl6, activeRepositoryUserControl6.GitModule);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ShowQuickLaunchWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowQuickLaunchWindow.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ShowQuickLaunchWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowQuickLaunchCheckoutWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowQuickLaunchCheckoutWindow.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ShowQuickLaunchCheckoutWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowPullWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowPullWindow.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ShowPullWindow.Execute(TabManager.ActiveRepositoryUserControl);
 			}));
-			base.CommandBindings.Add(Commands.QuickPull.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.QuickPull.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl5 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl5 != null)
@@ -421,7 +422,7 @@ namespace ForkPlus.UI
 					Commands.QuickPull.Execute(activeRepositoryUserControl5);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ShowPushWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowPushWindow.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl4 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl4 != null)
@@ -429,7 +430,7 @@ namespace ForkPlus.UI
 					Commands.ShowPushWindow.Execute(activeRepositoryUserControl4);
 				}
 			}));
-			base.CommandBindings.Add(Commands.QuickPush.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.QuickPush.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl3 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl3 != null)
@@ -437,15 +438,15 @@ namespace ForkPlus.UI
 					Commands.QuickPush.Execute(activeRepositoryUserControl3);
 				}
 			}));
-			base.CommandBindings.Add(Commands.SelectNextTab.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.SelectNextTab.CreateShortcutCommandBinding(delegate
 			{
 				Commands.SelectNextTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.SelectPreviousTab.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.SelectPreviousTab.CreateShortcutCommandBinding(delegate
 			{
 				Commands.SelectPreviousTab.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowSaveStashWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowSaveStashWindow.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl2 = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl2 != null)
@@ -453,7 +454,7 @@ namespace ForkPlus.UI
 					Commands.ShowSaveStashWindow.Execute(activeRepositoryUserControl2, activeRepositoryUserControl2.GitModule);
 				}
 			}));
-			base.CommandBindings.Add(Commands.OpenRepositoryInShellTool.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.OpenRepositoryInShellTool.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepositoryUserControl = TabManager.ActiveRepositoryUserControl;
 				if (activeRepositoryUserControl != null)
@@ -461,23 +462,23 @@ namespace ForkPlus.UI
 					Commands.OpenRepositoryInShellTool.Execute(activeRepositoryUserControl.GitModule);
 				}
 			}));
-			base.CommandBindings.Add(Commands.ToggleReferenceFilter.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ToggleReferenceFilter.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ToggleReferenceFilter.Execute();
 			}));
-			base.CommandBindings.Add(Commands.IncreaseLayoutScale.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.IncreaseLayoutScale.CreateShortcutCommandBinding(delegate
 			{
 				Commands.IncreaseLayoutScale.Execute();
 			}));
-			base.CommandBindings.Add(Commands.DecreaseLayoutScale.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.DecreaseLayoutScale.CreateShortcutCommandBinding(delegate
 			{
 				Commands.DecreaseLayoutScale.Execute();
 			}));
-			base.CommandBindings.Add(Commands.ShowPreferencesWindow.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.ShowPreferencesWindow.CreateShortcutCommandBinding(delegate
 			{
 				Commands.ShowPreferencesWindow.Execute();
 			}));
-			base.CommandBindings.Add(Commands.Undo.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.Undo.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepoForUndo = TabManager.ActiveRepositoryUserControl;
 				if (activeRepoForUndo != null)
@@ -485,7 +486,7 @@ namespace ForkPlus.UI
 					Commands.Undo.Execute(activeRepoForUndo);
 				}
 			}));
-			base.CommandBindings.Add(Commands.Redo.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(Commands.Redo.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl activeRepoForRedo = TabManager.ActiveRepositoryUserControl;
 				if (activeRepoForRedo != null)

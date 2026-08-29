@@ -1,0 +1,770 @@
+is_global = true
+build_property.AvaloniaNameGeneratorIsEnabled = true
+build_property.AvaloniaNameGeneratorBehavior = InitializeComponent
+build_property.AvaloniaNameGeneratorDefaultFieldModifier = internal
+build_property.AvaloniaNameGeneratorFilterByPath = *
+build_property.AvaloniaNameGeneratorFilterByNamespace = *
+build_property.AvaloniaNameGeneratorViewFileNamingStrategy = NamespaceAndClassName
+build_property.AvaloniaNameGeneratorAttachDevTools = true
+build_property.AvaloniaUseCompiledBindingsByDefault = false
+build_property.AvaloniaMainPackageVersion = 12.1.1
+build_property.AvaloniaPreviewerNetCoreToolPath = /root/.nuget/packages/avalonia/12.1.1/buildTransitive//../tools/net8.0/designer/Avalonia.Designer.HostApp.dll
+build_property.AvaloniaResourcePaths = /data/user/work/ForkPlus-Next/src/ForkPlus/assets/activebranch.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/activebranchdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/add.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/adddark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/ai.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/aidark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/azure.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/binaryfile.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/binaryfiledark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/bisectbadicon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/bisectgoodicon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/bitbucket.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/bitbucketon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branch.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchfilteroff.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchfilteroffdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchfilteron.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchfilteronselected.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchpale.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchpaledark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchwarning.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/branchwarningdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/canceljob.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/canceljobselected.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/cancelsearch.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/cancelsearchdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/changes.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/changesdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/checkmarkfilled.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/checkmarkstroked.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/console.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/consoledark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/createbranch.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/createbranchdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/decreasevisiblelines.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/decreasevisiblelinesdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/down.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/downdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/download.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/downloaddark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/error.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/fallback.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/fallbackdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/feedback.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/feedbackdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/fetch.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/fetchdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/folder.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/ForkPlusIcon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/gitea.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/giteaon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/github.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/githubavatar.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/githubon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/gitlab.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/gitlabon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/heart.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/hidebranchoff.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/hidebranchoffdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/hidebranchon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/hidebranchonselected.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/highlightpixels.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/highlightpixelsdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/highlightpixelson.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/horizontalmerger.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/horizontalmergerdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/ignorewhitespaces.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/ignorewhitespacesdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/ignorewhitespaceson.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/increasevisiblelines.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/increasevisiblelinesdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/info.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/issue.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/issuedark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/key.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/keydark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/layoutswitch.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/layoutswitchdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/list.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/listdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/lock.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/lockdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/next.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/nextdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/notification.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/notificationdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openedfolder.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openedfolderdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openin.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openindark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openinexplorerarrow.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openinexplorerarrowdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openinseparatewindow.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openinseparatewindowdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openquickly.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/openquicklydark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pinoff.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pinoffdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pinon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pinonselected.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/prev.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/prevdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/preview.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/previewdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pull.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pulldark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pullrequest.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pullrequestdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/push.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/pushdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/redo.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/redodark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/refresh.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/refreshdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/remote.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/remoteon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/remove.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/removedark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/repository.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/repositorydark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/repositorywarning.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/repositorywarningdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/resolvedicon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/revision.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/revisiondark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/revisionlist.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/revisionlistdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/search.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/searchdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/searchon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/settings.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/settingsdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/share.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sharedark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/showentirefile.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/showentirefiledark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/showentirefileon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/showhiddensymbols.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/showhiddensymbolsdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/showhiddensymbolson.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebarfolder.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebarfolderdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebarsearch.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebarsearchdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebarsearchon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebarstash.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebarstashdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebarstashon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebyside.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebysidedark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/sidebysideon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/stageall.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/stagealldark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/stash.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/stashdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/status_add.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/status_copy.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/status_edit.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/status_remove.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/status_rename.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/submodule.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/submoduledark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/submoduleon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/success.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/swap.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/swapdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/tag.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/tagdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/tagon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/theme.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/themedark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/transparentpattern.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/transparentpatterndark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/undo.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/undodark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/unlock.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/unlockdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/unstageall.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/unstagealldark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/up.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/updark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/verticalmerger.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/verticalmergerdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/warning.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/wordwrap.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/wordwrapdark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/wordwrapon.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/workspace.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/workspacedark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/worktree.png,/data/user/work/ForkPlus-Next/src/ForkPlus/assets/worktreedark.png,/data/user/work/ForkPlus-Next/src/ForkPlus/app.ico,/data/user/work/ForkPlus-Next/src/ForkPlus/App.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.BlueDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.BlueLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.CyanDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.CyanLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.Dark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.Dracula.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.GitHubDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.GitHubLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.GreenDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.GreenLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.Light.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.Monokai.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.OrangeDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.OrangeLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.PurpleDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.PurpleLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.RedDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.RedLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.SolarizedDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.SolarizedLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.YellowDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.YellowLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Border.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Brushes.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.BlueDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.BlueLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.CyanDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.CyanLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.Dark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.Dracula.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.GitHubDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.GitHubLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.GreenDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.GreenLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.Light.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.Monokai.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.OrangeDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.OrangeLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.PurpleDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.PurpleLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.RedDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.RedLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.SolarizedDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.SolarizedLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.YellowDark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.YellowLight.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Button.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Calendar.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Checkbox.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Combobox.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Commonresources.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Expander.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Focusvisual.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Geometries.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Images.Dark.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Images.Light.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Listview.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Menu.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Multiselectiontreeview.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Placeholdertextbox.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Progressbar.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Scrollviewer.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Sidebar.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Slider.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Tabcontrol.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Textblock.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Textbox.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Window.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Controls/AiStreamingWebView.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AboutWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/AccountsWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/AddAccountWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/BitbucketLoginWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/BitbucketServerLoginWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/GiteaLoginWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/GitHubEnterpriseLoginWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/GitHubLoginWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/GitLabLoginWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/OpenAiLoginWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AddCustomRefspecWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AddGitIgnorePatternWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AddGitignoreTemplateWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AddSubmoduleWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiCommitComposerWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiDevelopmentWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiSuggestionPreviewWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiTextResultWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ApplyPatchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ApplyStashWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AskPassWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/BenchmarkWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/BlameWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ChangeRemoteTrackingWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CheckoutAndSyncWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CheckoutBranchAsWorktreeWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CheckoutBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CheckoutRevisionWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CherryPickWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CloneWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ConfigureGitInstanceWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ConfigureSshKeysWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ConfigureWorkspacesWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CreateBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CreatePartialStashWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CreateTagWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CreateWorktreeWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CustomActionResultWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CustomColorsDialog.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CustomCommandUIWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/DeleteSubmoduleWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/DeleteWorktreeWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/DiffPopupWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/EditRemoteWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ErrorWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/FetchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/FileHistoryWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GenerateNewSshKeyWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowFinishFeatureWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowFinishHotfixWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowFinishReleaseWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowInitWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowStartFeatureWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowStartHotfixWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowStartReleaseWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitLfsFetchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitLfsPullWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitLfsStatusWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitLfsTrackWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitMmReferenceWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitMmStartWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitMmSyncWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitMmUploadWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GoToLineWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/InitGitMmRepositoryWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/InteractiveRebaseWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/LeanBranchingFinishWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/LeanBranchingStartWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/LegalWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/LongOperationWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/MergeBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/MessageBoxWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/MmSubrepoPullGuidanceWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/MmSubrepoPushGuidanceWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/OpenRepositoryAlertWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PerformanceDiagnosticsWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PreferencesWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PullWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PushMultipleBranchesWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PushMultipleTagsWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PushTagWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PushWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RebaseBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ReflogWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RemoveLocalBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RemoveRemoteBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RemoveStashWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RemoveTagWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RenameLocalBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RenameStashWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositoryOverview/RepositoryOverviewAuthorsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositoryOverview/RepositoryOverviewCommitsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositoryOverviewWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositorySettingsWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositoryStatisticsWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RescanRepositoriesWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ResetBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RevertRevisionWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RevisionDetailsWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RunSharedCustomCommandConfirmationWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SaveAsPatchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SaveSnapshotWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SaveStashWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SideBySideMergeWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SshPassphraseWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/TagDetailsWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/TrackRemoteBranchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/UpdateAvailableWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/UpdateCheckWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/WelcomeWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/MainWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/QuickLaunch/QuickLaunchWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/AccountDetailsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/AccountRepositoriesTabItem.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/AccountTabItem.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ActivityManagerUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/BinaryDiff/BinaryContentUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/BinaryDiff/BinaryDiffUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/BinaryDiff/OnionSkinImageDiffUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/BinaryDiff/SwipeImageDiffUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/CalendarDateRangUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/CodeEditorSearchPanelUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/CommitUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/DiffEntryRowUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ExternalToolsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/FallbackUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/FileControlHeaderUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/FileListUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ForkPlusDialogFooter.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/GitMmUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/IssuesTabItem.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/MergeConflictUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/NotificationBarUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/NotificationManagerUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/PathTextBoxUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/AiReviewPreferencesUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/CommitPreferencesUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/CustomCommandsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/EditCustomActionWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/EditCustomCommandUIControlsWindow.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/GeneralUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/GitUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/ImportExportUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/IntegrationUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/PullRequestsTabItem.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ReferenceDropdownUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryColorsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryContentUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryDetailsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryManagerUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositorySettings/CommitTemplateUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositorySettings/GeneralUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositorySettings/IssueTrackerUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionChangesUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionDetailsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionFileTreeUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionGraphTooltipUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionListStatusBarUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionListViewUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionSearchPanelUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionsHeaderUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionSummaryUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RewordUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/SearchTabItem.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ServiceTabItem.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/SidebarUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/StageFileUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/StatisticsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/StatusUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/SubmoduleDiffUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ToolbarUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/TooltipRevisionDetailsUserControl.axaml,/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/UserColorsUserControl.axaml
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = ForkPlus
+build_property.ProjectDir = /data/user/work/ForkPlus-Next/src/ForkPlus/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/App.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.BlueDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.BlueLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.CyanDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.CyanLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.Dark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.Dracula.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.GitHubDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.GitHubLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.GreenDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.GreenLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.Light.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.Monokai.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.OrangeDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.OrangeLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.PurpleDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.PurpleLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.RedDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.RedLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.SolarizedDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.SolarizedLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.YellowDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Generic.YellowLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Border.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Brushes.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.BlueDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.BlueLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.CyanDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.CyanLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.Dark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.Dracula.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.GitHubDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.GitHubLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.GreenDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.GreenLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.Light.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.Monokai.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.OrangeDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.OrangeLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.PurpleDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.PurpleLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.RedDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.RedLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.SolarizedDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.SolarizedLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.YellowDark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Brushes/Colors.YellowLight.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Button.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Calendar.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Checkbox.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Combobox.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Commonresources.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Expander.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Focusvisual.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Geometries.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Images.Dark.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Images.Light.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Listview.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Menu.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Multiselectiontreeview.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Placeholdertextbox.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Progressbar.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Scrollviewer.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Sidebar.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Slider.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Tabcontrol.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Textblock.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Textbox.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/Theme/Styles/Window.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Controls/AiStreamingWebView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AboutWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/AccountsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/AddAccountWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/BitbucketLoginWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/BitbucketServerLoginWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/GiteaLoginWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/GitHubEnterpriseLoginWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/GitHubLoginWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/GitLabLoginWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/Accounts/OpenAiLoginWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AddCustomRefspecWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AddGitIgnorePatternWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AddGitignoreTemplateWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AddSubmoduleWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiCodeReviewWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiCommitComposerWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiDevelopmentWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiSuggestionPreviewWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AiTextResultWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ApplyPatchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ApplyStashWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/AskPassWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/BenchmarkWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/BlameWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ChangeRemoteTrackingWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CheckoutAndSyncWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CheckoutBranchAsWorktreeWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CheckoutBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CheckoutRevisionWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CherryPickWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CloneWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ConfigureGitInstanceWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ConfigureSshKeysWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ConfigureWorkspacesWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CreateBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CreatePartialStashWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CreateTagWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CreateWorktreeWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CustomActionResultWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CustomColorsDialog.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/CustomCommandUIWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/DeleteSubmoduleWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/DeleteWorktreeWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/DiffPopupWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/EditRemoteWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ErrorWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/FetchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/FileHistoryWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ForkSyncCheckWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GenerateNewSshKeyWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowFinishFeatureWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowFinishHotfixWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowFinishReleaseWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowInitWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowStartFeatureWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowStartHotfixWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitFlowStartReleaseWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitLfsFetchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitLfsPullWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitLfsStatusWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitLfsTrackWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitMmReferenceWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitMmStartWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitMmSyncWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GitMmUploadWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/GoToLineWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/InitGitMmRepositoryWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/InteractiveRebaseWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/LeanBranchingFinishWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/LeanBranchingStartWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/LegalWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/LongOperationWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/MergeBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/MessageBoxWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/MmSubrepoPullGuidanceWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/MmSubrepoPushGuidanceWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/OpenRepositoryAlertWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PerformanceDiagnosticsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PreferencesWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PullWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PushMultipleBranchesWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PushMultipleTagsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PushTagWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/PushWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RebaseBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ReflogWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RemoveLocalBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RemoveRemoteBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RemoveStashWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RemoveTagWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RenameLocalBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RenameStashWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositoryOverview/RepositoryOverviewAuthorsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositoryOverview/RepositoryOverviewCommitsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositoryOverviewWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositorySettingsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RepositoryStatisticsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RescanRepositoriesWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/ResetBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RevertRevisionWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RevisionDetailsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/RunSharedCustomCommandConfirmationWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SaveAsPatchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SaveSnapshotWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SaveStashWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SideBySideMergeWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/SshPassphraseWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/TagDetailsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/TrackRemoteBranchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/UpdateAvailableWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/UpdateCheckWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/Dialogs/WelcomeWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/QuickLaunch/QuickLaunchWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/AccountDetailsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/AccountRepositoriesTabItem.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/AccountTabItem.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ActivityManagerUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/BinaryDiff/BinaryContentUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/BinaryDiff/BinaryDiffUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/BinaryDiff/OnionSkinImageDiffUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/BinaryDiff/SwipeImageDiffUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/CalendarDateRangUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/CodeEditorSearchPanelUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/CommitUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/DiffEntryRowUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ExternalToolsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/FallbackUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/FileControlHeaderUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/FileListUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ForkPlusDialogFooter.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/GitMmUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/IssuesTabItem.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/MergeConflictUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/NotificationBarUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/NotificationManagerUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/PathTextBoxUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/AiReviewPreferencesUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/CommitPreferencesUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/CustomCommandsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/EditCustomActionWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/EditCustomCommandUIControlsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/GeneralUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/GitUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/ImportExportUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/Preferences/IntegrationUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/PullRequestsTabItem.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ReferenceDropdownUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryColorsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryContentUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryDetailsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryManagerUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositorySettings/CommitTemplateUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositorySettings/GeneralUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositorySettings/IssueTrackerUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RepositoryUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionChangesUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionDetailsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionFileTreeUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionGraphTooltipUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionListStatusBarUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionListViewUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionSearchPanelUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionsHeaderUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RevisionSummaryUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/RewordUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/SearchTabItem.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ServiceTabItem.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/SidebarUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/StageFileUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/StatisticsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/StatusUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/SubmoduleDiffUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/ToolbarUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/TooltipRevisionDetailsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/data/user/work/ForkPlus-Next/src/ForkPlus/UI/UserControls/UserColorsUserControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

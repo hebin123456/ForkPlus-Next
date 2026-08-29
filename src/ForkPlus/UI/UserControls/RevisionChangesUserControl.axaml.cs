@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -146,7 +147,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				_updateDiffAction.InvokeWithDelay(SelectedFile);
 			});
-			base.CommandBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
 			{
 				ChangedFile changedFile2 = FileListUserControl.SelectedItems.FirstItem();
 				if (changedFile2 != null)
@@ -154,17 +155,17 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.OpenFileInDefaultEditor.Execute(RevisionDetailsUserControl.GitModule, _target.Sha.ToString(), changedFile2);
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
 			{
 				string[] filePaths2 = FileListUserControl.SelectedItems.CompactMap((ChangedFile x) => x.Path);
 				RepositoryUserControl.Commands.CopyFilePaths.Execute(filePaths2);
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
 			{
 				string[] filePaths = FileListUserControl.SelectedItems.CompactMap((ChangedFile x) => x.Path);
 				RepositoryUserControl.Commands.CopyAbsoluteFilePaths.Execute(RevisionDetailsUserControl.GitModule, filePaths);
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
 			{
 				ChangedFile[] selectedItems = FileListUserControl.SelectedItems;
 				ChangedFile changedFile = FileListUserControl.SelectedItems.FirstItem();

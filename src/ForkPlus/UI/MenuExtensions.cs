@@ -8,6 +8,7 @@ using Avalonia.Input;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Helpers;
+using ForkPlus.UI.WpfCompat;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
@@ -44,7 +45,7 @@ namespace ForkPlus.UI
 			SetItems(menu.Items, items, VisualTreeAttachmentHelper.Describe(menu));
 		}
 
-		public static MenuItem AddMenuItem(this MenuBase menu, string header, [Null] RoutedEventHandler clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
+		public static MenuItem AddMenuItem(this MenuBase menu, string header, [Null] EventHandler<RoutedEventArgs> clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
 		{
 			MenuItem menuItem = new MenuItem();
 			menuItem.Header = PreferencesLocalization.MenuHeader(header);
@@ -65,7 +66,7 @@ namespace ForkPlus.UI
 			return menuItem;
 		}
 
-		public static MenuItem AddMenuItemFormat(this MenuBase menu, string header, object[] args, [Null] RoutedEventHandler clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
+		public static MenuItem AddMenuItemFormat(this MenuBase menu, string header, object[] args, [Null] EventHandler<RoutedEventArgs> clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
 		{
 			MenuItem menuItem = AddMenuItem(menu, header, clickHandler, icon, keyGesture, isEnabled);
 			menuItem.Header = PreferencesLocalization.FormatMenuHeader(header, args);

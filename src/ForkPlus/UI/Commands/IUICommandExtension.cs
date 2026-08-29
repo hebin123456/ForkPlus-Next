@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -44,17 +45,17 @@ namespace ForkPlus.UI.Commands
 			return routedCommand;
 		}
 
-		public static MenuItem CreateMenuItem(this IUICommand command, RoutedEventHandler clickHandler = null, bool isEnabled = true, bool showShortcut = true)
+		public static MenuItem CreateMenuItem(this IUICommand command, EventHandler<RoutedEventArgs> clickHandler = null, bool isEnabled = true, bool showShortcut = true)
 		{
 			return command.CreateMenuItem(command.Title, clickHandler, isEnabled, null, showShortcut);
 		}
 
-		public static MenuItem CreateMenuItem(this IUICommand command, Image icon, RoutedEventHandler clickHandler = null)
+		public static MenuItem CreateMenuItem(this IUICommand command, Image icon, EventHandler<RoutedEventArgs> clickHandler = null)
 		{
 			return command.CreateMenuItem(command.Title, clickHandler, isEnabled: true, icon);
 		}
 
-		public static MenuItem CreateMenuItem(this IUICommand command, string header, RoutedEventHandler clickHandler = null, bool isEnabled = true, Image icon = null, bool showShortcut = true)
+		public static MenuItem CreateMenuItem(this IUICommand command, string header, EventHandler<RoutedEventArgs> clickHandler = null, bool isEnabled = true, Image icon = null, bool showShortcut = true)
 		{
 			MenuItem menuItem = new MenuItem();
 			menuItem.Header = PreferencesLocalization.MenuHeader(header);
@@ -74,7 +75,7 @@ namespace ForkPlus.UI.Commands
 			return menuItem;
 		}
 
-		public static MenuItem CreateMenuItemFormat(this IUICommand command, string header, object[] args, RoutedEventHandler clickHandler = null, bool isEnabled = true, Image icon = null, bool showShortcut = true)
+		public static MenuItem CreateMenuItemFormat(this IUICommand command, string header, object[] args, EventHandler<RoutedEventArgs> clickHandler = null, bool isEnabled = true, Image icon = null, bool showShortcut = true)
 		{
 			MenuItem menuItem = command.CreateMenuItem(header, clickHandler, isEnabled, icon, showShortcut);
 			menuItem.Header = PreferencesLocalization.FormatMenuHeader(header, args);

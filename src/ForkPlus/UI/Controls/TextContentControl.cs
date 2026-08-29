@@ -1,4 +1,5 @@
 using Avalonia;
+using ForkPlus.UI.WpfCompat;
 using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls.Editor;

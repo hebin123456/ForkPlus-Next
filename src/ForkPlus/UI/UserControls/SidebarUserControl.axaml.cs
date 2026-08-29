@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -129,7 +130,7 @@ namespace ForkPlus.UI.UserControls
 			ServiceTabItem.Initialize(repositoryUserControl);
 			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ReferenceSortOrderChanged", ReferenceSortOrderChanged);
 			SidebarTreeView.ContextMenuOpening += SidebarTreeView_ContextMenuOpening;
-			SidebarTreeView.AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(SidebarTreeView_ButtonClick));
+			SidebarTreeView.AddHandler(ButtonBase.ClickEvent, new EventHandler<RoutedEventArgs>(SidebarTreeView_ButtonClick));
 			SidebarTreeView.SelectionChanged += SidebarTreeView_SelectionChanged;
 			SidebarTreeView.PointerPressed += SidebarTreeView_MouseDown;
 			SidebarTreeView.DoubleTapped += SidebarTreeView_MouseDoubleClick;

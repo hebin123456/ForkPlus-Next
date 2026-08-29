@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -99,7 +100,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				_delayedAction.ReinvokeNow();
 			});
-			base.CommandBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
 			{
 				HistoryEntryViewModel historyEntryViewModel4 = _selectedHistoryEntries?.FirstItem();
 				if (historyEntryViewModel4 != null)
@@ -107,7 +108,7 @@ namespace ForkPlus.UI.Dialogs
 					RepositoryUserControl.Commands.OpenFileInDefaultEditor.Execute(GitModule, historyEntryViewModel4.Sha.ToString(), historyEntryViewModel4.ChangedFile);
 				}
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutCommandBinding(delegate
 			{
 				HistoryEntryViewModel[] selectedHistoryEntries4 = _selectedHistoryEntries;
 				List<Revision> list3 = new List<Revision>((selectedHistoryEntries4 != null) ? selectedHistoryEntries4.Length : 0);
@@ -118,7 +119,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				RepositoryUserControl.Commands.CopyRevisionSha.Execute(list3.ToArray());
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.CopyRevisionInfo.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.CopyRevisionInfo.CreateShortcutCommandBinding(delegate
 			{
 				HistoryEntryViewModel[] selectedHistoryEntries2 = _selectedHistoryEntries;
 				List<Revision> list2 = new List<Revision>((selectedHistoryEntries2 != null) ? selectedHistoryEntries2.Length : 0);
@@ -129,7 +130,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				RepositoryUserControl.Commands.CopyRevisionInfo.Execute(list2.ToArray());
 			}));
-			base.CommandBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
+			this.AddCommandBinding(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
 			{
 				HistoryEntryViewModel[] selectedHistoryEntries = _selectedHistoryEntries;
 				int num = ((selectedHistoryEntries != null) ? selectedHistoryEntries.Length : 0);

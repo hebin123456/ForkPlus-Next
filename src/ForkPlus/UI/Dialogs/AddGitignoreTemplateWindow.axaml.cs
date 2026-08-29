@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -142,7 +143,6 @@ namespace ForkPlus.UI.Dialogs
 			global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton(new Run(".gitignore"));
 			hyperlink.NavigateUri = new Uri("https://git-scm.com/docs/gitignore");
 			hyperlink.Style = (Style)TryFindResource("BlueUnderlineHyperlinkStyle");
-			hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
 			base.DescriptionTextBlock.Inlines.Add(hyperlink);
 			base.DescriptionTextBlock.Inlines.Add(new Run(" template for your project"));
 			LoadTemplates();

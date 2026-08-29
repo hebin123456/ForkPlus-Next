@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using ForkPlus.UI.WpfCompat;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
 

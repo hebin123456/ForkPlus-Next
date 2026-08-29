@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -51,7 +52,6 @@ namespace ForkPlus.UI.Controls
 					hyperlink.ToolTip = uri;
 					hyperlink.Style = Theme.FindStyle("BugtrackerHyperlinkStyle");
 					hyperlink.ContextMenu = CreateBugtrackerHyperlinkContextMenu(text2, uri.AbsoluteUri);
-					hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
 					textBlock.Inlines.Add(hyperlink);
 					if (range.End == text.Length)
 					{

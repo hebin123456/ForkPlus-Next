@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -185,7 +186,6 @@ namespace ForkPlus.UI.UserControls
 					{
 						hyperlink.Foreground = foreground;
 					}
-					hyperlink.RequestNavigate += OutputHyperlink_RequestNavigate;
 					inlines.Add(hyperlink);
 				}
 				else

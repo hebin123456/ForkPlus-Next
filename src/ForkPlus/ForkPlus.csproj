@@ -95,6 +95,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
+    <PackageReference Include="Oxyplot.Avalonia" Version="2.1.0-avalonia11" />
     <!-- <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />  已隔离：WPF 绘图控件库（PlotView 继承 WPF Control，引发 PresentationFramework 级联错误）；替代方案：ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia / 手工自绘 -->
     <!-- System.Drawing.Common 通过 OxyPlot.Wpf 等包传递引入，不再显式引用（NU1510）。
          IconTools.cs / AiDevelopmentWindow.xaml.cs 使用 System.Drawing.Color 等仍可用。-->

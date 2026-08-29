@@ -1,0 +1,6 @@
+/data/user/work/ForkPlus-Next/src/ForkPlus/obj/Debug/net10.0/ForkPlus.csproj.AssemblyReference.cache
+/data/user/work/ForkPlus-Next/src/ForkPlus/obj/Debug/net10.0/Avalonia/Resources.Inputs.cache
+/data/user/work/ForkPlus-Next/src/ForkPlus/obj/Debug/net10.0/Avalonia/resources
+/data/user/work/ForkPlus-Next/src/ForkPlus/obj/Debug/net10.0/ForkPlus.GeneratedMSBuildEditorConfig.editorconfig
+/data/user/work/ForkPlus-Next/src/ForkPlus/obj/Debug/net10.0/ForkPlus.csproj.CoreCompileInputs.cache
+/data/user/work/ForkPlus-Next/src/ForkPlus/obj/Debug/net10.0/ForkPlus.sourcelink.json

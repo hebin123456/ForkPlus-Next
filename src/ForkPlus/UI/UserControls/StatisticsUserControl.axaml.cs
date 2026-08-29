@@ -1,4 +1,5 @@
 using System;
+using ForkPlus.UI.WpfCompat;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -19,7 +20,7 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
-using OxyPlot.Wpf;
+using OxyPlot.Avalonia;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
@@ -328,7 +329,7 @@ namespace ForkPlus.UI.UserControls
 		private System.Collections.ObjectModel.ObservableCollection<CodeLineRefItem> _codeLineRefs;
 
 		/// <summary>Ref 下拉的当前过滤视图（搜索框输入时刷新，Workspace 项始终保留）。</summary>
-		private System.Windows.Data.ListCollectionView _codeLineRefsView;
+		private ForkPlus.UI.WpfCompat.ListCollectionView _codeLineRefsView;
 
 		private bool _isCalendarUpdatingInProgress;
 
@@ -539,9 +540,9 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			DayHourPlot.InvalidatePlot();
 		}
 
-		private LineSeries CreateLineSeries(AuthorStats authorStat, int colorIndex)
+		private global::OxyPlot.Series.LineSeries CreateLineSeries(AuthorStats authorStat, int colorIndex)
 		{
-			return new LineSeries
+			return new global::OxyPlot.Series.LineSeries
 			{
 				Title = authorStat.Name,
 				DataFieldX = "Item1",
