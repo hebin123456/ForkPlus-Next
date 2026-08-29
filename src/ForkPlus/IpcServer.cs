@@ -23,7 +23,10 @@ namespace ForkPlus
 			_messageHandler = messageHandler;
 			CurrentProcessPipeName = NamedPipeHelper.CreatePipeName(name, App.ProcessId.ToString());
 			int maxNumberOfServerInstances = 10;
-			_pipeServer = new NamedPipeServerStream(CurrentProcessPipeName, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+			// TODO 迁移：PipeTransmissionMode.Message 仅 Windows 支持，Linux/macOS 抛 PlatformNotSupportedException。
+			// 协议本身用 4 字节长度前缀分帧（PipeStreamExtensions.ReadString），不依赖消息边界，Byte 模式完全等价。
+			PipeTransmissionMode transmissionMode = global::System.OperatingSystem.IsWindows() ? PipeTransmissionMode.Message : PipeTransmissionMode.Byte;
+			_pipeServer = new NamedPipeServerStream(CurrentProcessPipeName, PipeDirection.InOut, maxNumberOfServerInstances, transmissionMode, PipeOptions.Asynchronous);
 			_cancellationToken = new CancellationTokenSource();
 			_thread = new Thread((ThreadStart)delegate
 			{

@@ -40,6 +40,8 @@ git push origin HEAD
 
 **🎉 里程碑：C# 编译全清零（2026-08-29）。整个解决方案 7 个工程 `dotnet build ForkPlus.sln` 全部成功，0 错误。**
 
+**⚠️ 2026-08-29 运行时冒烟重大发现：XAML 编译静默失败（详见「XAML 编译静默失败」一节）。**
+
 错误数轨迹（按唯一错误去重统计）：
 
 | 提交 | 唯一错误数 | 内容 |
@@ -54,22 +56,68 @@ git push origin HEAD
 | `f61cf65` | 242→154 | 文件对话框 shim + ContainerFromElement/ContentPresenter/DataTemplate/StartDrag 簇 + Button.ClickEvent + OverrideMetadata 移除 |
 | `fccada2` | 154→57 | Visual 可视树遍历 + GetParent/HitTest/Run 模式簇 + SshPassphrase/GitMmStart/Clipboard/Dispatcher.Post 修复 |
 | `0922795` | 57 | docs: 迁移文档刷新（纯文档提交） |
-| （本轮） | 57→0 | IBrush/Rect 不可变簇 + 滚轮转发 + WeakEventManagerBase 4 泛型 + PointerPressed 合成 + BinaryDiff 绘制簇等 20 类修复 |
+| `3c3837c` | 57→0 | IBrush/Rect 不可变簇 + 滚轮转发 + WeakEventManagerBase 4 泛型 + PointerPressed 合成 + BinaryDiff 绘制簇等 20 类修复 |
+| （本轮） | C# 保持 0 | 运行时冒烟：IPC 管道修复；发现 XAML 编译静默失败（1198 去重错误为运行时阻塞项） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
-| 2 XAML (AVLN) 清零 | 🔄 待开始 | XAML 已能编译；AVLN 警告与模板触发器注释块待清理 |
-| 3 运行时验证 | ⛔ 未开始 | 启动、渲染、交互冒烟 |
+| 2 XAML (AVLN) 清零 | 🔴 **运行时阻塞项** | XAML 编译静默失败，AVLN 错误必须清零（见下文分析） |
+| 3 运行时验证 | 🔄 进行中 | 已跑通：App 构造 + IPC；卡在：MainWindow XAML 加载 |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
+
+## XAML 编译静默失败（关键机制，必读）
+
+**现象**：`dotnet run` 报 `XamlLoadException: No precompiled XAML found for ForkPlus.UI.MainWindow`，即使 .axaml 文件存在、x:Class 正确、!AvaloniaResources 正确嵌入 dll。
+
+**根因**（已反编译验证）：
+1. Avalonia 12 的 `AvaloniaXamlLoader.Load(object)` 是**必定抛异常的桩**（反编译 Avalonia.Markup.Xaml.dll 确认）。
+2. 正常流程：XAML 编译器（`CompileAvaloniaXamlTask`）编译 .axaml 后**重写主程序 IL**，把 `AvaloniaXamlLoader.Load(this)` 调用替换成编译好的填充方法。
+3. 本仓库有 ~1198 个去重 AVLN 错误（3172 条带重复计），XAML 编译器**中止了 IL 重写**，但**不使 build 失败**（AVLN 错误被降级，`dotnet build` 仍报 0 Error）。
+4. 结果：dll 里 **0 个 `CompiledAvaloniaXaml.*` 类型**，所有 `InitializeComponent()` 运行时全炸。
+
+**验证方法**：
+```bash
+# 触发完整 XAML 重编译（增量构建会跳过，必须 Rebuild 或先改文件）
+dotnet build -t:Rebuild -v n -nologo 2>&1 | grep "error AVLN" | wc -l
+
+# 检查 dll 里是否有编译产物（0 = XAML 编译失败）
+ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
+```
+
+**错误分布**（去重后 ~1198 处，按文件）：
+| 文件 | 错误数 | 主要问题 |
+|---|---:|---|
+| Theme/Styles/Listview.axaml | 66 | Trigger/Condition/EventSetter 等 WPF 结构 |
+| Theme/Styles/Menu.axaml | 56 | 同上 |
+| UI/UserControls/FileControlHeaderUserControl.axaml | 52 | 同上 |
+| Theme/Styles/Tabcontrol.axaml | 45 | TabPanel 类型未解析等 |
+| Theme/Styles/Window.axaml | 42 | ResizeGrip 未解析等 |
+| UI/MainWindow.axaml | 35 | 见下文 |
+| 其余 ~190 个文件 | 各 2-28 | 同类问题 |
+
+**错误类别**：
+- AVLN2000 "Unable to resolve type X"（最多）：WPF-only 类型残留在 XAML —— `ResizeGrip`、`TabPanel`、`Condition`、`Trigger`、`Storyboard`、`EventSetter`、`EasingDoubleKeyFrame`、`DataTemplateKey`
+- AVLN2000 "Unable to resolve property X on type Y"：WPF 属性在 Avalonia 类型上不存在 —— `IsMouseOver`（→ `:pointerover` 选择器）、`HasContent`、`IsDefaulted`、`AllowsTransparency`、`ContentTemplateSelector`、`ContentStringFormat`、`Style.Resources`、`ControlTemplate.Resources`、`Border.Foreground`、`VisualBrush.Viewport/ViewportUnits`
+- AVLN1000（18）：格式转换错误（如 `'Auto'` 传给数字属性）
+- AVLN2200（60）：属性值无法转换
+- AVLN3000（262）：需确认（疑似 x:DataType/绑定相关）
+
+**修复策略**：
+1. 先修 Theme/Styles/*.axaml（错误乘数最高——每个错误会被所有引用它的入口文件重复报告）
+2. WPF Trigger/Storyboard/EventSetter 块整体删除或转 Avalonia 选择器（`:pointerover`/`:pressed`/`:focus` 等）；转换器本应注释掉的块残留了
+3. 每修一批就 Rebuild 验证 `CompiledAvaloniaXaml` 类型数 > 0，最终目标是全部 XAML 编译通过
+
+## 运行时冒烟已修复的问题
+
+1. **IPC 命名管道消息模式（PlatformNotSupportedException）**：`IpcServer.cs:26` 的 `PipeTransmissionMode.Message` 仅 Windows 支持。协议本身用 4 字节长度前缀分帧（`PipeStreamExtensions.ReadString`），不依赖消息边界，已改为 `OperatingSystem.IsWindows() ? Message : Byte`。
+2. **沙盒无显示服务器**：`apt-get install -y xvfb` 后 `Xvfb :99 -screen 0 1920x1080x24` + `export DISPLAY=:99` 即可跑 GUI 冒烟。
 
 ## 下一步行动（按优先级）
 
-1. **运行时冒烟**：`cd src/ForkPlus && dotnet run` 看主窗口能否启动。预期会有运行时异常（资源缺失/模板问题），逐个修复。启动类问题优先查：
-   - App.axaml 资源字典链（Commonresources.axaml 等）
-   - `TODO(wpf2avalonia)` 注释块（模板触发器等被注释的功能，见 `docs-conv-report.md`）
-2. **XAML 清理**：全仓 grep `TODO(wpf2avalonia)` 和 AVLN 警告，按页面恢复模板触发器（约 28 处 XAML-TEMPLATE-TRIGGER-ORPHAN）。
+1. **XAML (AVLN) 错误清零**（运行时阻塞项，见上节策略）。修复顺序：Theme/Styles → 主窗口链路（MainWindow.axaml + CustomWindow + TabManager 相关）→ 其余窗口。可用 `dotnet build -t:Rebuild -v n 2>&1 | grep "error AVLN"` 实时统计。
+2. **运行时冒烟继续**：XAML 清零前 MainWindow 无法加载。清零后重跑 `DISPLAY=:99 dotnet run` 逐个修运行时异常。
 3. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
 4. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
 
@@ -160,6 +208,7 @@ git push origin HEAD
    - `WeakEventManagerBase` 从 WPF 的 2 泛型 `AddListener(source, IWeakEventListener)` 变成 4 泛型 `<TMgr, TSrc, THandler, TArgs>` + `AddHandler(source, handler)`。
    - `TextView` 有 `ScrollOffsetChanged`（EventHandler）普通事件，直接 `+=` 也行。
    - TextEditor 有 `ViewportHeight/ViewportWidth/ExtentHeight/ExtentWidth` 直达属性。
+6. **`PipeTransmissionMode.Message`（Linux PlatformNotSupportedException）**：非 Windows 平台 NamedPipe 不支持消息模式。协议若自带分帧（如本项目的 4 字节长度前缀）直接降级 `PipeTransmissionMode.Byte` 即可，用 `OperatingSystem.IsWindows()` 分支。
 
 ## 修复方法论（已验证有效）
 
