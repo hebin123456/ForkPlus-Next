@@ -1,7 +1,9 @@
 <TabItem Margin="10" Padding="0" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SearchTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <TabItem.Resources>
-    <ResourceDictionary>
-      <DataTemplate x:Key="SidebarSearchItemTemplate" DataType="local:SidebarSearchItem">
+  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <TabItem.DataTemplates>
+<DataTemplate DataType="local:SidebarSearchItem">
         <Grid Height="18">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -46,7 +48,7 @@
                   <Setter TargetName="AuthorDateTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </DataTrigger>
     --></DataTemplate>
-      <DataTemplate x:Key="SidebarSearchFileItemTemplate" DataType="local:SidebarSearchFileItem">
+<DataTemplate DataType="local:SidebarSearchFileItem">
         <Grid Height="18">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -88,8 +90,7 @@
                   <Setter TargetName="FilePathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </DataTrigger>
     --></DataTemplate>
-    </ResourceDictionary>
-  </TabItem.Resources>
+  </TabItem.DataTemplates>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

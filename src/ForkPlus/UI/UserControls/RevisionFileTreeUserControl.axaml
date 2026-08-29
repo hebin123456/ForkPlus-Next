@@ -1,7 +1,9 @@
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionFileTreeUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <UserControl.Resources>
-    <ResourceDictionary>
-      <DataTemplate x:Key="RevisionFileTreeViewItemTemplate" DataType="userControls:RevisionFileTreeViewItem">
+  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <UserControl.DataTemplates>
+<DataTemplate DataType="userControls:RevisionFileTreeViewItem">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -19,8 +21,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-    </ResourceDictionary>
-  </UserControl.Resources>
+  </UserControl.DataTemplates>
   <Grid x:Name="ContainerGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition MinWidth="220" MaxWidth="850" />

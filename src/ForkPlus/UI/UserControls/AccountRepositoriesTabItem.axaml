@@ -1,7 +1,9 @@
 <TabItem xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.AccountRepositoriesTabItem" xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <TabItem.Resources>
-    <ResourceDictionary>
-      <DataTemplate x:Key="AccountRepositoryItemTemplate" DataType="local:AccountRepositoryItem">
+  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <TabItem.DataTemplates>
+<DataTemplate DataType="local:AccountRepositoryItem">
         <DockPanel Height="20" Margin="10,0,0,0" x:Name="TestDockPanel">
           <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Center" Margin="0,0,4,0" x:Name="IconImage">
             <Image.Source>
@@ -21,7 +23,7 @@
           </TextBlock>
         </DockPanel>
       </DataTemplate>
-      <DataTemplate x:Key="AccountHeaderItemTemplate" DataType="local:AccountHeaderItem">
+<DataTemplate DataType="local:AccountHeaderItem">
         <Grid Height="20">
           <Border HorizontalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,0">
             <TextBlock Margin="2,0,0,0" FontSize="13.5" FontWeight="Medium" VerticalAlignment="Center" x:Name="NameTextBlock">
@@ -32,8 +34,7 @@
           </Border>
         </Grid>
       </DataTemplate>
-    </ResourceDictionary>
-  </TabItem.Resources>
+  </TabItem.DataTemplates>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="30" />

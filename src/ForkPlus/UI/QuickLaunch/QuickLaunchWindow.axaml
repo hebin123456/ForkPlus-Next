@@ -1,6 +1,122 @@
 <ui:CustomWindow Width="620" Height="370" ShowHeader="False" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource WindowBorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:ForkPlus.UI.QuickLaunch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.QuickLaunch.QuickLaunchWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" CanResize="False">
+  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <ui:CustomWindow.DataTemplates>
+<DataTemplate DataType="local:CommandProviderItem">
+        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
+          <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
+            <Image.Source>
+              <Binding Path="Icon" />
+            </Image.Source>
+          </Image>
+          <controls:FuzzyHighlightableTextBlock DockPanel.Dock="Left" FontSize="14" Margin="0,0,0,4" VerticalAlignment="Bottom" x:Name="NameTextBlock">
+            <controls:FuzzyHighlightableTextBlock.Text>
+              <Binding Path="Title" />
+            </controls:FuzzyHighlightableTextBlock.Text>
+            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
+              <Binding Path="FuzzySearchString" />
+            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
+          </controls:FuzzyHighlightableTextBlock>
+          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" x:Name="DashTextBlock">
+            <TextBlock.IsVisible>
+              <Binding Path="DescriptionVisibility" />
+            </TextBlock.IsVisible>
+          </TextBlock>
+          <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
+            <controls:FuzzyHighlightableTextBlock.Text>
+              <Binding Path="SecondaryTitle" />
+            </controls:FuzzyHighlightableTextBlock.Text>
+            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
+              <Binding Path="FuzzySearchString" />
+            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
+          </controls:FuzzyHighlightableTextBlock>
+        </DockPanel>
+        
+      
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+                  <DataTrigger.Binding>
+                    <Binding Path="IsSelected">
+                      <Binding.RelativeSource>
+                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
+                      </Binding.RelativeSource>
+                    </Binding>
+                  </DataTrigger.Binding>
+                  <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                  <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                  <Setter TargetName="IconImage" Property="Source">
+                    <Setter.Value>
+                      <Binding Path="SelectedIcon" />
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+    --></DataTemplate>
+<DataTemplate DataType="local:HeaderCommandProviderItem">
+        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
+          <TextBlock DockPanel.Dock="Left" FontSize="13.5" Margin="0,0,0,4" FontWeight="Medium" VerticalAlignment="Bottom" x:Name="NameTextBlock">
+            <TextBlock.Text>
+              <Binding Path="Title" />
+            </TextBlock.Text>
+          </TextBlock>
+        </DockPanel>
+      </DataTemplate>
+<DataTemplate DataType="local:RepositoryInfoItem">
+        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
+          <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
+            <Image.Source>
+              <Binding Path="Icon" />
+            </Image.Source>
+          </Image>
+          <controls:FuzzyHighlightableTextBlock DockPanel.Dock="Left" FontSize="14" Margin="0,0,0,4" VerticalAlignment="Bottom" x:Name="NameTextBlock">
+            <controls:FuzzyHighlightableTextBlock.Text>
+              <Binding Path="Title" />
+            </controls:FuzzyHighlightableTextBlock.Text>
+            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
+              <Binding Path="FuzzySearchString" />
+            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
+          </controls:FuzzyHighlightableTextBlock>
+          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" x:Name="DashTextBlock">
+            <TextBlock.IsVisible>
+              <Binding Path="DescriptionVisibility" />
+            </TextBlock.IsVisible>
+          </TextBlock>
+          <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
+            <controls:FuzzyHighlightableTextBlock.Text>
+              <Binding Path="SecondaryTitle" />
+            </controls:FuzzyHighlightableTextBlock.Text>
+            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
+              <Binding Path="FuzzySearchString" />
+            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
+          </controls:FuzzyHighlightableTextBlock>
+        </DockPanel>
+        
+      
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+                  <DataTrigger.Binding>
+                    <Binding Path="IsSelected">
+                      <Binding.RelativeSource>
+                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
+                      </Binding.RelativeSource>
+                    </Binding>
+                  </DataTrigger.Binding>
+                  <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                  <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+                  <Setter TargetName="IconImage" Property="Source">
+                    <Setter.Value>
+                      <Binding Path="SelectedIcon" />
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+    --></DataTemplate>
+  </ui:CustomWindow.DataTemplates>
   <ui:CustomWindow.Resources>
-    <ResourceDictionary>
+<ResourceDictionary>
       <ControlTheme x:Key="QuickLaunchListBoxItemStyle" TargetType="ListBoxItem">
         
         <Setter Property="Template">
@@ -24,117 +140,7 @@
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
 <!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style></ControlTheme>
-      <DataTemplate x:Key="CommandProviderItemTemplate" DataType="local:CommandProviderItem">
-        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
-          <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
-            <Image.Source>
-              <Binding Path="Icon" />
-            </Image.Source>
-          </Image>
-          <controls:FuzzyHighlightableTextBlock DockPanel.Dock="Left" FontSize="14" Margin="0,0,0,4" VerticalAlignment="Bottom" x:Name="NameTextBlock">
-            <controls:FuzzyHighlightableTextBlock.Text>
-              <Binding Path="Title" />
-            </controls:FuzzyHighlightableTextBlock.Text>
-            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-              <Binding Path="FuzzySearchString" />
-            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-          </controls:FuzzyHighlightableTextBlock>
-          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" x:Name="DashTextBlock">
-            <TextBlock.IsVisible>
-              <Binding Path="DescriptionVisibility" />
-            </TextBlock.IsVisible>
-          </TextBlock>
-          <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
-            <controls:FuzzyHighlightableTextBlock.Text>
-              <Binding Path="SecondaryTitle" />
-            </controls:FuzzyHighlightableTextBlock.Text>
-            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-              <Binding Path="FuzzySearchString" />
-            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-          </controls:FuzzyHighlightableTextBlock>
-        </DockPanel>
-        
       
-    <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
-      原始片段：
-      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
-                  <DataTrigger.Binding>
-                    <Binding Path="IsSelected">
-                      <Binding.RelativeSource>
-                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                      </Binding.RelativeSource>
-                    </Binding>
-                  </DataTrigger.Binding>
-                  <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                  <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                  <Setter TargetName="IconImage" Property="Source">
-                    <Setter.Value>
-                      <Binding Path="SelectedIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-    --></DataTemplate>
-      <DataTemplate x:Key="HeaderCommandProviderItemTemplate" DataType="local:HeaderCommandProviderItem">
-        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
-          <TextBlock DockPanel.Dock="Left" FontSize="13.5" Margin="0,0,0,4" FontWeight="Medium" VerticalAlignment="Bottom" x:Name="NameTextBlock">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-          </TextBlock>
-        </DockPanel>
-      </DataTemplate>
-      <DataTemplate x:Key="RepositoryInfoItemTemplate" DataType="local:RepositoryInfoItem">
-        <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
-          <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
-            <Image.Source>
-              <Binding Path="Icon" />
-            </Image.Source>
-          </Image>
-          <controls:FuzzyHighlightableTextBlock DockPanel.Dock="Left" FontSize="14" Margin="0,0,0,4" VerticalAlignment="Bottom" x:Name="NameTextBlock">
-            <controls:FuzzyHighlightableTextBlock.Text>
-              <Binding Path="Title" />
-            </controls:FuzzyHighlightableTextBlock.Text>
-            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-              <Binding Path="FuzzySearchString" />
-            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-          </controls:FuzzyHighlightableTextBlock>
-          <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" x:Name="DashTextBlock">
-            <TextBlock.IsVisible>
-              <Binding Path="DescriptionVisibility" />
-            </TextBlock.IsVisible>
-          </TextBlock>
-          <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
-            <controls:FuzzyHighlightableTextBlock.Text>
-              <Binding Path="SecondaryTitle" />
-            </controls:FuzzyHighlightableTextBlock.Text>
-            <controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-              <Binding Path="FuzzySearchString" />
-            </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
-          </controls:FuzzyHighlightableTextBlock>
-        </DockPanel>
-        
-      
-    <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
-      原始片段：
-      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
-                  <DataTrigger.Binding>
-                    <Binding Path="IsSelected">
-                      <Binding.RelativeSource>
-                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type ListBoxItem}" />
-                      </Binding.RelativeSource>
-                    </Binding>
-                  </DataTrigger.Binding>
-                  <Setter TargetName="PathTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                  <Setter TargetName="DashTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
-                  <Setter TargetName="IconImage" Property="Source">
-                    <Setter.Value>
-                      <Binding Path="SelectedIcon" />
-                    </Setter.Value>
-                  </Setter>
-                </DataTrigger>
-    --></DataTemplate>
     </ResourceDictionary>
   </ui:CustomWindow.Resources>
   <Grid Margin="0,10,0,0">

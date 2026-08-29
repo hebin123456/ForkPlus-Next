@@ -1,6 +1,47 @@
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.MergeConflictUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+       Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
+       搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
+  <UserControl.DataTemplates>
+<DataTemplate DataType="userControls:MergeRevisionViewModel">
+        <Grid Height="20">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="22" />
+            <ColumnDefinition Width="42" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <controls:AvatarImage Grid.Column="0" Margin="0,0,6,0" VerticalAlignment="Center" Height="16" Width="16">
+            <controls:AvatarImage.UserIdentity>
+              <Binding Path="Author" />
+            </controls:AvatarImage.UserIdentity>
+            <ToolTip.Tip>
+              <Binding Path="FullCredentialsString" />
+            </ToolTip.Tip>
+          </controls:AvatarImage>
+          <Button Grid.Column="1" Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click" Theme="{DynamicResource TextButtonStyle}">
+            <Button.Content>
+              <Binding Path="AbbreviatedShaString" />
+            </Button.Content>
+          </Button>
+          <controls:AutoTooltipTextBlock Grid.Column="2" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" FontSize="12" VerticalAlignment="Center">
+            <controls:AutoTooltipTextBlock.Text>
+              <Binding Path="Subject" />
+            </controls:AutoTooltipTextBlock.Text>
+          </controls:AutoTooltipTextBlock>
+          <TextBlock Grid.Column="3" Margin="2,1,0,0" Padding="0,-2,0,0" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <TextBlock.Text>
+              <Binding Path="AuthorDate" />
+            </TextBlock.Text>
+            <ToolTip.Tip>
+              <Binding Path="AuthorDate" />
+            </ToolTip.Tip>
+          </TextBlock>
+        </Grid>
+      </DataTemplate>
+  </UserControl.DataTemplates>
   <UserControl.Resources>
-    <ResourceDictionary>
+<ResourceDictionary>
       
       <ControlTheme x:Key="MergeConflictCheckBox" TargetType="CheckBox">
         
@@ -176,42 +217,7 @@
     <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
         <Setter Property="Opacity" Value="1" />
     </Style></ControlTheme>
-      <DataTemplate x:Key="MergeRevisionViewModelTemplate" DataType="userControls:MergeRevisionViewModel">
-        <Grid Height="20">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="22" />
-            <ColumnDefinition Width="42" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
-          <controls:AvatarImage Grid.Column="0" Margin="0,0,6,0" VerticalAlignment="Center" Height="16" Width="16">
-            <controls:AvatarImage.UserIdentity>
-              <Binding Path="Author" />
-            </controls:AvatarImage.UserIdentity>
-            <ToolTip.Tip>
-              <Binding Path="FullCredentialsString" />
-            </ToolTip.Tip>
-          </controls:AvatarImage>
-          <Button Grid.Column="1" Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click" Theme="{DynamicResource TextButtonStyle}">
-            <Button.Content>
-              <Binding Path="AbbreviatedShaString" />
-            </Button.Content>
-          </Button>
-          <controls:AutoTooltipTextBlock Grid.Column="2" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" FontSize="12" VerticalAlignment="Center">
-            <controls:AutoTooltipTextBlock.Text>
-              <Binding Path="Subject" />
-            </controls:AutoTooltipTextBlock.Text>
-          </controls:AutoTooltipTextBlock>
-          <TextBlock Grid.Column="3" Margin="2,1,0,0" Padding="0,-2,0,0" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" HorizontalAlignment="Right" VerticalAlignment="Center">
-            <TextBlock.Text>
-              <Binding Path="AuthorDate" />
-            </TextBlock.Text>
-            <ToolTip.Tip>
-              <Binding Path="AuthorDate" />
-            </ToolTip.Tip>
-          </TextBlock>
-        </Grid>
-      </DataTemplate>
+      
       <ControlTheme x:Key="MergeListBoxItemContainerStyle" TargetType="ListBoxItem">
         <Setter Property="Focusable" Value="False" />
         
