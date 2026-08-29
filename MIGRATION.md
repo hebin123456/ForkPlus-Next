@@ -64,6 +64,8 @@ git push origin HEAD
 | `3335377` | C# 0 / AVLN 1198 | IPC 管道修复 + 文档记录 XAML 编译静默失败根因 |
 | （本轮） | AVLN 1198→390 | xamlpass1-4 批量 XAML 修复（详见下节「XAML 批量修复方法论」） |
 
+**2026-08-29 复盘**：pass4 的 Phase2 全局变换（TabPanel→ItemsPresenter、删 AllowDrop/StaysOpen/FocusVisualStyle、ComponentResourceKey 转普通键等）实际未生效——pass3 的 Auto→NaN 误伤（RowDefinition Height="NaN"）和 pass3 之后的文件状态说明最后一次写盘的是 pass3。pass4 规则本身正确，对当前状态重跑即可生效。当前精确统计：**390 唯一错误消息 / 426 唯一签名 / 339 唯一 file:line 位置 / 964 原始日志行**（错误会在多工程构建中重复报告）。
+
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
@@ -99,12 +101,15 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 | UI/UserControls/GitMmUserControl.axaml | FocusVisualStyle/AllowDrop 等属性未解析 |
 | UI/Dialogs/InteractiveRebaseWindow.axaml | 同类属性簇 |
 
-**剩余错误类别**（本轮统计，按频次）：
-- AVLN2000 类型未解析（82）：`TabPanel`(43，WPF TabControl 面板) / `ComponentResourceKey`(25) / `Hyperlink`(6) / `ListViewItem`(5→ListBoxItem) / `Stylus`(3) / `ListView`(3) / `ResizeGrip`(2) / `MenuScrollingVisibilityConverter`(2)
-- AVLN2000 属性未解析（214）：`FocusVisualStyle`(29，WPF-only) / `Name`(26，非 StyledElement 上 x:Name) / `AllowDrop`(9) / `TextDecorations`(8) / `Resources`(8，Style/ControlTemplate 上) / `Horizontal/VerticalContentAlignment`(13) / `StaysOpen`(5) / `PopupAnimation`(5) / `Increase/DecreaseRepeatButton`(10，Track) / `AllowsTransparency`(5) / 零散（Uid/ZIndex/TabIndex/ViewportWidth 等）
-- AVLN3000（60）：setter/adder 不匹配 —— ControlTheme 直接放 ResourceDictionary 子元素、Popup.Placement 值等
-- AVLN2200（25）：值转换失败（多为 `{Unknown type}`，即引用了被注释/不存在的资源）
-- AVLN1000（18）：格式错误（`Auto` 传数字属性等）
+**剩余错误类别**（2026-08-29 最新统计，按唯一消息数，共 390；原始日志 964 行含跨工程重复）：
+- AVLN2000 类型未解析（160）：`TabPanel`(86，Tabcontrol.axaml:57/410 + GitMmUserControl.axaml:54 两大簇) / `ComponentResourceKey`(50，全在 Menu.axaml:590-619) / `Hyperlink`(12) / `ListViewItem`(10) / `ListView`(6) / `Stylus`(6) / `StaticExtension`(6)
+- AVLN2000 属性未解析（~250）：`FocusVisualStyle`(58) / `Name`(46，x:Name 挂在 TranslateTransform/RowDefinition 等非 StyledElement 上) / `AllowDrop`(18) / `TextDecorations`(16，TextBlock 主题里) / `Resources`(16，Style/ControlTheme 上) / `HorizontalContentAlignment`(14)/`VerticalContentAlignment`(12) / `StaysOpen`(10)/`PopupAnimation`(10)/`AllowsTransparency`(10) / `Increase/DecreaseRepeatButton`(20，Track) / `View`(8，NoUIAutomationListView) / `Uid`(8) / `PreviewKeyDown`(10) / 零散（ZIndex/TabIndex/PlacementRectangle/ToolTip/Margin/TargetType/Style/Foreground）
+- `Cannot find 'IsSelectionActive'`(26+16)：ListBoxItem/TreeViewControlItem 模板里 TemplateBinding 引用 WPF-only 属性 → 改删该 TemplateBinding
+- AVLN2200（48）：值转换 `{Unknown type}`——`ClickMode="Hover"`（Menu.axaml:79，Avalonia ClickMode 无 Hover）、`BasedOn="{StaticResource {x:Type Hyperlink}}"`（Hyperlink 类型不存在）、AllowDrop Setter
+- AVLN1000（36）：`'Auto'` 传数字属性(16)、`IsVisible="Collapsed"/"Hidden"` 值未跟着转换(20)
+- AVLN3000（120）：`SelectionMode` 传 String(14+14，WPF "Extended"→Avalonia 无此值)、ControlTheme 直接放 ResourceDictionary 子元素、Popup Placement 字符串、`Avalonia.UnsetValueType`(22)/`BindingBase`(20) 参数不匹配（多为 XAML 编译器级联报错，上游修掉后会消失）
+- AVLN2005（16）：`Unable to parse "NaN" as a grid length`——pass3 把 RowDefinition/ColumnDefinition 的 Auto 误转成 NaN，须转回
+- AVLN2205（10）：`PART_TextPresenter` 未定义于 PlaceholderTextBox（模板缺部件）+ AVLN2203（8）：重复 Setter（VerticalContentAlignment/Height 重复声明，删一个）
 
 **修复策略**：
 1. 先修 Theme/Styles/*.axaml（错误乘数最高——每个错误会被所有引用它的入口文件重复报告）
