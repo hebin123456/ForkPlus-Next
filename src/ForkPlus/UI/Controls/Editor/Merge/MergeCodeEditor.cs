@@ -85,7 +85,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		public MergeCodeEditor()
 		{
-			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
+			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			Theme = ForkPlusSettings.Default.Theme;
 			_mergeChunkSelectionLayer = new MergeChunkSelectionLayer(this);
 			base.TextArea.TextView.InsertLayer(_mergeChunkSelectionLayer, KnownLayer.Selection, LayerInsertionPosition.Above);
@@ -152,12 +152,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			if (_blocks != null && base.VerticalScrollBarVisibility != global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden && base.Template.TryFindName<Path>("SrcBlockPath", this, out var match) && base.Template.TryFindName<Path>("DstBlockPath", this, out var match2))
 			{
 				StreamGeometry streamGeometry = new StreamGeometry();
-				streamGeometry.FillRule = FillRule.NonZero;
-				StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-				StreamGeometry streamGeometry2 = new StreamGeometry();
-				streamGeometry2.FillRule = FillRule.NonZero;
-				StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
-				int num = 6;
+StreamGeometryContext streamGeometryContext = streamGeometry.Open();
+				streamGeometryContext.SetFillRule(FillRule.Nonzero);				StreamGeometry streamGeometry2 = new StreamGeometry();
+StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
+				streamGeometryContext2.SetFillRule(FillRule.Nonzero);				int num = 6;
 				int num2 = 1;
 				double num3 = 12.0;
 				double num4 = base.TextArea.Bounds.Height - num3 * 2.0;
@@ -168,16 +166,16 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 					double num5 = num3 + num4 * block.Start;
 					double num6 = Math.Max(2.0, num4 * block.Length);
 					StreamGeometryContext obj = ((block.Kind == Block.BlockKind.Resolved) ? streamGeometryContext2 : streamGeometryContext);
-					obj.BeginFigure(new Point(num2, num5), isFilled: true, isClosed: true);
-					obj.PolyLineTo(new Point[3]
+					obj.BeginFigure(new Point(num2, num5),true);
+					foreach (global::Avalonia.Point __p in new Point[3]
 					{
 						new Point(num2 + num, num5),
 						new Point(num2 + num, num5 + num6),
 						new Point(num2, num5 + num6)
-					}, isStroked: false, isSmoothJoin: false);
+					}) { obj.LineTo(__p, false); }
 				}
-				streamGeometryContext.Close();
-				streamGeometryContext2.Close();
+				streamGeometryContext.Dispose();
+				streamGeometryContext2.Dispose();
 				match.Data = streamGeometry;
 				match2.Data = streamGeometry2;
 			}

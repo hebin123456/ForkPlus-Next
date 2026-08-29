@@ -249,12 +249,14 @@ namespace ForkPlus.UI.Helpers
 				unitY = (int)pixelY;
 				return;
 			}
-			PresentationSource presentationSource = PresentationSource.FromVisual(visual);
-			if (presentationSource?.CompositionTarget != null)
+			// TODO 迁移：WPF PresentationSource.FromVisual(visual).CompositionTarget.TransformToDevice
+			// 提供 DIP→像素矩阵（PresentationSource 在 Avalonia 是内部类，CS0122）；
+			// Avalonia 等价物是 TopLevel.RenderScaling（设备缩放比，对应矩阵的 M11/M22）。
+			double transformToDevice = GetVisualScaling(visual);
+			if (transformToDevice > 0.0)
 			{
-				Matrix transformToDevice = presentationSource.CompositionTarget.TransformToDevice;
-				unitX = (int)(pixelX / transformToDevice.M11);
-				unitY = (int)(pixelY / transformToDevice.M22);
+				unitX = (int)(pixelX / transformToDevice);
+				unitY = (int)(pixelY / transformToDevice);
 			}
 			else
 			{
@@ -271,18 +273,26 @@ namespace ForkPlus.UI.Helpers
 				pixelY = (int)unitY;
 				return;
 			}
-			PresentationSource presentationSource = PresentationSource.FromVisual(visual);
-			if (presentationSource?.CompositionTarget != null)
+			// TODO 迁移：同 TransformFromPixels——PresentationSource（Avalonia 内部类，CS0122）
+			// 改用 TopLevel.RenderScaling 做 DIP↔像素换算。
+			double transformToDevice = GetVisualScaling(visual);
+			if (transformToDevice > 0.0)
 			{
-				Matrix transformToDevice = presentationSource.CompositionTarget.TransformToDevice;
-				pixelX = (int)(unitX * transformToDevice.M11);
-				pixelY = (int)(unitY * transformToDevice.M22);
+				pixelX = (int)(unitX * transformToDevice);
+				pixelY = (int)(unitY * transformToDevice);
 			}
 			else
 			{
 				pixelX = (int)unitX;
 				pixelY = (int)unitY;
 			}
+		}
+
+		/// <summary>取 visual 所在 TopLevel 的设备缩放比（无 TopLevel 时按 1.0 处理）。</summary>
+		private static double GetVisualScaling(Visual visual)
+		{
+			global::Avalonia.Controls.Primitives.TopLevel topLevel = global::Avalonia.Controls.Primitives.TopLevel.GetTopLevel(visual);
+			return topLevel?.RenderScaling ?? 1.0;
 		}
 
 		private static WindowPlacement ToWindowPlacement(WindowLocationState state, Window window)

@@ -3,13 +3,17 @@ using ForkPlus.UI.WpfCompat;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	public class EditableTextBlock : Control
+	// TODO 迁移：WPF Control 自带 Padding/FontSize/FontWeight/Foreground 等属性并支持 ControlTheme 的
+	// Template Setter；Avalonia 把这些属性下放到 TemplatedControl，故基类由 Control 改为 TemplatedControl
+	//（Commonresources.axaml 的 ControlTheme 正是给本控件设置 Template 并 TemplateBinding Padding）。
+	public class EditableTextBlock : TemplatedControl
 	{
 		public static readonly global::Avalonia.StyledProperty<string> ValueProperty =
     global::Avalonia.AvaloniaProperty.Register<EditableTextBlock, string>("Value", null);
@@ -102,7 +106,8 @@ namespace ForkPlus.UI.Controls
 					editedCallback(arg1: false, textBox.Text);
 				}
 			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
-			textBox.LostKeyboardFocus += delegate
+			// TODO 迁移：Avalonia TextBox 无 LostKeyboardFocus（WPF 键盘焦点事件），等价用 LostFocus。
+			textBox.LostFocus += delegate
 			{
 				if (IsInEditMode)
 				{

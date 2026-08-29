@@ -12,7 +12,11 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+// TODO 迁移：ContentPresenter / ScrollContentPresenter 在 Avalonia 位于 Controls.Presenters
+//（WPF 在 Controls.Primitives），此处补 using 以修复 CS0246。
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Threading;
 using ForkPlus.Accounts;
@@ -323,31 +327,33 @@ namespace ForkPlus
 		}
 
 		public App()
+	{
+		if (IsDebug)
 		{
-			if (IsDebug)
-			{
-				LogManager.Configuration = new DebugLoggingConfiguration();
-				PresentationTraceSources.DataBindingSource.Listeners.Add(new BindingErrorTraceListener());
-				PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Error;
-			}
-			else
-			{
-				LogManager.Configuration = new ProductionLoggingConfiguration();
-			}
-			RegisterGlobalExceptionLogging();
-			LogHelper.LogWelcome();
-			_askPassIpcServer = new IpcServer(NamedPipeHelper.AskPassPipeName, AskPassIpcMessageHandler);
-			_defaultIpcServer = new IpcServer(NamedPipeHelper.DefaultPipeName, DefaultIpcMessageHandler);
-			HandleCommandLineArguments();
+			LogManager.Configuration = new DebugLoggingConfiguration();
+			// TODO 迁移：Avalonia 无 PresentationTraceSources/DataBindingSource（WPF 绑定跟踪管道）；
+			// 绑定错误改由 DebugLoggingConfiguration 记录，BindingErrorTraceListener 不再挂接到 TraceSource。
 		}
+		else
+		{
+			LogManager.Configuration = new ProductionLoggingConfiguration();
+		}
+		RegisterGlobalExceptionLogging();
+		LogHelper.LogWelcome();
+		_askPassIpcServer = new IpcServer(NamedPipeHelper.AskPassPipeName, AskPassIpcMessageHandler);
+		_defaultIpcServer = new IpcServer(NamedPipeHelper.DefaultPipeName, DefaultIpcMessageHandler);
+		HandleCommandLineArguments();
+	}
 
-		private void RegisterGlobalExceptionLogging()
-		{
-			DispatcherUnhandledException += App_DispatcherUnhandledException;
-			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-			AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
-			TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-		}
+	private void RegisterGlobalExceptionLogging()
+	{
+		// TODO 迁移：Avalonia Application 无 DispatcherUnhandledException 事件，
+		// 等价物是 Dispatcher.UIThread.UnhandledException（参数同为 DispatcherUnhandledExceptionEventArgs）。
+		Avalonia.Threading.Dispatcher.UIThread.UnhandledException += App_DispatcherUnhandledException;
+		AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+		AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+		TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+	}
 
 		private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
 		{
@@ -406,74 +412,34 @@ namespace ForkPlus
 
 		private static void RegisterScrollViewerContentTemplateGuard()
 		{
-			try
-			{
-				ContentControl.ContentTemplateProperty.OverrideMetadata(typeof(ScrollViewer), new global::Avalonia.StyledPropertyMetadata(null, ScrollViewerContentTemplateChanged));
-				ContentPresenter.ContentTemplateProperty.OverrideMetadata(typeof(ScrollContentPresenter), new global::Avalonia.StyledPropertyMetadata(null, ScrollContentPresenterContentTemplateChanged));
-			}
-			catch (InvalidOperationException)
-			{
-			}
-		}
-
-		private static void ScrollViewerContentTemplateChanged(global::Avalonia.AvaloniaObject d, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
-		{
-			if (e.NewValue == null || !(d is ScrollViewer scrollViewer))
-			{
-				return;
-			}
-			try
-			{
-				scrollViewer.ContentTemplate = null;
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("Failed to clear ScrollViewer.ContentTemplate on " + VisualTreeAttachmentHelper.Describe(scrollViewer) + ".", ex);
-			}
-		}
-
-		private static void ScrollContentPresenterContentTemplateChanged(global::Avalonia.AvaloniaObject d, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
-		{
-			if (e.NewValue == null || !(d is ScrollContentPresenter scrollContentPresenter))
-			{
-				return;
-			}
-			try
-			{
-				scrollContentPresenter.ContentTemplate = null;
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("Failed to clear ScrollContentPresenter.ContentTemplate on " + VisualTreeAttachmentHelper.Describe(scrollContentPresenter) + ".", ex);
-			}
+			// TODO 迁移：WPF 侧通过 OverrideMetadata 拦截 ScrollViewer/ScrollContentPresenter 的
+			// ContentTemplate 赋值来规避绑定报错；Avalonia 无 OverrideMetadata，且 ScrollViewer 模板
+			// 机制不同，此防御逻辑整体降级为 no-op（相关诊断代码保留在 DescribeScrollContentPresenters）。
 		}
 
 		private static string DescribeInputElement(IInputElement element)
+	{
+		if (element == null)
 		{
-			if (element == null)
-			{
-				return "<none>";
-			}
-			if (!(element is global::Avalonia.AvaloniaObject dependencyObject))
-			{
-				return element.GetType().FullName;
-			}
-			List<string> parts = new List<string>
-			{
-				VisualTreeAttachmentHelper.Describe(dependencyObject)
-			};
-			if (dependencyObject is global::Avalonia.Controls.Control frameworkElement)
-			{
-				parts.Add("DataContext=" + (frameworkElement.DataContext?.GetType().FullName ?? "<null>"));
-				parts.Add("TemplatedParent=" + VisualTreeAttachmentHelper.Describe(frameworkElement.TemplatedParent));
-			}
-			else if (dependencyObject is FrameworkContentElement frameworkContentElement)
-			{
-				parts.Add("DataContext=" + (frameworkContentElement.DataContext?.GetType().FullName ?? "<null>"));
-				parts.Add("TemplatedParent=" + VisualTreeAttachmentHelper.Describe(frameworkContentElement.TemplatedParent));
-			}
-			return string.Join(", ", parts);
+			return "<none>";
 		}
+		if (!(element is global::Avalonia.AvaloniaObject dependencyObject))
+		{
+			return element.GetType().FullName;
+		}
+		List<string> parts = new List<string>
+		{
+			VisualTreeAttachmentHelper.Describe(dependencyObject)
+		};
+		if (dependencyObject is global::Avalonia.Controls.Control frameworkElement)
+		{
+			parts.Add("DataContext=" + (frameworkElement.DataContext?.GetType().FullName ?? "<null>"));
+			parts.Add("TemplatedParent=" + VisualTreeAttachmentHelper.Describe(frameworkElement.TemplatedParent));
+		}
+		// TODO 迁移：WPF FrameworkContentElement 分支删除——Avalonia 无 ContentElement 体系，
+		// 输入元素全部是 Control，上面的 Control 分支已覆盖。
+		return string.Join(", ", parts);
+	}
 
 		private static string DescribeAncestors(global::Avalonia.AvaloniaObject dependencyObject, int maxDepth = 10)
 		{
@@ -501,14 +467,19 @@ namespace ForkPlus
 			{
 				return null;
 			}
-			global::Avalonia.AvaloniaObject parent = LogicalTreeHelper.GetParent(child);
-			if (parent != null)
+			// TODO 迁移：Avalonia 逻辑父 = StyledElement.Parent（WpfCompat LogicalTreeHelper 垫片），
+			// 视觉父 = VisualExtensions.GetVisualParent(Visual)，两者都要求目标类型，故先做模式匹配。
+			if (child is global::Avalonia.StyledElement styledElement)
 			{
-				return parent;
+				global::Avalonia.AvaloniaObject parent = LogicalTreeHelper.GetParent(styledElement);
+				if (parent != null)
+				{
+					return parent;
+				}
 			}
-			if (child is Visual || child is Visual3D)
+			if (child is global::Avalonia.Visual visual)
 			{
-				return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(child);
+				return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(visual);
 			}
 			return null;
 		}
@@ -529,36 +500,42 @@ namespace ForkPlus
 		}
 
 		private static void CollectScrollContentPresenterDiagnostics(global::Avalonia.AvaloniaObject item, List<string> parts, int depth)
+	{
+		if (item == null || depth > 80)
 		{
-			if (item == null || depth > 80)
+			return;
+		}
+		// TODO 迁移：WPF 该诊断同时走 Visual / Visual3D 两棵树；Avalonia 只有 Visual 一棵视觉树，
+		// 且 VisualTreeHelper.GetChild/GetChildrenCount 只接受 Visual，非 Visual 的 AvaloniaObject 直接跳过。
+		if (!(item is global::Avalonia.Visual visual))
+		{
+			return;
+		}
+		try
+		{
+			if (item is ScrollViewer scrollViewer && scrollViewer.ContentTemplate != null)
 			{
-				return;
+				parts.Add("ScrollViewer " + VisualTreeAttachmentHelper.Describe(scrollViewer) + ", Content=" + DescribeObject(scrollViewer.Content) + ", ContentTemplate=" + DescribeObject(scrollViewer.ContentTemplate) + ", Ancestors=" + DescribeAncestors(scrollViewer, 8));
 			}
-			try
+			if (item is ScrollContentPresenter scrollContentPresenter && scrollContentPresenter.ContentTemplate != null)
 			{
-				if (item is ScrollViewer scrollViewer && scrollViewer.ContentTemplate != null)
-				{
-					parts.Add("ScrollViewer " + VisualTreeAttachmentHelper.Describe(scrollViewer) + ", Content=" + DescribeObject(scrollViewer.Content) + ", ContentTemplate=" + DescribeObject(scrollViewer.ContentTemplate) + ", Ancestors=" + DescribeAncestors(scrollViewer, 8));
-				}
-				if (item is ScrollContentPresenter scrollContentPresenter && scrollContentPresenter.ContentTemplate != null)
-				{
-					parts.Add("ScrollContentPresenter " + VisualTreeAttachmentHelper.Describe(scrollContentPresenter) + ", Content=" + DescribeObject(scrollContentPresenter.Content) + ", ContentTemplate=" + DescribeObject(scrollContentPresenter.ContentTemplate) + ", Ancestors=" + DescribeAncestors(scrollContentPresenter, 8));
-				}
-				if (item is ContentPresenter contentPresenter && contentPresenter.ContentTemplate != null && item.GetType().Name.IndexOf("Scroll", StringComparison.OrdinalIgnoreCase) >= 0)
-				{
-					parts.Add("Scroll-like ContentPresenter " + VisualTreeAttachmentHelper.Describe(contentPresenter) + ", Content=" + DescribeObject(contentPresenter.Content) + ", ContentTemplate=" + DescribeObject(contentPresenter.ContentTemplate) + ", Ancestors=" + DescribeAncestors(contentPresenter, 8));
-				}
-				int childrenCount = VisualTreeHelper.GetChildrenCount(item);
-				for (int i = 0; i < childrenCount; i++)
-				{
-					CollectScrollContentPresenterDiagnostics(VisualTreeHelper.GetChild(item, i), parts, depth + 1);
-				}
+				parts.Add("ScrollContentPresenter " + VisualTreeAttachmentHelper.Describe(scrollContentPresenter) + ", Content=" + DescribeObject(scrollContentPresenter.Content) + ", ContentTemplate=" + DescribeObject(scrollContentPresenter.ContentTemplate) + ", Ancestors=" + DescribeAncestors(scrollContentPresenter, 8));
 			}
-			catch (Exception ex)
+			if (item is ContentPresenter contentPresenter && contentPresenter.ContentTemplate != null && item.GetType().Name.IndexOf("Scroll", StringComparison.OrdinalIgnoreCase) >= 0)
 			{
-				parts.Add("Diagnostics failed at " + VisualTreeAttachmentHelper.Describe(item) + ": " + ex.Message);
+				parts.Add("Scroll-like ContentPresenter " + VisualTreeAttachmentHelper.Describe(contentPresenter) + ", Content=" + DescribeObject(contentPresenter.Content) + ", ContentTemplate=" + DescribeObject(contentPresenter.ContentTemplate) + ", Ancestors=" + DescribeAncestors(contentPresenter, 8));
+			}
+			int childrenCount = VisualTreeHelper.GetChildrenCount(visual);
+			for (int i = 0; i < childrenCount; i++)
+			{
+				CollectScrollContentPresenterDiagnostics(VisualTreeHelper.GetChild(visual, i), parts, depth + 1);
 			}
 		}
+		catch (Exception ex)
+		{
+			parts.Add("Diagnostics failed at " + VisualTreeAttachmentHelper.Describe(item) + ": " + ex.Message);
+		}
+	}
 
 		private static string DescribeObject(object item)
 		{
@@ -576,11 +553,23 @@ namespace ForkPlus
 		public static void RefreshWindowBorderBrush()
 		{
 			SolidColorBrush solidColorBrush = (ForkPlusSettings.Default.Theme.IsDarkBase() ? _defaultWindowBorderDarkBrush : _defaultWindowBorderLightBrush);
-			Brush brush = (IsSystemAccentBrushEnabled() ? SystemParameters.WindowGlassBrush : solidColorBrush);
+			Brush brush = solidColorBrush;
+			if (IsSystemAccentBrushEnabled())
+			{
+				// TODO 迁移：WPF SystemParameters.WindowGlassBrush（标题栏 DWM 强调色画刷）在 Avalonia 无公开等价物，
+				// 且 WpfCompat 的 SystemParameters shim 未提供该成员；这里降级为资源里的 SystemAccentBrush
+				// （由 ForkPlus.UI.Theme.Refresh 依据系统强调色填充；启动早期可能取不到，则回退默认边框画刷）。
+				Brush systemAccentBrush = global::ForkPlus.UI.Theme.FindBrush("SystemAccentBrush");
+				if (systemAccentBrush != null)
+				{
+					brush = systemAccentBrush;
+				}
+			}
 			if (brush != _windowBorderBrush)
 			{
 				_windowBorderBrush = brush;
-				_windowBorderBrush?.Freeze();
+				// TODO 迁移：WPF Brush.Freeze()（把画刷冻结为不可变以提升共享性能）在 Avalonia 无对应方法；
+				// Avalonia 用 ImmutableBrush 体系表达不可变，直接引用共享即可，故删除 Freeze 调用。
 				ResourceDictionary resourceDictionary = new ResourceDictionary();
 				resourceDictionary.Add("WindowBorderBrush", _windowBorderBrush);
 				Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
@@ -620,6 +609,52 @@ namespace ForkPlus
 			}
 		}
 
+		// ===== 主题字典（Generic.{Skin}.axaml）加载/查找辅助 =====
+		// TODO 迁移：WPF 用 new ResourceDictionary { Source = new Uri("/ForkPlus;component/Theme/Generic.x.axaml") }
+		// 合并外部主题字典、用 rd.Source 反查；Avalonia 的 ResourceDictionary 没有 Source，
+		// 等价做法是 ResourceInclude(baseUri) { Source = avares URI } 放进 MergedDictionaries，
+		// 反查时遍历 MergedDictionaries（IList<IResourceProvider>）按 ResourceInclude.Source 匹配。
+
+		/// <summary>主题字典 URI 前缀（ThemeTypeExtensions.ResourceUri 生成的 avares 绝对地址）。</summary>
+		private const string ThemeDictionaryUriPrefix = "avares://ForkPlus/Theme/Generic.";
+
+		/// <summary>ResourceInclude 的 baseUri（解析相对 Source 用；Source 为绝对 avares URI 时仅作占位）。</summary>
+		private static readonly Uri ThemeResourceIncludeBaseUri = new Uri("avares://ForkPlus/App.axaml", UriKind.Absolute);
+
+		/// <summary>创建加载 Generic.{Skin}.axaml 的 ResourceInclude（WPF ResourceDictionary.Source 的等价物）。</summary>
+		internal static ResourceInclude CreateThemeResourceInclude(Uri themeUri)
+		{
+			return new ResourceInclude(ThemeResourceIncludeBaseUri)
+			{
+				Source = themeUri
+			};
+		}
+
+		/// <summary>
+		/// 在 Application.Resources.MergedDictionaries 中查找当前主题字典。
+		/// 保持 WPF"按 Uri 识别主题字典"语义：Source 匹配 avares://ForkPlus/Theme/Generic.{Skin}.axaml。
+		/// </summary>
+		internal static ResourceInclude FindThemeResourceInclude()
+		{
+			var merged = Application.Current?.Resources?.MergedDictionaries;
+			if (merged == null)
+			{
+				return null;
+			}
+			// MergedDictionaries 是 IList<IResourceProvider>；元素可能为 ResourceDictionary（代码构建）
+			// 或 ResourceInclude（axaml/外部加载），只按 ResourceInclude.Source 识别主题字典。
+			foreach (var provider in merged)
+			{
+				if (provider is ResourceInclude include &&
+				    include.Source != null &&
+				    include.Source.OriginalString.StartsWith(ThemeDictionaryUriPrefix, StringComparison.OrdinalIgnoreCase))
+				{
+					return include;
+				}
+			}
+			return null;
+		}
+
 		private void InitializeTheme()
 		{
 			if (ForkPlusSettings.Default.FollowSystemTheme)
@@ -628,15 +663,13 @@ namespace ForkPlus
 				// 跟随系统时只映射到基底 Light/Dark（系统只有明暗二元）
 				ForkPlusSettings.Default.Theme = ((_systemTheme != 0) ? ThemeType.Dark : ThemeType.Light);
 			}
-			ResourceDictionary resourceDictionary = Application.Current.Resources.MergedDictionaries.FirstOrDefault((ResourceDictionary rd) => rd.Source != null && rd.Source.OriginalString.Contains("/ForkPlus;component/Theme/Generic."));
-			ResourceDictionary item = new ResourceDictionary
-			{
-				Source = ForkPlusSettings.Default.Theme.ResourceUri()
-			};
+			// 找到当前的 Generic.{Skin}.axaml 字典（ResourceInclude 且 Source 匹配主题前缀）
+			ResourceInclude oldThemeInclude = FindThemeResourceInclude();
+			ResourceInclude item = CreateThemeResourceInclude(ForkPlusSettings.Default.Theme.ResourceUri());
 			Application.Current.Resources.MergedDictionaries.Add(item);
-			if (resourceDictionary != null)
+			if (oldThemeInclude != null)
 			{
-				Application.Current.Resources.MergedDictionaries.Remove(resourceDictionary);
+				Application.Current.Resources.MergedDictionaries.Remove(oldThemeInclude);
 			}
 			global::ForkPlus.UI.Theme.SubscribeToSystemEvents();
 			InitializeTextEditorContextMenuStyle();
@@ -728,30 +761,19 @@ namespace ForkPlus
 	{
 		try
 		{
-			// 找到当前的 Generic.{Skin}.xaml 字典（Source 非空且匹配 /Theme/Generic.*.xaml）
-			ResourceDictionary oldThemeDict = null;
-			foreach (ResourceDictionary rd in Application.Current.Resources.MergedDictionaries)
-			{
-				if (rd.Source != null &&
-				    System.Text.RegularExpressions.Regex.Match(
-					    rd.Source.OriginalString,
-					    @"\/ForkPlus;component\/Theme\/Generic\.\w+\.xaml").Success)
-				{
-					oldThemeDict = rd;
-					break;
-				}
-			}
-			if (oldThemeDict == null)
+			// 找到当前的 Generic.{Skin}.axaml 字典（ResourceInclude 且 Source 匹配 avares://ForkPlus/Theme/Generic.*.axaml）
+			// TODO 迁移：原 WPF 代码 foreach(ResourceDictionary rd in MergedDictionaries) + rd.Source 在
+			// Avalonia 报 CS1061（MergedDictionaries 元素是 IResourceProvider，且 ResourceDictionary 无 Source）；
+			// 改为 FindThemeResourceInclude()：遍历并按 ResourceInclude.Source 识别主题字典。
+			ResourceInclude oldThemeInclude = FindThemeResourceInclude();
+			if (oldThemeInclude == null)
 				return;  // 未找到主题字典（启动早期或异常状态），跳过刷新
 
 			// 先 Add 新 dict（同一 Source 重新加载），后 Remove 旧 dict——
 			// 这个顺序与 SwitchApplicationThemeCommand 一致，确保资源查找不出现空窗。
-			ResourceDictionary newThemeDict = new ResourceDictionary
-			{
-				Source = ForkPlusSettings.Default.Theme.ResourceUri()
-			};
-			Application.Current.Resources.MergedDictionaries.Add(newThemeDict);
-			Application.Current.Resources.MergedDictionaries.Remove(oldThemeDict);
+			ResourceInclude newThemeInclude = CreateThemeResourceInclude(ForkPlusSettings.Default.Theme.ResourceUri());
+			Application.Current.Resources.MergedDictionaries.Add(newThemeInclude);
+			Application.Current.Resources.MergedDictionaries.Remove(oldThemeInclude);
 		}
 		catch (Exception ex)
 		{
@@ -889,9 +911,11 @@ namespace ForkPlus
 		}
 
 		private void DoShutdown()
-		{
-			Shutdown();
-		}
+	{
+		// TODO 迁移：WPF Application.Shutdown()；Avalonia 经 IClassicDesktopStyleApplicationLifetime.Shutdown()
+		// 关闭应用（WpfCompat WpfApp.Shutdown 即转发到该 API）。
+		global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown();
+	}
 
 		private static string GetEnvironmentGitInstancePath()
 		{

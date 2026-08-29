@@ -15,7 +15,12 @@ namespace ForkPlus.UI.WpfCompat
     public class GridViewColumn
     {
         public double Width { get; set; } = double.NaN;
-        public string Header { get; set; }
+        public double ActualWidth => double.IsNaN(Width) ? 0 : Width;
+        public object Header { get; set; }
+        /// <summary>WPF CellTemplate（Avalonia 侧由模板承担，仅记账）。</summary>
+        public object CellTemplate { get; set; }
+        /// <summary>WPF DisplayMemberBinding（仅记账，不参与绑定）。</summary>
+        public object DisplayMemberBinding { get; set; }
         /// <summary>WPF ActualWidth 近似值（shim 无真实布局，恒 NaN→0）。</summary>
         public Rect Bounds { get; } = default;
     }
@@ -31,6 +36,7 @@ namespace ForkPlus.UI.WpfCompat
     public class GridViewColumnHeader
     {
         public object ContainerStyle { get; set; }
+        public object Content { get; set; }
     }
 
     /// <summary>WPF ListView.View / AvailableWidth 的附加扩展。</summary>

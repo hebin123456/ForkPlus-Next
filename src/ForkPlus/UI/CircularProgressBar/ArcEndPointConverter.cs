@@ -21,7 +21,8 @@ namespace ForkPlus.UI.CircularProgressBar
 			{
 				return global::ForkPlus.UI.WpfCompat.WpfBinding.DoNothing;
 			}
-			if (values.Length == 5)
+			// Avalonia IMultiValueConverter 的 values 是 IList<object>，用 Count 而非 Length。
+			if (values.Count == 5)
 			{
 				double num5 = values[4].ExtractDouble();
 				if (!double.IsNaN(num5) && num5 > 0.0)

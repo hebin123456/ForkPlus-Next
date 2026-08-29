@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Controls
 
 		public TextContentControl()
 		{
-			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
+			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			_codeEditorLineNumberMargin = new CodeEditorLineNumberMargin();
 			base.TextArea.LeftMargins.Add(_codeEditorLineNumberMargin);
 			_syntaxHighlighting = new SyntaxHighlighting();

@@ -31,7 +31,10 @@ namespace ForkPlus.UI
 
 			public void Execute(object parameter)
 			{
-				ApplicationCommands.Paste.Execute(parameter, Keyboard.FocusedElement);
+				// TODO 迁移：WPF ICommand.Execute(parameter, target) 双参重载在 Avalonia ICommand 上不存在；
+				// WpfCompat 的 ApplicationCommands.Paste 把 parameter 当目标元素，这里改传当前键盘焦点元素，
+				// 保持"粘贴到焦点文本框"的语义。
+				ApplicationCommands.Paste.Execute(Keyboard.FocusedElement);
 			}
 		}
 
@@ -56,7 +59,8 @@ namespace ForkPlus.UI
 			menuItem.IsEnabled = isEnabled;
 			if (keyGesture != null)
 			{
-				menuItem.InputGestureText = keyGesture.ToFriendlyString();
+				// TODO 迁移：Avalonia MenuItem 无 InputGestureText 字符串属性，改为设置 InputGesture(KeyGesture)。
+				menuItem.InputGesture = keyGesture;
 			}
 			if (clickHandler != null)
 			{
@@ -91,8 +95,8 @@ namespace ForkPlus.UI
 				Margin = icon.Margin,
 				Stretch = icon.Stretch,
 				HorizontalAlignment = icon.HorizontalAlignment,
-				VerticalAlignment = icon.VerticalAlignment,
-				SnapsToDevicePixels = true
+				VerticalAlignment = icon.VerticalAlignment
+				// TODO 迁移：WPF Image.SnapsToDevicePixels（像素对齐）在 Avalonia 无对应，删除。
 			};
 		}
 

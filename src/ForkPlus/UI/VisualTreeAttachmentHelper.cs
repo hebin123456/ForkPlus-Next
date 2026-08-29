@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Layout;
@@ -19,11 +20,17 @@ namespace ForkPlus.UI
 			{
 				return true;
 			}
+			// TODO 迁移：Avalonia 的 Panel.Children 只接受 Control（WPF 是 UIElement/InputElement）；
+			// 方法签名沿用 InputElement（调用方均传 Control），非 Control 输入无法挂视觉树，返回 false。
+			if (!(child is global::Avalonia.Controls.Control controlChild))
+			{
+				return false;
+			}
 			if (!PrepareForNewParent(child, targetDescription))
 			{
 				return false;
 			}
-			panel.Children.Add(child);
+			panel.Children.Add(controlChild);
 			return true;
 		}
 
@@ -37,7 +44,9 @@ namespace ForkPlus.UI
 			{
 				return false;
 			}
-			decorator.Child = child;
+			// TODO 迁移：Avalonia Decorator.Child 类型是 Control（WPF 是 UIElement）；
+			// 用 as 降级转换，child 为 null 或非 Control 时置 null（调用方实际都传 Control）。
+			decorator.Child = child as global::Avalonia.Controls.Control;
 			return true;
 		}
 
@@ -51,7 +60,9 @@ namespace ForkPlus.UI
 			{
 				return false;
 			}
-			popup.Child = child;
+			// TODO 迁移：Avalonia Popup.Child 类型是 Control（WPF 是 UIElement）；
+			// 用 as 降级转换，child 为 null 或非 Control 时置 null（调用方实际都传 Control）。
+			popup.Child = child as global::Avalonia.Controls.Control;
 			return true;
 		}
 
@@ -108,23 +119,28 @@ namespace ForkPlus.UI
 			{
 				return item.GetType().Name + "('" + frameworkElement.Name + "')";
 			}
-			if (item is FrameworkContentElement frameworkContentElement && !string.IsNullOrEmpty(frameworkContentElement.Name))
-			{
-				return item.GetType().Name + "('" + frameworkContentElement.Name + "')";
-			}
+			// TODO 迁移：WPF FrameworkContentElement 分支删除——Avalonia 没有 ContentElement 体系，
+			// 可视树成员全部是 Control，上面的 Control 分支已覆盖命名描述。
 			return item.GetType().Name;
 		}
 
 		private static global::Avalonia.AvaloniaObject GetParent(global::Avalonia.AvaloniaObject child)
 		{
-			global::Avalonia.AvaloniaObject parent = LogicalTreeHelper.GetParent(child);
-			if (parent != null)
+			// TODO 迁移：WPF 同时查逻辑树（LogicalTreeHelper）与视觉树（Visual/Visual3D）；
+			// Avalonia 逻辑父 = StyledElement.Parent（经 WpfCompat LogicalTreeHelper 垫片），
+			// 视觉父 = VisualExtensions.GetVisualParent(Visual)（Avalonia 无 Visual3D，只有一棵视觉树）。
+			// 两个 API 都要求具体类型，先做模式匹配再调用。
+			if (child is global::Avalonia.StyledElement styledElement)
 			{
-				return parent;
+				global::Avalonia.AvaloniaObject parent = LogicalTreeHelper.GetParent(styledElement);
+				if (parent != null)
+				{
+					return parent;
+				}
 			}
-			if (child is Visual || child is Visual3D)
+			if (child is global::Avalonia.Visual visual)
 			{
-				return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(child);
+				return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(visual);
 			}
 			return null;
 		}
@@ -136,11 +152,13 @@ namespace ForkPlus.UI
 				popup.Child = null;
 				return true;
 			}
-			if (parent is Panel panel && child is global::Avalonia.Input.InputElement uIElement2 && panel.Children.Contains(uIElement2))
-			{
-				panel.Children.Remove(uIElement2);
-				return true;
-			}
+			if (parent is Panel panel && child is global::Avalonia.Controls.Control controlChild && panel.Children.Contains(controlChild))
+		{
+			// TODO 迁移：Panel.Children 是 IList<Control>（WPF 是 UIElement 集合），
+			// Contains/Remove 均要求 Control，故此处模式变量直接用 Control（原 InputElement 会 CS1503）。
+			panel.Children.Remove(controlChild);
+			return true;
+		}
 			if (parent is Decorator decorator && child is global::Avalonia.Input.InputElement uIElement3 && ReferenceEquals(decorator.Child, uIElement3))
 			{
 				decorator.Child = null;

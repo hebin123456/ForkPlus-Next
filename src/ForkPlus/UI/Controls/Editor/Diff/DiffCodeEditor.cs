@@ -74,7 +74,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public DiffCodeEditor(DiffViewMode diffViewMode)
 		{
-			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
+			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			DiffViewMode = diffViewMode;
 			_backgroundColorizer = new DiffBackgroundColorizer();
 			base.TextArea.TextView.BackgroundRenderers.Add(_backgroundColorizer);
@@ -112,12 +112,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				}
 			}
 			StreamGeometry streamGeometry = new StreamGeometry();
-			streamGeometry.FillRule = FillRule.NonZero;
-			StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-			StreamGeometry streamGeometry2 = new StreamGeometry();
-			streamGeometry2.FillRule = FillRule.NonZero;
-			StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
-			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
+StreamGeometryContext streamGeometryContext = streamGeometry.Open();
+			streamGeometryContext.SetFillRule(FillRule.Nonzero);			StreamGeometry streamGeometry2 = new StreamGeometry();
+StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
+			streamGeometryContext2.SetFillRule(FillRule.Nonzero);			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
 			int x = ((DiffViewMode == DiffViewMode.Split) ? 1 : 0);
 			int x2 = ((DiffViewMode == DiffViewMode.Split) ? 1 : 4);
 			VisualPatch visualPatch = VisualPatch;
@@ -148,8 +146,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					}
 				}
 			}
-			streamGeometryContext.Close();
-			streamGeometryContext2.Close();
+			streamGeometryContext.Dispose();
+			streamGeometryContext2.Dispose();
 			match.Data = streamGeometry;
 			match2.Data = streamGeometry2;
 		}
@@ -165,13 +163,13 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			double num2 = base.TextArea.Bounds.Height - num * 2.0;
 			double num3 = num + num2 * ((double)startLine / (double)totalLines);
 			double num4 = Math.Max(2.0, num2 * ((double)blockLength / (double)totalLines));
-			ctx.BeginFigure(new Point(x, num3), isFilled: true, isClosed: true);
-			ctx.PolyLineTo(new Point[3]
+			ctx.BeginFigure(new Point(x, num3),true);
+			foreach (global::Avalonia.Point __p in new Point[3]
 			{
 				new Point(x + width, num3),
 				new Point(x + width, num3 + num4),
 				new Point(x, num3 + num4)
-			}, isStroked: false, isSmoothJoin: false);
+			}) { ctx.LineTo(__p, false); }
 		}
 
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)

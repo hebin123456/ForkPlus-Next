@@ -79,7 +79,10 @@ namespace ForkPlus.Accounts
 
 		public NotificationManager()
 		{
-			ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
+			// TODO 迁移：WPF 侧订阅 Microsoft.Toolkit.Uwp.Notifications 的 ToastNotificationManagerCompat.OnActivated，
+			// 在用户点击 Toast 时回调 ToastNotificationManagerCompat_OnActivated（深链到通知窗口/AI Review 窗口）。
+			// Avalonia（跨平台）无 WinRT Toast API，项目内也无对应 shim；toast 激活回调暂缺失，
+			// 待 IToastNotificationService 增加 Activated 事件后接回（处理逻辑保留在 OnToastActivated）。
 			if (Services.ServiceLocator.Timer != null)
 			{
 				Services.ServiceLocator.Timer.Interval = FirstUpdateDelay;
@@ -233,19 +236,10 @@ namespace ForkPlus.Accounts
 				Services.ServiceLocator.Toast.Show(xmlString);
 				return;
 			}
-			// 回退：直接使用 WinRT API（ServiceLocator 未初始化时）
-			try
-			{
-				Windows.Data.Xml.Dom.XmlDocument document = new Windows.Data.Xml.Dom.XmlDocument();
-				document.LoadXml(xmlString);
-				Windows.UI.Notifications.ToastNotifier notifier = Windows.UI.Notifications.ToastNotificationManager.GetDefault().CreateToastNotifier("com.squirrel.ForkPlus.ForkPlus");
-				Windows.UI.Notifications.ToastNotification notification = new Windows.UI.Notifications.ToastNotification(document);
-				notifier.Show(notification);
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Failed to show toast notification", ex);
-			}
+			// TODO 迁移：WPF 侧在 ServiceLocator 未初始化时直接回退 WinRT
+			// Windows.Data.Xml.Dom / Windows.UI.Notifications API 弹 Toast；
+			// Avalonia（跨平台，TFM 未启用 Windows）无这些命名空间，回退分支移除，仅记录日志。
+			Log.Warn("Toast notification service is not available, notification dropped");
 		}
 
 		private void FindAiCodeReviewWindowAndActivate(string windowTitle)

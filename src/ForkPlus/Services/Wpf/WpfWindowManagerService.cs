@@ -21,22 +21,25 @@ namespace ForkPlus.Services.Wpf
 		}
 
 		public bool TryActivateWindowByTitle(string title)
+	{
+		// TODO 迁移：WPF Application.Current.Windows（Avalonia.WindowCollection 命名空间下不存在该类型，
+		// CS0234）改为 WpfCompat WpfApp.Windows：转发到 IClassicDesktopStyleApplicationLifetime.Windows
+		// （IReadOnlyList<Window>），遍历语义不变。
+		System.Collections.Generic.IReadOnlyList<global::Avalonia.Controls.Window> windowCollection = global::ForkPlus.UI.WpfCompat.WpfApp.Windows;
+		if (windowCollection == null)
 		{
-			global::Avalonia.WindowCollection windowCollection = global::Avalonia.WpfApp.Windows;
-			if (windowCollection == null)
-			{
-				return false;
-			}
-			foreach (object item in windowCollection)
-			{
-				if (item is AiCodeReviewWindow aiCodeReviewWindow && aiCodeReviewWindow.Title == title)
-				{
-					aiCodeReviewWindow.Activate();
-					return true;
-				}
-			}
 			return false;
 		}
+		foreach (global::Avalonia.Controls.Window item in windowCollection)
+		{
+			if (item is AiCodeReviewWindow aiCodeReviewWindow && aiCodeReviewWindow.Title == title)
+			{
+				aiCodeReviewWindow.Activate();
+				return true;
+			}
+		}
+		return false;
+	}
 
 		public void DispatchToUiThread(Action action)
 		{

@@ -11,7 +11,8 @@ namespace ForkPlus.UI.Controls
 	{
 		public object Convert(global::System.Collections.Generic.IList<object> values, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (values.Length < 2)
+			// Avalonia IMultiValueConverter 的 values 是 IList<object>，用 Count 而非 Length。
+		if (values.Count < 2)
 			{
 				return Brushes.Transparent;
 			}

@@ -81,15 +81,15 @@ namespace ForkPlus.UI.UserControls
 				string arg = Translate(mergeInProgress.UnmergedFiles.Length == 1 ? "conflict" : "conflicts");
 				List<Inline> list = new List<Inline>(5);
 				list.Add(new Run(Translate("Merging branch '")));
-				list.Add(new CommandHyperlink(_repositoryUserControl, mergeInProgress.Remote.Sha, mergeInProgress.Remote.Name, delegate
+				list.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, mergeInProgress.Remote.Sha, mergeInProgress.Remote.Name, delegate
 				{
 					_repositoryUserControl.SelectRevision(mergeInProgress.Remote.Sha);
-				}));
+				})));
 				list.Add(new Run(Translate("' into '")));
-				list.Add(new CommandHyperlink(_repositoryUserControl, mergeInProgress.Local.Sha, mergeInProgress.Local.Name, delegate
+				list.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, mergeInProgress.Local.Sha, mergeInProgress.Local.Name, delegate
 				{
 					_repositoryUserControl.SelectRevision(mergeInProgress.Local.Sha);
-				}));
+				})));
 				if (mergeInProgress.UnmergedFiles.Length != 0)
 				{
 					list.Add(new Run(string.Format(Translate("'. Fix {0} {1} and then continue."), mergeInProgress.UnmergedFiles.Length, arg)));
@@ -108,15 +108,15 @@ namespace ForkPlus.UI.UserControls
 			{
 				List<Inline> list2 = new List<Inline>(5);
 				list2.Add(new Run(Translate("Rebasing '")));
-				list2.Add(new CommandHyperlink(_repositoryUserControl, rebaseInProgress.Remote.Sha, rebaseInProgress.Remote.Name, delegate
+				list2.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, rebaseInProgress.Remote.Sha, rebaseInProgress.Remote.Name, delegate
 				{
 					_repositoryUserControl.SelectRevision(rebaseInProgress.Remote.Sha);
-				}));
+				})));
 				list2.Add(new Run(Translate("' → '")));
-				list2.Add(new CommandHyperlink(_repositoryUserControl, rebaseInProgress.Local.Sha, rebaseInProgress.Local.Name, delegate
+				list2.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, rebaseInProgress.Local.Sha, rebaseInProgress.Local.Name, delegate
 				{
 					_repositoryUserControl.SelectRevision(rebaseInProgress.Local.Sha);
-				}));
+				})));
 				list2.Add(new Run(string.Format(Translate("' (rebased {0}/{1} commits)"), rebaseInProgress.Done, rebaseInProgress.Total)));
 				List<Inline> list3 = new List<Inline>(4);
 				if (rebaseInProgress.UnmergedFiles.Length != 0)
@@ -127,10 +127,10 @@ namespace ForkPlus.UI.UserControls
 					if (activeSha2.HasValue)
 					{
 						Sha activeSha = activeSha2.GetValueOrDefault();
-						list3.Add(new CommandHyperlink(_repositoryUserControl, activeSha, activeSha.ToAbbreviatedString(), delegate
-						{
-							_repositoryUserControl.SelectRevision(activeSha);
-						}));
+						list3.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, activeSha, activeSha.ToAbbreviatedString(), delegate
+					{
+						_repositoryUserControl.SelectRevision(activeSha);
+					})));
 					}
 					list3.Add(new Run(Translate("' and then continue.")));
 				}
@@ -149,10 +149,10 @@ namespace ForkPlus.UI.UserControls
 				List<Inline> list4 = new List<Inline>(3);
 				string arg3 = Translate(cherryPickInProgress.UnmergedFiles.Length == 1 ? "conflict" : "conflicts");
 				list4.Add(new Run(Translate("Cherry-picking commit '")));
-				list4.Add(new CommandHyperlink(_repositoryUserControl, cherryPickInProgress.CherryPickHead.Sha, cherryPickInProgress.CherryPickHead.Sha.ToAbbreviatedString(), delegate
+				list4.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, cherryPickInProgress.CherryPickHead.Sha, cherryPickInProgress.CherryPickHead.Sha.ToAbbreviatedString(), delegate
 				{
 					_repositoryUserControl.SelectRevision(cherryPickInProgress.CherryPickHead.Sha);
-				}));
+				})));
 				if (cherryPickInProgress.UnmergedFiles.Length != 0)
 				{
 					list4.Add(new Run(string.Format(Translate("'. Fix {0} {1} and then continue."), cherryPickInProgress.UnmergedFiles.Length, arg3)));
@@ -177,10 +177,10 @@ namespace ForkPlus.UI.UserControls
 				string arg4 = Translate(revertInProgress.UnmergedFiles.Length == 1 ? "conflict" : "conflicts");
 				List<Inline> list5 = new List<Inline>(3);
 				list5.Add(new Run(Translate("Reverting commit '")));
-				list5.Add(new CommandHyperlink(_repositoryUserControl, revertInProgress.RevertHead, revertInProgress.RevertHead.ToAbbreviatedString(), delegate
+				list5.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, revertInProgress.RevertHead, revertInProgress.RevertHead.ToAbbreviatedString(), delegate
 				{
 					_repositoryUserControl.SelectRevision(revertInProgress.RevertHead);
-				}));
+				})));
 				if (revertInProgress.UnmergedFiles.Length != 0)
 				{
 					list5.Add(new Run(string.Format(Translate("'. Fix {0} {1} and then continue."), revertInProgress.UnmergedFiles.Length, arg4)));
@@ -231,19 +231,19 @@ namespace ForkPlus.UI.UserControls
 			}
 			List<Inline> list8 = new List<Inline>();
 			list8.Add(new Run(Translate("Bisecting, started from '")));
-			list8.Add(new CommandHyperlink(_repositoryUserControl, bisectInProgress.Start.Sha, bisectInProgress.Start.Name, delegate
+			list8.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, bisectInProgress.Start.Sha, bisectInProgress.Start.Name, delegate
 			{
 				_repositoryUserControl.SelectRevision(bisectInProgress.Start.Sha);
-			}));
+			})));
 			activeSha2 = bisectInProgress.Sha;
 			if (activeSha2.HasValue)
 			{
 				Sha sha = activeSha2.GetValueOrDefault();
 				list8.Add(new Run(Translate("'. Is '")));
-				list8.Add(new CommandHyperlink(_repositoryUserControl, sha, sha.ToAbbreviatedString(), delegate
-				{
-					_repositoryUserControl.SelectRevision(sha);
-				}));
+				list8.Add(new InlineUIContainer(new CommandHyperlink(_repositoryUserControl, sha, sha.ToAbbreviatedString(), delegate
+			{
+				_repositoryUserControl.SelectRevision(sha);
+			})));
 				list8.Add(new Run(Translate("' good or bad?")));
 			}
 			else
@@ -362,6 +362,9 @@ namespace ForkPlus.UI.UserControls
 			});
 		}
 
+		// TODO 迁移：WPF 中 CommandHyperlink 派生自 Hyperlink（Inline），可直接加入 TextBlock.Inlines；
+		// Avalonia 侧 CommandHyperlink 已是 HyperlinkButton（Control），需包一层 InlineUIContainer 才能内联进文本流，
+		// 各处 list.Add(new CommandHyperlink(...)) 均已按此方式包装。
 		private void ShowNotificationBar(IEnumerable<Inline> inlines)
 		{
 			NotificationTextBlock.Show();

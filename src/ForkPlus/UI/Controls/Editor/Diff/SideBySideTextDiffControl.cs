@@ -51,8 +51,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 			remove
 			{
-				_leftDiffCodeEditor.ContextMenuOpening -= value;
-				_rightDiffCodeEditor.ContextMenuOpening -= value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.RemoveContextMenuOpeningHandler(_leftDiffCodeEditor,value);
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.RemoveContextMenuOpeningHandler(_rightDiffCodeEditor,value);
 			}
 		}
 
@@ -146,8 +146,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				return;
 			}
-			double verticalOffset = editor.TextArea.TextView.VerticalOffset;
-			double horizontalOffset = editor.TextArea.TextView.HorizontalOffset;
+			double verticalOffset = editor.TextArea.TextView.Offset.Y;
+			double horizontalOffset = editor.TextArea.TextView.Offset.X;
 			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
 			{
 				if (editor != _leftDiffCodeEditor)

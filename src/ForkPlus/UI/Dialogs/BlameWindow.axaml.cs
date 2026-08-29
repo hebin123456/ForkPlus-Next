@@ -154,7 +154,9 @@ namespace ForkPlus.UI.Dialogs
 			this.SetWindowLocationState(ForkPlusSettings.Default.BlameWindowLocationState);
 		}
 
-		protected void OnLocationChanged(EventArgs e)
+		// TODO 迁移：CustomWindow.OnLocationChanged 为 protected virtual（由 Window.PositionChanged 派发），
+		// WPF 原代码漏写 override 导致只是隐藏而非重写，这里补上 override 恢复"移动窗口即保存位置"语义。
+		protected override void OnLocationChanged(EventArgs e)
 		{
 			base.OnLocationChanged(e);
 			if (_startUpFinished)
@@ -424,12 +426,15 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			base.OnPointerPressed(e);
-			if (e.ChangedButton == MouseButton.XButton1)
+			// TODO 迁移：Avalonia PointerPressedEventArgs 无 ChangedButton，
+			// 用 GetCurrentPoint(this).Properties.IsXButton1/2Pressed 判断按下的鼠标侧键。
+			global::Avalonia.Input.PointerPointProperties properties = e.GetCurrentPoint(this).Properties;
+			if (properties.IsXButton1Pressed)
 			{
 				Undo();
 				e.Handled = true;
 			}
-			else if (e.ChangedButton == MouseButton.XButton2)
+			else if (properties.IsXButton2Pressed)
 			{
 				Redo();
 				e.Handled = true;
@@ -439,12 +444,14 @@ namespace ForkPlus.UI.Dialogs
 		private void RevisionListScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
 		{
 			double verticalOffset = e.OffsetDelta.Y;
-			TextDiffControl.VerticalOffset = verticalOffset;
+			// TODO 迁移：SplitTextDiffControl.VerticalOffset 在 Avalonia 版为只读，
+			// 改调其 ScrollToVerticalOffset（行为与原赋值一致）。
+			TextDiffControl.ScrollToVerticalOffsetCompat(verticalOffset);
 		}
 
 		private void SplitTextDiffControl_ScrollOffsetChanged(object sender, EventArgs e)
 		{
-			double verticalOffset = TextDiffControl.VerticalOffset;
+			double verticalOffset = TextDiffControl.Offset.Y;
 			ScrollTo(verticalOffset);
 		}
 
@@ -475,7 +482,9 @@ namespace ForkPlus.UI.Dialogs
 		private void RevisionsListBoxItem_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
 			e.Handled = true;
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: BlameItemViewModel dataContext })
+			// TODO 迁移：WPF ItemsControl.ContainerFromElement(itemsControl, element) 双参静态方法
+			// 在 Avalonia 无对应，改用 WpfCompat 的单参扩展（沿可视树向上找已生成的条目容器）。
+			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) is ListBoxItem { DataContext: BlameItemViewModel dataContext })
 			{
 				GitModule gitModule = _repositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -487,7 +496,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void BlameListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: var dataContext }))
+			if (!((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) is ListBoxItem { DataContext: var dataContext }))
 			{
 				return;
 			}
@@ -533,7 +542,9 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ScrollTo(double verticalOffset)
 		{
-			RevisionListScrollViewer?.ScrollToVerticalOffset(verticalOffset);
+			// TODO 迁移：Avalonia ScrollViewer 无 ScrollToVerticalOffset 方法，
+			// 用 WpfCompat 的 ScrollToVerticalOffsetCompat（内部设置 Offset）。
+			RevisionListScrollViewer?.ScrollToVerticalOffsetCompat(verticalOffset);
 		}
 
 		private void RevealRevision(GitModule gitModule, Sha sha, [Null] string filePath = null)
@@ -620,7 +631,7 @@ namespace ForkPlus.UI.Dialogs
 		private void ShowGoToLineWindow()
 		{
 			GoToLineWindow goToLineWindow = new GoToLineWindow();
-			goToLineWindow.SetOwnerCompat= this;
+			goToLineWindow.SetOwnerCompat(this);
 			if (goToLineWindow.ShowDialog().GetValueOrDefault() && goToLineWindow.LineNumber.HasValue)
 			{
 				TextDiffControl.ScrollToLine(goToLineWindow.LineNumber.Value);

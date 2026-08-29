@@ -239,8 +239,19 @@ namespace ForkPlus.UI.WpfCompat
         public static Point PointFromScreen(this Visual visual, PixelPoint point)
             => TopLevel.GetTopLevel(visual)?.PointToClient(point) ?? default;
 
+        /// <summary>WPF PointFromScreen(Point) 重载（调用侧给 DIP Point）。</summary>
+        public static Point PointFromScreen(this Visual visual, Point point)
+            => visual.PointFromScreen(new PixelPoint((int)point.X, (int)point.Y));
+
         public static Point PointToScreen(this Visual visual, Point point)
-            => TopLevel.GetTopLevel(visual)?.PointToScreen(point).ToPoint() ?? default;
+        {
+            var tl = TopLevel.GetTopLevel(visual);
+            if (tl == null) return default;
+            // Avalonia 12：VisualExtensions.PointToScreen 返回 PixelPoint（物理像素），
+            // PixelPoint.ToPoint 需要显式缩放参数，这里按 1:1 展开为 DIP Point（调用侧仅做相对位移计算）
+            var pp = global::Avalonia.VisualExtensions.PointToScreen(tl, point);
+            return new Point(pp.X, pp.Y);
+        }
 
         public static bool MoveFocus(this InputElement element, TraversalRequest request)
         {
@@ -455,25 +466,6 @@ namespace ForkPlus.UI.WpfCompat
         }
     }
 
-    // ===== WPF ListView GridView stub（MultiselectionTreeView 的 GridView 模式数据形状）=====
-
-    public class GridView
-    {
-        public System.Collections.IList Columns { get; } = new System.Collections.ArrayList();
-    }
-
-    public class GridViewColumn
-    {
-        public object Header { get; set; }
-        public double Width { get; set; } = double.NaN;
-        public object CellTemplate { get; set; }
-        public object DisplayMemberBinding { get; set; }
-    }
-
-    public class GridViewColumnHeader : global::Avalonia.Controls.Control
-    {
-        public object Content { get; set; }
-    }
 }
 
 // WPF 命名空间占位（Storyboard.SetTarget 等签名引用用）

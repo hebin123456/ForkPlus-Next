@@ -148,7 +148,7 @@ namespace ForkPlus.UI.WpfCompat
         /// <summary>对象初始化器链式辅助：new Button { ... }.WithTip("xx")。</summary>
         public static T WithTip<T>(this T control, object tip) where T : Visual
         {
-            ToolTip.SetTip((Control)control, tip);
+            if (control is Control c) ToolTip.SetTip(c, tip);
             return control;
         }
     }
@@ -192,8 +192,7 @@ namespace ForkPlus.UI.WpfCompat
             {
                 foreach (var w in WpfApp.Windows)
                 {
-                    var focused = w.FocusManager?.GetFocusedElement();
-                    if (focused != null) return focused;
+                    if (w.FocusManager?.GetFocusedElement() is InputElement ie) return ie;
                 }
                 return null;
             }
@@ -235,17 +234,22 @@ namespace ForkPlus.UI.WpfCompat
     /// </summary>
     public static class VisualTreeHelper
     {
-        public static int GetChildrenCount(Visual visual)
-            => visual?.GetVisualChildren().Count() ?? 0;
+        // 参数放宽到 AvaloniaObject：WPF 代码常把 Visual/ContentElement 混用为 DependencyObject，
+        // 非 Visual（无视觉子级）时按空集合处理。
+        private static IEnumerable<Visual> ChildrenOf(AvaloniaObject o)
+            => (o as Visual)?.GetVisualChildren() ?? Enumerable.Empty<Visual>();
 
-        public static Visual GetChild(Visual visual, int index)
-            => visual.GetVisualChildren().ElementAt(index);
+        public static int GetChildrenCount(AvaloniaObject visual)
+            => ChildrenOf(visual).Count();
 
-        public static Visual GetParent(Visual visual)
-            => visual.GetVisualParent();
+        public static Visual GetChild(AvaloniaObject visual, int index)
+            => ChildrenOf(visual).ElementAt(index);
 
-        public static Visual GetAncestor(Visual visual, Type type)
-            => visual.GetVisualAncestors().FirstOrDefault(a => type.IsInstanceOfType(a));
+        public static Visual GetParent(AvaloniaObject visual)
+            => (visual as Visual)?.GetVisualParent();
+
+        public static Visual GetAncestor(AvaloniaObject visual, Type type)
+            => (visual as Visual)?.GetVisualAncestors().FirstOrDefault(a => type.IsInstanceOfType(a));
 
         public static T GetAncestor<T>(Visual visual) where T : class
             => visual.GetVisualAncestors().OfType<T>().FirstOrDefault();
@@ -351,7 +355,7 @@ namespace ForkPlus.UI.WpfCompat
         public static bool ContainsText()
         {
             var fmts = Wait(GetClipboard()?.GetDataFormatsAsync());
-            return fmts?.Contains("Text") == true;
+            return fmts?.Any(f => f?.Identifier is "Text" or "System.String" or "FileDrop") == true;
         }
 
         public static void Clear() => GetClipboard()?.ClearAsync();
@@ -401,6 +405,8 @@ namespace ForkPlus.UI.WpfCompat
         public const string Bitmap = "Bitmap";
         public const string Xaml = "Xaml";
         public const string String = "System.String";
+        /// <summary>WPF DataFormats.Serializable（Avalonia 无对应物，仅保常量）。</summary>
+        public const string Serializable = "Serializable";
     }
 
     /// <summary>WPF System.Windows.ResizeMode 枚举 shim（Avalonia 12 Window 无 ResizeMode 属性，仅保留枚举语义）。</summary>
@@ -455,7 +461,7 @@ namespace ForkPlus.UI.WpfCompat
     {
         public static global::Avalonia.Platform.PixelFormat Bgra32 => global::Avalonia.Platform.PixelFormat.Bgra8888;
         public static global::Avalonia.Platform.PixelFormat Pbgra32 => global::Avalonia.Platform.PixelFormat.Bgra8888;
-        public static global::Avalonia.Platform.PixelFormat Rgb24 => global::Avalonia.Platform.PixelFormat.Rgb888;
+        public static global::Avalonia.Platform.PixelFormat Rgb24 => global::Avalonia.Platform.PixelFormat.Rgb32;
         // Avalonia 12 无 Bgr24/Rgba64/Gray8/Bgr565，就近映射
         public static global::Avalonia.Platform.PixelFormat Bgr24 => global::Avalonia.Platform.PixelFormat.Rgb32;
         public static global::Avalonia.Platform.PixelFormat Rgba64 => global::Avalonia.Platform.PixelFormat.Rgba8888;
@@ -525,6 +531,8 @@ namespace ForkPlus.UI.WpfCompat
         /// WPF control.ContextMenuOpening += (s, ContextMenuEventArgs e) 的安装器。
         /// Avalonia 12 无该路由事件，改挂 ContextMenu.Opening（CancelEventHandler）
         /// 并适配为 WpfCompat.ContextMenuEventArgs。
+        /// 注：只保留 EventHandler&lt;ContextMenuEventArgs&gt; 一个签名（lambda 与方法组都适用，
+        /// 避免与 ContextMenuEventHandler 重载产生二义性）。
         /// </summary>
         public static void AddContextMenuOpeningHandler(this Control control,
             EventHandler<ContextMenuEventArgs> handler)
@@ -532,11 +540,6 @@ namespace ForkPlus.UI.WpfCompat
             if (control?.ContextMenu == null) return; // TODO 迁移：XAML 需先给控件配 ContextMenu
             control.ContextMenu.Opening += (s, e) => handler(control, new ContextMenuEventArgs());
         }
-
-        /// <summary>WPF control.ContextMenuOpening += new ContextMenuEventHandler(M) 形态。</summary>
-        public static void AddContextMenuOpeningHandler(this Control control,
-            ContextMenuEventHandler handler)
-            => AddContextMenuOpeningHandler(control, (s, e) => handler(s, e));
 
         /// <summary>WPF control.ContextMenuClosing += ... 的安装器（挂 ContextMenu.Closing）。</summary>
         public static void AddContextMenuClosingHandler(this Control control,
@@ -546,10 +549,19 @@ namespace ForkPlus.UI.WpfCompat
             control.ContextMenu.Closing += (s, e) => handler(control, new ContextMenuEventArgs());
         }
 
-        /// <summary>WPF control.ContextMenuClosing += new ContextMenuEventHandler(M) 形态。</summary>
-        public static void AddContextMenuClosingHandler(this Control control,
-            ContextMenuEventHandler handler)
-            => AddContextMenuClosingHandler(control, (s, e) => handler(s, e));
+        /// <summary>WPF control.ContextMenuOpening -= H。Avalonia 无对称移除，记表注销。</summary>
+        public static void RemoveContextMenuOpeningHandler(this Control control,
+            EventHandler<ContextMenuEventArgs> handler)
+        {
+            // TODO 迁移：Add 侧目前为匿名 lambda 转发，无法精确反注册；先记录避免编译错误。
+        }
+
+        /// <summary>WPF control.ContextMenuClosing -= H。</summary>
+        public static void RemoveContextMenuClosingHandler(this Control control,
+            EventHandler<ContextMenuEventArgs> handler)
+        {
+            // TODO 迁移：同上，暂无法精确反注册。
+        }
     }
 
     // ===== Style 赋值适配：WPF control.Style = s（Avalonia Styles 只读集合）=====
@@ -647,6 +659,9 @@ namespace ForkPlus.UI.WpfCompat
                 return items.Select(f => f?.Path?.LocalPath).Where(p => p != null).ToList();
             if (raw is IEnumerable<string> paths && raw is not string)
                 return paths.ToList();
+            // 内部拖放发起侧（DragDropLauncher）把文件列表编码为换行分隔文本
+            if (raw is string joined && joined.Contains('\n'))
+                return joined.Split('\n').Where(s => s.Length > 0).ToList();
             return Array.Empty<string>();
         }
 
@@ -659,12 +674,13 @@ namespace ForkPlus.UI.WpfCompat
         {
             if (f == null) return false;
             string n = null;
-            try { n = f.ToSystemName(); } catch { }
+            try { n = f.ToSystemName("ForkPlus"); } catch { }
             n ??= f.Identifier;
             n ??= "";
             return n == wpfFormat
-                || (wpfFormat == FileDropFormat && (n == "File" || n == "FileDrop" || n == "application/x-vnd.ms-filedrop"))
-                || (wpfFormat is "Text" or "UnicodeText" or "System.String" && n == "Text");
+                || f.Identifier == wpfFormat
+                || (wpfFormat == FileDropFormat && (n == "File" || n == "FileDrop" || f.Identifier == "FileDrop" || f.Identifier == "File" || n == "application/x-vnd.ms-filedrop"))
+                || (wpfFormat is "Text" or "UnicodeText" or "System.String" && (n == "Text" || f.Identifier == "Text" || f.Identifier == "System.String"));
         }
     }
 

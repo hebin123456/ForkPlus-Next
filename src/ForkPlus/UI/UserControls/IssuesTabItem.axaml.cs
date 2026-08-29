@@ -56,7 +56,10 @@ namespace ForkPlus.UI.UserControls
 				}
 			};
 			FilterTextBox.DropdownContextMenuOpened += FilterTextBox_DropdownContextMenuOpened;
-			TreeView.ItemContainerGenerator.StatusChanged += ItemContainerGenerator_StatusChanged;
+			// TODO 迁移：WPF ItemContainerGenerator.StatusChanged（容器生成完成通知）在 Avalonia 12 不存在；
+			// 改为挂一次 LayoutUpdated（首次布局完成即容器已生成），回调里立即取消挂载，
+			// 保持原语义"容器生成完后再挂 ScrollViewer.ScrollChanged"（ScrollViewer 依赖视觉树查找）。
+			TreeView.LayoutUpdated += TreeView_LayoutInitializedOnce;
 		}
 
 		public void Initialize(RepositoryUserControl repositoryUserControl)
@@ -102,9 +105,9 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void ItemContainerGenerator_StatusChanged(object sender, EventArgs e)
+		private void TreeView_LayoutInitializedOnce(object sender, EventArgs e)
 		{
-			TreeView.ItemContainerGenerator.StatusChanged -= ItemContainerGenerator_StatusChanged;
+			TreeView.LayoutUpdated -= TreeView_LayoutInitializedOnce;
 			ScrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
 		}
 

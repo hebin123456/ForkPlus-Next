@@ -53,7 +53,7 @@ namespace ForkPlus.UI.WpfCompat
                 ?? new List<Control>();
             for (var v = element; v != null; v = v.GetVisualParent())
                 if (containers.Contains(v))
-                    return v;
+                    return v as Control;
             return null;
         }
     }
@@ -92,29 +92,41 @@ namespace ForkPlus.UI.WpfCompat
 
         private static IDataTransfer ToTransfer(object data)
         {
+            // Avalonia 12：DataObject 已废弃（error 级），统一改用 DataTransfer + DataTransferItem。
             switch (data)
             {
                 case IDataTransfer t:
                     return t;
                 case string[] files:
-                    var df = new DataObject();
-                    df.Set(new DataFormat("FileDrop"), files.ToList());
+                {
+                    var df = new global::Avalonia.Input.DataTransfer();
+                    // 文件列表编码为换行分隔文本（WpfDataObject.GetFileDropList 侧对称解码）
+                    var fmt = global::Avalonia.Input.DataFormat.CreateStringApplicationFormat("FileDrop");
+                    df.Add(global::Avalonia.Input.DataTransferItem.Create(fmt, string.Join("\n", files)));
                     return df;
+                }
                 case string text:
-                    var dt = new DataObject();
-                    dt.Set(new DataFormat("Text"), text);
+                {
+                    var dt = new global::Avalonia.Input.DataTransfer();
+                    dt.Add(global::Avalonia.Input.DataTransferItem.CreateText(text));
                     return dt;
+                }
                 default:
-                    var dobj = new DataObject();
-                    dobj.Set(new DataFormat("ForkPlusItem"), data);
+                {
+                    // 自定义对象：序列化到字符串格式，跨进程不可用（TODO 迁移：进程内拖放改用 InProcess 格式）
+                    var dobj = new global::Avalonia.Input.DataTransfer();
+                    var fmt2 = global::Avalonia.Input.DataFormat.CreateStringApplicationFormat("ForkPlusItem");
+                    dobj.Add(global::Avalonia.Input.DataTransferItem.Create(fmt2, data?.ToString() ?? ""));
                     return dobj;
+                }
             }
         }
     }
 
     // ===== WPF System.Windows.Input.Cursors =====
 
-    /// <summary>WPF Cursors 静态类（Avalonia 用 new Cursor(StandardCursorType.X)）。</summary>
+    /// <summary>WPF Cursors 静态类（Avalonia 用 new Cursor(StandardCursorType.X)）。
+    /// 注：Avalonia 无对角光标，用角标光标近似（SizeNWSE→TopLeftCorner，SizeNESW→TopRightCorner）。</summary>
     public static class Cursors
     {
         public static Cursor Hand => new Cursor(StandardCursorType.Hand);
@@ -123,10 +135,10 @@ namespace ForkPlus.UI.WpfCompat
         public static Cursor IBeam => new Cursor(StandardCursorType.Ibeam);
         public static Cursor Cross => new Cursor(StandardCursorType.Cross);
         public static Cursor SizeAll => new Cursor(StandardCursorType.SizeAll);
-        public static Cursor SizeNESW => new Cursor(StandardCursorType.SizeNesw);
-        public static Cursor SizeNS => new Cursor(StandardCursorType.SizeNs);
-        public static Cursor SizeNWSE => new Cursor(StandardCursorType.SizeNwse);
-        public static Cursor SizeWE => new Cursor(StandardCursorType.SizeWe);
+        public static Cursor SizeNESW => new Cursor(StandardCursorType.TopRightCorner);
+        public static Cursor SizeNS => new Cursor(StandardCursorType.SizeNorthSouth);
+        public static Cursor SizeNWSE => new Cursor(StandardCursorType.TopLeftCorner);
+        public static Cursor SizeWE => new Cursor(StandardCursorType.SizeWestEast);
         public static Cursor No => new Cursor(StandardCursorType.No);
         public static Cursor None => new Cursor(StandardCursorType.None);
     }

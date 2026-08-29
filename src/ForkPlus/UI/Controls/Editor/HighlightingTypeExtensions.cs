@@ -37,7 +37,10 @@ namespace ForkPlus.UI.Controls.Editor
 		private static readonly Brush SyntaxAttributeBrush = Freeze(new SolidColorBrush(Color.FromRgb(193, 64, 71)));
 		private static readonly Brush SyntaxVariableBrush = Freeze(new SolidColorBrush(Color.FromRgb(104, 72, 186)));
 		private static readonly Brush SyntaxValueBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
-		private static readonly IBrush SyntaxNumberBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
+		private static readonly Brush SyntaxNumberBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
+		// TODO 迁移：Avalonia 的 Brushes.Transparent 是 IImmutableSolidColorBrush（非 Brush 派生），
+		// 本文件按 WPF 语义统一返回 Brush，故用 SolidColorBrush(透明色) 替代。
+		private static readonly Brush TransparentBrush = Freeze(new SolidColorBrush(Color.FromArgb(0, 0, 0, 0)));
 
 		// ===== Dark 基底默认画刷（回退用） =====
 		private static readonly Brush ExactAddBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(56, 132, 66)));
@@ -59,7 +62,7 @@ namespace ForkPlus.UI.Controls.Editor
 		private static readonly Brush SyntaxAttributeBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(230, 76, 128)));
 		private static readonly Brush SyntaxVariableBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(100, 155, 209)));
 		private static readonly Brush SyntaxValueBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(190, 213, 168)));
-		private static readonly IBrush SyntaxNumberBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(190, 213, 168)));
+		private static readonly Brush SyntaxNumberBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(190, 213, 168)));
 
 		/// <summary>每类高亮对应的 Color 资源 key（用户可在 CustomColorsDialog 修改这些 key）。
 		/// 同一个 HighlightingType 在 light/dark 基底下共用一个 key——由各 Colors.{Skin}.xaml 提供不同的值。</summary>
@@ -135,7 +138,7 @@ namespace ForkPlus.UI.Controls.Editor
 			case HighlightingType.SyntaxValue: return SyntaxValueBrush;
 			case HighlightingType.SyntaxNumber: return SyntaxNumberBrush;
 			}
-			return Brushes.Transparent;
+			return TransparentBrush;
 		}
 
 		private static Brush GetDarkHighlightBrush(HighlightingType highlightingType)
@@ -163,7 +166,7 @@ namespace ForkPlus.UI.Controls.Editor
 			case HighlightingType.SyntaxValue: return SyntaxValueBrushDark;
 			case HighlightingType.SyntaxNumber: return SyntaxNumberBrushDark;
 			}
-			return Brushes.Transparent;
+			return TransparentBrush;
 		}
 
 		private static Brush Freeze(Brush brush)

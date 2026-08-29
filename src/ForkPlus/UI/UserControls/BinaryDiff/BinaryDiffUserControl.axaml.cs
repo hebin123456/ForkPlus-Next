@@ -634,18 +634,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		{
 			try
 			{
-				global::Avalonia.Media.Imaging.Bitmap bitmapImage = new global::Avalonia.Media.Imaging.Bitmap();
+				// TODO 迁移：WPF BitmapImage{CreateOptions=PreservePixelFormat, CacheOption=OnLoad, UriSource=null, StreamSource=stream}
+				// 之后再用 FormatConvertedBitmap 转 Pbgra32；Avalonia 无这些属性/转换类，
+				// 直接 Bitmap(Stream) 同步解码（语义等价 BitmapCacheOption.OnLoad），解码结果即为统一的
+				// Bgra8888（Avalonia 无 Pbgra32/调色板概念），无需再做格式转换。
 				stream.Position = 0L;
-				bitmapImage.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
-				bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-				bitmapImage.UriSource = null;
-				bitmapImage.StreamSource = stream;
-				if (bitmapImage.Format != PixelFormats.Pbgra32)
-				{
-					FormatConvertedBitmap formatConvertedBitmap = new FormatConvertedBitmap(bitmapImage, PixelFormats.Pbgra32, null, 0.0);
-					return formatConvertedBitmap;
-				}
-				return bitmapImage;
+				return new global::Avalonia.Media.Imaging.Bitmap(stream);
 			}
 			catch (Exception ex)
 			{
@@ -681,20 +675,13 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				global::Avalonia.Media.Imaging.Bitmap bitmapSource2 = rhsImageData?.ImageSource;
 				if (bitmapSource2 != null && bitmapSource.PixelSize.Width == bitmapSource2.PixelSize.Width && bitmapSource.PixelSize.Height == bitmapSource2.PixelSize.Height)
 				{
-					if (bitmapSource.Format != PixelFormats.Bgra32)
-					{
-						bitmapSource = new FormatConvertedBitmap(bitmapSource, PixelFormats.Bgra32, bitmapSource.Palette, 0.0);
-					}
-					if (bitmapSource2.Format != PixelFormats.Bgra32)
-					{
-						bitmapSource2 = new FormatConvertedBitmap(bitmapSource2, PixelFormats.Bgra32, bitmapSource2.Palette, 0.0);
-					}
-					int num = bitmapSource.Format.BitsPerPixel / 8;
+					// TODO 迁移：WPF 先用 FormatConvertedBitmap(..., Bgra32, source.Palette, 0) 把两图统一转 Bgra32；
+					// Avalonia 解码位图本身即为 Bgra8888/Rgba8888（无调色板/调色板转换），无需显式转换，
+					// 改为按位图实际 Format 的 BitsPerPixel 计算每像素字节数，逐通道比较逻辑保持不变。
+					int num = (bitmapSource.Format ?? global::Avalonia.Platform.PixelFormat.Bgra8888).BitsPerPixel / 8;
 					int num2 = bitmapSource.PixelSize.Width * num;
-					byte[] array = new byte[bitmapSource.PixelSize.Height * num2];
-					bitmapSource.CopyPixels(array, num2, 0);
-					byte[] array2 = new byte[bitmapSource2.PixelSize.Height * num2];
-					bitmapSource2.CopyPixels(array2, num2, 0);
+					byte[] array = CopyPixelsToArray(bitmapSource, num2);
+					byte[] array2 = CopyPixelsToArray(bitmapSource2, num2);
 					byte[] array3 = new byte[bitmapSource2.PixelSize.Height * num2];
 					int pixelWidth = bitmapSource.PixelSize.Width;
 					int pixelHeight = bitmapSource.PixelSize.Height;
@@ -721,10 +708,44 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 							}
 						}
 					}
-					return global::Avalonia.Media.Imaging.Bitmap.Create(pixelWidth, pixelHeight, bitmapSource2.DpiX, bitmapSource2.DpiY, PixelFormats.Bgra32, bitmapSource2.Palette, array3, num2);
+					return CreateBitmapFromArray(array3, bitmapSource.PixelSize.Width, bitmapSource.PixelSize.Height, num2);
 				}
 			}
 			return null;
+		}
+
+		/// <summary>把位图像素拷贝到托管数组（替代 WPF BitmapSource.CopyPixels(byte[], stride, offset)）。
+		/// Avalonia 12 的 CopyPixels 为 (PixelRect, IntPtr, bufferSize, stride)，需先 GCHandle 钉住数组取指针。</summary>
+		private static byte[] CopyPixelsToArray(global::Avalonia.Media.Imaging.Bitmap source, int stride)
+		{
+			byte[] array = new byte[source.PixelSize.Height * stride];
+			global::Avalonia.PixelRect sourceRect = new global::Avalonia.PixelRect(0, 0, source.PixelSize.Width, source.PixelSize.Height);
+			System.Runtime.InteropServices.GCHandle handle = System.Runtime.InteropServices.GCHandle.Alloc(array, System.Runtime.InteropServices.GCHandleType.Pinned);
+			try
+			{
+				source.CopyPixels(sourceRect, handle.AddrOfPinnedObject(), array.Length, stride);
+			}
+			finally
+			{
+				handle.Free();
+			}
+			return array;
+		}
+
+		/// <summary>从像素数组构建位图（替代 WPF Bitmap.Create(w, h, dpiX, dpiY, format, palette, pixels, stride)）。
+		/// TODO 迁移：Avalonia Bitmap 无 DpiX/DpiY/Palette 属性，DPI 统一按 96 输出；
+		/// 差异像素为 BGRA(255,0,255,255) 品红（与 WPF Bgra32 品红一致），故用 Bgra8888 + Premul 构建。</summary>
+		private static global::Avalonia.Media.Imaging.Bitmap CreateBitmapFromArray(byte[] pixels, int width, int height, int stride)
+		{
+			System.Runtime.InteropServices.GCHandle handle = System.Runtime.InteropServices.GCHandle.Alloc(pixels, System.Runtime.InteropServices.GCHandleType.Pinned);
+			try
+			{
+				return new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.PixelFormat.Bgra8888, global::Avalonia.Platform.AlphaFormat.Premul, handle.AddrOfPinnedObject(), new global::Avalonia.PixelSize(width, height), new global::Avalonia.Vector(96.0, 96.0), stride);
+			}
+			finally
+			{
+				handle.Free();
+			}
 		}
 
 		private bool SamePixel(byte lhs, byte rhs)

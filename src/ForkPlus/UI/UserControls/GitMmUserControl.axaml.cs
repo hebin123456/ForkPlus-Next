@@ -1559,7 +1559,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			scrollViewer.ScrollToHorizontalOffsetCompat(scrollViewer.HorizontalOffset - e.Delta);
+			scrollViewer.ScrollToHorizontalOffsetCompat(scrollViewer.Offset.X - e.Delta);
 			e.Handled = true;
 		}
 

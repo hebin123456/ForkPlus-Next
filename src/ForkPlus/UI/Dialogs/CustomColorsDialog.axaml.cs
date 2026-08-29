@@ -186,7 +186,8 @@ namespace ForkPlus.UI.Dialogs
 
 		#region HSV 调色盘
 
-		private void Swatch_Click(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		// 订阅方挂在 PointerReleased 上，处理函数参数类型须与 PointerReleasedEventArgs 匹配
+		private void Swatch_Click(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
 			if (sender is Border b && b.Tag is string hex)
 			{
@@ -274,8 +275,10 @@ namespace ForkPlus.UI.Dialogs
 		private void UpdateHueIndicator(double h)
 		{
 			double y = (h / 360.0) * 160;
-			HueIndicator.Y1 = y;
-			HueIndicator.Y2 = y;
+			// TODO 迁移：Avalonia Line 无 Y1/Y2，只有 StartPoint/EndPoint；
+			// X 坐标沿用 axaml 中的定义（0 与 20，与 X1/X2 对应）。
+			HueIndicator.StartPoint = new Point(HueIndicator.StartPoint.X, y);
+			HueIndicator.EndPoint = new Point(HueIndicator.EndPoint.X, y);
 		}
 
 		// HSV 方块鼠标交互
@@ -358,7 +361,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private double GetHueFromIndicator()
 		{
-			return (HueIndicator.Y1 / 160) * 360;
+			// TODO 迁移：Avalonia Line 无 Y1，用 StartPoint.Y 读取指示器位置。
+			return (HueIndicator.StartPoint.Y / 160) * 360;
 		}
 
 		private void GetSvFromIndicator(out double s, out double v)
@@ -508,15 +512,19 @@ namespace ForkPlus.UI.Dialogs
 			return;
 		}
 
-		SaveFileDialog dlg = new SaveFileDialog
+		// TODO 迁移：WPF Microsoft.Win32.SaveFileDialog 在 Avalonia 无对应（StorageProvider 为异步 API，
+		// 会把整条同步调用链异步化）；改用仓库内同步 Win32 封装 OpenDialog.SelectFileSaveLocation
+		// （仅支持单过滤器 *.json；非 Windows 平台返回 false 视为取消）。
+		string defaultFileName = "ForkPlus-Colors-" + ForkPlusSettings.Default.Theme.SkinName() + ".json";
+		if (!OpenDialog.SelectFileSaveLocation(this, PreferencesLocalization.Translate("Export Colors", lang), null, defaultFileName, out string exportPath))
 		{
-			Title = PreferencesLocalization.Translate("Export Colors", lang),
-			Filter = "JSON (*.json)|*.json|All files (*.*)|*.*",
-			FileName = "ForkPlus-Colors-" + ForkPlusSettings.Default.Theme.SkinName() + ".json",
-			DefaultExt = ".json",
-			AddExtension = true,
-		};
-		if (dlg.ShowDialog(this) != true) return;
+			return;
+		}
+		// 对应 WPF SaveFileDialog.AddExtension = true：用户没敲扩展名时补 .json。
+		if (!exportPath.EndsWith(".json", StringComparison.CurrentCultureIgnoreCase))
+		{
+			exportPath += ".json";
+		}
 
 		try
 		{
@@ -530,12 +538,12 @@ namespace ForkPlus.UI.Dialogs
 				["customColors"] = JObject.FromObject(exportColors),
 			};
 			string json = root.ToString(Formatting.Indented);
-			File.WriteAllText(dlg.FileName, json);
+			File.WriteAllText(exportPath, json);
 
 			new MessageBoxWindow(
 				PreferencesLocalization.Translate("Export Colors", lang),
 				string.Format(PreferencesLocalization.Translate("Exported {0} custom colors to:\n{1}", lang),
-				exportColors.Count, dlg.FileName),
+				exportColors.Count, exportPath),
 				"OK",
 				showCancelButton: false).ShowDialog();
 		}
@@ -563,20 +571,18 @@ namespace ForkPlus.UI.Dialogs
 		// 关闭 Popup 避免遮挡 OpenFileDialog
 		ColorPickerPopup.IsOpen = false;
 
-		OpenFileDialog dlg = new OpenFileDialog
+		// TODO 迁移：WPF Microsoft.Win32.OpenFileDialog 在 Avalonia 无对应；
+		// 改用仓库内同步 Win32 封装 OpenDialog.SelectFile（单过滤器 *.json，
+		// 非 Windows 平台返回 false 视为取消，CheckFileExists 由 Win32 FOS_FILEMUSTEXIST 承担）。
+		if (!OpenDialog.SelectFile(this, PreferencesLocalization.Translate("Import Colors", lang), null, "JSON", "*.json", out string importPath))
 		{
-			Title = PreferencesLocalization.Translate("Import Colors", lang),
-			Filter = "JSON (*.json)|*.json|All files (*.*)|*.*",
-			DefaultExt = ".json",
-			CheckFileExists = true,
-			Multiselect = false,
-		};
-		if (dlg.ShowDialog(this) != true) return;
+			return;
+		}
 
 		string jsonText;
 		try
 		{
-			jsonText = File.ReadAllText(dlg.FileName);
+			jsonText = File.ReadAllText(importPath);
 		}
 		catch (Exception ex)
 		{
@@ -965,7 +971,9 @@ namespace ForkPlus.UI.Dialogs
 				get
 				{
 					try { return new SolidColorBrush((Color)ColorConverter.ConvertFromString(HexValue)); }
-					catch { return Brushes.White; }
+					// TODO 迁移：Avalonia Brushes.White 返回 IImmutableSolidColorBrush，不能隐式转 Brush，
+					// 用 new SolidColorBrush(Colors.White) 等价替换。
+					catch { return new SolidColorBrush(Colors.White); }
 				}
 			}
 

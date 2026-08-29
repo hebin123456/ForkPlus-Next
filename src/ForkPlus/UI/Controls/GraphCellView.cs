@@ -104,8 +104,8 @@ namespace ForkPlus.UI.Controls
 				"#5856D6", "#B4D435", "#FF6F61"
 			};
 			_branchPens = _branchColors.Map((string c) => new Pen(new SolidColorBrush((Color)ColorConverter.ConvertFromString(c)), _penThickness));
-			CellHeightProperty = global::Avalonia.AvaloniaProperty.Register("CellHeight", typeof(double), typeof(GraphCellView), new global::Avalonia.StyledPropertyMetadata(_defaultCellHeight));
-			ShowGraphToolTipProperty = global::Avalonia.AvaloniaProperty.Register("ShowGraphToolTip", typeof(bool), typeof(GraphCellView), new global::Avalonia.StyledPropertyMetadata(true));
+			CellHeightProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<GraphCellView, double>("CellHeight", _defaultCellHeight);
+			ShowGraphToolTipProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<GraphCellView, bool>("ShowGraphToolTip", true);
 			Pen[] branchPens = _branchPens;
 			for (int i = 0; i < branchPens.Length; i++)
 			{
@@ -233,8 +233,8 @@ namespace ForkPlus.UI.Controls
 					StreamGeometry streamGeometry = new StreamGeometry();
 					using (StreamGeometryContext streamGeometryContext = streamGeometry.Open())
 					{
-						streamGeometryContext.BeginFigure(point2, isFilled: false, isClosed: false);
-						streamGeometryContext.BezierTo(new Point(point2.X, point3.Y - 5.0), new Point(point3.X, point2.Y + 5.0), point3, isStroked: true, isSmoothJoin: false);
+						streamGeometryContext.BeginFigure(point2,false);
+						streamGeometryContext.CubicBezierTo(new Point(point2.X, point3.Y - 5.0),new Point(point3.X, point2.Y + 5.0),point3,true);
 					}
 					drawingContext.DrawGeometry(null, pen, streamGeometry);
 				}
@@ -247,8 +247,8 @@ namespace ForkPlus.UI.Controls
 					StreamGeometry streamGeometry2 = new StreamGeometry();
 					using (StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open())
 					{
-						streamGeometryContext2.BeginFigure(point2, isFilled: false, isClosed: false);
-						streamGeometryContext2.BezierTo(new Point(point2.X, point.Y), new Point(point.X + 5.0, point.Y), point, isStroked: true, isSmoothJoin: false);
+						streamGeometryContext2.BeginFigure(point2,false);
+						streamGeometryContext2.CubicBezierTo(new Point(point2.X, point.Y),new Point(point.X + 5.0, point.Y),point,true);
 					}
 					drawingContext.DrawGeometry(null, pen, streamGeometry2);
 				}
@@ -268,8 +268,8 @@ namespace ForkPlus.UI.Controls
 				StreamGeometry streamGeometry3 = new StreamGeometry();
 				using (StreamGeometryContext streamGeometryContext3 = streamGeometry3.Open())
 				{
-					streamGeometryContext3.BeginFigure(point, isFilled: false, isClosed: false);
-					streamGeometryContext3.BezierTo(new Point(point4.X, point.Y), new Point(point4.X, point.Y + 5.0), point4, isStroked: true, isSmoothJoin: false);
+					streamGeometryContext3.BeginFigure(point,false);
+					streamGeometryContext3.CubicBezierTo(new Point(point4.X, point.Y),new Point(point4.X, point.Y + 5.0),point4,true);
 				}
 				drawingContext.DrawGeometry(null, pen, streamGeometry3);
 			}
@@ -295,15 +295,15 @@ namespace ForkPlus.UI.Controls
 			{
 				if (isCollapsed)
 				{
-					streamGeometryContext.BeginFigure(new Point(center.X - _chevronSize * 0.5, center.Y - _chevronSize), isFilled: false, isClosed: false);
-					streamGeometryContext.LineTo(new Point(center.X + _chevronSize * 0.5, center.Y), isStroked: true, isSmoothJoin: false);
-					streamGeometryContext.LineTo(new Point(center.X - _chevronSize * 0.5, center.Y + _chevronSize), isStroked: true, isSmoothJoin: false);
+					streamGeometryContext.BeginFigure(new Point(center.X - _chevronSize * 0.5, center.Y - _chevronSize),false);
+					streamGeometryContext.LineTo(new Point(center.X + _chevronSize * 0.5, center.Y),true);
+					streamGeometryContext.LineTo(new Point(center.X - _chevronSize * 0.5, center.Y + _chevronSize),true);
 				}
 				else
 				{
-					streamGeometryContext.BeginFigure(new Point(center.X - _chevronSize, center.Y - _chevronSize * 0.5), isFilled: false, isClosed: false);
-					streamGeometryContext.LineTo(new Point(center.X, center.Y + _chevronSize * 0.5), isStroked: true, isSmoothJoin: false);
-					streamGeometryContext.LineTo(new Point(center.X + _chevronSize, center.Y - _chevronSize * 0.5), isStroked: true, isSmoothJoin: false);
+					streamGeometryContext.BeginFigure(new Point(center.X - _chevronSize, center.Y - _chevronSize * 0.5),false);
+					streamGeometryContext.LineTo(new Point(center.X, center.Y + _chevronSize * 0.5),true);
+					streamGeometryContext.LineTo(new Point(center.X + _chevronSize, center.Y - _chevronSize * 0.5),true);
 				}
 			}
 			drawingContext.DrawGeometry(null, pen, streamGeometry);

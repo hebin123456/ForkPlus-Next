@@ -38,7 +38,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		public double VerticalOffset => _editor.TextArea.TextView.VerticalOffset;
+		public double VerticalOffset => _editor.TextArea.TextView.Offset.Y;
 
 		[Null]
 		public ForkPlus.Git.Diff.Diff Diff { get; private set; }
@@ -80,7 +80,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 			remove
 			{
-				_editor.ContextMenuOpening -= value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.RemoveContextMenuOpeningHandler(_editor,value);
 			}
 		}
 

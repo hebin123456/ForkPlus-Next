@@ -21,5 +21,13 @@ namespace ForkPlus.UI.WpfCompat
             if (sv == null) return;
             sv.Offset = sv.Offset.WithX(offset);
         }
+
+        /// <summary>AvaloniaEdit TextEditor 原生即有 ScrollTo*Offset，直接转发。</summary>
+        public static void ScrollToVerticalOffsetCompat(this AvaloniaEdit.TextEditor editor, double offset)
+            => editor?.ScrollToVerticalOffset(offset);
+
+        /// <summary>AvaloniaEdit TextEditor 原生即有 ScrollTo*Offset，直接转发。</summary>
+        public static void ScrollToHorizontalOffsetCompat(this AvaloniaEdit.TextEditor editor, double offset)
+            => editor?.ScrollToHorizontalOffset(offset);
     }
 }

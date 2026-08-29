@@ -36,7 +36,8 @@ namespace ForkPlus.UI.Commands
 			{
 				int num = (int)(command.Shortcut.Key - 34);
 				Key key = (Key)(74 + num);
-				routedCommand.InputGestures.Add(new KeyGesture(key, command.Shortcut.Modifiers));
+				// TODO 迁移：Avalonia KeyGesture 的修饰键属性是 KeyModifiers（WPF 为 Modifiers）。
+				routedCommand.InputGestures.Add(new KeyGesture(key, command.Shortcut.KeyModifiers));
 			}
 			if (command.SecondaryShortcut != null)
 			{
@@ -66,7 +67,9 @@ namespace ForkPlus.UI.Commands
 			menuItem.IsEnabled = isEnabled;
 			if (showShortcut)
 			{
-				menuItem.InputGestureText = command.InputGestureText();
+				// TODO 迁移：Avalonia MenuItem 无 InputGestureText 字符串属性，改为设置 InputGesture(KeyGesture)，
+				// 由控件模板负责显示（InputGestureText() 扩展仍保留供其他调用方使用）。
+				menuItem.InputGesture = command.Shortcut;
 			}
 			if (clickHandler != null)
 			{
@@ -92,8 +95,8 @@ namespace ForkPlus.UI.Commands
 				Margin = icon.Margin,
 				Stretch = icon.Stretch,
 				HorizontalAlignment = icon.HorizontalAlignment,
-				VerticalAlignment = icon.VerticalAlignment,
-				SnapsToDevicePixels = true
+				VerticalAlignment = icon.VerticalAlignment
+				// TODO 迁移：WPF Image.SnapsToDevicePixels（像素对齐）在 Avalonia 无对应，删除。
 			};
 		}
 	}

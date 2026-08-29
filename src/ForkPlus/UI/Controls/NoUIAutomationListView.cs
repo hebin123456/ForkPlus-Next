@@ -25,6 +25,23 @@ namespace ForkPlus.UI.Controls
 
 		public bool IsMultiselectionInProgress { get; set; }
 
+		/// <summary>
+		/// WPF PreviewMouseWheel（隧道路由预览滚轮事件）的兼容入口。
+		/// Avalonia 无独立 Preview 事件，等价映射为 Tunnel 路由的 PointerWheelChanged，
+		/// 供 SubmoduleDiffUserControl 等旧代码用 +=/-= 语法订阅（其 add 侧即 AddHandler+Tunnel）。
+		/// </summary>
+		public event global::System.EventHandler<PointerWheelEventArgs> PreviewMouseWheel
+		{
+			add
+			{
+				AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent, value, global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+			}
+			remove
+			{
+				RemoveHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent, value);
+			}
+		}
+
 		public double AvailableWidth => base.Bounds.Width - 15.0 - 4.0 - 4.0;
 
 		public void Select(int row, SelectOptions options = (SelectOptions)3)

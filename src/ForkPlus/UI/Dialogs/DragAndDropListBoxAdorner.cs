@@ -22,12 +22,15 @@ namespace ForkPlus.UI.Dialogs
 			: base(adornedElement)
 		{
 			_initialPosition = position;
-			Brush[] visualBrushes = listBoxItems.Map((ListBoxItem x) => new global::Avalonia.Media.ImmutableBrush(x)
+			// TODO 迁移：WPF VisualBrush(visual) 在 Avalonia 12.1 为 Avalonia.Media.VisualBrush(Visual)，
+			// 反编译产物里误写成不存在的 Avalonia.Media.ImmutableBrush。
+			Brush[] visualBrushes = listBoxItems.Map((ListBoxItem x) => new global::Avalonia.Media.VisualBrush(x)
 			{
 				Opacity = 0.4
 			});
 			_visualBrushes = visualBrushes;
-			_visualBrushYOffset = listBoxItems.FirstItem()?.ActualHeight ?? 0.0;
+			// TODO 迁移：Avalonia ListBoxItem 无 ActualHeight，等价取 Bounds.Height。
+			_visualBrushYOffset = listBoxItems.FirstItem()?.Bounds.Height ?? 0.0;
 			base.IsHitTestVisible = false;
 		}
 
@@ -40,13 +43,14 @@ namespace ForkPlus.UI.Dialogs
 		public override void Render(DrawingContext context)
 		{
 			Point newPosition = NewPosition;
-			newPosition.Offset(0.0 - _initialPosition.X, 0.0 - _initialPosition.Y);
+			// Avalonia Point 无 Offset(原地修改)，用新 Point 等价改写。
+			newPosition = new Point(newPosition.X - _initialPosition.X, newPosition.Y - _initialPosition.Y);
 			for (int i = 0; i < _visualBrushes.Length; i++)
 			{
 				Brush brush = _visualBrushes[i];
 				if (i > 0)
 				{
-					newPosition.Offset(0.0, _visualBrushYOffset);
+					newPosition = new Point(newPosition.X, newPosition.Y + _visualBrushYOffset);
 				}
 				context.DrawRectangle(brush, null, new Rect(newPosition, base.Bounds.Size));
 			}

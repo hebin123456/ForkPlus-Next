@@ -186,12 +186,12 @@ namespace ForkPlus.UI.Controls.Editor
 			DrawBorder(valueOrDefault, drawingContext);
 			if (_textEditor.Viewport.Height > _textEditor.ExtentHeight)
 			{
-				if (_textEditor.TextArea.TextView.VerticalOffset > 0.0)
+				if (_textEditor.TextArea.TextView.Offset.Y > 0.0)
 				{
 					return;
 				}
 			}
-			else if (!_textEditor.IsVerticalOffsetWithinDocumentArea(_textEditor.TextArea.TextView.VerticalOffset))
+			else if (!_textEditor.IsVerticalOffsetWithinDocumentArea(_textEditor.TextArea.TextView.Offset.Y))
 			{
 				return;
 			}

@@ -75,7 +75,10 @@ namespace ForkPlus.UI.Controls
 		{
 			base.PointerPressed += TabItem_PreviewMouseDown;
 			base.PointerMoved += TabItem_PreviewMouseMove;
-			base.Drop += TabItem_Drop;
+			// TODO 迁移：WPF UIElement.Drop += handler（实例 CLR 事件）在 Avalonia 12 的 TabItem 上
+			// 不存在（CS0117）；等价写法是 AddHandler(DragDrop.DropEvent, handler)（Interactive 路由
+			// 事件订阅，默认 Direct|Bubble，与 WPF Drop 冒泡行为一致）。
+			this.AddHandler(global::Avalonia.Input.DragDrop.DropEvent, TabItem_Drop);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlTitleChanged", RepositoryUserControlTitleChanged);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlColorChanged", RepositoryUserControlColorChanged);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryUserControlIsDirtyChanged", RepositoryUserControlIsDirtyChanged);
@@ -103,7 +106,10 @@ namespace ForkPlus.UI.Controls
 			}
 			centeredDockPanel.PointerPressed += delegate(object s, global::Avalonia.Input.PointerPressedEventArgs e)
 			{
-				if (e.MiddleButton == MouseButtonState.Pressed)
+				// TODO 迁移：WPF e.MiddleButton == MouseButtonState.Pressed（查鼠标中键状态）在
+				// Avalonia 的 PointerPressedEventArgs 上不存在（CS1061）；等价物是当前指针点位的
+				// PointerPointProperties.IsMiddleButtonPressed。
+				if (e.GetCurrentPoint(null).Properties.IsMiddleButtonPressed)
 				{
 					Close();
 				}
@@ -179,7 +185,10 @@ namespace ForkPlus.UI.Controls
 
 		private void TabItem_PreviewMouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
+			// TODO 迁移：WPF Mouse.PrimaryDevice.LeftButton（全局查询鼠标左键状态）在 Avalonia 无
+			// 全局鼠标状态 API（CS0117）；拖动语义等价物 = 当前 PointerMoved 事件指针点位的
+			// IsLeftButtonPressed（按下并移动才会走到这里，行为一致）。
+			if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
 			{
 				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), (global::Avalonia.Input.DragDropEffects)7);
 			}
@@ -187,7 +196,11 @@ namespace ForkPlus.UI.Controls
 
 		private void TabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (e.WpfData().GetData(typeof(WeakReference<ClosableTabItem>)) is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
+			// TODO 迁移：WPF DataObject.GetData(Type) 以类型全名作隐式格式名；Avalonia 侧的
+			// WpfDataObject 只有 GetData(string)（CS1503），且 DragDropLauncher.DoDragDrop 把自定义
+			// 对象统一存为 "ForkPlusItem" 格式（WpfCompat.Batch2.cs ToTransfer 默认分支），
+			// 故按该格式名读取，读取结果仍以类型模式匹配校验，语义等价。
+			if (e.WpfData().GetData("ForkPlusItem") is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
 			{
 				ClosableTabControl closableTabControl = closableTabItem.Parent as ClosableTabControl;
 				if (closableTabItem != target)

@@ -560,8 +560,8 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		{
 			return;
 		}
-		double verticalOffset = editor.TextArea.TextView.VerticalOffset;
-		double horizontalOffset = editor.TextArea.TextView.HorizontalOffset;
+		double verticalOffset = editor.TextArea.TextView.Offset.Y;
+		double horizontalOffset = editor.TextArea.TextView.Offset.X;
 		HexEditor other = editor == _srcEditor ? _dstEditor : _srcEditor;
 		_isSyncingScroll = true;
 		try

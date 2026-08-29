@@ -181,7 +181,7 @@ namespace ForkPlus.UI
 
 		public CustomWindow()
 		{
-			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CustomWindow));
+			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			if (IsDesignMode)
 			{
 				_tempWindowResizeBorderThickness = new Thickness(6.0);

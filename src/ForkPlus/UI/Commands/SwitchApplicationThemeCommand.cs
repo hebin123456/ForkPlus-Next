@@ -5,6 +5,7 @@ using Avalonia.Input;
 using ForkPlus.Settings;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 
 namespace ForkPlus.UI.Commands
@@ -35,19 +36,19 @@ namespace ForkPlus.UI.Commands
 		// CustomColors 字典保留，用户重新勾选"自定义颜色"时可恢复。
 		ForkPlusSettings.Default.UseCustomColors = false;
 		App.RefreshWindowBorderBrush();
-			// 匹配任意 Generic.{SkinName}.xaml（不再写死 Light|Dark），支持多预设皮肤
-			ResourceDictionary resourceDictionary = Application.Current.Resources.MergedDictionaries
-				.Where((ResourceDictionary rd) => rd.Source != null)
-				.FirstOrDefault((ResourceDictionary rd) => Regex.Match(rd.Source.OriginalString, @"\/ForkPlus;component\/Theme\/Generic\.\w+\.xaml").Success);
-			ResourceDictionary item = new ResourceDictionary
-			{
-				Source = newTheme.ResourceUri()
-			};
-			Application.Current.Resources.MergedDictionaries.Add(item);
-			if (resourceDictionary != null)
-			{
-				Application.Current.Resources.MergedDictionaries.Remove(resourceDictionary);
-			}
+		// 匹配任意 Generic.{SkinName}.xaml（不再写死 Light|Dark），支持多预设皮肤
+		// TODO 迁移：WPF 写法 MergedDictionaries.Where/FirstOrDefault((ResourceDictionary rd) => rd.Source ...)
+		// 在 Avalonia 报 CS1929/CS1061（MergedDictionaries 是 IList<IResourceProvider>，
+		// 且 ResourceDictionary 没有 Source）。改为 App.FindThemeResourceInclude()：遍历
+		// MergedDictionaries 按 ResourceInclude.Source（avares://ForkPlus/Theme/Generic.*.axaml）
+		// 识别旧主题字典，保持"按 Uri 识别主题字典"的原语义；新字典用 ResourceInclude 加载。
+		ResourceInclude oldThemeInclude = App.FindThemeResourceInclude();
+		ResourceInclude item = App.CreateThemeResourceInclude(newTheme.ResourceUri());
+		Application.Current.Resources.MergedDictionaries.Add(item);
+		if (oldThemeInclude != null)
+		{
+			Application.Current.Resources.MergedDictionaries.Remove(oldThemeInclude);
+		}
 			global::ForkPlus.UI.Theme.Refresh();
 			// 切换皮肤后重新应用用户自定义颜色覆盖（旧字典随主题字典移除后需重建）
 			App.ApplyCustomColors();
