@@ -1,0 +1,11 @@
+<Application xmlns="https://github.com/avaloniaui" xmlns:f="clr-namespace:ForkPlus" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.App">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://ForkPlus/Theme/Generic.Light.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+    <Application.Styles>
+    <FluentTheme /></Application.Styles></Application>

@@ -1,0 +1,1196 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="RepositoryTitleHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    
+    <Setter Property="TextDecorations">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="SidebarButton" TargetType="RadioButton">
+    
+    <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="Padding" Value="20 2 20 2" />
+    <Setter Property="Margin" Value="2,0,2,0" />
+    <Setter Property="Height" Value="22" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" CornerRadius="4" x:Name="border">
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:checked /template/ Border#border">
+        <Setter Value="{DynamicResource Sidebar.SelectionActive.Background}" Property="Background" />
+    </Style>
+    <Style Selector="^:unchecked /template/ Border#border">
+        <Setter Value="{DynamicResource Sidebar.Static.Background}" Property="Background" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#border">
+        <Setter Value="{DynamicResource Sidebar.Static.Background}" Property="Background" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="SidebarPathImageRadioButtonStyle" TargetType="RadioButton">
+    <Setter Property="Margin" Value="0,1,0,1" />
+    <Setter Property="Padding" Value="5,2,5,2" />
+    <Setter Property="Width" Value="40" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
+            <Path Height="16" Width="16" Margin="{TemplateBinding Padding}" Focusable="False" Data="{TemplateBinding Content}" Fill="{DynamicResource IconBrush}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ImagePath" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:checked /template/ Path#ImagePath">
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Border#border">
+        <Setter Value="{DynamicResource Button.MouseOver.Background}" Property="Background" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#border">
+        <Setter Value="{DynamicResource Button.Pressed.Background}" Property="Background" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="0.4" />
+        <Setter Property="Background" Value="#00FFFFFF" />
+    </Style></ControlTheme>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SidebarGroupItem}}" DataType="ui:SidebarGroupItem">
+    <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium" FontSize="13.5">
+      <TextBlock.Text>
+        <Binding Path="Title" />
+      </TextBlock.Text>
+    </TextBlock>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteSidebarItem}}" DataType="ui:RemoteSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Height="16" Width="16">
+        <Image.Source>
+          <Binding Path="Remote.Icon" />
+        </Image.Source>
+      </Image>
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableRemoteSidebarItem}}" DataType="ui:FilterableRemoteSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Height="16" Width="16">
+        <Image.Source>
+          <Binding Path="Remote.Icon" />
+        </Image.Source>
+      </Image>
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+      <Button Grid.Column="2" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="3" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+              </DataTrigger.Binding>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Source" />
+              
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Filter" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Source" />
+              
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Hide" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="Filter">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
+            </MultiDataTrigger>
+    --></DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FolderSidebarItem}}" DataType="ui:FolderSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource SidebarFolderIcon}" Height="16" Width="16" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+      </TextBlock>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableFolderSidebarItem}}" DataType="ui:FilterableFolderSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="18" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource SidebarFolderIcon}" Height="16" Width="16" Margin="2,0,0,0" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+      </TextBlock>
+      <Button Grid.Column="2" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="3" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+              </DataTrigger.Binding>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Source" />
+              
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Filter" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Source" />
+              
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Hide" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="Filter">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
+            </MultiDataTrigger>
+    --></DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TruncateSidebarItem}}" DataType="ui:TruncateSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="1" FontSize="13" Margin="4,0,0,0" Padding="0" VerticalAlignment="Center">
+        <HyperlinkButton NavigateUri=" " Theme="{DynamicResource SidebarTruncateHyperlink}">
+          <TextBlock TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+            <TextBlock.Text>
+              <Binding Path="Title" />
+            </TextBlock.Text>
+          </TextBlock>
+        </HyperlinkButton>
+      </TextBlock>
+    </Grid>
+  </DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TagSidebarItem}}" DataType="ui:TagSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource TagIcon}" Height="16" Width="16" x:Name="TagImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" ToolTip="" x:Name="TagTitleTextBlock" Theme="{DynamicResource SidebarTagTitleTextBlock}">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+      </TextBlock>
+      <Button Grid.Column="2" x:Name="PinButton" Theme="{DynamicResource SidebarPinButton}" IsVisible="{Binding IsMouseOver}">
+        <Button.ToolTip>
+          <Binding Path="PinTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
+      </Button>
+      <Button Grid.Column="3" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="4" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource SearchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="TagImage" Value="{DynamicResource TagSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+              </DataTrigger.Binding>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Source" />
+              
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Source" />
+              
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffSelectedIcon}" Property="Source" />
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffSelectedIcon}" Property="Source" />
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="Pinned" />
+              </DataTrigger.Binding>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnIcon}" Property="Source" />
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="Pinned" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Filter" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Source" />
+              
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="Filter">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Hide" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="Hide">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="Filter">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
+            </MultiDataTrigger>
+    --></DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteBranchSidebarItem}}" DataType="ui:RemoteBranchSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource BranchIcon}" Height="16" Width="16" x:Name="RemoteBranchImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" x:Name="TitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+      <Button Grid.Column="2" x:Name="PinButton" Theme="{DynamicResource SidebarPinButton}" IsVisible="{Binding IsMouseOver}">
+        <Button.ToolTip>
+          <Binding Path="PinTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
+      </Button>
+      <Button Grid.Column="3" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="4" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="RemoteBranchImage" Value="{DynamicResource BranchSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+              </DataTrigger.Binding>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Source" />
+              
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Source" />
+              
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffSelectedIcon}" Property="Source" />
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffSelectedIcon}" Property="Source" />
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="Pinned" />
+              </DataTrigger.Binding>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnIcon}" Property="Source" />
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="Pinned" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Filter" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Source" />
+              
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="Filter">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Hide" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="Hide">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="Filter">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
+            </MultiDataTrigger>
+    --></DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:LocalBranchSidebarItem}}" DataType="ui:LocalBranchSidebarItem">
+    <Grid HorizontalAlignment="Stretch">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Height="16" Width="16" x:Name="BranchImage">
+        <Image.Source>
+          <Binding Path="UpstreamStatus"><Binding.Converter><ui:UpstreamStatusToImageConverter /></Binding.Converter></Binding>
+        </Image.Source>
+      </Image>
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Normal" x:Name="TitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+      <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,2,0">
+        <TextBlock.Text>
+          <Binding Path="UpstreamStatusString" />
+        </TextBlock.Text>
+      </TextBlock>
+      <Button Grid.Column="3" x:Name="PinButton" Theme="{DynamicResource SidebarPinButton}" IsVisible="{Binding IsMouseOver}">
+        <Button.ToolTip>
+          <Binding Path="PinTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
+      </Button>
+      <Button Grid.Column="4" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="FilterTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
+      </Button>
+      <Button Grid.Column="5" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
+        <Button.ToolTip>
+          <Binding Path="HideTooltip" />
+        </Button.ToolTip>
+        <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
+      </Button>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="BranchImage" Property="Source">
+                <Setter.Value>
+                  <Binding Path="UpstreamStatus"><Binding.Converter><ui:UpstreamStatusToImageConverter xmlns:ui="clr-namespace:ForkPlus.UI" /></Binding.Converter></Binding>
+                </Setter.Value>
+              </Setter>
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="LocalBranch.IsActive" />
+              </DataTrigger.Binding>
+              <Setter TargetName="BranchImage" Value="{DynamicResource ActiveBranchIcon}" Property="Source" />
+              <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="LocalBranch.IsActive" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="BranchImage" Value="{DynamicResource ActiveBranchSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+              </DataTrigger.Binding>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffIcon}" Property="Source" />
+              
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffIcon}" Property="Source" />
+              
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOffSelectedIcon}" Property="Source" />
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOffSelectedIcon}" Property="Source" />
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOffSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="Pinned" />
+              </DataTrigger.Binding>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnIcon}" Property="Source" />
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="Pinned" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="PinButtonImage" Value="{DynamicResource PinOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Filter" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnIcon}" Property="Source" />
+              
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="Filter">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="FilterButtonImage" Value="{DynamicResource BranchFilterOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="Hide" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="FilterState" />
+              </DataTrigger.Binding>
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnIcon}" Property="Source" />
+              
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="Hide">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="HideButtonImage" Value="{DynamicResource HideBranchOnSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="Filter">
+                  <Condition.Binding>
+                    <Binding Path="FilterState" />
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
+            </MultiDataTrigger>
+    --></DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:StashSidebarItem}}" DataType="ui:StashSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource SidebarStashIcon}" Height="16" Width="16" x:Name="StashImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="StashImage" Value="{DynamicResource SidebarStashSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    --></DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SubmoduleSidebarItem}}" DataType="ui:SubmoduleSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource SubmoduleIcon}" Height="16" Width="16" x:Name="SubmoduleImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+      </TextBlock>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="SubmoduleImage" Value="{DynamicResource SubmoduleSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    --></DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:WorktreeSidebarItem}}" DataType="ui:WorktreeSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource WorktreeIcon}" Height="16" Width="16" x:Name="WorktreeImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" x:Name="TitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="WorktreeImage" Value="{DynamicResource WorktreeSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="Worktree.IsActive" />
+              </DataTrigger.Binding>
+              <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
+            </DataTrigger>
+    --></DataTemplate>
+  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:MainWorktreeSidebarItem}}" DataType="ui:MainWorktreeSidebarItem">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Image Grid.Column="0" Source="{DynamicResource WorktreeIcon}" Height="16" Width="16" x:Name="WorktreeImage" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" x:Name="TitleTextBlock">
+        <TextBlock.Text>
+          <Binding Path="Title" />
+        </TextBlock.Text>
+        <TextBlock.ToolTip>
+          <Binding Path="Tooltip" />
+        </TextBlock.ToolTip>
+      </TextBlock>
+    </Grid>
+    
+  
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+              <MultiDataTrigger.Conditions>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsSelected"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+                <Condition Value="true">
+                  <Condition.Binding>
+                    <Binding Path="IsKeyboardFocusWithin"><Binding.RelativeSource><RelativeSource Mode="FindAncestor" AncestorType="{x:Type controls:TreeViewControlItem}" /></Binding.RelativeSource></Binding>
+                  </Condition.Binding>
+                </Condition>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="WorktreeImage" Value="{DynamicResource WorktreeSelectedIcon}" Property="Source" />
+            </MultiDataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="Worktree.IsActive" />
+              </DataTrigger.Binding>
+              <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
+            </DataTrigger>
+    --></DataTemplate>
+</ResourceDictionary>

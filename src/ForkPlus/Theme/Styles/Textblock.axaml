@@ -1,0 +1,137 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="SettingsHeaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Margin" Value="0,12,0,6" />
+  </ControlTheme>
+  <ControlTheme x:Key="ReferenceLabelTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceForeground}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Margin" Value="2,-1,2,1" />
+  </ControlTheme>
+  <ControlTheme x:Key="ToolbarButtonTitle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Margin" Value="4,-3,4,2" />
+    <Setter Property="Foreground" Value="{DynamicResource ToolbarForeground}" />
+    
+  </ControlTheme>
+  <ControlTheme x:Key="LfsLabel" TargetType="TextBlock">
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Width" Value="28" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource AccentSecondaryBrush}" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Label">
+          <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
+            <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="NotLfsLabel" TargetType="TextBlock">
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Width" Value="42" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="#FFFF6663" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Label">
+          <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
+            <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="not LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="BugtrackerHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    <Setter Property="TextDecorations">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="BlueHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="BlueUnderlineHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    
+    <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    <Setter Property="TextDecorations">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="GrayHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+    
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="GrayUnderlineHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource GrayHyperlinkStyle}">
+    <Setter Property="TextDecorations">
+      <Setter.Value>
+        <x:Null />
+      </Setter.Value>
+    </Setter>
+    
+  
+    <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+        <Setter Property="TextDecorations" Value="Underline" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="HintTextBlock" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="Text" Value="?" />
+    <Setter Property="Margin" Value="4,2,6,2" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="ToolTip">
+      <Setter.Value>
+        <ToolTip>
+          <ToolTip.DataContext>
+            <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
+          </ToolTip.DataContext>
+          <StackPanel>
+            <TextBlock>
+              <TextBlock.Text>
+                <Binding Path="Tag" />
+              </TextBlock.Text>
+            </TextBlock>
+          </StackPanel>
+        </ToolTip>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

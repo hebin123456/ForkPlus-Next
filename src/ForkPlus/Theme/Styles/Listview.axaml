@@ -1,0 +1,818 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  
+  <ControlTheme x:Key="ListItemRoundedBorderStyle" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+    <Setter Property="Margin" Value="4,0,4,0" />
+    <Setter Property="CornerRadius" Value="4" />
+  </ControlTheme>
+  <ControlTheme x:Key="ListItemNotRoundedBorderStyle" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+    <Setter Property="Margin" Value="4,0,4,0" />
+    <Setter Property="CornerRadius" Value="0" />
+  </ControlTheme>
+  <DataTemplate x:Key="ReferencesDataTemplates">
+    <DataTemplate.Resources>
+      <ResourceDictionary>
+        <DataTemplate DataType="ui:TagViewModel" x:Key="{DataTemplateKey {x:Type ui:TagViewModel}}">
+          <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2">
+            <Border BorderThickness="1" CornerRadius="4,0,0,4" BorderBrush="{DynamicResource RevisionList.TagBorder}" Background="{DynamicResource ListBox.Static.Background}">
+              <Image Source="{DynamicResource TagIcon}" Height="14" Width="14" Margin="2,0,2,0" />
+            </Border>
+            <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" BorderBrush="{DynamicResource RevisionList.TagBorder}" Background="{DynamicResource RevisionList.TagBackground}">
+              <controls:HighlightableTextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                <controls:HighlightableTextBlock.Text>
+                  <Binding Path="Name" />
+                </controls:HighlightableTextBlock.Text>
+                <controls:HighlightableTextBlock.HighlightString>
+                  <Binding Path="SearchString" />
+                </controls:HighlightableTextBlock.HighlightString>
+              </controls:HighlightableTextBlock>
+            </Border>
+          </StackPanel>
+        </DataTemplate>
+        <DataTemplate DataType="ui:LocalBranchViewModel" x:Key="{DataTemplateKey {x:Type ui:LocalBranchViewModel}}">
+          <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="3,2,3,2">
+            <Border.BorderBrush>
+              <Binding Path="BorderBrush" />
+            </Border.BorderBrush>
+            <Border.Background>
+              <Binding Path="BackgroundBrush" />
+            </Border.Background>
+            <StackPanel Orientation="Horizontal">
+              <Path Stretch="None" Margin="3,0,0,0" VerticalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource ReferenceForeground}" x:Name="ActiveBranchIcon" IsVisible="{Binding IsActive}" />
+              <Border BorderThickness="0" CornerRadius="4,0,0,4" x:Name="IconBorder" IsVisible="False">
+                <Border.BorderBrush>
+                  <Binding Path="BorderBrush" />
+                </Border.BorderBrush>
+                <Border.Background>
+                  <Binding Path="BackgroundBrush" />
+                </Border.Background>
+                <Image Source="{DynamicResource WorktreeIcon}" Height="14" Width="14" Margin="2,0,2,0" />
+              </Border>
+              <controls:HighlightableTextBlock FontWeight="Regular" Margin="4,-1,4,1" x:Name="NameTextBlock" Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                <controls:HighlightableTextBlock.Text>
+                  <Binding Path="Name" />
+                </controls:HighlightableTextBlock.Text>
+                <controls:HighlightableTextBlock.HighlightString>
+                  <Binding Path="SearchString" />
+                </controls:HighlightableTextBlock.HighlightString>
+              </controls:HighlightableTextBlock>
+            </StackPanel>
+          </Border>
+          
+        
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="true" xmlns="https://github.com/avaloniaui">
+                    <DataTrigger.Binding>
+                      <Binding Path="IsActive" />
+                    </DataTrigger.Binding>
+                    <Setter TargetName="NameTextBlock" Property="FontWeight" Value="Bold" />
+                    
+                  </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      原始片段：
+      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
+                    <MultiDataTrigger.Conditions>
+                      <Condition Value="true">
+                        <Condition.Binding>
+                          <Binding Path="IsActive" />
+                        </Condition.Binding>
+                      </Condition>
+                      <Condition Value="true">
+                        <Condition.Binding>
+                          <Binding Path="IsWorktree" />
+                        </Condition.Binding>
+                      </Condition>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="IconBorder" Property="IsVisible" Value="True" />
+                    <Setter TargetName="IconBorder" Property="BorderThickness" Value="0,0,1,0" />
+                    <Setter TargetName="IconBorder" Value="{DynamicResource ListBox.Static.Background}" Property="Background" />
+                  </MultiDataTrigger>
+    --></DataTemplate>
+        <DataTemplate DataType="ui:RemoteBranchViewModel" x:Key="{DataTemplateKey {x:Type ui:RemoteBranchViewModel}}">
+          <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2" x:Name="Container">
+            <Border BorderThickness="1" CornerRadius="4" Background="{DynamicResource ListBox.Static.Background}" x:Name="Border">
+              <Border.BorderBrush>
+                <Binding Path="BorderBrush" />
+              </Border.BorderBrush>
+              <Image Height="14" Width="14" Margin="2,0,2,0" x:Name="Icon">
+                <Image.Source>
+                  <Binding Path="RemoteIcon" />
+                </Image.Source>
+              </Image>
+            </Border>
+            <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" x:Name="NameContainer" IsVisible="{Binding !HasDownstream}">
+              <Border.BorderBrush>
+                <Binding Path="BorderBrush" />
+              </Border.BorderBrush>
+              <Border.Background>
+                <Binding Path="BackgroundBrush" />
+              </Border.Background>
+              <controls:HighlightableTextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                <controls:HighlightableTextBlock.Text>
+                  <Binding Path="Name" />
+                </controls:HighlightableTextBlock.Text>
+                <controls:HighlightableTextBlock.HighlightString>
+                  <Binding Path="SearchString" />
+                </controls:HighlightableTextBlock.HighlightString>
+              </controls:HighlightableTextBlock>
+            </Border>
+          </StackPanel>
+          
+        
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="true" xmlns="https://github.com/avaloniaui">
+                    <DataTrigger.Binding>
+                      <Binding Path="HasDownstream" />
+                    </DataTrigger.Binding>
+                    
+                    <Setter TargetName="Border" Property="CornerRadius" Value="4" />
+                    <Setter TargetName="Container" Property="Margin" Value="3,2,1,2" />
+                  </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="false" xmlns="https://github.com/avaloniaui">
+                    <DataTrigger.Binding>
+                      <Binding Path="HasDownstream" />
+                    </DataTrigger.Binding>
+                    
+                    <Setter TargetName="Border" Property="CornerRadius" Value="4,0,0,4" />
+                  </DataTrigger>
+    --></DataTemplate>
+        <DataTemplate DataType="ui:BisectMarkViewModel" x:Key="{DataTemplateKey {x:Type ui:BisectMarkViewModel}}">
+          <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2">
+            <Border BorderThickness="1" CornerRadius="4,0,0,4" BorderBrush="{DynamicResource RevisionList.BisectBadBorder}" Background="{DynamicResource ListBox.Static.Background}" x:Name="IconBorder">
+              <Image Height="14" Width="14" Margin="2,0,2,0" Source="{DynamicResource BisectBadIcon}" x:Name="Icon" />
+            </Border>
+            <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" BorderBrush="{DynamicResource RevisionList.BisectBadBorder}" Background="{DynamicResource RevisionList.BisectBadBackground}" x:Name="LabelBorder">
+              <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                <TextBlock.Text>
+                  <Binding Path="Name" />
+                </TextBlock.Text>
+              </TextBlock>
+            </Border>
+          </StackPanel>
+          
+        
+    <!--
+      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      原始片段：
+      <DataTrigger Value="true" xmlns="https://github.com/avaloniaui">
+                    <DataTrigger.Binding>
+                      <Binding Path="IsGood" />
+                    </DataTrigger.Binding>
+                    <Setter TargetName="Icon" Value="{DynamicResource BisectGoodIcon}" Property="Source" />
+                    <Setter TargetName="IconBorder" Value="{DynamicResource RevisionList.BisectGoodBorder}" Property="BorderBrush" />
+                    <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBorder}" Property="BorderBrush" />
+                    <Setter TargetName="LabelBorder" Value="{DynamicResource RevisionList.BisectGoodBackground}" Property="Background" />
+                  </DataTrigger>
+    --></DataTemplate>
+        <DataTemplate DataType="ui:StashReferenceViewModel" x:Key="{DataTemplateKey {x:Type ui:StashReferenceViewModel}}">
+          <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="3,2,3,2" BorderBrush="{DynamicResource RevisionList.StashBorder}" Background="{DynamicResource ListBox.Static.Background}">
+            <DockPanel>
+              <Image Source="{DynamicResource SidebarStashIcon}" DockPanel.Dock="Left" Height="14" Width="14" Margin="2,0,2,0" />
+              <Border BorderThickness="1,0,0,0" Padding="2,0" CornerRadius="0,3,3,0" BorderBrush="{DynamicResource RevisionList.StashBorder}" Background="{DynamicResource RevisionList.StashBackground}">
+                <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                  <TextBlock.Text>
+                    <Binding Path="ReflogName" />
+                  </TextBlock.Text>
+                </TextBlock>
+              </Border>
+            </DockPanel>
+          </Border>
+        </DataTemplate>
+      </ResourceDictionary>
+    </DataTemplate.Resources>
+    <ContentPresenter>
+      <ContentPresenter.Content>
+        <Binding />
+      </ContentPresenter.Content>
+    </ContentPresenter>
+  </DataTemplate>
+  <!--
+      TODO(wpf2avalonia): 焦点视觉样式 FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      原始片段：
+      <Style x:Key="FocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate>
+                <Rectangle Margin="2" Stroke="{DynamicResource Item.SelectedActive.Background}" StrokeThickness="1" StrokeDashArray="1 2" />
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+    -->
+  <ControlTheme x:Key="ListViewItemStyle" TargetType="ListBoxItem">
+    
+    <Setter Property="Padding" Value="4,1" />
+    <Setter Property="HorizontalContentAlignment">
+      <Setter.Value>
+        <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="VerticalContentAlignment">
+      <Setter.Value>
+        <Binding Path="VerticalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListViewItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:pointerover /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.MouseOver.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.MouseOver.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Bd">
+        <Setter Value="#FF6D6D6D" Property="Foreground" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox">
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="0,4,0,0" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
+    <Setter Property="PanningMode" Value="Both" />
+    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource ListViewItemStyle}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListView">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Bd">
+            <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
+              <ItemsPresenter />
+            </ScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <!--
+      TODO(wpf2avalonia): TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
+      原始片段：
+      <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="IsVisible" Value="False" />
+        </Style>
+    -->
+  <ControlTheme x:Key="ListViewWithGridViewScrollViewerStyle" TargetType="ScrollViewer" BasedOn="{StaticResource {x:Type ScrollViewer}}">
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ScrollViewer">
+          <Grid Background="{TemplateBinding Background}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <DockPanel Margin="{TemplateBinding Padding}">
+              <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+                <!--
+      TODO(wpf2avalonia): <GridViewHeaderRowPresenter>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
+      原始片段：
+      <GridViewHeaderRowPresenter Margin="0" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}" xmlns="https://github.com/avaloniaui">
+                        <GridViewHeaderRowPresenter.AllowsColumnReorder>
+                          <Binding Path="TemplatedParent.View.AllowsColumnReorder"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                        </GridViewHeaderRowPresenter.AllowsColumnReorder>
+                        <GridViewHeaderRowPresenter.ColumnHeaderContainerStyle>
+                          <Binding Path="TemplatedParent.View.ColumnHeaderContainerStyle"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                        </GridViewHeaderRowPresenter.ColumnHeaderContainerStyle>
+                        <GridViewHeaderRowPresenter.ColumnHeaderToolTip>
+                          <Binding Path="TemplatedParent.View.ColumnHeaderToolTip"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                        </GridViewHeaderRowPresenter.ColumnHeaderToolTip>
+                        <GridViewHeaderRowPresenter.ColumnHeaderContextMenu>
+                          <Binding Path="TemplatedParent.View.ColumnHeaderContextMenu"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                        </GridViewHeaderRowPresenter.ColumnHeaderContextMenu>
+                        <GridViewHeaderRowPresenter.ColumnHeaderTemplate>
+                          <Binding Path="TemplatedParent.View.ColumnHeaderTemplate"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                        </GridViewHeaderRowPresenter.ColumnHeaderTemplate>
+                      </GridViewHeaderRowPresenter>
+    -->
+              </controls:TouchpadAwareScrollViewer>
+              <ScrollContentPresenter CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" x:Name="PART_ScrollContentPresenter" />
+            </DockPanel>
+            <ScrollBar Cursor="Arrow" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" ViewportSize="{TemplateBinding ViewportWidth}" x:Name="PART_HorizontalScrollBar" Theme="{DynamicResource HorizontalScrollBarStyle}">
+              <ScrollBar.Value>
+                <Binding Path="HorizontalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+              </ScrollBar.Value>
+            </ScrollBar>
+            <ScrollBar Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollableHeight}" Minimum="0" Orientation="Vertical" Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" ViewportSize="{TemplateBinding ViewportHeight}" x:Name="PART_VerticalScrollBar" Theme="{DynamicResource VerticalScrollBarStyle}">
+              <ScrollBar.Value>
+                <Binding Path="VerticalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+              </ScrollBar.Value>
+            </ScrollBar>
+            <DockPanel Background="{DynamicResource ScrollViewerBackground}" Grid.Column="1" LastChildFill="False" Grid.Row="1">
+              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" />
+              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" />
+            </DockPanel>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="ListViewItemGridViewStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemStyle}">
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListViewItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
+            <Border.CornerRadius>
+              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+            </Border.CornerRadius>
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+    </Style>
+    <Style Selector="^[IsSelectionActive=True]:selected">
+        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="ListViewWithGridViewStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListView}}">
+    <Style.Resources>
+      <ResourceDictionary>
+        <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemGridViewStyle}" />
+      </ResourceDictionary>
+    </Style.Resources>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListView">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
+            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Theme="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
+              <ItemsPresenter />
+            </controls:TouchpadAwareScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="NoSelectionRevisionListViewItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
+    <Setter Property="Focusable" Value="False" />
+    
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="0" />
+    
+  
+    <!--
+      TODO(wpf2avalonia): Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      原始片段：
+      <DataTrigger xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsHead" />
+              </DataTrigger.Binding>
+              <Setter Property="FontWeight" Value="Bold" />
+            </DataTrigger>
+    -->
+    <!--
+      TODO(wpf2avalonia): Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      原始片段：
+      <DataTrigger xmlns="https://github.com/avaloniaui">
+              <DataTrigger.Binding>
+                <Binding Path="IsReachable" />
+              </DataTrigger.Binding>
+              <Setter Property="Foreground" Value="{DynamicResource RevisionList.Unreachable.ForegroundBrush}" />
+            </DataTrigger>
+    --></ControlTheme>
+  <ControlTheme x:Key="ListBoxItemStyle" TargetType="ListBoxItem">
+    
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="MultiselectListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
+            <Border.CornerRadius>
+              <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
+            </Border.CornerRadius>
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="NoSelectionListBoxItemStyle" TargetType="ListBoxItem">
+    <Setter Property="Focusable" Value="False" />
+    
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="NoVisibleSelectionListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource NoSelectionListBoxItemStyle}">
+    <Setter Property="Focusable" Value="True" />
+  </ControlTheme>
+  <ControlTheme x:Key="ListBoxItemWithBorderStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}">
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Background" Value="{DynamicResource Item.Static.Background}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemNotRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource ListItemRoundedBorderStyle}" Property="Style" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource ListItemRoundedBorderStyle}" Property="Style" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox">
+    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="0,4,0,0" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
+    <Setter Property="PanningMode" Value="Both" />
+    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource ListBoxItemStyle}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBox">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
+            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+              <ItemsPresenter />
+            </controls:TouchpadAwareScrollViewer>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    
+  
+    <Style Selector="^[SelectionMode=Extended]">
+        <Setter Property="ItemContainerStyle" Value="{DynamicResource MultiselectListBoxItemStyle}" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="NoSelectionListBoxStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+    
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource NoSelectionListBoxItemStyle}" />
+  </ControlTheme>
+  <ControlTheme x:Key="AutoCompleteListBoxStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="MinWidth" Value="196" />
+    <Setter Property="Height" Value="78" />
+    <Setter Property="Padding" Value="0,2,0,0" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
+    <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+    <Setter Property="ItemContainerStyle" Value="{DynamicResource AutocompleteListBoxItemStyle}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+    <Setter Property="IsVirtualizing" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBox">
+          <Grid>
+            <Border Margin="8" Background="{DynamicResource Menu.MenuItem.Static.Background}" CornerRadius="6">
+              <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" OffsetY="1" />
+              </Border.Effect>
+            </Border>
+            <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="6" x:Name="Bd">
+              <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
+                <ItemsPresenter />
+              </ScrollViewer>
+            </Border>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="AutocompleteListBoxItemStyle" TargetType="ListBoxItem">
+    
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    
+    <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+    <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="4,2,4,2" />
+    <Setter Property="Height" Value="21" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <ControlTemplate.Resources>
+            <ResourceDictionary>
+              <DataTemplate DataType="controls:AutoCompleteSuggestion" x:Key="{DataTemplateKey {x:Type controls:AutoCompleteSuggestion}}">
+                <TextBlock FontSize="13" TextTrimming="CharacterEllipsis">
+                  <TextBlock.Text>
+                    <Binding Path="Suggestion" />
+                  </TextBlock.Text>
+                </TextBlock>
+              </DataTemplate>
+              <DataTemplate DataType="controls:UserIdentityAutoCompleteSuggestion" x:Key="{DataTemplateKey {x:Type controls:UserIdentityAutoCompleteSuggestion}}">
+                <DockPanel>
+                  <controls:AvatarImage Margin="0" DockPanel.Dock="Left" VerticalAlignment="Center" Height="14" Width="14" x:Name="AuthorAvatarImage">
+                    <controls:AvatarImage.UserIdentity>
+                      <Binding Path="UserIdentity" />
+                    </controls:AvatarImage.UserIdentity>
+                  </controls:AvatarImage>
+                  <TextBlock FontSize="13" Margin="4,0,0,0" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                      <Binding Path="Suggestion" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </DockPanel>
+              </DataTemplate>
+              <DataTemplate DataType="controls:GitmojiAutoCompleteSuggestion" x:Key="{DataTemplateKey {x:Type controls:GitmojiAutoCompleteSuggestion}}">
+                <DockPanel>
+                  <TextBlock DockPanel.Dock="Left" Margin="0" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe UI, Segoe UI Emoji" Width="22" TextAlignment="Center">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.Emoji" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                  <TextBlock DockPanel.Dock="Left" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="13" FontFamily="Consolas" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.ShortName" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                  <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Text>
+                      <Binding Path="Entry.Description" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </DockPanel>
+              </DataTemplate>
+            </ResourceDictionary>
+          </ControlTemplate.Resources>
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  
+    <Style Selector="^:selected /template/ Border#Bd">
+        <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="DiffListListBoxItemStyle" TargetType="ListBoxItem">
+    
+    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="GridViewColumnHeaderGripper" TargetType="Thumb">
+    <Setter Property="Canvas.Right" Value="-9" />
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height">
+      <Setter.Value>
+        <Binding Path="ActualHeight"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Thumb">
+          <Border Background="#00FFFFFF" Padding="{TemplateBinding Padding}">
+            <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Center" Width="1" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <!--
+      TODO(wpf2avalonia): TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
+      原始片段：
+      <Style x:Key="{x:Type GridViewColumnHeader}" TargetType="{x:Type GridViewColumnHeader}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
+          <Setter Property="HorizontalContentAlignment" Value="Left" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="Padding" Value="4,0,4,0" />
+          <Setter Property="Background" Value="{DynamicResource GridViewColumnHeaderBackground}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource GridViewColumnHeaderBorderBackground}" />
+          <Setter Property="BorderThickness" Value="0,0,0,1" />
+          <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="GridViewColumnHeader">
+                <Grid>
+                  <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="HeaderBorder">
+                    <Grid>
+                      <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="7" />
+                        <RowDefinition />
+                      </Grid.RowDefinitions>
+                      <Border Padding="{TemplateBinding Padding}" Grid.RowSpan="2">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0,0,0,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="HeaderContent" />
+                      </Border>
+                    </Grid>
+                  </Border>
+                  <Canvas>
+                    <Thumb x:Name="PART_HeaderGripper" Theme="{DynamicResource GridViewColumnHeaderGripper}" />
+                  </Canvas>
+                </Grid>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="UIElement.IsMouseOver" Value="true">
+                    <Setter TargetName="HeaderBorder" Value="{DynamicResource GridViewColumnHeaderHoverBackground}" Property="Background" />
+                  </Trigger>
+                  <Trigger Property="ButtonBase.IsPressed" Value="true">
+                    <Setter TargetName="HeaderBorder" Value="{DynamicResource GridViewColumnHeaderPressBackground}" Property="Background" />
+                  </Trigger>
+                  <Trigger Property="FrameworkElement.Height" Value="Auto">
+                    <Setter Property="MinHeight" Value="20" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+    -->
+  <ControlTheme x:Key="ReferencePanelStyle" TargetType="controls:ReferencePanel" BasedOn="{StaticResource {x:Type controls:ReferencePanel}}">
+    
+    <Setter Property="ItemTemplate">
+      <Setter.Value>
+        <DataTemplate>
+          <DataTemplate.Resources>
+            <ResourceDictionary>
+              <DataTemplate DataType="controls:ReferencePanelTagViewModel" x:Key="{DataTemplateKey {x:Type controls:ReferencePanelTagViewModel}}">
+                <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="0,2,4,2" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="#00FFFFFF">
+                  <DockPanel>
+                    <Image Source="{DynamicResource TagIcon}" DockPanel.Dock="Left" Height="14" Width="14" Margin="2,0,2,0" />
+                    <Border BorderThickness="1,0,0,0" CornerRadius="0,4,4,0" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
+                      <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                        <TextBlock.Text>
+                          <Binding Path="Name" />
+                        </TextBlock.Text>
+                      </TextBlock>
+                    </Border>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+              <DataTemplate DataType="controls:ReferencePanelLocalBranchViewModel" x:Key="{DataTemplateKey {x:Type controls:ReferencePanelLocalBranchViewModel}}">
+                <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="0,2,4,2" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
+                  <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                    <TextBlock.Text>
+                      <Binding Path="Name" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </Border>
+              </DataTemplate>
+              <DataTemplate DataType="controls:ReferencePanelRemoteBranchViewModel" x:Key="{DataTemplateKey {x:Type controls:ReferencePanelRemoteBranchViewModel}}">
+                <Border Height="18" BorderThickness="1" CornerRadius="4" Padding="0" Margin="0,2,4,2" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="#00FFFFFF">
+                  <DockPanel>
+                    <Image DockPanel.Dock="Left" Height="14" Width="14" Margin="2,0,2,0">
+                      <Image.Source>
+                        <Binding Path="RemoteIcon" />
+                      </Image.Source>
+                    </Image>
+                    <Border BorderThickness="1,0,0,0" CornerRadius="0,4,4,0" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
+                      <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                        <TextBlock.Text>
+                          <Binding Path="Name" />
+                        </TextBlock.Text>
+                      </TextBlock>
+                    </Border>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+              <DataTemplate DataType="controls:ReferencePanelBisectMarkViewModel" x:Key="{DataTemplateKey {x:Type controls:ReferencePanelBisectMarkViewModel}}">
+                <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="0,2,4,2" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
+                  <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+                    <TextBlock.Text>
+                      <Binding Path="Name" />
+                    </TextBlock.Text>
+                  </TextBlock>
+                </Border>
+              </DataTemplate>
+            </ResourceDictionary>
+          </DataTemplate.Resources>
+          <ContentPresenter>
+            <ContentPresenter.Content>
+              <Binding />
+            </ContentPresenter.Content>
+          </ContentPresenter>
+        </DataTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="MultilineReferencePanelStyle" TargetType="controls:ReferencePanel" BasedOn="{StaticResource ReferencePanelStyle}">
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

@@ -1,0 +1,71 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type TextBox}" TargetType="TextBox">
+    <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    
+    <Setter Property="AllowDrop" Value="true" />
+    <Setter Property="PanningMode" Value="VerticalFirst" />
+    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TextBox">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+            <ScrollViewer Background="#00FFFFFF" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    
+  
+    <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
+        <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Border">
+        <Setter Property="Opacity" Value="0.56" />
+    </Style>
+    <Style Selector="^:focus /template/ Border#Border">
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style></ControlTheme>
+  <ControlTheme x:Key="{x:Type TextBox}" TargetType="TextBox">
+    <Setter Property="PasswordChar" Value="●" />
+    <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    
+    <Setter Property="AllowDrop" Value="true" />
+    <Setter Property="PanningMode" Value="VerticalFirst" />
+    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="PasswordBox">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
+            <ScrollViewer Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
+          </Border>
+          
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    
+  
+    <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
+        <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Border">
+        <Setter Property="Opacity" Value="0.56" />
+    </Style>
+    <Style Selector="^:focus /template/ Border#Border">
+        <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
+    </Style></ControlTheme>
+</ResourceDictionary>
