@@ -17,7 +17,7 @@ namespace ForkPlus.UI
 			{
 				return null;
 			}
-			return control.ItemContainerGenerator.ItemFromContainer(containerAtPoint);
+			return control.ItemFromContainer(containerAtPoint);
 		}
 
 		public static ItemContainer GetContainerAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : global::Avalonia.AvaloniaObject
@@ -37,7 +37,7 @@ namespace ForkPlus.UI
 
 		public static void FocusSelectedItem(this Selector control)
 		{
-			if (control.SelectedIndex >= 0 && control.ItemContainerGenerator.ContainerFromIndex(control.SelectedIndex) is IInputElement element)
+			if (control.SelectedIndex >= 0 && control.ContainerFromIndex(control.SelectedIndex) is IInputElement element)
 			{
 				(element).Focus();
 			}

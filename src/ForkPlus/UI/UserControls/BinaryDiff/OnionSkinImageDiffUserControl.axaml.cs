@@ -23,8 +23,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			{
 				RefreshOverlayImageSize();
 			};
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "ImageDiffHighlightPixelsChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"ImageDiffHighlightPixelsChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshHighlightImageDiff();
 			});
 			RefreshHighlightImageDiff();

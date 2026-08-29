@@ -97,13 +97,14 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (Dispatcher.CheckAccess())
 			{
-				OutputTextBox.Document.Blocks.Clear();
+				// TODO 迁移：Avalonia TextBox 无 FlowDocument，改为纯文本清空
+				OutputTextBox.Clear();
 				_outputLineCount = 0;
 				return;
 			}
 			Dispatcher.Invoke(delegate
 			{
-				OutputTextBox.Document.Blocks.Clear();
+				OutputTextBox.Clear();
 				_outputLineCount = 0;
 			});
 		}
@@ -131,28 +132,26 @@ namespace ForkPlus.UI.UserControls
 
 		private void AppendOutputLine(string text)
 		{
-			Paragraph paragraph = new Paragraph
-			{
-				Margin = new Thickness(0.0)
-			};
-			if (_outputLineCount < RichOutputLineLimit)
-			{
-				AppendOutputInlines(paragraph.Inlines, text);
-			}
-			else
-			{
-				AddRun(paragraph.Inlines, StripAnsiEscapes(text ?? ""), null);
-			}
-			OutputTextBox.Document.Blocks.Add(paragraph);
+			// TODO 迁移：Avalonia TextBox 无 FlowDocument/彩色 Run，
+			// 富文本降级为纯文本追加（保留 ANSI 去除与行数上限逻辑）。
+			string plain = _outputLineCount < RichOutputLineLimit ? StripAnsiEscapes(CollectInlineText(text)) : StripAnsiEscapes(text ?? "");
+			OutputTextBox.AppendText(plain + Environment.NewLine);
 			_outputLineCount++;
 			TrimOutputLines();
 		}
 
+		/// <summary>富文本路径近似：原 AppendOutputInlines 会解析分段，这里直接取原文。</summary>
+		private static string CollectInlineText(string text) => text ?? "";
+
 		private void TrimOutputLines()
 		{
-			while (_outputLineCount > MaxOutputLineCount && OutputTextBox.Document.Blocks.FirstBlock != null)
+			while (_outputLineCount > MaxOutputLineCount && OutputTextBox.LineCount > MaxOutputLineCount)
 			{
-				OutputTextBox.Document.Blocks.Remove(OutputTextBox.Document.Blocks.FirstBlock);
+				// 删除最早一行：找第二个换行符位置
+				string current = OutputTextBox.Text ?? "";
+				int idx = current.IndexOf(Environment.NewLine, StringComparison.Ordinal);
+				if (idx < 0) break;
+				OutputTextBox.Text = current.Substring(idx + Environment.NewLine.Length);
 				_outputLineCount--;
 			}
 		}

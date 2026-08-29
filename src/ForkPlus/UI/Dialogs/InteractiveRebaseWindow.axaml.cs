@@ -389,7 +389,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void UpdateListViewColumnsWidth()
 		{
-			GridView gridView = RevisionListView.View as GridView;
+			GridView gridView = RevisionListView.GetGridView();
 			double num = 0.0;
 			for (int i = 0; i < gridView.Columns.Count; i++)
 			{

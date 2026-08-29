@@ -122,7 +122,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public void ScrollToVerticalOffset(double verticalOffset)
 		{
-			_editor.ScrollToVerticalOffset(verticalOffset);
+			_editor.ScrollToVerticalOffsetCompat(verticalOffset);
 		}
 
 		public void RefreshDiffFont(double codeEditorFontSize)

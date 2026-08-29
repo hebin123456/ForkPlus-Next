@@ -89,7 +89,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_showDiffMarks = ForkPlusSettings.Default.DiffShowChangeMarks;
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowChangeMarksChanged", DiffShowChangeMarksChanged);
-			RenderOptions.SetClearTypeHint(this, ClearTypeHint.Enabled);
+			RenderOptionsShim.SetClearTypeHint(this, ClearTypeHint.Enabled);
 		}
 
 		public void UpdateLineNumbersData([Null] VisualPatch visualPatch)

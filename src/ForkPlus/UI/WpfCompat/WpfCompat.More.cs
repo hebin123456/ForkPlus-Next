@@ -153,8 +153,9 @@ namespace ForkPlus.UI.WpfCompat
         {
             if (node == null) return null;
             if (node.Name == name) return node;
-            foreach (var child in node.GetVisualDescendants().OfType<StyledElement>())
-                if (child.Name == name) return child;
+            if (node is Visual nv)
+                foreach (var child in nv.GetVisualDescendants().OfType<StyledElement>())
+                    if (child.Name == name) return child;
             return null;
         }
     }
@@ -167,12 +168,24 @@ namespace ForkPlus.UI.WpfCompat
         Enabled = 1,
     }
 
-    /// <summary>WPF System.Windows.Media.RenderOptions（Avalonia 文本渲染自动处理）no-op。</summary>
-    public static class RenderOptions
+    /// <summary>
+    /// WPF System.Windows.Media.RenderOptions（Avalonia 文本渲染自动处理）no-op。
+    /// 改名 RenderOptionsShim 避免与 Avalonia.Media.RenderOptions 二义性。
+    /// </summary>
+    public static class RenderOptionsShim
     {
         public static void SetClearTypeHint(Visual visual, ClearTypeHint hint) { }
         public static ClearTypeHint GetClearTypeHint(Visual visual) => ClearTypeHint.Auto;
         public static void SetBitmapScalingMode(Visual visual, global::Avalonia.Media.Imaging.BitmapInterpolationMode mode) { }
+        /// <summary>WPF RenderOptions.ProcessRenderMode（Avalonia 无对应全局开关）。</summary>
+        public static object ProcessRenderMode { get; set; }
+    }
+
+    /// <summary>WPF System.Windows.Interop.RenderMode。</summary>
+    public enum RenderMode
+    {
+        Default = 0,
+        SoftwareOnly = 1,
     }
 
     /// <summary>WPF System.Windows.PresentationTraceSources no-op。</summary>
@@ -224,10 +237,10 @@ namespace ForkPlus.UI.WpfCompat
             => element != null && _captured.Contains(element);
 
         public static Point PointFromScreen(this Visual visual, PixelPoint point)
-            => visual.PointToClient(point);
+            => TopLevel.GetTopLevel(visual)?.PointToClient(point) ?? default;
 
         public static Point PointToScreen(this Visual visual, Point point)
-            => visual.PointToScreen(point).ToPoint();
+            => TopLevel.GetTopLevel(visual)?.PointToScreen(point).ToPoint() ?? default;
 
         public static bool MoveFocus(this InputElement element, TraversalRequest request)
         {
@@ -414,7 +427,7 @@ namespace ForkPlus.UI.WpfCompat
                 }
                 double from = da.From ?? (target.GetValue(property) is double d ? d : 0.0);
                 double to = da.To.Value;
-                TimeSpan dur = da.Duration.Time;
+                TimeSpan dur = da.Duration.Time ?? TimeSpan.Zero;
                 if (dur <= TimeSpan.Zero) dur = TimeSpan.FromMilliseconds(200);
 
                 if (_running.TryRemove((target, property), out var prev)) prev.Stop();

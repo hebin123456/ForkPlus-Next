@@ -131,20 +131,20 @@ namespace ForkPlus.UI.UserControls
 			{
 				SaveFileListColumnWidth();
 			};
-			WeakEventManager<NotificationCenter, EventArgs<FileListMode>>.AddHandler(NotificationCenter.Current, "FileListModeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<FileListMode>>.AddHandler(NotificationCenter.Current,"FileListModeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshFileListMode();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "DiffContextSizeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current,"DiffContextSizeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				_updateDiffAction.InvokeWithDelay(SelectedFile);
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffIgnoreWhitespacesChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffIgnoreWhitespacesChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				_updateDiffAction.InvokeWithDelay(SelectedFile);
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowEntireFileChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffShowEntireFileChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				_updateDiffAction.InvokeWithDelay(SelectedFile);
 			});
 			this.AddCommandBinding(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate

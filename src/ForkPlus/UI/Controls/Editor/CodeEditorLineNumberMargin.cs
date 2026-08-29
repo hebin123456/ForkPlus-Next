@@ -47,7 +47,7 @@ namespace ForkPlus.UI.Controls.Editor
 			emSize = 11.0;
 			RefreshBrushes();
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			RenderOptions.SetClearTypeHint(this, ClearTypeHint.Enabled);
+			RenderOptionsShim.SetClearTypeHint(this, ClearTypeHint.Enabled);
 		}
 
 		public void UpdateLineNumbersData()

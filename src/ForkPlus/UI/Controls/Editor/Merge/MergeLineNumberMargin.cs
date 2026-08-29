@@ -52,7 +52,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			emSize = 11.0;
 			RefreshPen();
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			RenderOptions.SetClearTypeHint(this, ClearTypeHint.Enabled);
+			RenderOptionsShim.SetClearTypeHint(this, ClearTypeHint.Enabled);
 		}
 
 		public void UpdateLineNumbersData(MergeConflictView mergeConflictView)
@@ -115,7 +115,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			base.Render(drawingContext);
 			foreach (VisualLine visualLine in base.TextView.VisualLines)
 			{
-				Brush brush = _textBrush;
+				IBrush brush = _textBrush;
 				if (_editor.ViewMode == MergeConflictPart.Local || _editor.ViewMode == MergeConflictPart.Remote)
 				{
 					if (IsLineSelected(visualLine.FirstDocumentLine.LineNumber - 1))

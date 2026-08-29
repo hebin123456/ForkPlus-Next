@@ -568,11 +568,11 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		{
 			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
 			{
-				other.ScrollToVerticalOffset(verticalOffset);
+				other.ScrollToVerticalOffsetCompat(verticalOffset);
 			}
 			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset))
 			{
-				other.ScrollToHorizontalOffset(horizontalOffset);
+				other.ScrollToHorizontalOffsetCompat(horizontalOffset);
 			}
 		}
 		finally

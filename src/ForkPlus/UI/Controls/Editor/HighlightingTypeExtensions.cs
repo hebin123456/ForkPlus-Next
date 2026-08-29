@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Controls.Editor
 		private static readonly Brush SyntaxAttributeBrush = Freeze(new SolidColorBrush(Color.FromRgb(193, 64, 71)));
 		private static readonly Brush SyntaxVariableBrush = Freeze(new SolidColorBrush(Color.FromRgb(104, 72, 186)));
 		private static readonly Brush SyntaxValueBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
-		private static readonly Brush SyntaxNumberBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
+		private static readonly IBrush SyntaxNumberBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
 
 		// ===== Dark 基底默认画刷（回退用） =====
 		private static readonly Brush ExactAddBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(56, 132, 66)));
@@ -59,7 +59,7 @@ namespace ForkPlus.UI.Controls.Editor
 		private static readonly Brush SyntaxAttributeBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(230, 76, 128)));
 		private static readonly Brush SyntaxVariableBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(100, 155, 209)));
 		private static readonly Brush SyntaxValueBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(190, 213, 168)));
-		private static readonly Brush SyntaxNumberBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(190, 213, 168)));
+		private static readonly IBrush SyntaxNumberBrushDark = Freeze(new SolidColorBrush(Color.FromRgb(190, 213, 168)));
 
 		/// <summary>每类高亮对应的 Color 资源 key（用户可在 CustomColorsDialog 修改这些 key）。
 		/// 同一个 HighlightingType 在 light/dark 基底下共用一个 key——由各 Colors.{Skin}.xaml 提供不同的值。</summary>
@@ -91,7 +91,7 @@ namespace ForkPlus.UI.Controls.Editor
 			return null;
 		}
 
-		public static Brush GetHighlightBrush(this HighlightingType highlightingType, ThemeType theme)
+		public static IBrush GetHighlightBrush(this HighlightingType highlightingType, ThemeType theme)
 		{
 			// 优先读资源：自定义颜色覆盖或主题字典里定义了对应 key 就用它的 Color 构建新画刷。
 			// 不 Freeze——这样下次资源变化时订阅者重绘会再调本方法拿到最新画刷。

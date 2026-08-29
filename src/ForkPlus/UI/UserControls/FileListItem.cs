@@ -87,7 +87,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			try
 			{
-				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(dragSource, GetDataObject(nodes), DragDropEffects.All);
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(dragSource, GetDataObject(nodes), (global::Avalonia.Input.DragDropEffects)7);
 			}
 			catch
 			{

@@ -251,7 +251,7 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			this.SetWindowLocationState(ForkPlusSettings.Default.AiResultWindowLocationState);
-			if (Application.Current?.MainWindow?.WindowState == global::Avalonia.Controls.WindowState.Maximized)
+			if (WpfApp.MainWindow?.WindowState == global::Avalonia.Controls.WindowState.Maximized)
 			{
 				global::Avalonia.Controls.WindowState = global::Avalonia.Controls.WindowState.Maximized;
 			}
@@ -294,7 +294,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private static void ActivateMainWindow()
 		{
-			Window mainWindow = Application.Current?.MainWindow;
+			Window mainWindow = WpfApp.MainWindow;
 			if (mainWindow == null)
 			{
 				return;

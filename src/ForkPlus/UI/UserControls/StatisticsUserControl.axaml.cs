@@ -25,6 +25,14 @@ using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using PieSeries = global::OxyPlot.Series.PieSeries;
+using BarSeries = global::OxyPlot.Series.BarSeries;
+using Axis = global::OxyPlot.Axes.Axis;
+using LinearAxis = global::OxyPlot.Axes.LinearAxis;
+using CategoryAxis = global::OxyPlot.Axes.CategoryAxis;
+using DateTimeAxis = global::OxyPlot.Axes.DateTimeAxis;
+using Series = global::OxyPlot.Series.Series;
+using Legend = global::OxyPlot.Legends.Legend;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -477,7 +485,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 							{
 								_pendingScrollToCodeLines = false;
 								Dispatcher.InvokeAsync(new Action(() => CodeLinesSection.BringIntoView()),
-									System.Windows.Threading.DispatcherPriority.Render);
+									global::Avalonia.Threading.DispatcherPriority.Render);
 							}
 						}
 					}

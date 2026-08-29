@@ -29,8 +29,8 @@ namespace ForkPlus.UI.Controls
 			_syntaxHighlighting = new SyntaxHighlighting();
 			base.TextArea.TextView.LineTransformers.Add(_syntaxHighlighting);
 			base.FontSize = ForkPlusSettings.Default.CodeEditorFontSize;
-			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current, "CodeEditorFontSizeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current,"CodeEditorFontSizeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				base.FontSize = ForkPlusSettings.Default.CodeEditorFontSize;
 			});
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);

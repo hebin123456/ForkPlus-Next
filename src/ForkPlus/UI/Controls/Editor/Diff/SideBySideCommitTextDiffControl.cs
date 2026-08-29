@@ -261,7 +261,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			if (editor.IsVerticalOffsetWithinDocumentArea(offset))
 			{
-				editor.ScrollToVerticalOffset(offset);
+				editor.ScrollToVerticalOffsetCompat(offset);
 			}
 		}
 
@@ -269,7 +269,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			if (editor.IsHorizontalOffsetWithinDocumentArea(offset))
 			{
-				editor.ScrollToHorizontalOffset(offset);
+				editor.ScrollToHorizontalOffsetCompat(offset);
 			}
 		}
 	}

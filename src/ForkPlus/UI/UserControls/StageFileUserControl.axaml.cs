@@ -135,8 +135,8 @@ namespace ForkPlus.UI.UserControls
 			FileListUserControl stagedFilesFileListUserControl3 = StagedFilesFileListUserControl;
 			stagedFilesFileListUserControl3.ItemsDrop = (EventHandler<FileListTreeView.DropEventArgs>)Delegate.Combine(stagedFilesFileListUserControl3.ItemsDrop, new EventHandler<FileListTreeView.DropEventArgs>(StageFilesFileListUserControl_ItemsDrop));
 			RefreshFileListMode();
-			WeakEventManager<NotificationCenter, EventArgs<FileListMode>>.AddHandler(NotificationCenter.Current, "FileListModeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<FileListMode>>.AddHandler(NotificationCenter.Current,"FileListModeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshFileListMode();
 			});
 			StageButton.Click += StageButton_Click;

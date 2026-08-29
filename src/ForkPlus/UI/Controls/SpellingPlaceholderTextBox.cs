@@ -21,8 +21,8 @@ namespace ForkPlus.UI.Controls
 			});
 			if (!global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
-				WeakEventManager<NotificationCenter, EventArgs<CommitSpellCheckingMode>>.AddHandler(NotificationCenter.Current, "CommitSpellCheckingModeChanged", delegate
-				{
+				WeakEventManager<NotificationCenter, EventArgs<CommitSpellCheckingMode>>.AddHandler(NotificationCenter.Current,"CommitSpellCheckingModeChanged",delegate
+(object sender, global::System.EventArgs e)				{
 					RefreshSpellChecking();
 				});
 			}

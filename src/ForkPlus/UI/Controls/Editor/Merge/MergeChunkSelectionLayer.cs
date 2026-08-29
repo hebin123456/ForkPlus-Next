@@ -30,8 +30,8 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		{
 			_selectButton = new FloatingButton(textEditor);
 			RefreshButtonsState();
-			WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_selectButton, "Click", delegate
-			{
+			WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_selectButton,"Click",delegate
+(object sender, global::System.EventArgs e)			{
 				MergeConflictView.Chunk activeChunk = ActiveChunk;
 				if (activeChunk != null)
 				{

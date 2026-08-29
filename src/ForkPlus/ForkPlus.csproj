@@ -31,7 +31,7 @@
                  整个工程只跑 Windows，但 AvalonEdit/OxyPlot/WebView2 等库的 API
                  标注 [SupportedOSPlatform("Windows")]，分析器认为"call site 可达
                  所有平台"而触发警告。Windows-only 工程此警告无意义。 -->
-    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416</NoWarn>
+    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416;CS0618;CS0619</NoWarn>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
   <ItemGroup>

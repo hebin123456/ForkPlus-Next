@@ -14,13 +14,13 @@ namespace ForkPlus.UI
 		[DebuggerStepThrough]
 		public static TabManager TabManager(this Application application)
 		{
-			return (application.MainWindow as MainWindow)?.TabManager;
+			return (WpfApp.MainWindow as MainWindow)?.TabManager;
 		}
 
 		[DebuggerStepThrough]
 		public static RepositoryUserControl ActiveRepositoryUserControl(this Application application)
 		{
-			return (application.MainWindow as MainWindow)?.TabManager.ActiveRepositoryUserControl;
+			return (WpfApp.MainWindow as MainWindow)?.TabManager.ActiveRepositoryUserControl;
 		}
 
 		public static void RefreshLayoutScaling(this Application application)

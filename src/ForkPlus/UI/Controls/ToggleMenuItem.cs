@@ -34,7 +34,7 @@ namespace ForkPlus.UI.Controls
 				Stretch = icon.Stretch,
 				HorizontalAlignment = icon.HorizontalAlignment,
 				VerticalAlignment = icon.VerticalAlignment,
-				SnapsToDevicePixels = icon.SnapsToDevicePixels
+				SnapsToDevicePixels = true
 			};
 		}
 	}

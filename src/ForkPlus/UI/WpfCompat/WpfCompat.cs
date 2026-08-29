@@ -26,13 +26,13 @@ namespace ForkPlus.UI.WpfCompat
     }
 
     /// <summary>WPF ContextMenu 事件参数（Avalonia 用 ContextRequested 替代）。</summary>
-    public class ContextMenuEventArgs : EventArgs
+    public class ContextMenuEventArgs : global::Avalonia.Input.ContextRequestedEventArgs
     {
         public object TargetElement { get; set; }
-        public bool Handled { get; set; }
     }
 
-    public delegate void ContextMenuEventHandler(object sender, ContextMenuEventArgs e);
+    /// <summary>统一走 Avalonia ContextRequestedEventArgs 签名，lambda 兼容。</summary>
+    public delegate void ContextMenuEventHandler(object sender, global::Avalonia.Input.ContextRequestedEventArgs e);
 
     /// <summary>WPF GiveFeedbackEventArgs（拖放光标反馈，Avalonia 无此事件）。</summary>
     public class GiveFeedbackEventArgs : EventArgs
@@ -80,7 +80,7 @@ namespace ForkPlus.UI.WpfCompat
                 if (!pasteKey) return;
                 var clipboard = TopLevel.GetTopLevel(textBox)?.Clipboard;
                 if (clipboard == null) return;
-                string text = await clipboard.GetTextAsync();
+                string text = await clipboard.TryGetTextAsync();
                 if (text == null) return;
                 var args = new DataObjectPastingEventArgs { DataObject = new PastingDataObject(text) };
                 handler(textBox, args);
@@ -178,13 +178,7 @@ namespace ForkPlus.UI.WpfCompat
     }
 
     // ===== 颜色工具（OxyPlot.Wpf 命名空间的扩展移到 WpfCompat）=====
-
-    public static class ColorCompatExtensions
-    {
-        /// <summary>WPF OxyPlot.Wpf 扩展：Color → OxyColor。</summary>
-        public static OxyPlot.OxyColor ToOxyColor(this global::Avalonia.Media.Color c)
-            => OxyPlot.OxyColor.FromArgb(c.A, c.R, c.G, c.B);
-    }
+    // 注意：ToOxyColor(Color) 直接复用 OxyPlot.Avalonia.ConverterExtensions，避免扩展方法二义性。
 
     /// <summary>WPF System.Windows.Media.ColorConverter shim（十六进制解析）。</summary>
     public static class ColorConverter
@@ -237,10 +231,18 @@ namespace ForkPlus.UI.WpfCompat
     public class CommandBinding
     {
         public RoutedCommand Command { get; }
+        public System.Windows.Input.ICommand CommandInterface { get; }
         public ExecutedRoutedEventHandler Executed { get; }
         public CommandBinding(RoutedCommand command, ExecutedRoutedEventHandler executed)
         {
             Command = command;
+            Executed = executed;
+        }
+
+        /// <summary>支持 ApplicationCommands 等 ICommand 形态的构造（CustomWindow 用）。</summary>
+        public CommandBinding(System.Windows.Input.ICommand command, ExecutedRoutedEventHandler executed)
+        {
+            CommandInterface = command;
             Executed = executed;
         }
     }
@@ -291,14 +293,30 @@ namespace ForkPlus.UI.WpfCompat
             if (!_bindings.TryGetValue(tl, out var list)) return;
             foreach (var b in list)
             {
-                if (b.Command?.InputGestures == null) continue;
-                foreach (var g in b.Command.InputGestures)
+                if (b.Command == null && b.CommandInterface == null) continue;
+                if (b.Command != null)
                 {
-                    if (Matches(g, e))
+                    if (b.Command.InputGestures == null) continue;
+                    foreach (var g in b.Command.InputGestures)
                     {
-                        b.Executed?.Invoke(b.Command, new ExecutedEventArgs { Source = e.Source, Parameter = null });
-                        e.Handled = true;
-                        return;
+                        if (Matches(g, e))
+                        {
+                            b.Executed?.Invoke(b.Command, new ExecutedEventArgs { Source = e.Source, Parameter = null });
+                            e.Handled = true;
+                            return;
+                        }
+                    }
+                }
+                else if (b.CommandInterface is RoutedCommand rc && rc.InputGestures != null)
+                {
+                    foreach (var g in rc.InputGestures)
+                    {
+                        if (Matches(g, e))
+                        {
+                            b.Executed?.Invoke(rc, new ExecutedEventArgs { Source = e.Source, Parameter = null });
+                            e.Handled = true;
+                            return;
+                        }
                     }
                 }
             }
@@ -419,7 +437,7 @@ namespace ForkPlus.UI.WpfCompat
             foreach (var (adorned, adorner) in _items)
             {
                 if (adorned == null || adorner == null) continue;
-                var origin = adorned.Translate(new Point(), this);
+                var origin = adorned.TranslatePoint(new Point(), this) ?? new Point();
                 adorner.SetValue(LeftProperty, origin.X);
                 adorner.SetValue(TopProperty, origin.Y);
                 var size = adorned.Bounds.Size;

@@ -181,7 +181,7 @@ namespace ForkPlus.UI.Controls
 		{
 			if (Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
 			{
-				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), DragDropEffects.All);
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), (global::Avalonia.Input.DragDropEffects)7);
 			}
 		}
 

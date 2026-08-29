@@ -342,7 +342,7 @@ namespace ForkPlus.UI.Dialogs
 			RefreshWindowSize();
 			obj.Margin = new Thickness(20.0, 0.0, 20.0, 20.0);
 			obj.Background = global::ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
-			RenderOptions.SetClearTypeHint(obj, ClearTypeHint.Enabled);
+			RenderOptionsShim.SetClearTypeHint(obj, ClearTypeHint.Enabled);
 			if (ShowHeader)
 			{
 				AddDialogHeader();

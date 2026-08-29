@@ -50,8 +50,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		{
 			InitializeComponent();
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "ImageDiffHighlightPixelsChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"ImageDiffHighlightPixelsChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				UpdateHighlightImageDiff();
 			});
 			UpdateHighlightImageDiff();

@@ -20,10 +20,10 @@ using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.WpfCompat
 {
-    // ===== 应用级：WPF Application.Current.MainWindow / .Windows =====
+    // ===== 应用级：WPF WpfApp.MainWindow / .Windows =====
 
     /// <summary>
-    /// WPF Application.Current.MainWindow / Application.Current.Windows 的等价物。
+    /// WPF WpfApp.MainWindow / WpfApp.Windows 的等价物。
     /// Avalonia 把窗口集合放在 IClassicDesktopStyleApplicationLifetime 上。
     /// </summary>
     public static class WpfApp
@@ -263,7 +263,7 @@ namespace ForkPlus.UI.WpfCompat
         public static DpiScale GetDpi(Visual visual)
         {
             var tl = visual as TopLevel ?? TopLevel.GetTopLevel(visual);
-            double sc = tl?.DesktopScaling ?? 1.0;
+            double sc = tl?.RenderScaling ?? 1.0;
             return new DpiScale(sc, sc);
         }
 
@@ -344,13 +344,13 @@ namespace ForkPlus.UI.WpfCompat
             return task.Status == TaskStatus.RanToCompletion ? task.Result : default;
         }
 
-        public static string GetText() => Wait(GetClipboard()?.GetTextAsync()) ?? string.Empty;
+        public static string GetText() => Wait(GetClipboard()?.TryGetTextAsync()) ?? string.Empty;
 
         public static void SetText(string text) => GetClipboard()?.SetTextAsync(text);
 
         public static bool ContainsText()
         {
-            var fmts = Wait(GetClipboard()?.GetFormatsAsync());
+            var fmts = Wait(GetClipboard()?.GetDataFormatsAsync());
             return fmts?.Contains("Text") == true;
         }
 
@@ -456,10 +456,11 @@ namespace ForkPlus.UI.WpfCompat
         public static global::Avalonia.Platform.PixelFormat Bgra32 => global::Avalonia.Platform.PixelFormat.Bgra8888;
         public static global::Avalonia.Platform.PixelFormat Pbgra32 => global::Avalonia.Platform.PixelFormat.Bgra8888;
         public static global::Avalonia.Platform.PixelFormat Rgb24 => global::Avalonia.Platform.PixelFormat.Rgb888;
-        public static global::Avalonia.Platform.PixelFormat Bgr24 => global::Avalonia.Platform.PixelFormat.Bgr24;
-        public static global::Avalonia.Platform.PixelFormat Rgba64 => global::Avalonia.Platform.PixelFormat.Rgba64;
-        public static global::Avalonia.Platform.PixelFormat Gray8 => global::Avalonia.Platform.PixelFormat.Gray8;
-        public static global::Avalonia.Platform.PixelFormat Bgr565 => global::Avalonia.Platform.PixelFormat.Bgr565;
+        // Avalonia 12 无 Bgr24/Rgba64/Gray8/Bgr565，就近映射
+        public static global::Avalonia.Platform.PixelFormat Bgr24 => global::Avalonia.Platform.PixelFormat.Rgb32;
+        public static global::Avalonia.Platform.PixelFormat Rgba64 => global::Avalonia.Platform.PixelFormat.Rgba8888;
+        public static global::Avalonia.Platform.PixelFormat Gray8 => global::Avalonia.Platform.PixelFormat.Bgra8888;
+        public static global::Avalonia.Platform.PixelFormat Bgr565 => global::Avalonia.Platform.PixelFormat.Rgb565;
     }
 
     // ===== 资源查找：WPF TryFindResource(key) / SetResourceReference =====
@@ -532,6 +533,11 @@ namespace ForkPlus.UI.WpfCompat
             control.ContextMenu.Opening += (s, e) => handler(control, new ContextMenuEventArgs());
         }
 
+        /// <summary>WPF control.ContextMenuOpening += new ContextMenuEventHandler(M) 形态。</summary>
+        public static void AddContextMenuOpeningHandler(this Control control,
+            ContextMenuEventHandler handler)
+            => AddContextMenuOpeningHandler(control, (s, e) => handler(s, e));
+
         /// <summary>WPF control.ContextMenuClosing += ... 的安装器（挂 ContextMenu.Closing）。</summary>
         public static void AddContextMenuClosingHandler(this Control control,
             EventHandler<ContextMenuEventArgs> handler)
@@ -539,6 +545,11 @@ namespace ForkPlus.UI.WpfCompat
             if (control?.ContextMenu == null) return;
             control.ContextMenu.Closing += (s, e) => handler(control, new ContextMenuEventArgs());
         }
+
+        /// <summary>WPF control.ContextMenuClosing += new ContextMenuEventHandler(M) 形态。</summary>
+        public static void AddContextMenuClosingHandler(this Control control,
+            ContextMenuEventHandler handler)
+            => AddContextMenuClosingHandler(control, (s, e) => handler(s, e));
     }
 
     // ===== Style 赋值适配：WPF control.Style = s（Avalonia Styles 只读集合）=====
@@ -647,7 +658,10 @@ namespace ForkPlus.UI.WpfCompat
         private static bool Matches(DataFormat f, string wpfFormat)
         {
             if (f == null) return false;
-            string n = f.Name ?? "";
+            string n = null;
+            try { n = f.ToSystemName(); } catch { }
+            n ??= f.Identifier;
+            n ??= "";
             return n == wpfFormat
                 || (wpfFormat == FileDropFormat && (n == "File" || n == "FileDrop" || n == "application/x-vnd.ms-filedrop"))
                 || (wpfFormat is "Text" or "UnicodeText" or "System.String" && n == "Text");

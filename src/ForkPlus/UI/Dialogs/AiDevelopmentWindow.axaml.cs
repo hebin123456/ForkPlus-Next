@@ -229,7 +229,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			if (Application.Current?.MainWindow?.WindowState == global::Avalonia.Controls.WindowState.Maximized)
+			if (WpfApp.MainWindow?.WindowState == global::Avalonia.Controls.WindowState.Maximized)
 			{
 				global::Avalonia.Controls.WindowState = global::Avalonia.Controls.WindowState.Maximized;
 			}
@@ -1196,7 +1196,7 @@ namespace ForkPlus.UI.Dialogs
 			});
 		}
 
-		private void AddStatusMessage(string message, Brush foreground)
+		private void AddStatusMessage(string message, IBrush foreground)
 		{
 			TextBlock statusBlock = new TextBlock
 			{

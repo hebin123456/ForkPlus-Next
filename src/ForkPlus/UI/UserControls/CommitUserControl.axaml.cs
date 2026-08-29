@@ -405,30 +405,30 @@ namespace ForkPlus.UI.UserControls
 			WeakEventManager<NotificationCenter, RepositoryDataUpdatedEventArgs>.AddHandler(NotificationCenter.Current, "RepositoryDataUpdated", RepositoryDataUpdated);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryUserControl>>.AddHandler(NotificationCenter.Current, "RepositoryStatusUpdated", RepositoryStatusUpdated);
 			WeakEventManager<NotificationCenter, EventArgs<ClosableTabItem>>.AddHandler(NotificationCenter.Current, "ActiveTabChanged", ActiveTabChanged);
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "DiffContextSizeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current,"DiffContextSizeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				_updateDiffAction.ReinvokeNow();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffIgnoreWhitespacesChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffIgnoreWhitespacesChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				_updateDiffAction.ReinvokeNow();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowEntireFileChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffShowEntireFileChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				_updateDiffAction.ReinvokeNow();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "CommitSubjectLowLimitChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current,"CommitSubjectLowLimitChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshSubjectLengthLimitToolTip();
 				UpdateSubjectLengthLimit();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "CommitSubjectHighLimitChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current,"CommitSubjectHighLimitChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshSubjectLengthLimitToolTip();
 				UpdateSubjectLengthLimit();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "PushAutomaticallyOnCommitChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"PushAutomaticallyOnCommitChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				UpdateCommitButtonTitle();
 			});
 			DataObject.AddPastingHandler(CommitSubjectTextBox, OnCommitSubjectPaste);

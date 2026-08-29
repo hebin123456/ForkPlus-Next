@@ -25,12 +25,10 @@ namespace Microsoft.Web.WebView2.Core
     }
 
     /// <summary>CoreWebView2Environment stub（WebView2EnvironmentHelper 返回值形状）。</summary>
-    public sealed class CoreWebView2Environment { }
-
-    /// <summary>WebView2 运行时环境辅助（原工程类，迁移期返回 stub 环境）。</summary>
-    public static class WebView2EnvironmentHelper
+    public sealed class CoreWebView2Environment
     {
-        public static Task<CoreWebView2Environment> GetEnvironmentAsync()
+        /// <summary>原 WinRT API CoreWebView2Environment.CreateAsync（stub 返回空环境）。</summary>
+        public static Task<CoreWebView2Environment> CreateAsync(string browserExecutableFolder = null, string userDataFolder = null)
             => Task.FromResult(new CoreWebView2Environment());
     }
 

@@ -140,8 +140,8 @@ namespace ForkPlus.UI.Dialogs
 			};
 			MergedMergeEditor.IsReadOnly = false;
 			MergedMergeEditor.Document.Changing += Document_Changing;
-			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current, "CodeEditorFontSizeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current,"CodeEditorFontSizeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshCodeEditorFontSize(ForkPlusSettings.Default.CodeEditorFontSize);
 			});
 			RefreshCodeEditorFontSize(ForkPlusSettings.Default.CodeEditorFontSize);
@@ -575,7 +575,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (editor.IsVerticalOffsetWithinDocumentArea(offset))
 			{
-				editor.ScrollToVerticalOffset(offset);
+				editor.ScrollToVerticalOffsetCompat(offset);
 			}
 		}
 
@@ -583,7 +583,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (editor.IsHorizontalOffsetWithinDocumentArea(offset))
 			{
-				editor.ScrollToHorizontalOffset(offset);
+				editor.ScrollToHorizontalOffsetCompat(offset);
 			}
 		}
 

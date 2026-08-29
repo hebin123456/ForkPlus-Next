@@ -195,8 +195,8 @@ namespace ForkPlus.UI.UserControls
 				}
 			}));
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
-			WeakEventManager<NotificationCenter, EventArgs<RevisionListOrientation>>.AddHandler(NotificationCenter.Current, "RevisionListOrientatioChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<RevisionListOrientation>>.AddHandler(NotificationCenter.Current,"RevisionListOrientatioChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshRevisionListViewTemplate();
 			});
 			RefreshRevisionListViewTemplate();
@@ -216,7 +216,7 @@ namespace ForkPlus.UI.UserControls
 				return null;
 			}
 			ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(RevisionListView, 0), 0);
-			int num = (int)(scrollViewer.VerticalOffset + scrollViewer.Viewport.Height) - 1;
+			int num = (int)(scrollViewer.Offset.Y + scrollViewer.Viewport.Height) - 1;
 			if (num < 0 || num >= RevisionsDataSource.Count)
 			{
 				return null;
@@ -533,17 +533,17 @@ namespace ForkPlus.UI.UserControls
 			switch (ForkPlusSettings.Default.RevisionListOrientation)
 			{
 			case RevisionListOrientation.Vertical:
-				if (RevisionListView.AvailableWidth > num && base.Resources["SingleRowGridView"] is GridView gridView && RevisionListView.View != gridView)
+				if (RevisionListView.GetAvailableWidth() > num && base.Resources["SingleRowGridView"] is GridView gridView && !ReferenceEquals(RevisionListView.GetGridView(), gridView))
 				{
-					RevisionListView.View = gridView;
+					RevisionListView.SetGridView(gridView);
 				}
-				else if (RevisionListView.AvailableWidth <= num && base.Resources["DoubleRowGridView"] is GridView gridView2 && RevisionListView.View != gridView2)
+				else if (RevisionListView.GetAvailableWidth() <= num && base.Resources["DoubleRowGridView"] is GridView gridView2 && !ReferenceEquals(RevisionListView.GetGridView(), gridView2))
 				{
-					RevisionListView.View = gridView2;
+					RevisionListView.SetGridView(gridView2);
 				}
 				break;
 			case RevisionListOrientation.Horizontal:
-				RevisionListView.View = (GridView)base.Resources["SingleRowGridView"];
+				RevisionListView.SetGridView((GridView)base.Resources["SingleRowGridView"]);
 				break;
 			}
 		}
@@ -1360,7 +1360,7 @@ namespace ForkPlus.UI.UserControls
 			string rangeLabel = name ?? dst.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.SetOwnerCompat= Application.Current?.MainWindow;
+			window.SetOwnerCompat= WpfApp.MainWindow;
 			string title = PreferencesLocalization.FormatCurrent("AI PR Description: {0}", rangeLabel);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
@@ -1428,7 +1428,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.SetOwnerCompat= Application.Current?.MainWindow;
+			window.SetOwnerCompat= WpfApp.MainWindow;
 			string title = PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)

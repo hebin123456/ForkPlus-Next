@@ -109,7 +109,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		{
 			foreach (Rect item in BackgroundGeometryBuilder.GetRectsForSegment(textView, range, extendToFullWidthAtLineEnd: true))
 			{
-				Rect rectangle = new Rect(item.X, item.Y, textView.Bounds.Width + textView.HorizontalOffset, item.Height);
+				Rect rectangle = new Rect(item.X, item.Y, textView.Bounds.Width + textView.Offset.X, item.Height);
 				context.DrawRectangle(brush, null, rectangle);
 			}
 		}

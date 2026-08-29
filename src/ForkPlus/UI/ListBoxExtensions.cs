@@ -65,7 +65,7 @@ namespace ForkPlus.UI
 
 		public static void FocusRow(this ListBox listbox, int row)
 		{
-			(listbox.ItemContainerGenerator.ContainerFromIndex(row) as ListBoxItem)?.Focus();
+			(listbox.ContainerFromIndex(row) as ListBoxItem)?.Focus();
 		}
 
 		private static bool SelectNextRow(this ListBox listBox, int row, Direction direction, [Null] Func<object, bool> condition)
@@ -85,7 +85,7 @@ namespace ForkPlus.UI
 		private static void SetKeyboardFocus(ListBox listBox, int row)
 		{
 			listBox.UpdateLayout();
-			if (listBox.ItemContainerGenerator.ContainerFromIndex(row) is ListBoxItem element && MainWindow.Instance.IsActive)
+			if (listBox.ContainerFromIndex(row) is ListBoxItem element && MainWindow.Instance.IsActive)
 			{
 				(element).Focus();
 			}
@@ -97,9 +97,9 @@ namespace ForkPlus.UI
 			{
 				ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(listBox, 0), 0);
 				int num = ((row >= 1) ? (row - 1) : row);
-				if (!((double)num > scrollViewer.VerticalOffset) || !((double)num < scrollViewer.VerticalOffset + scrollViewer.Viewport.Height))
+				if (!((double)num > scrollViewer.Offset.Y) || !((double)num < scrollViewer.Offset.Y + scrollViewer.Viewport.Height))
 				{
-					scrollViewer.ScrollToVerticalOffset(num);
+					scrollViewer.ScrollToVerticalOffsetCompat(num);
 				}
 			}
 		}

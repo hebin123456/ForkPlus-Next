@@ -29,7 +29,7 @@ namespace ForkPlus.UI.Controls.Editor
 			base.TextArea.TextView.BackgroundRenderers.Add(new ClearTypeBackgroundRenderer());
 			for (int i = 0; i < base.TextArea.TextView.Layers.Count; i++)
 			{
-				RenderOptions.SetClearTypeHint(base.TextArea.TextView.Layers[i], ClearTypeHint.Enabled);
+				RenderOptionsShim.SetClearTypeHint(base.TextArea.TextView.Layers[i], ClearTypeHint.Enabled);
 			}
 		}
 

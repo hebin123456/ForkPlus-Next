@@ -22,7 +22,7 @@ namespace ForkPlus.Services.Wpf
 
 		public bool TryActivateWindowByTitle(string title)
 		{
-			global::Avalonia.WindowCollection windowCollection = global::Avalonia.Application.Current?.Windows;
+			global::Avalonia.WindowCollection windowCollection = global::Avalonia.WpfApp.Windows;
 			if (windowCollection == null)
 			{
 				return false;

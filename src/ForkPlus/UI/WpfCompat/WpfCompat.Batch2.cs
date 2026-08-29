@@ -49,7 +49,7 @@ namespace ForkPlus.UI.WpfCompat
         public static Control ContainerFromElement(this ItemsControl itemsControl, Visual element)
         {
             if (itemsControl == null || element == null) return null;
-            var containers = itemsControl.ItemContainerGenerator?.Containers.Select(c => c.ContainerControl).ToList()
+            var containers = itemsControl.GetRealizedContainers()?.ToList()
                 ?? new List<Control>();
             for (var v = element; v != null; v = v.GetVisualParent())
                 if (containers.Contains(v))

@@ -62,8 +62,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				{
 					Content = PreferencesLocalization.Current("Unstage")
 				};
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_unStageButton, "Click", delegate
-				{
+				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_unStageButton,"Click",delegate
+(object sender, global::System.EventArgs e)				{
 					this.UnStage?.Invoke(this, EventArgs.Empty);
 				});
 				stackPanel.Children.Add(_unStageButton);
@@ -79,12 +79,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					Content = PreferencesLocalization.Current("Discard..."),
 					Margin = new Thickness(0.0, 2.0, 2.0, 2.0)
 				};
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_stageButton, "Click", delegate
-				{
+				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_stageButton,"Click",delegate
+(object sender, global::System.EventArgs e)				{
 					this.Stage?.Invoke(this, EventArgs.Empty);
 				});
-				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_discardButton, "Click", delegate
-				{
+				WeakEventManager<FloatingButton, RoutedEventArgs>.AddHandler(_discardButton,"Click",delegate
+(object sender, global::System.EventArgs e)				{
 					this.Discard?.Invoke(this, EventArgs.Empty);
 				});
 				stackPanel.Children.Add(_stageButton);

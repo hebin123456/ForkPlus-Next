@@ -438,8 +438,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RevisionListScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
 		{
-			double verticalOffset = e.VerticalOffset;
-			TextDiffControl.ScrollToVerticalOffset(verticalOffset);
+			double verticalOffset = e.OffsetDelta.Y;
+			TextDiffControl.VerticalOffset = verticalOffset;
 		}
 
 		private void SplitTextDiffControl_ScrollOffsetChanged(object sender, EventArgs e)

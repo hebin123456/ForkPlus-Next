@@ -32,8 +32,8 @@ namespace ForkPlus.UI.Controls
 		{
 			if (!global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
-				WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current, "PageGuideLinePositionChanged", delegate
-				{
+				WeakEventManager<NotificationCenter, EventArgs<int>>.AddHandler(NotificationCenter.Current,"PageGuideLinePositionChanged",delegate
+(object sender, global::System.EventArgs e)				{
 					RefreshGuideLine();
 				});
 			}

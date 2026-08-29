@@ -374,12 +374,12 @@ namespace ForkPlus
 				return;
 			}
 			_loggedVisualParentingFirstChanceException = true;
-			string activeWindow = Application.Current?.Windows.OfType<Window>().FirstOrDefault((Window x) => x.IsActive)?.GetType().FullName ?? "<none>";
+			string activeWindow = WpfApp.Windows.OfType<Window>().FirstOrDefault((Window x) => x.IsActive)?.GetType().FullName ?? "<none>";
 			IInputElement focusedInputElement = Keyboard.FocusedElement;
 			global::Avalonia.AvaloniaObject focusedDependencyObject = focusedInputElement as global::Avalonia.AvaloniaObject;
 			string focusedElement = DescribeInputElement(focusedInputElement);
 			string focusedElementAncestors = DescribeAncestors(focusedDependencyObject);
-			string scrollContentPresenterDiagnostics = DescribeScrollContentPresenters(Application.Current?.Windows.OfType<Window>().FirstOrDefault((Window x) => x.IsActive));
+			string scrollContentPresenterDiagnostics = DescribeScrollContentPresenters(WpfApp.Windows.OfType<Window>().FirstOrDefault((Window x) => x.IsActive));
 			string stackTrace = new StackTrace(1, fNeedFileInfo: true).ToString();
 			Log.Warn("First-chance visual parenting exception" + Environment.NewLine + "ActiveWindow: " + activeWindow + Environment.NewLine + "FocusedElement: " + focusedElement + Environment.NewLine + "FocusedElementAncestors: " + focusedElementAncestors + Environment.NewLine + "ScrollContentPresenters:" + Environment.NewLine + scrollContentPresenterDiagnostics + Environment.NewLine + "CurrentStack:" + Environment.NewLine + stackTrace, e.Exception);
 		}
@@ -777,7 +777,7 @@ namespace ForkPlus
 		{
 			if (ForkPlusSettings.Default.DisableHardwareAcceleration)
 			{
-				RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+				RenderOptionsShim.ProcessRenderMode = RenderMode.SoftwareOnly;
 			}
 		}
 

@@ -152,30 +152,30 @@ namespace ForkPlus.UI.UserControls
 		{
 			InitializeComponent();
 			ApplyLocalization();
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffIgnoreWhitespacesChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffIgnoreWhitespacesChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				UpdateIgnoreWhiteSpacesToggleButtonState();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowHiddenSymbolsChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffShowHiddenSymbolsChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				UpdateShowHiddenSymbolsToggleButtonState();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffWordWrapChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffWordWrapChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				UpdateDiffLayoutModeToggleButtonState();
 				UpdateWordWrapToggleButtonState();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowEntireFileChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffShowEntireFileChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				UpdateShowEntireFileState();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<DiffLayoutMode>>.AddHandler(NotificationCenter.Current, "DiffLayoutModeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<DiffLayoutMode>>.AddHandler(NotificationCenter.Current,"DiffLayoutModeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				UpdateDiffLayoutModeToggleButtonState();
 				UpdateWordWrapToggleButtonState();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "ImageDiffHighlightPixelsChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"ImageDiffHighlightPixelsChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				UpdateHighlightPixelsToggleButtonState();
 			});
 			base.Loaded += delegate

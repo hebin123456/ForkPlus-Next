@@ -72,20 +72,20 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		public TextDiffControl(FileDiffControlTarget target)
 		{
 			_target = target;
-			WeakEventManager<NotificationCenter, EventArgs<DiffLayoutMode>>.AddHandler(NotificationCenter.Current, "DiffLayoutModeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<DiffLayoutMode>>.AddHandler(NotificationCenter.Current,"DiffLayoutModeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshDiffLayoutMode();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowHiddenSymbolsChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffShowHiddenSymbolsChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshDiffShowHiddenSymbols();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffWordWrapChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current,"DiffWordWrapChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshDiffWordWrap();
 			});
-			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current, "CodeEditorFontSizeChanged", delegate
-			{
+			WeakEventManager<NotificationCenter, EventArgs<double>>.AddHandler(NotificationCenter.Current,"CodeEditorFontSizeChanged",delegate
+(object sender, global::System.EventArgs e)			{
 				RefreshDiffFontSize();
 			});
 			RefreshDiffLayoutMode();

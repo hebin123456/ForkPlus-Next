@@ -809,7 +809,7 @@ namespace ForkPlus.UI.UserControls
 			if (_locationColumnHeaderLoaded && !_restoringColumnWidth)
 			{
 				int num = 55;
-				GridView gridView = TreeView.View as GridView;
+				GridView gridView = TreeView.GetGridView();
 				double actualWidth = TreeView.Bounds.Width;
 				double actualWidth2 = gridView.Columns[0].Bounds.Width;
 				double num2 = actualWidth - actualWidth2;
@@ -828,7 +828,7 @@ namespace ForkPlus.UI.UserControls
 		public void RestoreGridViewColumnWidth()
 		{
 			_restoringColumnWidth = true;
-			GridView obj = TreeView.View as GridView;
+			GridView obj = TreeView.GetGridView();
 			double actualWidth = TreeView.Bounds.Width;
 			double num = ForkPlusSettings.Default.CommitViewCombinedListLocationColumnWidth;
 			double num2 = actualWidth - num;
@@ -846,7 +846,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (_locationColumnHeaderLoaded && !_restoringColumnWidth)
 			{
-				GridView gridView = TreeView.View as GridView;
+				GridView gridView = TreeView.GetGridView();
 				ForkPlusSettings.Default.CommitViewCombinedListLocationColumnWidth = gridView.Columns[1].Width;
 				ForkPlusSettings.Default.Save();
 			}
