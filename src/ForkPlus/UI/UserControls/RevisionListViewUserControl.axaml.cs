@@ -527,25 +527,17 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void RefreshRevisionListViewTemplate()
+	{
+		double num = 500.0;
+		// TODO 迁移：WPF ListView.View=GridView（宽→SingleRow / 窄→DoubleRow）在 Avalonia 无列视图体系，
+		// 改为切换 ListBox.ItemTemplate（模板在 axaml Resources 重建，见 SingleRowRevisionTemplate/DoubleRowRevisionTemplate）。
+		bool useSingleRow = ForkPlusSettings.Default.RevisionListOrientation == RevisionListOrientation.Horizontal || RevisionListView.GetAvailableWidth() > num;
+		string resourceKey = useSingleRow ? "SingleRowRevisionTemplate" : "DoubleRowRevisionTemplate";
+		if (base.Resources is global::Avalonia.Controls.IResourceDictionary resourceDictionary && resourceDictionary.TryGetResource(resourceKey, null, out object value) && value is global::Avalonia.Controls.Templates.IDataTemplate dataTemplate && !ReferenceEquals(RevisionListView.ItemTemplate, dataTemplate))
 		{
-			double num = 500.0;
-			switch (ForkPlusSettings.Default.RevisionListOrientation)
-			{
-			case RevisionListOrientation.Vertical:
-				if (RevisionListView.GetAvailableWidth() > num && base.Resources["SingleRowGridView"] is GridView gridView && !ReferenceEquals(RevisionListView.GetGridView(), gridView))
-				{
-					RevisionListView.SetGridView(gridView);
-				}
-				else if (RevisionListView.GetAvailableWidth() <= num && base.Resources["DoubleRowGridView"] is GridView gridView2 && !ReferenceEquals(RevisionListView.GetGridView(), gridView2))
-				{
-					RevisionListView.SetGridView(gridView2);
-				}
-				break;
-			case RevisionListOrientation.Horizontal:
-				RevisionListView.SetGridView((GridView)base.Resources["SingleRowGridView"]);
-				break;
-			}
+			RevisionListView.ItemTemplate = dataTemplate;
 		}
+	}
 
 		private void ValidateDrag(object sender, EventArgs e)
 		{
