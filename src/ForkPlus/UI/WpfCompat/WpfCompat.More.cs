@@ -233,7 +233,7 @@ namespace ForkPlus.UI.WpfCompat
             if (element != null) _captured.Remove(element);
         }
 
-        public static bool IsMouseCaptured(this InputElement element)
+        public static bool IsPointerCaptured(this InputElement element)
             => element != null && _captured.Contains(element);
 
         public static Point PointFromScreen(this Visual visual, PixelPoint point)
@@ -293,16 +293,41 @@ namespace ForkPlus.UI.WpfCompat
         public WindowInteropHelper(Window window) { _window = window; }
         public IntPtr Handle => _window?.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
         public IntPtr Owner { get; set; }
+        /// <summary>WPF EnsureHandle()：提前创建 HWND。Avalonia 平台句柄由 Show 后创建，stub 直接返回当前值。</summary>
+        public IntPtr EnsureHandle() => Handle;
     }
 
-    /// <summary>WPF System.Windows.Shell.WindowChrome（Avalonia 自绘 chrome，属性仅存值）。</summary>
-    public class WindowChrome
+    /// <summary>
+    /// WPF System.Windows.Shell.WindowChrome。Avalonia 自绘 chrome：
+    /// 属性仅存值；SetWindowChrome / IsHitTestVisibleInChrome 为 no-op 附加属性，
+    /// 保留 WPF 调用面（标题栏命中测试由 CustomWindow 自绘逻辑负责）。
+    /// </summary>
+    public class WindowChrome : global::Avalonia.AvaloniaObject
     {
+        /// <summary>WPF WindowChrome.CaptionHeight 附加属性（迁移期仅存值，供 BindingCompat.SetBinding）。</summary>
+        public static readonly global::Avalonia.StyledProperty<double> CaptionHeightProperty =
+            global::Avalonia.AvaloniaProperty.Register<WindowChrome, double>(nameof(CaptionHeight), 32);
+
+        /// <summary>WPF WindowChrome.IsHitTestVisibleInChrome 附加属性（no-op，自绘 chrome 自行命中测试）。</summary>
+        public static readonly global::Avalonia.StyledProperty<bool> IsHitTestVisibleInChromeProperty =
+            global::Avalonia.AvaloniaProperty.Register<WindowChrome, bool>("IsHitTestVisibleInChrome", true);
+
+        public double CaptionHeight
+        {
+            get => GetValue(CaptionHeightProperty);
+            set => SetValue(CaptionHeightProperty, value);
+        }
+
         public Thickness GlassFrameThickness { get; set; } = new Thickness(0);
         public Thickness ResizeBorderThickness { get; set; } = new Thickness(4);
-        public Thickness CaptionHeight { get; set; } = new Thickness(0, 32, 0, 0);
         public double CornerRadius { get; set; }
         public bool UseAeroCaptionButtons { get; set; }
+
+        /// <summary>WPF WindowChrome.SetWindowChrome(window, chrome)。Avalonia 自绘 chrome，no-op。</summary>
+        public static void SetWindowChrome(global::Avalonia.AvaloniaObject window, WindowChrome chrome)
+        {
+            // TODO 迁移：CustomWindow 已自绘标题栏/缩放边框，chrome 参数仅存档不生效。
+        }
     }
 
     // ===== WPF 视觉杂项 stub =====

@@ -313,7 +313,7 @@ namespace ForkPlus.UI
 			MenuItem customColorsItem = new MenuItem
 			{
 				Header = PreferencesLocalization.Translate("Custom Colors...", language),
-				IsCheckable = true,
+				ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox,
 				IsChecked = useCustom
 			};
 			customColorsItem.Click += delegate

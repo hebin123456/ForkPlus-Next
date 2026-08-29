@@ -125,7 +125,7 @@ namespace ForkPlus.UI.Dialogs
 			base.Title = PathHelper.GetReadableFileName(filePath) + " - " + Translate("Blame");
 			base.ShowInTaskbar = true;
 			base.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterScreen;
-			base.ResizeMode = ResizeMode.CanResizeWithGrip;
+			ResizeMode = ResizeMode.CanResizeWithGrip;
 			InitializeComponent();
 			BlameTitleTextBlock.Text = Translate("Blame");
 			global::Avalonia.Controls.ToolTip.SetTip(UndoButton,Translate("Go Back"));
@@ -451,7 +451,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void SplitTextDiffControl_ScrollOffsetChanged(object sender, EventArgs e)
 		{
-			double verticalOffset = TextDiffControl.Offset.Y;
+			double verticalOffset = TextDiffControl.VerticalOffset;
 			ScrollTo(verticalOffset);
 		}
 

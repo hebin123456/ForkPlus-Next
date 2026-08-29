@@ -77,7 +77,7 @@ namespace ForkPlus.UI.Dialogs
 			base.Title = string.Format(Translate("{0} - Repository Overview"), gitModule.RepositoryName);
 			base.ShowInTaskbar = true;
 			base.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterScreen;
-			base.ResizeMode = ResizeMode.CanResizeWithGrip;
+			ResizeMode = ResizeMode.CanResizeWithGrip;
 			InitializeComponent();
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			TreemapBackgroundBorder.CornerRadius = new CornerRadius(_borderRadius);

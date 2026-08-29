@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Dialogs
 			InitializeComponent();
 			base.ShowCancelButton = false;
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Close");
-			base.ResizeMode = ResizeMode.CanResizeWithGrip;
+			ResizeMode = ResizeMode.CanResizeWithGrip;
 			RepositoryNameTextBlock.Text = gitModule.Path;
 			base.Loaded += RepositoryStatisticsWindow_Loaded;
 		}

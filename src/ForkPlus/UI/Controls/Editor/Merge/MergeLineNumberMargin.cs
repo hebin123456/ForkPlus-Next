@@ -120,20 +120,20 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 				{
 					if (IsLineSelected(visualLine.FirstDocumentLine.LineNumber - 1))
 					{
-						Geometry geometry = CreateShevronGeometry(new Point(0.0, visualLine.VisualTop - base.TextView.Offset.Y));
+						Geometry geometry = CreateShevronGeometry(new Point(0.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
 						drawingContext.DrawGeometry(_mergeConflictSelectedBrush, null, geometry);
 						brush = Brushes.White;
 					}
 					else if (visualLine.FirstDocumentLine.LineNumber == _mouseOverLine)
 					{
-						Geometry geometry2 = CreateShevronGeometry(new Point(0.0, visualLine.VisualTop - base.TextView.Offset.Y));
+						Geometry geometry2 = CreateShevronGeometry(new Point(0.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
 						drawingContext.DrawGeometry(_mergeConflictMouseOverBrush, null, geometry2);
 						brush = Brushes.White;
 					}
 				}
 				if (_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out var value))
 				{
-					drawingContext.DrawText(CreateFormattedText(value.ToString(), brush), new Point(base.Bounds.Size.Width - HorizontalMargin, visualLine.VisualTop - base.TextView.Offset.Y + 1.0));
+					drawingContext.DrawText(CreateFormattedText(value.ToString(), brush), new Point(base.Bounds.Size.Width - HorizontalMargin, visualLine.VisualTop - base.TextView.ScrollOffset.Y + 1.0));
 				}
 			}
 			drawingContext.DrawLine(_separatorPen, new Point(base.Bounds.Size.Width - 2.0, 0.0), new Point(base.Bounds.Size.Width - 2.0, base.Bounds.Size.Height));
@@ -150,7 +150,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		{
 			base.OnPointerMoved(e);
 			Point position = e.GetPosition(base.TextView);
-			VisualLine visualLineFromVisualTop = base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.Offset.Y);
+			VisualLine visualLineFromVisualTop = base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.ScrollOffset.Y);
 			if (visualLineFromVisualTop == null)
 			{
 				return;
@@ -193,7 +193,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		private int GetLineUnderCursor(global::Avalonia.Input.PointerEventArgs e)
 		{
 			Point position = e.GetPosition(base.TextView);
-			return base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.Offset.Y)?.FirstDocumentLine.LineNumber ?? (-1);
+			return base.TextView.GetVisualLineFromVisualTop(position.Y + base.TextView.ScrollOffset.Y)?.FirstDocumentLine.LineNumber ?? (-1);
 		}
 
 		private bool IsLineSelected(int lineNumber)

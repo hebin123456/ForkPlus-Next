@@ -143,22 +143,11 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 					break;
 				}
 			}
-			if (rectangleGeometry != null)
+			// TODO 迁移：WPF Push/Pop 配对 → Avalonia Push* 返回 IDisposable，using 自动出栈
+			using (rectangleGeometry != null ? drawingContext.PushClip(rectangleGeometry) : null)
+			using (opacity.HasValue ? drawingContext.PushOpacity(opacity.Value) : null)
 			{
-				drawingContext.PushClip(rectangleGeometry);
-			}
-			if (opacity.HasValue)
-			{
-				drawingContext.PushOpacity(opacity.Value);
-			}
-			drawingContext.DrawImage(image, imageRect);
-			if (rectangleGeometry != null)
-			{
-				drawingContext.Pop();
-			}
-			if (opacity.HasValue)
-			{
-				drawingContext.Pop();
+				drawingContext.DrawImage(image, imageRect);
 			}
 		}
 

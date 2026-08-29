@@ -158,7 +158,7 @@ namespace ForkPlus.UI.Dialogs
 			};
 		}
 
-		protected void OnActivated(EventArgs e)
+		protected override void OnActivated(EventArgs e)
 		{
 			base.OnActivated(e);
 			if (_account == null)

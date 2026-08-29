@@ -113,9 +113,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 			StreamGeometry streamGeometry = new StreamGeometry();
 StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-			streamGeometryContext.SetFillRule(FillRule.Nonzero);			StreamGeometry streamGeometry2 = new StreamGeometry();
+			streamGeometryContext.SetFillRule(FillRule.NonZero);			StreamGeometry streamGeometry2 = new StreamGeometry();
 StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
-			streamGeometryContext2.SetFillRule(FillRule.Nonzero);			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
+			streamGeometryContext2.SetFillRule(FillRule.NonZero);			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
 			int x = ((DiffViewMode == DiffViewMode.Split) ? 1 : 0);
 			int x2 = ((DiffViewMode == DiffViewMode.Split) ? 1 : 4);
 			VisualPatch visualPatch = VisualPatch;

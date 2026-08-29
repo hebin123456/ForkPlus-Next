@@ -214,15 +214,27 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
+		/// <summary>
+		/// TODO 迁移：WPF Window.OnActivated 虚方法。Avalonia 无此虚方法，
+		/// 此处在构造时订阅 Activated 事件转发到本虚方法，子类重写签名保持 WPF 形态。
+		/// </summary>
+		protected virtual void OnActivated(EventArgs e)
+		{
+		}
+
 		public ForkPlusDialogWindow(bool preventMainWindowRefresh = true)
 		{
 			base.OverridesDefaultStyle = true;
+			Activated += delegate
+			{
+				OnActivated(EventArgs.Empty);
+			};
 			if (!IsDesignMode)
 			{
 				MainWindow instance = MainWindow.Instance;
 				if (instance != null)
 				{
-					base.SetOwnerCompat= instance;
+					base.SetOwnerCompat(instance);
 					if (preventMainWindowRefresh)
 					{
 						instance.PreventRefreshAfterChildDialogClose(GetType().Name);
@@ -231,7 +243,7 @@ namespace ForkPlus.UI.Dialogs
 				base.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterOwner;
 			}
 			base.ShowInTaskbar = false;
-			base.ResizeMode = ResizeMode.NoResize;
+			ResizeMode = ResizeMode.NoResize;
 			base.Initialized += ForkPlusDialogWindow_Initialized;
 			base.Loaded += ForkPlusDialogWindow_Loaded;
 {			base.Styles.Clear();base.Styles.Add(Application.Current?.TryFindResource("ForkPlusDialogWindowStyle") as Style);

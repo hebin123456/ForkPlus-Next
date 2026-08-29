@@ -1360,7 +1360,7 @@ namespace ForkPlus.UI.UserControls
 			string rangeLabel = name ?? dst.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.SetOwnerCompat= WpfApp.MainWindow;
+			window.SetOwnerCompat(WpfApp.MainWindow);
 			string title = PreferencesLocalization.FormatCurrent("AI PR Description: {0}", rangeLabel);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
@@ -1428,7 +1428,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.SetOwnerCompat= WpfApp.MainWindow;
+			window.SetOwnerCompat(WpfApp.MainWindow);
 			string title = PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)

@@ -84,6 +84,12 @@ namespace Microsoft.Web.WebView2.Wpf
 
         public CoreWebView2 CoreWebView2 => _core ??= new CoreWebView2();
 
+        /// <summary>WPF WebView2.DefaultBackgroundColor（stub 仅存值，透明背景由 TextBlock 默认呈现）。</summary>
+        public System.Drawing.Color DefaultBackgroundColor { get; set; } = System.Drawing.Color.Transparent;
+
+        /// <summary>WPF WebView2.Dispose()（TextBlock 非 IDisposable，stub 空实现）。</summary>
+        public void Dispose() { }
+
         public Task EnsureCoreWebView2Async(object userData = null) => Task.CompletedTask;
 
         public void NavigateToString(string html)

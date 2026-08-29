@@ -153,7 +153,7 @@ namespace ForkPlus.UI.Dialogs
 			InitializeRemoteWindow();
 		}
 
-		protected void OnActivated(EventArgs e)
+		protected override void OnActivated(EventArgs e)
 		{
 			base.OnActivated(e);
 			HideStatusControls();

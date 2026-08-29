@@ -496,13 +496,15 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (target is LocalBranch destinationBranch)
 				{
-					SidebarTreeView.ContextMenu.LayoutTransform = global::ForkPlus.UI.Theme.LayoutScaleTransform;
+					SidebarTreeView.ContextMenu.RenderTransform = // TODO 迁移: LayoutTransform→RenderTransform 布局语义近似
+global::ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateLocalBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch, sourceBranch));
 					SidebarTreeView.ContextMenu.Open();
 				}
 				else if (target is RemoteBranch destinationBranch2 && sourceBranch is LocalBranch sourceBranch2)
 				{
-					SidebarTreeView.ContextMenu.LayoutTransform = global::ForkPlus.UI.Theme.LayoutScaleTransform;
+					SidebarTreeView.ContextMenu.RenderTransform = // TODO 迁移: LayoutTransform→RenderTransform 布局语义近似
+global::ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateRemoteBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch2, sourceBranch2));
 					SidebarTreeView.ContextMenu.Open();
 				}

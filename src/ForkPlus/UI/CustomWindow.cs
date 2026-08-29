@@ -306,7 +306,7 @@ namespace ForkPlus.UI
 				_restoreButton?.Show();
 				break;
 			}
-			switch (base.ResizeMode)
+			switch (ResizeMode)
 			{
 			case ResizeMode.NoResize:
 				_minimizeButton?.Collapse();

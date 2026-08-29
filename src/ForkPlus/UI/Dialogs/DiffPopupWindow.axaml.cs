@@ -48,7 +48,7 @@ namespace ForkPlus.UI.Dialogs
 			InitializeComponent();
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			base.HideMinimizeMaximizeButtons = true;
-			base.ResizeMode = ResizeMode.CanResizeWithGrip;
+			ResizeMode = ResizeMode.CanResizeWithGrip;
 			FileDiffControl = fileDiffControl;
 			FileDiffControl.Target = FileDiffControlTarget.Popup;
 			VisualTreeAttachmentHelper.TrySetChild(FileDiffControlContainer, FileDiffControl, GetType().Name + ".FileDiffControlContainer");

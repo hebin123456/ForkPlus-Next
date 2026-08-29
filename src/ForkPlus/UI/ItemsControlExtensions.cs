@@ -35,7 +35,7 @@ namespace ForkPlus.UI
 			return dependencyObject as ItemContainer;
 		}
 
-		public static void FocusSelectedItem(this Selector control)
+		public static void FocusSelectedItem(this SelectingItemsControl control)
 		{
 			if (control.SelectedIndex >= 0 && control.ContainerFromIndex(control.SelectedIndex) is IInputElement element)
 			{

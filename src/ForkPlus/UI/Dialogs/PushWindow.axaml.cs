@@ -509,7 +509,7 @@ namespace ForkPlus.UI.Dialogs
 		if (remoteItem.ItemType == RemoteItemType.AddExistingRemote)
 		{
 			EditRemoteWindow editRemoteWindow = new EditRemoteWindow(_repositoryUserControl, gitModule);
-			editRemoteWindow.SetOwnerCompat= this;
+			editRemoteWindow.SetOwnerCompat(this);
 			if (editRemoteWindow.ShowDialog().GetValueOrDefault())
 			{
 				if (!editRemoteWindow.GitResult.Succeeded)
@@ -565,7 +565,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			string localBranchName = gitModule.Settings.PushLastCustomRefspec ?? localBranch.Name;
 			AddCustomRefspecWindow addCustomRefspecWindow = new AddCustomRefspecWindow(selectedRemote.Name, localBranchName);
-			addCustomRefspecWindow.SetOwnerCompat= this;
+			addCustomRefspecWindow.SetOwnerCompat(this);
 			if (addCustomRefspecWindow.ShowDialog().GetValueOrDefault())
 			{
 				_customRefspec = addCustomRefspecWindow.OutRefspec;

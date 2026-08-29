@@ -454,7 +454,7 @@ namespace ForkPlus.UI.UserControls
 			return;
 		}
 		ForkPlus.UI.Dialogs.ReflogWindow window = new ForkPlus.UI.Dialogs.ReflogWindow(repo);
-		window.SetOwnerCompat= _mainWindow;
+		window.SetOwnerCompat(_mainWindow);
 		window.Show();
 	}
 
@@ -582,7 +582,7 @@ namespace ForkPlus.UI.UserControls
 		MenuItem customColorsItem = new MenuItem
 		{
 			Header = Preferences.PreferencesLocalization.Translate("Custom Colors...", language),
-			IsCheckable = true,
+			ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox,
 			IsChecked = useCustom
 		};
 		customColorsItem.Click += delegate

@@ -393,7 +393,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.SetOwnerCompat= global::Avalonia.Controls.TopLevel.GetTopLevel(this);
+			window.SetOwnerCompat(global::Avalonia.Controls.TopLevel.GetTopLevel(this));
 			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)

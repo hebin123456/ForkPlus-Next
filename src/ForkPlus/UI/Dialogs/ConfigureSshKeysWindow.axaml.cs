@@ -66,7 +66,7 @@ namespace ForkPlus.UI.Dialogs
 		private void GenerateNewSSHKeyMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			GenerateNewSshKeyWindow generateNewSshKeyWindow = new GenerateNewSshKeyWindow();
-			generateNewSshKeyWindow.SetOwnerCompat= this;
+			generateNewSshKeyWindow.SetOwnerCompat(this);
 			if (!generateNewSshKeyWindow.ShowDialog().GetValueOrDefault())
 			{
 				return;

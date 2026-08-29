@@ -431,7 +431,7 @@ namespace ForkPlus.UI.UserControls
 (object sender, global::System.EventArgs e)			{
 				UpdateCommitButtonTitle();
 			});
-			DataObject.AddPastingHandler(CommitSubjectTextBox, OnCommitSubjectPaste);
+			CommitSubjectTextBox.AddPastingHandler(OnCommitSubjectPaste);
 		}
 
 		public void ApplyLocalization()

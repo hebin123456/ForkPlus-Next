@@ -1,3 +1,4 @@
+using ForkPlus.UI.WpfCompat;
 using Avalonia;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
@@ -32,7 +33,7 @@ namespace ForkPlus.UI
 
 		protected override global::Avalonia.Input.IDataTransfer GetDataObject(MultiselectionTreeViewItem[] nodes)
 		{
-			DataObject dataObject = new DataObject();
+			WpfDataObject dataObject = new WpfDataObject();
 			dataObject.SetData(SidebarItem.DragItemsFormat, nodes);
 			return dataObject;
 		}

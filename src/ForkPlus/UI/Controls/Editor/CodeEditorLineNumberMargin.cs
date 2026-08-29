@@ -70,7 +70,7 @@ namespace ForkPlus.UI.Controls.Editor
 			base.Render(drawingContext);
 			foreach (VisualLine visualLine in base.TextView.VisualLines)
 			{
-				drawingContext.DrawText(CreateFormattedText(visualLine.FirstDocumentLine.LineNumber.ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin * 2.0, visualLine.VisualTop - base.TextView.Offset.Y));
+				drawingContext.DrawText(CreateFormattedText(visualLine.FirstDocumentLine.LineNumber.ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin * 2.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
 			}
 			drawingContext.DrawLine(_separatorPen, new Point(base.Bounds.Size.Width - HorizontalMargin, 0.0), new Point(base.Bounds.Size.Width - HorizontalMargin, base.Bounds.Size.Height));
 		}

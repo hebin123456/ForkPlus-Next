@@ -56,7 +56,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (!base.IsMouseCaptured)
+			if (!base.IsPointerCaptured)
 			{
 				return;
 			}

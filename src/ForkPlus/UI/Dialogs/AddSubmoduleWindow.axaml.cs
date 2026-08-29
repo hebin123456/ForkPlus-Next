@@ -59,7 +59,7 @@ namespace ForkPlus.UI.Dialogs
 			_gitModule = gitModule;
 			_submodulesToUpdate = submodulesToUpdate;
 			InitializeComponent();
-			base.ResizeMode = ResizeMode.CanResizeWithGrip;
+			ResizeMode = ResizeMode.CanResizeWithGrip;
 			base.DialogTitle = Translate("Add Submodule");
 			base.DialogDescription = Translate("Add new submodule repository reference");
 			base.SubmitButtonTitle = Translate("Add Submodule");

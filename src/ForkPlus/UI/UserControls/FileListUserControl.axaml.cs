@@ -155,7 +155,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (e.NewValue is bool && (bool)e.NewValue)
 			{
-				TreeView.SelectionMode = SelectionMode.Extended;
+				TreeView.SelectionMode = SelectionMode.Multiple;
 			}
 			else
 			{

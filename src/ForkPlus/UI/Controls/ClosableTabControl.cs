@@ -39,7 +39,7 @@ namespace ForkPlus.UI.Controls
 			}
 			base.Items.Remove(tab);
 			TabItemRemoved?.Invoke(this, null);
-			if (base.Items.IsEmpty)
+			if (base.Items.Count == 0)
 			{
 				MainWindow.Commands.NewTab.Execute();
 			}
@@ -71,7 +71,7 @@ namespace ForkPlus.UI.Controls
 				base.Items.Remove(closableTabItem);
 			}
 			TabItemRemoved?.Invoke(this, null);
-			if (base.Items.IsEmpty)
+			if (base.Items.Count == 0)
 			{
 				MainWindow.Commands.NewTab.Execute();
 			}

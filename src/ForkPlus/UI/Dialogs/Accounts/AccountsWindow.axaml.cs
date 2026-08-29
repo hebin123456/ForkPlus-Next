@@ -25,7 +25,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			base.ShowLogo = false;
 			base.ShowHeader = false;
 			InitializeComponent();
-			base.ResizeMode = ResizeMode.CanResizeWithGrip;
+			ResizeMode = ResizeMode.CanResizeWithGrip;
 			Refresh();
 			AccountsListBox.SelectedItem = _accountViewModels.FirstOrDefault();
 			base.CancelButtonTitle = Translate("Close");

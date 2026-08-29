@@ -49,7 +49,7 @@ namespace ForkPlus.UI.UserControls
 					_focused = true;
 				}
 			};
-			DataObject.AddPastingHandler(CommitSubjectTextBox, OnCommitSubjectPaste);
+			CommitSubjectTextBox.AddPastingHandler(OnCommitSubjectPaste);
 		}
 
 		public void Refresh(string subject, string description)

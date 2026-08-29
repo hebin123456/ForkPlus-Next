@@ -153,9 +153,9 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			{
 				StreamGeometry streamGeometry = new StreamGeometry();
 StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-				streamGeometryContext.SetFillRule(FillRule.Nonzero);				StreamGeometry streamGeometry2 = new StreamGeometry();
+				streamGeometryContext.SetFillRule(FillRule.NonZero);				StreamGeometry streamGeometry2 = new StreamGeometry();
 StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
-				streamGeometryContext2.SetFillRule(FillRule.Nonzero);				int num = 6;
+				streamGeometryContext2.SetFillRule(FillRule.NonZero);				int num = 6;
 				int num2 = 1;
 				double num3 = 12.0;
 				double num4 = base.TextArea.Bounds.Height - num3 * 2.0;

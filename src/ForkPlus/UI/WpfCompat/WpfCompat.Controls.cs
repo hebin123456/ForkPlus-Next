@@ -352,6 +352,34 @@ namespace ForkPlus.UI.WpfCompat
 
         public static void SetText(string text) => GetClipboard()?.SetTextAsync(text);
 
+        /// <summary>WPF Clipboard.SetDataObject(text, copy)。copy 参数仅 WPF OLE 语义，Avalonia 忽略。</summary>
+        public static void SetDataObject(string text, bool copy) => SetText(text ?? string.Empty);
+
+        /// <summary>WPF Clipboard.GetData(format)。仅支持文本格式，其余返回 null。</summary>
+        public static object GetData(string format)
+            => format is "Text" or "UnicodeText" or "System.String" ? GetText() : null;
+
+        /// <summary>WPF Clipboard.SetData(format, value)。二进制等非文本格式走进程内直通表。</summary>
+        public static void SetData(string format, object value)
+        {
+            if (value is string text)
+            {
+                SetText(text);
+                return;
+            }
+            // TODO 迁移：Avalonia 剪贴板仅支持文本/文件/位图；Serializable 等二进制格式
+            // 先存进程内直通表保证本进程粘贴可用，同时降级写文本格式。
+            RuntimePayload[format] = value;
+            if (value is byte[] bytes && format == WpfDataFormats.Serializable)
+                SetText(Convert.ToBase64String(bytes));
+        }
+
+        /// <summary>读取进程内直通表（SetData 写入的二进制/自定义对象）。</summary>
+        public static object GetRuntimeData(string format)
+            => RuntimePayload.TryGetValue(format, out var v) ? v : null;
+
+        private static readonly Dictionary<string, object> RuntimePayload = new();
+
         public static bool ContainsText()
         {
             var fmts = Wait(GetClipboard()?.GetDataFormatsAsync());
@@ -629,27 +657,83 @@ namespace ForkPlus.UI.WpfCompat
         }
     }
 
-    // ===== DnD：WPF IDataObject 读取包装（Avalonia 12 IDataTransfer 适配）=====
+    // ===== DnD：WPF IDataObject 读写双向 shim（Avalonia 12 IDataTransfer 适配）=====
 
     /// <summary>
-    /// WPF e.Data（IDataObject）的只读 shim：包一层 DragEventArgs.DataTransfer。
-    /// 支持 Text / FileDrop / 自定义字符串格式。
+    /// WPF e.Data（IDataObject）的 shim：
+    /// 读取模式：包一层 DragEventArgs.DataTransfer（WpfData() 扩展产生）；
+    /// 构建模式：拖放发起侧 new + SetData（实现 IDataTransfer，可直接传给 DoDragDrop）。
+    /// 支持 Text / FileDrop / 自定义字符串格式；自定义 CLR 对象走进程内直通表
+    /// （DataTransferItem 仅支持文本/文件/位图，跨进程无法承载任意对象）。
     /// </summary>
-    public sealed class WpfDataObject
+    public sealed class WpfDataObject : IDataTransfer
     {
-        private readonly IDataTransfer _transfer;
-        internal WpfDataObject(IDataTransfer transfer) { _transfer = transfer; }
+        private readonly IDataTransfer _source;   // 读取模式：DragEventArgs.DataTransfer
+        private readonly DataTransfer _transfer;  // 构建模式：自建 DataTransfer
+
+        /// <summary>构建模式：拖放发起侧使用。</summary>
+        public WpfDataObject()
+        {
+            _transfer = new DataTransfer();
+        }
+
+        internal WpfDataObject(IDataTransfer transfer)
+        {
+            _source = transfer;
+        }
+
+        // ===== IDataTransfer 显式实现（委托内部 DataTransfer）=====
+
+        IReadOnlyList<DataFormat> IDataTransfer.Formats
+            => (_source ?? (IDataTransfer)_transfer)?.Formats ?? Array.Empty<DataFormat>();
+        IReadOnlyList<IDataTransferItem> IDataTransfer.Items
+            => ((_source ?? (IDataTransfer)_transfer)?.Items as IReadOnlyList<IDataTransferItem>) ?? Array.Empty<IDataTransferItem>();
+
+        /// <summary>DataTransfer 侧清理（构建模式下转发；读取侧 DataTransfer 归事件发送方所有）。</summary>
+        public void Dispose()
+        {
+            if (_source == null) (_transfer as IDisposable)?.Dispose();
+        }
+
+        private IDataTransfer Read => _source ?? (IDataTransfer)_transfer;
+
+        // ===== WPF 风格 API =====
+
+        /// <summary>WPF SetData(format, value)。自定义对象进进程内直通表。</summary>
+        public void SetData(string format, object value)
+        {
+            if (_source != null) throw new NotSupportedException("读取侧 DataObject 不支持 SetData");
+            if (value is string text)
+            {
+                _transfer.Add(DataTransferItem.CreateText(text));
+                return;
+            }
+            if (value is string[] files)
+            {
+                // 文件列表编码为换行分隔文本（GetFileDropList 侧对称解码）
+                var fmt = DataFormat.CreateStringApplicationFormat(format);
+                _transfer.Add(DataTransferItem.Create(fmt, string.Join("\n", files)));
+                return;
+            }
+            // 自定义 CLR 对象：进程内拖放直通表（DataTransferItem 无法承载）
+            RuntimePayload[format] = value;
+        }
 
         public bool GetDataPresent(string format)
-            => _transfer?.Items?.Any(i => i.Formats.Any(f => Matches(f, format))) == true;
+            => RuntimePayload.ContainsKey(format)
+               || Read?.Items?.Any(i => i.Formats.Any(f => Matches(f, format))) == true;
 
         public object GetData(string format)
         {
-            var item = _transfer?.Items?.FirstOrDefault(i => i.Formats.Any(f => Matches(f, format)));
+            if (RuntimePayload.TryGetValue(format, out var direct)) return direct;
+            var item = Read?.Items?.FirstOrDefault(i => i.Formats.Any(f => Matches(f, format)));
             if (item == null) return null;
             var fmt = item.Formats.First(f => Matches(f, format));
             return item.TryGetRaw(fmt);
         }
+
+        /// <summary>进程内拖放的自定义对象直通表（格式名 → 对象）。</summary>
+        private static readonly Dictionary<string, object> RuntimePayload = new();
 
         /// <summary>WPF GetFileDropList：FileDrop 格式 → 文件路径集合。</summary>
         public System.Collections.IEnumerable GetFileDropList()

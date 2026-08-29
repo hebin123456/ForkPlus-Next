@@ -12,7 +12,7 @@ namespace ForkPlus.UI.Controls
 
 		protected override Size MeasureOverride(Size constraint)
 		{
-			UIElementCollection internalChildren = base.InternalChildren;
+			UIElementCollection internalChildren = base.Children;
 			double val = 0.0;
 			double val2 = 0.0;
 			double num = 0.0;
@@ -54,7 +54,7 @@ namespace ForkPlus.UI.Controls
 
 		protected override Size ArrangeOverride(Size arrangeSize)
 		{
-			UIElementCollection internalChildren = base.InternalChildren;
+			UIElementCollection internalChildren = base.Children;
 			int count = internalChildren.Count;
 			int num = count - (base.LastChildFill ? 1 : 0);
 			double num2 = 0.0;

@@ -535,8 +535,8 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			double verticalOffset = editor.TextArea.TextView.Offset.Y;
-			double horizontalOffset = editor.TextArea.TextView.Offset.X;
+			double verticalOffset = editor.TextArea.TextView.ScrollOffset.Y;
+			double horizontalOffset = editor.TextArea.TextView.ScrollOffset.X;
 			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
 			{
 				if (editor != RemoteMergeEditor)

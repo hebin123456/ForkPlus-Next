@@ -38,7 +38,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
-		public double VerticalOffset => _editor.TextArea.TextView.Offset.Y;
+		public double VerticalOffset => _editor.TextArea.TextView.ScrollOffset.Y;
 
 		[Null]
 		public ForkPlus.Git.Diff.Diff Diff { get; private set; }

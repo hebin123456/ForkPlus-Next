@@ -35,7 +35,7 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogTitle = Translate("Save stash");
 			base.DialogDescription = Translate("Save your local modifications to a new stash. BOTH staged and unstaged changes will be stashed");
 			base.SubmitButtonTitle = Translate("Save Stash");
-			base.ResizeMode = ResizeMode.CanResizeWithGrip;
+			ResizeMode = ResizeMode.CanResizeWithGrip;
 			StashMessageTextBox.Placeholder = Translate("Stash message (optional)");
 			_gitModule = gitModule;
 			HashSet<string> hashSet = new HashSet<string>();

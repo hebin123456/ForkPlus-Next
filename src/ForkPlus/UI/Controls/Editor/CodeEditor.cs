@@ -52,7 +52,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 		public double GetScrollPosition()
 		{
-			return base.TextArea.TextView.Offset.Y;
+			return base.TextArea.TextView.ScrollOffset.Y;
 		}
 
 		public void SetScrollPosition(double y)

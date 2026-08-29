@@ -172,7 +172,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 				// 重启应用以加载新配置
 				System.Diagnostics.Process.Start(global::Avalonia.Application.ResourceAssembly.Location);
-				global::Avalonia.Application.Current.Shutdown();
+				global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown();
 			}
 			catch (Exception ex)
 			{

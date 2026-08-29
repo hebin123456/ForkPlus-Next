@@ -160,19 +160,19 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					int? from = value.From;
 					if (from.HasValue)
 					{
-						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point((base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth) / 2.0, visualLine.VisualTop - base.TextView.Offset.Y));
+						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point((base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth) / 2.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
 						if (_showDiffMarks && !value.To.HasValue)
 						{
-							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0, visualLine.VisualTop - 2.0 - base.TextView.Offset.Y));
+							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
 						}
 					}
 					from = value.To;
 					if (from.HasValue)
 					{
-						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine.VisualTop - base.TextView.Offset.Y));
+						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
 						if (_showDiffMarks && !value.From.HasValue)
 						{
-							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0, visualLine.VisualTop - 2.0 - base.TextView.Offset.Y));
+							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
 						}
 					}
 				}
@@ -188,10 +188,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					int? from = value2.From;
 					if (from.HasValue)
 					{
-						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine2.VisualTop - base.TextView.Offset.Y));
+						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine2.VisualTop - base.TextView.ScrollOffset.Y));
 						if (_showDiffMarks && !value2.To.HasValue)
 						{
-							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0, visualLine2.VisualTop - 2.0 - base.TextView.Offset.Y));
+							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0, visualLine2.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
 						}
 					}
 				}
@@ -207,10 +207,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					int? from = value3.To;
 					if (from.HasValue)
 					{
-						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine3.VisualTop - base.TextView.Offset.Y));
+						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine3.VisualTop - base.TextView.ScrollOffset.Y));
 						if (_showDiffMarks && !value3.From.HasValue)
 						{
-							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0, visualLine3.VisualTop - 2.0 - base.TextView.Offset.Y));
+							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0, visualLine3.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
 						}
 					}
 				}

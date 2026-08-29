@@ -15,7 +15,7 @@ namespace ForkPlus.Services.Wpf
 		{
 			global::Avalonia.Application.Current?.Dispatcher.Invoke(() =>
 			{
-				global::Avalonia.Application.Current.Shutdown();
+				global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown();
 			});
 		}
 	}

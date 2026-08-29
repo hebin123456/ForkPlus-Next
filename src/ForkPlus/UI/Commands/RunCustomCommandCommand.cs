@@ -49,7 +49,7 @@ namespace ForkPlus.UI.Commands
 				return true;
 			}
 			RunSharedCustomCommandConfirmationWindow runSharedCustomCommandConfirmationWindow = new RunSharedCustomCommandConfirmationWindow(gitModule.RepositoryName);
-			runSharedCustomCommandConfirmationWindow.SetOwnerCompat= MainWindow.Instance;
+			runSharedCustomCommandConfirmationWindow.SetOwnerCompat(MainWindow.Instance);
 			if (runSharedCustomCommandConfirmationWindow.ShowDialog().GetValueOrDefault())
 			{
 				if (runSharedCustomCommandConfirmationWindow.TrustThisRepository)

@@ -163,7 +163,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				base.Height = 270.0;
 				base.MinHeight = 270.0;
-				base.ResizeMode = ResizeMode.CanResizeWithGrip;
+				ResizeMode = ResizeMode.CanResizeWithGrip;
 				base.DialogTitle = Translate("Delete Branches");
 				base.DialogDescription = Translate("Delete local branches from your repository");
 				StartPointTextBlock.Text = Translate("Branches:");
