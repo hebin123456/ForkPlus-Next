@@ -164,7 +164,9 @@ namespace ForkPlus.UI.UserControls
 			};
 			contextMenu.Items.Add(item);
 		}
-		contextMenu.PlacementTarget = placementTarget;
+		// TODO 迁移：WPF ContextMenu.PlacementTarget 接受任意 DependencyObject，
+		// Avalonia 的 PlacementTarget 要求 Control，这里显式下转。
+		contextMenu.PlacementTarget = placementTarget as global::Avalonia.Controls.Control;
 		contextMenu.Open();
 	}
 
@@ -1205,13 +1207,16 @@ namespace ForkPlus.UI.UserControls
 			foreach (GitMmSubrepoItem subrepo in _workspace.Subrepos.Where(IsSubrepoVisible))
 			{
 				TabItem tabItem = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new TabItem
-				{
-					Header = CreateSubrepoTabHeader(subrepo),					Content = CreateSubrepoPlaceholder(subrepo),					Tag = subrepo,					ContextMenu = CreateSubrepoTabContextMenu(subrepo),					AllowDrop = true,					HorizontalContentAlignment = HorizontalAlignment.Stretch,					VerticalContentAlignment = VerticalAlignment.Stretch
-				},subrepo.Path);
-				tabItem.PointerPressed += SubrepoTabItem_PreviewMouseDown;
-				tabItem.PointerMoved += SubrepoTabItem_PreviewMouseMove;
-				tabItem.PointerReleased += SubrepoTabItem_PreviewMouseUp;
-				tabItem.Drop += SubrepoTabItem_Drop;
+			{
+				Header = CreateSubrepoTabHeader(subrepo),				Content = CreateSubrepoPlaceholder(subrepo),				Tag = subrepo,				ContextMenu = CreateSubrepoTabContextMenu(subrepo),				HorizontalContentAlignment = HorizontalAlignment.Stretch,				VerticalContentAlignment = VerticalAlignment.Stretch
+			},subrepo.Path);
+			// TODO 迁移：WPF TabItem.AllowDrop = true → Avalonia 附加属性 DragDrop.SetAllowDrop。
+			global::Avalonia.Input.DragDrop.SetAllowDrop(tabItem, true);
+			tabItem.PointerPressed += SubrepoTabItem_PreviewMouseDown;
+			tabItem.PointerMoved += SubrepoTabItem_PreviewMouseMove;
+			tabItem.PointerReleased += SubrepoTabItem_PreviewMouseUp;
+			// TODO 迁移：WPF element.Drop += handler → Avalonia DragDrop.AddDropHandler。
+			global::Avalonia.Input.DragDrop.AddDropHandler(tabItem, SubrepoTabItem_Drop);
 				SubreposTabControl.Items.Add(tabItem);
 				if (IsSamePath(subrepo.Path, preferredSubrepoPath))
 				{
@@ -1315,8 +1320,10 @@ namespace ForkPlus.UI.UserControls
 			{
 				PlacementTarget = SubrepoFilterButton,
 				Placement = PlacementMode.Bottom,
-				StaysOpen = false,
-				AllowsTransparency = true
+				// TODO 迁移：WPF Popup.StaysOpen = false（点击外部关闭）→ Avalonia IsLightDismissEnabled = true。
+				IsLightDismissEnabled = true
+				// TODO 迁移：WPF Popup.AllowsTransparency = true 在 Avalonia 无对应属性
+				//（Popup 永远独立分层渲染，默认支持透明），已移除。
 			};
 			StackPanel itemsPanel = new StackPanel();
 			TextBox searchTextBox = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new TextBox
@@ -1555,12 +1562,15 @@ namespace ForkPlus.UI.UserControls
 		private void SubreposTabControl_PreviewMouseWheel(object sender, global::Avalonia.Input.PointerWheelEventArgs e)
 		{
 			ScrollViewer scrollViewer = FindVisualChild<ScrollViewer>(SubreposTabControl);
-			if (scrollViewer == null || scrollViewer.ScrollableWidth <= 0)
-			{
-				return;
-			}
-			scrollViewer.ScrollToHorizontalOffsetCompat(scrollViewer.Offset.X - e.Delta);
-			e.Handled = true;
+		// TODO 迁移：WPF ScrollViewer.ScrollableWidth → Avalonia 的 Extent.Width - Viewport.Width。
+		if (scrollViewer == null || scrollViewer.Extent.Width - scrollViewer.Viewport.Width <= 0.0)
+		{
+			return;
+		}
+		// TODO 迁移：Avalonia PointerWheelEventArgs.Delta 是 Vector（WPF 是 double），取 Y 分量
+		//（滚轮向上为正，原 WPF 语义是 offset - Delta，即向上滚向左滚动）。
+		scrollViewer.ScrollToHorizontalOffsetCompat(scrollViewer.Offset.X - e.Delta.Y);
+		e.Handled = true;
 		}
 
 		[Null]
@@ -1572,21 +1582,25 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void SubrepoTabItem_PreviewMouseDown(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+	{
+		_subrepoTabDragItem = null;
+		// TODO 迁移：WPF MouseButtonEventArgs.LeftButton == MouseButtonState.Pressed →
+		// Avalonia 用 GetCurrentPoint(null).Properties.IsLeftButtonPressed 判断。
+		if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && sender is TabItem tabItem && IsFromSubrepoTabHeader(tabItem, e.Source as global::Avalonia.AvaloniaObject))
 		{
-			_subrepoTabDragItem = null;
-			if (e.LeftButton == MouseButtonState.Pressed && sender is TabItem tabItem && IsFromSubrepoTabHeader(tabItem, e.Source as global::Avalonia.AvaloniaObject))
-			{
-				_tabDragStartPoint = e.GetPosition(null);
-				_subrepoTabDragItem = tabItem;
-			}
+			_tabDragStartPoint = e.GetPosition(null);
+			_subrepoTabDragItem = tabItem;
 		}
+	}
 
-		private void SubrepoTabItem_PreviewMouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
+	private void SubrepoTabItem_PreviewMouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
+	{
+		// TODO 迁移：WPF Mouse.PrimaryDevice.LeftButton（全局按键状态）在 Avalonia 无对应，
+		// 改为从当前指针事件读取左键状态。
+		if (!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed || !(sender is TabItem tabItem))
 		{
-			if (Mouse.PrimaryDevice.LeftButton != MouseButtonState.Pressed || !(sender is TabItem tabItem))
-			{
-				return;
-			}
+			return;
+		}
 			if (_subrepoTabDragItem != tabItem)
 			{
 				return;
@@ -1607,10 +1621,12 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private void SubrepoTabItem_PreviewMouseUp(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
-		{
-			_subrepoTabDragItem = null;
-		}
+		// TODO 迁移：WPF 版签名是 (object, PointerPressedEventArgs)，与 Avalonia 的
+	// PointerReleased（EventHandler<PointerReleasedEventArgs>）不匹配，改为对应的释放事件参数。
+	private void SubrepoTabItem_PreviewMouseUp(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
+	{
+		_subrepoTabDragItem = null;
+	}
 
 		private void SubrepoTabItem_Drop(object sender, DragEventArgs e)
 		{
@@ -1668,27 +1684,25 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		private static global::Avalonia.AvaloniaObject GetParentObject(global::Avalonia.AvaloniaObject source)
+	private static global::Avalonia.AvaloniaObject GetParentObject(global::Avalonia.AvaloniaObject source)
+	{
+		if (source == null)
 		{
-			if (source == null)
-			{
-				return null;
-			}
-			if (source is ContentElement contentElement)
-			{
-				global::Avalonia.AvaloniaObject parent = ContentOperations.GetParent(contentElement);
-				if (parent != null)
-				{
-					return parent;
-				}
-				return (contentElement as FrameworkContentElement)?.Parent;
-			}
-			if (source is Visual || source is Visual3D)
-			{
-				return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(source);
-			}
 			return null;
 		}
+		// TODO 迁移：WPF 区分 ContentElement（ContentOperations.GetParent）/ Visual / Visual3D，
+		// Avalonia 没有 ContentElement 与 ContentOperations，也没有 Visual3D；
+		// 统一走 Visual 的视觉父级，非 Visual 时退化读逻辑树 Parent。
+		if (source is global::Avalonia.Visual visual)
+		{
+			return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(visual);
+		}
+		if (source is global::Avalonia.StyledElement styledElement)
+		{
+			return styledElement.Parent;
+		}
+		return null;
+	}
 
 		private void SaveSubrepoOrder()
 		{
@@ -1832,21 +1846,24 @@ namespace ForkPlus.UI.UserControls
 				title.FontWeight = subrepo.IsRootRepository ? FontWeights.Bold : FontWeights.Normal;
 			}
 			Ellipse colorEllipse = panel.Children.OfType<Ellipse>().FirstOrDefault();
-			if (colorEllipse != null)
+		if (colorEllipse != null)
+		{
+			SolidColorBrush brush = RepositoryColorsUserControl.GetBrush(EnsureRepositoryManagerEntry(subrepo.Path).Color);
+			// TODO 迁移：Brushes.* 在 Avalonia 12 返回 IImmutableSolidColorBrush，不能与
+			// SolidColorBrush 直接做 ?? 运算，改用 IBrush 变量承接（Stroke/Fill 均接受 IBrush）。
+			global::Avalonia.Media.IBrush effectiveBrush = brush;
+			if (effectiveBrush == null && subrepo.IsRootRepository)
 			{
-				SolidColorBrush brush = RepositoryColorsUserControl.GetBrush(EnsureRepositoryManagerEntry(subrepo.Path).Color);
-				if (brush == null && subrepo.IsRootRepository)
-				{
-					brush = Application.Current.TryFindResource("SystemAccentBrush") as SolidColorBrush ?? Brushes.DodgerBlue;
-				}
-				colorEllipse.IsVisible = brush == null ? false : true;
-				colorEllipse.Width = subrepo.IsRootRepository ? 11.0 : 8.0;
-				colorEllipse.Height = subrepo.IsRootRepository ? 11.0 : 8.0;
-				colorEllipse.StrokeThickness = subrepo.IsRootRepository ? 1.0 : 2.0;
-				colorEllipse.Stroke = brush;
-				colorEllipse.Fill = brush;
-				global::Avalonia.Controls.ToolTip.SetTip(colorEllipse,subrepo.IsRootRepository ? Translate("Main repository") : null);
+				effectiveBrush = (Application.Current.TryFindResource("SystemAccentBrush") as global::Avalonia.Media.IBrush) ?? Brushes.DodgerBlue;
 			}
+			colorEllipse.IsVisible = effectiveBrush != null;
+			colorEllipse.Width = subrepo.IsRootRepository ? 11.0 : 8.0;
+			colorEllipse.Height = subrepo.IsRootRepository ? 11.0 : 8.0;
+			colorEllipse.StrokeThickness = subrepo.IsRootRepository ? 1.0 : 2.0;
+			colorEllipse.Stroke = effectiveBrush;
+			colorEllipse.Fill = effectiveBrush;
+			global::Avalonia.Controls.ToolTip.SetTip(colorEllipse,subrepo.IsRootRepository ? Translate("Main repository") : null);
+		}
 			StackPanel statusPanel = panel.Children.OfType<StackPanel>().FirstOrDefault((StackPanel stackPanel) => (stackPanel.Tag as string) == "StatusIcons");
 			if (statusPanel != null)
 			{

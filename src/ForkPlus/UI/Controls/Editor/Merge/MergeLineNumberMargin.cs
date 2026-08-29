@@ -17,7 +17,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 {
 	internal class MergeLineNumberMargin : ClearTypeLineNumberMargin
 	{
-		private static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal, new FontFamily("Courier New"));
+		private static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal);
 
 		private static readonly Brush _textBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
 
@@ -45,10 +45,18 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private Dictionary<int, int> _lineNumbers = new Dictionary<int, int>();
 
+		// TODO 迁移：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段补声明
+
+		private Typeface typeface = _typeface;
+
+		private double emSize = 11.0;
+
+
 		public MergeLineNumberMargin(MergeCodeEditor editor)
 		{
 			_editor = editor;
-			typeface = _typeface;
+			// TODO 迁移：WPF 原基类的 typeface/emSize 字段在此补声明
+			this.typeface = _typeface;
 			emSize = 11.0;
 			RefreshPen();
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
@@ -290,7 +298,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private FormattedText CreateFormattedText(string text, Brush brush)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, brush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, brush);
 		}
 	}
 }

@@ -723,6 +723,14 @@ namespace ForkPlus.UI.WpfCompat
             => RuntimePayload.ContainsKey(format)
                || Read?.Items?.Any(i => i.Formats.Any(f => Matches(f, format))) == true;
 
+        /// <summary>WPF GetDataPresent(Type)：仅字符串类型可判定。</summary>
+        public bool GetDataPresent(Type format)
+            => format == typeof(string) && (GetDataPresent("Text") || GetDataPresent("System.String"));
+
+        /// <summary>WPF GetData(Type)。</summary>
+        public object GetData(Type format)
+            => format == typeof(string) ? (GetData("Text") as string ?? GetData("System.String")) : null;
+
         public object GetData(string format)
         {
             if (RuntimePayload.TryGetValue(format, out var direct)) return direct;

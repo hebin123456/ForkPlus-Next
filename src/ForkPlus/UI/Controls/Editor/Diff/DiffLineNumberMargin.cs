@@ -21,6 +21,13 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 			public int? To;
 
+			// TODO 迁移：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段补声明
+
+			private Typeface typeface = _typeface;
+
+			private double emSize = 11.0;
+
+
 			public LineNumber(int? from, int? to)
 			{
 				From = from;
@@ -70,7 +77,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		static DiffLineNumberMargin()
 		{
-			_typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal, new FontFamily("Courier New"));
+			_typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal);
 			_lightBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
 			_darkBrush = new SolidColorBrush(Color.FromRgb(160, 160, 160));
 			_separatorPenLight = new Pen(new SolidColorBrush(Color.FromRgb(218, 218, 215)), 1.0);
@@ -80,11 +87,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public DiffLineNumberMargin(DiffViewMode diffViewMode)
 		{
-			typeface = _typeface;
+			// TODO 迁移：WPF 原基类的 typeface/emSize 字段在此补声明
+			this.typeface = _typeface;
 			emSize = 11.0;
 			RefreshBrushes();
-			_minusText = new FormattedText("-", CultureInfo.InvariantCulture, FlowDirection.RightToLeft, _typeface, 15.0, _brush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
-			_plusText = new FormattedText("+", CultureInfo.InvariantCulture, FlowDirection.RightToLeft, _typeface, 13.0, _brush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+			_minusText = new FormattedText("-", CultureInfo.InvariantCulture, FlowDirection.RightToLeft, _typeface, 15.0, _brush);
+			_plusText = new FormattedText("+", CultureInfo.InvariantCulture, FlowDirection.RightToLeft, _typeface, 13.0, _brush);
 			_diffViewMode = diffViewMode;
 			_showDiffMarks = ForkPlusSettings.Default.DiffShowChangeMarks;
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
@@ -258,7 +266,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private FormattedText CreateFormattedText(string text)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush);
 		}
 	}
 }

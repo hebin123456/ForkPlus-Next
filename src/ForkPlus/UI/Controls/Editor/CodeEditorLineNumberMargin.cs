@@ -31,9 +31,14 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private int _lineNumberLength = 2;
 
+		// TODO 迁移：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 实例字段，
+		// AvaloniaEdit 侧无此基类，在此补声明（CreateFormattedText 使用）。
+		private Typeface typeface = _typeface;
+		private double emSize = 11.0;
+
 		static CodeEditorLineNumberMargin()
 		{
-			_typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal, new FontFamily("Courier New"));
+			_typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal);
 			_lightBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
 			_darkBrush = new SolidColorBrush(Color.FromRgb(160, 160, 160));
 			_separatorPenLight = new Pen(new SolidColorBrush(Color.FromRgb(218, 218, 215)), 1.0);
@@ -107,7 +112,8 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private FormattedText CreateFormattedText(string text)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+			// TODO 迁移：Avalonia FormattedText 无 pixelsPerDip 参数（6 参构造）
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush);
 		}
 	}
 }

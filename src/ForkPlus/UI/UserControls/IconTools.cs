@@ -2,6 +2,9 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+// TODO 迁移：Imaging / Int32Rect / BitmapSizeOptions 来自 WPF System.Windows.Media.Imaging，
+// 兼容层已在 WpfCompat.Batch2.cs 重建同名命名空间，这里显式引入。
+using System.Windows.Media.Imaging;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -109,12 +112,14 @@ namespace ForkPlus.UI.UserControls
 				return value;
 			}
 			Icon iconForExtension = GetIconForExtension(extension, iconsize);
-			if (iconForExtension != null)
+		if (iconForExtension != null)
+		{
+			try
 			{
-				try
-				{
-					value = Imaging.CreateBitmapSourceFromHIcon(iconForExtension.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-				}
+				// TODO 迁移：WPF Imaging.CreateBitmapSourceFromHIcon 由兼容层 stub 提供
+				//（当前返回 null，GDI HICON → Avalonia Bitmap 转换待补）。
+				value = Imaging.CreateBitmapSourceFromHIcon(iconForExtension.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+			}
 				catch (Exception ex)
 				{
 					Log.Error("Failed to create bitmap source from icon handle", ex);
@@ -133,9 +138,11 @@ namespace ForkPlus.UI.UserControls
 				return imageSource;
 			}
 			try
-			{
-				imageSource = Imaging.CreateBitmapSourceFromHIcon(Icon.ExtractAssociatedIcon(filePath).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-			}
+		{
+			// TODO 迁移：WPF Imaging.CreateBitmapSourceFromHIcon 由兼容层 stub 提供
+			//（当前返回 null，GDI HICON → Avalonia Bitmap 转换待补）。
+			imageSource = Imaging.CreateBitmapSourceFromHIcon(Icon.ExtractAssociatedIcon(filePath).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+		}
 			catch (Exception ex)
 			{
 				Log.Error("Failed to create bitmap source from icon handle", ex);
