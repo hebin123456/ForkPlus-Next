@@ -25,6 +25,15 @@ namespace ForkPlus.UI.Controls
 		{
 			ItemsPanel = new global::Avalonia.Controls.Templates.FuncTemplate<global::Avalonia.Controls.Panel>(
 				() => new global::Avalonia.Controls.Primitives.UniformGrid { Rows = 1 });
+			// TODO 迁移：WPF TabControl.OnSelectionChanged 是框架调用的虚方法重写，迁移后降级为
+			// 无调用的普通方法（Avalonia 无此虚方法）→ SelectedTabItemChanged 永不触发 →
+			// TabManager.TabControl_SelectedTabItemChanged（排队仓库刷新任务）整条链路断裂，
+			// 打开仓库后永远停在"正在加载..."。改为订阅 Avalonia SelectionChanged 路由事件，
+			// 转发到原 OnSelectionChanged 逻辑（保留 StopSelectionChangedEventWhileDropInProgress 门控）。
+			base.SelectionChanged += delegate(object sender, SelectionChangedEventArgs e)
+			{
+				OnSelectionChanged(e);
+			};
 		}
 
 		[Null]
