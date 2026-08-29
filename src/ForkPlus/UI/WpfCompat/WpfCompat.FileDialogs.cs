@@ -20,6 +20,8 @@ namespace Microsoft.Win32
         public bool CheckFileExists { get; set; }
         public bool Multiselect { get; set; }
         public string FileName { get; set; } = "";
+        /// <summary>TODO 迁移：WPF InitialDirectory → Avalonia SuggestedStartLocation（需要 IStorageFolder）。</summary>
+        public string InitialDirectory { get; set; }
 
         /// <summary>解析 WPF "Name (*.ext)|*.ext" 过滤串为 Avalonia FileType 列表。</summary>
         internal IReadOnlyList<global::Avalonia.Platform.Storage.FilePickerFileType> ParseFilter()

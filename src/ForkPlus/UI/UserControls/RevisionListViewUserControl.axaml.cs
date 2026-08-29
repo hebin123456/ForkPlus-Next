@@ -455,9 +455,10 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		private Branch GetClickedBranch(global::Avalonia.Input.PointerPressedEventArgs args)
+		private Branch GetClickedBranch(global::Avalonia.Input.TappedEventArgs args) // TODO 迁移：双击事件改为 TappedEventArgs。
 		{
-			global::Avalonia.AvaloniaObject dependencyObject = args.Source as global::Avalonia.AvaloniaObject;
+			// TODO 迁移：WPF DependencyObject 可视树遍历 → Avalonia Visual（GetVisualParent 需要 Visual）。
+			global::Avalonia.Visual dependencyObject = args.Source as global::Avalonia.Visual;
 			while (dependencyObject != null && !(dependencyObject is global::Avalonia.Controls.ListBoxItem))
 			{
 				if (dependencyObject is Run run)

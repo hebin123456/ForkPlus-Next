@@ -77,7 +77,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void FilesTreeView_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
-			ListBoxItem listBoxItem = (e.Source as global::Avalonia.AvaloniaObject)?.GetParent<ListBoxItem>();
+			ListBoxItem listBoxItem = (e.Source as global::Avalonia.Visual)?.GetParent<ListBoxItem>() /* TODO 迁移：Visual 扩展需 Visual 接收者 */;
 			if (listBoxItem != null && FilesTreeView.ItemFromContainer(listBoxItem) is RevisionFileTreeViewItem revisionFileTreeViewItem)
 			{
 				revisionFileTreeViewItem.IsExpanded = !revisionFileTreeViewItem.IsExpanded;

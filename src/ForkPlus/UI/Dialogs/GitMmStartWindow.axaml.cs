@@ -166,7 +166,7 @@ namespace ForkPlus.UI.Dialogs
 					{
 						Text = subrepo.Name
 					},
-					IsCheckable = true,
+					ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox, // TODO 迁移：WPF IsCheckable → Avalonia ToggleType。
 					IsChecked = _selectedSubrepoPaths.Contains(subrepo.Path),
 					StaysOpenOnClick = true
 				};

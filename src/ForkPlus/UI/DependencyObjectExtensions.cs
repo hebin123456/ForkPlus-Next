@@ -9,9 +9,10 @@ namespace ForkPlus.UI
 	public static class DependencyObjectExtensions
 	{
 		[Null]
-		public static T GetParent<T>(this global::Avalonia.AvaloniaObject _this) where T : global::Avalonia.AvaloniaObject
+		public static T GetParent<T>(this global::Avalonia.Visual _this) where T : global::Avalonia.AvaloniaObject
 		{
-			global::Avalonia.AvaloniaObject dependencyObject = _this;
+			// TODO 迁移：WPF DependencyObject 可视树遍历 → Avalonia Visual（GetVisualParent 需要 Visual）。
+			global::Avalonia.Visual dependencyObject = _this;
 			while (dependencyObject != null && !(dependencyObject is T))
 			{
 				dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);

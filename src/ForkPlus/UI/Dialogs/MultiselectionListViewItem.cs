@@ -43,7 +43,8 @@ namespace ForkPlus.UI.Dialogs
 			this.ReleaseMouseCapture();
 			if (_wasSelected)
 			{
-				base.OnPointerPressed(e);
+				// TODO 迁移：WPF 抬起时补调 base.OnMouseLeftButtonDown(e) 维持选中；Avalonia 显式保持选中。
+				IsSelected = true;
 			}
 		}
 

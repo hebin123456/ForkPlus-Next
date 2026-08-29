@@ -10,7 +10,7 @@ namespace ForkPlus.UI
 {
 	public static class ItemsControlExtensions
 	{
-		public static object GetObjectAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : global::Avalonia.AvaloniaObject
+		public static object GetObjectAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : global::Avalonia.Controls.Control
 		{
 			ItemContainer containerAtPoint = control.GetContainerAtPoint<ItemContainer>(p);
 			if (containerAtPoint == null)
@@ -20,14 +20,15 @@ namespace ForkPlus.UI
 			return control.ItemFromContainer(containerAtPoint);
 		}
 
-		public static ItemContainer GetContainerAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : global::Avalonia.AvaloniaObject
+		public static ItemContainer GetContainerAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : global::Avalonia.Controls.Control
 		{
-			HitTestResult hitTestResult = VisualTreeHelper.HitTest(control, p);
-			if (hitTestResult == null)
+			// TODO 迁移：WPF HitTestResult.VisualHit → 兼容层 HitTest 直接返回 Visual。
+			global::Avalonia.Visual visualHit = VisualTreeHelper.HitTest(control, p);
+			if (visualHit == null)
 			{
 				return null;
 			}
-			global::Avalonia.AvaloniaObject dependencyObject = hitTestResult.VisualHit;
+			global::Avalonia.Visual dependencyObject = visualHit;
 			while (global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject) != null && !(dependencyObject is ItemContainer))
 			{
 				dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);

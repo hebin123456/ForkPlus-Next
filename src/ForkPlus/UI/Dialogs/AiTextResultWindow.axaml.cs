@@ -184,7 +184,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			try
 			{
-				Clipboard.SetText(md);
+				Clipboard.SetTextAsync(md).GetAwaiter().GetResult(); // TODO 迁移：WPF Clipboard.SetText → Avalonia SetTextAsync（阻塞等待保持同步形状）。
 				StatusTextBlock.Text = PreferencesLocalization.Current("Copied to clipboard");
 			}
 			catch (Exception ex)

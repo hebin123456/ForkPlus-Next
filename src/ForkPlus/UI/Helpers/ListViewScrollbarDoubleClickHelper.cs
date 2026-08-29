@@ -24,10 +24,11 @@ namespace ForkPlus.UI.Helpers
 
 		private static bool IsSourceInsideListBoxItem(object source)
 		{
-			global::Avalonia.AvaloniaObject dependencyObject = source as global::Avalonia.AvaloniaObject;
+			// TODO 迁移：WPF DependencyObject 可视树遍历 → Avalonia Visual（GetVisualParent 需要 Visual）。
+			global::Avalonia.Visual dependencyObject = source as global::Avalonia.Visual;
 			while (dependencyObject != null && !(dependencyObject is global::Avalonia.Controls.ListBoxItem))
 			{
-				dependencyObject = ((!(dependencyObject is Run)) ? global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject) : (dependencyObject as Run).Parent);
+				dependencyObject = ((!(dependencyObject is Run)) ? global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject) : ((dependencyObject as Run).Parent as global::Avalonia.Visual));
 			}
 			if (dependencyObject == null)
 			{

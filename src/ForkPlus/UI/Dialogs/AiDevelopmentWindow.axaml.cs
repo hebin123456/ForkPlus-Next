@@ -276,7 +276,7 @@ namespace ForkPlus.UI.Dialogs
 				Text = PreferencesLocalization.Current("Describe your development requirement below. The AI will analyze your codebase and generate file changes. You can have a continuous conversation - the AI remembers previous context in this session."),
 				FontSize = 12,
 				TextWrapping = TextWrapping.Wrap,
-				Foreground = (Brush)FindResource("SecondaryLabelBrush"),
+				Foreground = (Brush)this.TryFindResource("SecondaryLabelBrush"), // TODO 迁移：WPF FindResource → TryFindResource 兼容扩展。
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 			panel.Children.Add(title);

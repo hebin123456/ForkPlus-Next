@@ -63,8 +63,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private void LongOperationWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			Dispatcher.Post(DispatcherPriority.ApplicationIdle, new Action(async delegate
-			{
+			Dispatcher.Post(new Action(async delegate // TODO 迁移：Avalonia Dispatcher.Post(Action, priority) 参数顺序与 WPF BeginInvoke 相反。
+		{
 				try
 				{
 					await _operation();
@@ -77,8 +77,8 @@ namespace ForkPlus.UI.Dialogs
 				{
 					CloseWithOk();
 				}
-			}));
-		}
+			}), global::Avalonia.Threading.DispatcherPriority.ApplicationIdle);
+	}
 
 		private static string Translate(string text)
 		{

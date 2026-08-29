@@ -291,7 +291,7 @@ namespace ForkPlus.UI.Helpers
 		/// <summary>取 visual 所在 TopLevel 的设备缩放比（无 TopLevel 时按 1.0 处理）。</summary>
 		private static double GetVisualScaling(Visual visual)
 		{
-			global::Avalonia.Controls.Primitives.TopLevel topLevel = global::Avalonia.Controls.Primitives.TopLevel.GetTopLevel(visual);
+			global::Avalonia.Controls.TopLevel topLevel = global::Avalonia.Controls.TopLevel.GetTopLevel(visual); // TODO 迁移：TopLevel 在 Controls 命名空间。
 			return topLevel?.RenderScaling ?? 1.0;
 		}
 
