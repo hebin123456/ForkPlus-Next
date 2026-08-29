@@ -34,12 +34,17 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isJobManagerPopopOpen;
 
+		// TODO 迁移：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
+		// TranslateTransform 非 StyledElement，手动声明并从 TitleContainer.RenderTransform 取值。
+		internal global::Avalonia.Media.TranslateTransform TitleContainerTranslateTransform;
+
 		[Null]
 		private RepositoryUserControl _oldRepositoryUserControl;
 
 		public StatusUserControl()
 		{
 			InitializeComponent();
+			TitleContainerTranslateTransform = (global::Avalonia.Media.TranslateTransform)TitleContainer.RenderTransform;
 			ApplyLocalization();
 			_refreshTimer.Interval = TimeSpan.FromMilliseconds(200.0);
 			_refreshTimer.Tick += _refreshTimer_Tick;

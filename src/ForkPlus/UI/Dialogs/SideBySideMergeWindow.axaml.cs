@@ -51,6 +51,12 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly ChangedFile _changedFile;
 
+		// TODO 迁移：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
+		// ColumnDefinition 非 StyledElement，手动声明（构造函数里按结构索引赋值）。
+		internal global::Avalonia.Controls.ColumnDefinition MergeCodeEditorMiddleColumn;
+
+		internal global::Avalonia.Controls.ColumnDefinition TopCheckBoxMiddleColumn;
+
 		private MergeConflict _mergeConflict;
 
 		private bool _stopCheckBoxEvents;
@@ -106,6 +112,10 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowHeader = false;
 			base.ShowLogo = false;
 			InitializeComponent();
+			// TODO 迁移：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
+			// ColumnDefinition 非 StyledElement，按 XAML 结构索引取列定义。
+			MergeCodeEditorMiddleColumn = ((global::Avalonia.Controls.Grid)MergeCodeEditorContainer.Child).ColumnDefinitions[1];
+			TopCheckBoxMiddleColumn = ((global::Avalonia.Controls.Grid)((global::Avalonia.Controls.DockPanel)AllRemoteCheckBox.Parent).Parent).ColumnDefinitions[1];
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Resolve");
 			FileMergeControl.RepositoryUserControl = repositoryUserControl;
 			LocalMergeEditor.ViewMode = MergeConflictPart.Local;

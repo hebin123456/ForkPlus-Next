@@ -91,6 +91,9 @@ namespace ForkPlus.UI.UserControls
 
 		private TextArea _textArea;
 
+                // TODO 迁移：TranslateTransform 非 StyledElement，NameGenerator 不生成字段，手动声明。
+                internal global::Avalonia.Media.TranslateTransform TranslateTransform;
+
 		private SearchResultBackgroundRenderer _renderer;
 
 		private TextDocument _textDocument;
@@ -131,6 +134,9 @@ namespace ForkPlus.UI.UserControls
 		public CodeEditorSearchPanelUserControl()
 		{
 			InitializeComponent();
+			// TODO 迁移：TranslateTransform 非 StyledElement，NameGenerator 不生成字段，
+			// 手动声明（字段名与类型同名，C# "Color Color" 规则下成员访问优先）并从根 Border 取值。
+			TranslateTransform = (global::Avalonia.Media.TranslateTransform)((global::Avalonia.Controls.Border)base.Content).RenderTransform;
 			SearchTextBox.FontFamily = FontConstants.ProportionalFontFamily;
 			base.Loaded += delegate
 			{

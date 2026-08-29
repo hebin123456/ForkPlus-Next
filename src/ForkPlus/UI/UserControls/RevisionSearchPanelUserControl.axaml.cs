@@ -22,6 +22,10 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isBusyIndicatorVisible;
 
+             // TODO 迁移：TranslateTransform 非 StyledElement，NameGenerator 不生成字段，
+             // 手动声明（字段名与类型同名，C# "Color Color" 规则下成员访问优先）。
+             internal global::Avalonia.Media.TranslateTransform TranslateTransform;
+
 		public Grid SearchPanelPlaceholder
 		{
 			get
@@ -64,6 +68,7 @@ namespace ForkPlus.UI.UserControls
 		public RevisionSearchPanelUserControl()
 		{
 			InitializeComponent();
+			TranslateTransform = (global::Avalonia.Media.TranslateTransform)((global::Avalonia.Controls.Border)base.Content).RenderTransform;
 			base.Loaded += delegate
 			{
 				TranslateTransform.Y = 0.0 - SearchPanelHeight;
