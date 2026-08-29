@@ -1,4 +1,4 @@
-<UserControl xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatisticsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+<UserControl xmlns:oxy="http://oxyplot.org/avalonia" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.StatisticsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
       <ControlTemplate x:Key="TrackerControlDataTemplate">
@@ -37,11 +37,7 @@
       </Grid.RowDefinitions>
       <controls:DateRangeButton Grid.Row="0" Margin="0,10,0,10" HorizontalAlignment="Left" x:Name="DateRangeButton" />
       <TextBlock Grid.Row="1" Text="Commits per month" Margin="10,0,0,0" FontSize="16" FontWeight="Medium" />
-      <!--
-      TODO(wpf2avalonia): <PlotView>（OxyPlot.Wpf（包已隔离）：图表改用 ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia，或用 Canvas/DrawingContext 手工自绘（StatisticsUserControl 统计图表实测））已注释移除，保持文件可编译。
-      原始片段：
-      <oxy:PlotView Grid.Row="2" Height="350" Margin="4,10,0,0" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="LinePlot" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:oxy="http://oxyplot.org/wpf" />
-    -->
+          <oxy:PlotView Grid.Row="2" Height="350" Margin="4,10,0,0" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="LinePlot" />
       <TextBlock Grid.Row="3" Text="Contributions" Margin="10,20,0,0" FontSize="16" FontWeight="Medium" />
       <controls:ContributionHeatmap Grid.Row="4" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="Heatmap" />
       <Grid Grid.Row="5">
@@ -83,23 +79,11 @@
         </StackPanel>
         <StackPanel Grid.Column="1" Margin="50,20,0,0">
           <TextBlock Text="Top contributors" FontSize="16" Margin="10,0,0,0" FontWeight="Medium" />
-          <!--
-      TODO(wpf2avalonia): <PlotView>（OxyPlot.Wpf（包已隔离）：图表改用 ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia，或用 Canvas/DrawingContext 手工自绘（StatisticsUserControl 统计图表实测））已注释移除，保持文件可编译。
-      原始片段：
-      <oxy:PlotView Height="450" Width="450" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="PiePlot" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:oxy="http://oxyplot.org/wpf" />
-    -->
+              <oxy:PlotView Height="450" Width="450" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="PiePlot" />
           <TextBlock Text="Commits per weekday" FontSize="16" Margin="10,0,0,0" FontWeight="Medium" />
-          <!--
-      TODO(wpf2avalonia): <PlotView>（OxyPlot.Wpf（包已隔离）：图表改用 ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia，或用 Canvas/DrawingContext 手工自绘（StatisticsUserControl 统计图表实测））已注释移除，保持文件可编译。
-      原始片段：
-      <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="WeekDayPlot" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:oxy="http://oxyplot.org/wpf" />
-    -->
+              <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="WeekDayPlot" />
           <TextBlock Text="Commits per day hour" FontSize="16" Margin="10,10,0,0" FontWeight="Medium" />
-          <!--
-      TODO(wpf2avalonia): <PlotView>（OxyPlot.Wpf（包已隔离）：图表改用 ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia，或用 Canvas/DrawingContext 手工自绘（StatisticsUserControl 统计图表实测））已注释移除，保持文件可编译。
-      原始片段：
-      <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="DayHourPlot" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:oxy="http://oxyplot.org/wpf" />
-    -->
+              <oxy:PlotView Height="300" HorizontalAlignment="Stretch" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="DayHourPlot" />
         </StackPanel>
       </Grid>
       <!-- Row 6: 代码行数统计（tokei）—— 标题行 + 模式切换 + 摘要 + 饼图 + 列表 -->
@@ -154,11 +138,7 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
-          <!--
-      TODO(wpf2avalonia): <PlotView>（OxyPlot.Wpf（包已隔离）：图表改用 ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia，或用 Canvas/DrawingContext 手工自绘（StatisticsUserControl 统计图表实测））已注释移除，保持文件可编译。
-      原始片段：
-      <oxy:PlotView Grid.Column="0" Height="350" Width="350" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="CodeLinesPiePlot" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:oxy="http://oxyplot.org/wpf" />
-    -->
+              <oxy:PlotView Grid.Column="0" Height="350" Width="350" HorizontalAlignment="Left" VerticalAlignment="Top" DefaultTrackerTemplate="{DynamicResource TrackerControlDataTemplate}" x:Name="CodeLinesPiePlot" />
           <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Top">
             <Grid Margin="0,0,0,4">
               <Grid.ColumnDefinitions>

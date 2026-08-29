@@ -611,8 +611,8 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			{
 				Log.Error("Failed to list refs for CodeLines popup", ex);
 			}
-			_codeLineRefsView = (System.Windows.Data.ListCollectionView)
-				global::Avalonia.Data.CollectionViewSource.GetDefaultView(_codeLineRefs);
+			// TODO 迁移：WPF CollectionViewSource.GetDefaultView → WpfCompat ListCollectionView（Filter+Reset 通知）
+			_codeLineRefsView = new global::ForkPlus.UI.WpfCompat.ListCollectionView(_codeLineRefs);
 			// Workspace（RefSpec 为空）始终保留，其余按 Display 包含搜索文本（忽略大小写）
 			_codeLineRefsView.Filter = obj => FilterCodeLineRefItem((CodeLineRefItem)obj);
 			CodeLinesRefListBox.ItemsSource = _codeLineRefsView;
