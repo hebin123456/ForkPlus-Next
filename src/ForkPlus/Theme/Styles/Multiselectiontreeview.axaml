@@ -62,7 +62,7 @@
                   <Binding Path="ShowExpander" />
                 </ToggleButton.IsVisible>
               </ToggleButton>
-              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
             </Grid>
           </Border>
           
@@ -147,7 +147,7 @@
                   <Binding Path="ShowExpander" />
                 </ToggleButton.IsVisible>
               </ToggleButton>
-              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
             </Grid>
           </Border>
           
@@ -240,7 +240,7 @@
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>

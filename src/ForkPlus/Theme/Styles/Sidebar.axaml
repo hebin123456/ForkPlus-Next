@@ -30,7 +30,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="RadioButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" CornerRadius="4" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>

@@ -29,7 +29,7 @@
     -->
             <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusY="1" RadiusX="1" x:Name="SelectedBackground" />
             <Rectangle Fill="{TemplateBinding Background}" Opacity="0" RadiusY="1" RadiusX="1" x:Name="Background" />
-            <ContentPresenter Margin="5,1,5,1" TextElement.Foreground="{DynamicResource Calendar.ButtonNormalForeground}" TextElement.FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" />
+            <ContentPresenter Margin="5,1,5,1" TextElement.Foreground="{DynamicResource Calendar.ButtonNormalForeground}" TextElement.FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" Content="{TemplateBinding Content}"/>
           </Grid>
           
         </ControlTemplate>
@@ -52,7 +52,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="CalendarDayButton">
           <Border Background="{TemplateBinding Background}" x:Name="Border">
-            <ContentPresenter Margin="5,1,5,1" TextElement.Foreground="{DynamicResource Calendar.ButtonNormalForeground}" TextElement.FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" />
+            <ContentPresenter Margin="5,1,5,1" TextElement.Foreground="{DynamicResource Calendar.ButtonNormalForeground}" TextElement.FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="Presenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>

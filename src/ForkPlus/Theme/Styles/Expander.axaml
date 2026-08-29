@@ -14,7 +14,7 @@
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
               <Path Grid.Row="0" Grid.Column="0" Data="M0,0L3.5,3.5 0,7" Margin="25,1,0,0" HorizontalAlignment="Right" Stroke="{DynamicResource Expander.Static.Arrow.Stroke}" StrokeThickness="1.5" VerticalAlignment="Center" x:Name="Arrow" />
-              <ContentPresenter Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" x:Name="ContentPresenter" />
+              <ContentPresenter Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
               <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="1" HorizontalAlignment="Stretch" Background="{DynamicResource BorderBrush}" x:Name="SeparatorBorder" IsVisible="False" />
             </Grid>
           </Border>
@@ -64,7 +64,7 @@
                   <Binding Path="IsExpanded"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
                 </ToggleButton.IsChecked>
               </ToggleButton>
-              <ContentPresenter DockPanel.Dock="Bottom" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ExpandSite" IsVisible="False" />
+              <ContentPresenter DockPanel.Dock="Bottom" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ExpandSite" IsVisible="False" Content="{TemplateBinding Content}"/>
             </DockPanel>
           </Border>
           

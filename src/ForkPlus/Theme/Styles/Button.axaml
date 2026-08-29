@@ -22,7 +22,7 @@
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <DockPanel>
               <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" x:Name="ShadowBorder" IsVisible="True" />
-              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter">
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}">
                 <ContentPresenter.Resources>
                   <ResourceDictionary>
                     <ControlTheme x:Key="{x:Type TextBlock}" TargetType="TextBlock">
@@ -76,7 +76,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -109,7 +109,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
           <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -146,7 +146,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -189,7 +189,7 @@
         <ControlTemplate TargetType="controls:ToolbarButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <StackPanel>
-              <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+              <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
               <TextBlock Text="{TemplateBinding controls:ToolbarButton.Title}" Theme="{DynamicResource ToolbarButtonTitle}" />
             </StackPanel>
           </Border>
@@ -251,7 +251,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -282,7 +282,7 @@
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <StackPanel>
               <Grid Width="42">
-                <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+                <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
                 <Path HorizontalAlignment="Center" Margin="32,3,0,0" VerticalAlignment="Center" Fill="{DynamicResource ToolbarForeground}" Data="{DynamicResource ArrowGeometry}">
                   <Path.IsVisible>
                     <Binding Path="IsArrowVisible" RelativeSource="{RelativeSource TemplatedParent}" />
@@ -345,7 +345,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="RadioButton">
           <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -379,7 +379,7 @@
             <Grid.RowDefinitions>
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <ContentPresenter Grid.Row="0" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+            <ContentPresenter Grid.Row="0" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
           </Grid>
           
         </ControlTemplate>
@@ -438,7 +438,7 @@
                 <Ellipse Fill="{DynamicResource RadioButton.OptionMark.Static.Glyph}" Width="8" Height="8" Opacity="0" x:Name="OptionMark" />
               </Grid>
             </Border>
-            <ContentPresenter Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Grid.Column="1" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
           </Grid>
           
         </ControlTemplate>
@@ -494,7 +494,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" />
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -519,7 +519,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" />
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Height="12" Width="12" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -556,7 +556,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -599,7 +599,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" x:Name="Border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -679,7 +679,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border CornerRadius="8" Background="{DynamicResource ShowButton.Static.Background}" x:Name="border">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -721,7 +721,7 @@
         <ControlTemplate TargetType="ToggleButton">
           <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
             <StackPanel Orientation="Horizontal">
-              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
               <Path HorizontalAlignment="Center" Margin="5,2,5,0" VerticalAlignment="Center" Data="{DynamicResource ArrowGeometry}" Fill="{DynamicResource ComboBox.Static.Glyph}" x:Name="Arrow" />
             </StackPanel>
           </Border>
@@ -769,7 +769,7 @@
         <ControlTemplate TargetType="ToggleButton">
           <Border HorizontalAlignment="Right" Margin="0" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Width="{TemplateBinding Width}" x:Name="Border">
             <StackPanel Orientation="Horizontal">
-              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
               <Path HorizontalAlignment="Center" Margin="5,2,5,0" VerticalAlignment="Center" Data="{DynamicResource ArrowGeometry}" Fill="{DynamicResource ComboBox.Static.Glyph}" x:Name="Arrow" />
             </StackPanel>
           </Border>
@@ -805,7 +805,7 @@
             <DockPanel>
               <Border DockPanel.Dock="Bottom" Height="1" Margin="0,0,0,-1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" CornerRadius="0,0,4,4" Background="{DynamicResource Button.Static.Shadow}" x:Name="ShadowBorder" IsVisible="True" />
               <StackPanel Orientation="Horizontal">
-                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
                 <Path HorizontalAlignment="Center" Margin="5,2,5,0" VerticalAlignment="Center" Data="{DynamicResource ArrowGeometry}" Fill="{DynamicResource ComboBox.Static.Glyph}" x:Name="Arrow" />
               </StackPanel>
             </DockPanel>
@@ -857,7 +857,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+          <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -889,7 +889,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" />
+            <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -920,7 +920,7 @@
           <Border Padding="0,2,2,2" Background="#00FFFFFF">
             <Grid>
               <Ellipse Height="13" Width="13" Margin="{TemplateBinding Padding}" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="1" x:Name="Ellipse" />
-              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
             </Grid>
           </Border>
           

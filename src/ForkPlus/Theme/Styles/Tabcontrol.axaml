@@ -13,7 +13,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="TabItem">
           <Grid x:Name="templateRoot">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter" Content="{TemplateBinding Content}">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>
@@ -371,7 +371,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="TabItem">
           <Grid Background="#00FFFFFF" x:Name="templateRoot">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" x:Name="contentPresenter">
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" x:Name="contentPresenter" Content="{TemplateBinding Content}">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>

@@ -52,7 +52,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -150,7 +150,7 @@
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -227,7 +227,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -251,7 +251,7 @@
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
             </Border.CornerRadius>
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -277,7 +277,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
         </ControlTemplate>
       </Setter.Value>
@@ -295,7 +295,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemNotRoundedBorderStyle}">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -438,7 +438,7 @@
           </ControlTemplate.Resources>
 -->
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
           
         </ControlTemplate>
@@ -457,7 +457,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="#00FFFFFF" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}"/>
           </Border>
         </ControlTemplate>
       </Setter.Value>

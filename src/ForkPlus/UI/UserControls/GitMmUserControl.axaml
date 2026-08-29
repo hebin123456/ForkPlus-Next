@@ -10,7 +10,7 @@
           <ControlTemplate TargetType="TabItem">
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
-              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" Content="{TemplateBinding Content}"/>
             </Grid>
             
           </ControlTemplate>
