@@ -1920,13 +1920,13 @@ namespace ForkPlus.UI.UserControls
 
 		private void ShowCommitDropdown()
 		{
-{			CommitButton.Styles.Clear();CommitButton.Styles.Add(global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle);
+{			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(CommitButton, global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle);
 }			CommitDropdownButton.Show();
 		}
 
 		private void HideCommitButtonDropdown()
 		{
-{			CommitButton.Styles.Clear();CommitButton.Styles.Add(global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle);
+{			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(CommitButton, global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle);
 }			CommitDropdownButton.Collapse();
 		}
 

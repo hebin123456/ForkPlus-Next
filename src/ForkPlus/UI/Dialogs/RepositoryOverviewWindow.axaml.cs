@@ -65,7 +65,7 @@ namespace ForkPlus.UI.Dialogs
 			_typeface = new Typeface(new FontFamily("Segoe UI Variable Display"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 			_itemBackgroundBrush = new SolidColorBrush(Color.FromArgb(8, 170, 170, 170));
 			_hoverBorderPen = new Pen(new SolidColorBrush(Colors.Gray), 1.0);
-			FolderIcon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png")));
+			FolderIcon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("avares://ForkPlus/Assets/Folder.png")));
 		}
 
 		public RepositoryOverviewWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)

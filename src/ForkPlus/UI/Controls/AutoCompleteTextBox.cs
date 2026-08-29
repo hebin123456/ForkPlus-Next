@@ -124,7 +124,7 @@ namespace ForkPlus.UI.Controls
 			if (_listBox == null)
 			{
 				_listBox = new ListBox();
-{				_listBox.Styles.Clear();_listBox.Styles.Add(Application.Current.TryFindResource("AutoCompleteListBoxStyle") as Style);
+{				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(_listBox, Application.Current.TryFindResource("AutoCompleteListBoxStyle"));
 }				_listBox.ItemTemplate = Application.Current.TryFindResource("AutocompleteListBoxItemTemplate") as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate → Avalonia IDataTemplate
 				_listBox.MinWidth = 216.0;
 				_listBox.PointerReleased += delegate

@@ -1296,11 +1296,12 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 				Header = EscapeMenuHeader(remoteName)
 			};
 			// 应用可搜索子菜单模板（置顶搜索框 + 可滚动分支列表）
-			Style searchableStyle = (Style)Application.Current.TryFindResource("SearchableSubmenuMenuItem");
+			// TODO 迁移：资源是 ControlTheme，(Style) 强转会 InvalidCastException；改 object 经 StyleCompat 挂 Theme。
+			object searchableStyle = Application.Current.TryFindResource("SearchableSubmenuMenuItem");
 			if (searchableStyle != null)
 			{
-{				groupItem.Styles.Clear();groupItem.Styles.Add(searchableStyle);
-}			}
+				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(groupItem, searchableStyle);
+			}
 			foreach (RemoteBranch rb in remoteBranches.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal))
 			{
 				RemoteBranch currentRemoteBranch = rb;

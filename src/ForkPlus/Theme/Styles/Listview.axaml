@@ -73,31 +73,7 @@
 <!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style>
 <!-- TODO 迁移：WPF 在 Border#Bd 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） --></ControlTheme>
-  <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox">
-    <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Static.Border}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="Padding" Value="0,4,0,0" />
-    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ListBox">
-          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Bd">
-            <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
-              <ItemsPresenter />
-            </ScrollViewer>
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </ControlTheme>
+<!-- TODO 迁移：原 WPF ListBox 简单版主题（ScrollViewer+ItemsPresenter）已删——pass3 把 ListView 转 ListBox 后与下方 ListView 迁移版主题撞 key（运行时重复键异常）；保留功能完整的一份（含选中高亮与 TouchpadAwareScrollViewer）。 -->
   <!--
       TODO(wpf2avalonia): TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
       原始片段：

@@ -64,7 +64,7 @@ namespace ForkPlus.UI.UserControls
 
 		private static global::Avalonia.Media.Imaging.Bitmap CreateFrozenFolderIcon()
 		{
-			global::Avalonia.Media.Imaging.Bitmap icon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png")));
+			global::Avalonia.Media.Imaging.Bitmap icon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("avares://ForkPlus/Assets/Folder.png")));
 			return icon;
 		}
 
@@ -180,15 +180,15 @@ namespace ForkPlus.UI.UserControls
 			{
 			case FileListMode.List:
 				TreeView.ItemTemplate = base.Resources["ListViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
-{				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
+{				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
 }				break;
 			case FileListMode.Tree:
 				TreeView.ItemTemplate = base.Resources["TreeViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
-{				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
+{				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
 }				break;
 			case FileListMode.CombinedList:
 				TreeView.ItemTemplate = base.Resources["ListViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
-{				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.GridViewStyle);
+{				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.GridViewStyle);
 }				break;
 			}
 		}

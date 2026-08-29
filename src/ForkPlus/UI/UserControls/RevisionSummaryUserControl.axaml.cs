@@ -27,7 +27,8 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class RevisionSummaryUserControl : UserControl
 	{
-		private static Style ParentButtonStyle => Application.Current?.TryFindResource("TextButtonStyle") as Style;
+		// TODO 迁移：TextButtonStyle 资源是 ControlTheme；IStyle 由 StyleCompat.SetStyle 消费（挂 Theme）。
+	private static global::Avalonia.Styling.IStyle ParentButtonStyle => Application.Current?.TryFindResource("TextButtonStyle") as global::Avalonia.Styling.IStyle;
 
 		[Null]
 		private RevisionSearchQuery _searchQuery;
@@ -229,7 +230,7 @@ namespace ForkPlus.UI.UserControls
 			button.Padding = new Thickness(0.0);
 			button.IsTabStop = false;
 			button.BorderThickness = new Thickness(0.0);
-{			button.Styles.Clear();button.Styles.Add(global::ForkPlus.UI.Theme.TransparentButtonStyle);
+{			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(button, global::ForkPlus.UI.Theme.TransparentButtonStyle);
 }			global::Avalonia.Controls.ToolTip.SetTip(button,Preferences.PreferencesLocalization.FormatCurrent("Open '{0}' on {1} ({2})", sha.ToAbbreviatedString(), remote.Name, remote.RemoteType.FriendlyName()));
 			button.Content = content;
 			button.Click += delegate

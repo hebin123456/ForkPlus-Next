@@ -42,9 +42,10 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：C# 编译全清零（2026-08-29）。整个解决方案 7 个工程 `dotnet build ForkPlus.sln` 全部成功，0 错误。**
-
-**⚠️ 2026-08-29 运行时冒烟重大发现：XAML 编译静默失败（详见「XAML 编译静默失败」一节）。**
+**🎉 里程碑：编译全清零 + XAML 编译恢复 + 运行时冒烟推进中（2026-08-29）。**
+- `dotnet build` 0 错误；AVLN XAML 错误 0（App.axaml 的 AVLN3000 已修）。
+- XAML IL 重写恢复（`CompiledAvaloniaXaml.*` 类型已生成），`dotnet run` 能启动并跑到主题加载。
+- 当前阻塞：主题字典延迟构建时 `StaticResource {x:Type TextBlock}` 查找失败（详见「运行时阻塞：Textblock.axaml StaticResource」一节）。
 
 错误数轨迹（按唯一错误去重统计）：
 
@@ -65,27 +66,48 @@ git push origin HEAD
 | `a64e8e2` | AVLN 1198→390 | xamlpass1-4 批量 XAML 修复（详见下节「XAML 批量修复方法论」） |
 | `a526bfc` | 390 | docs: 390 错误模式分组 + pass4 未生效复盘 |
 | `415db4d` | AVLN 390→103 | xamlpass5-6：错误驱动精确修复（FocusVisualStyle 块删、ItemContainerTheme→Style、IsCheckable→ToggleType、PreviewKeyDown→KeyDown、ViewportWidth 等 TemplateBinding 簇、Resources on Style 删） |
-| （本轮） | AVLN 103→**1** | xamlpass7 + 定向手工修复：typed property、事件签名、PART_TextPresenter、ItemContainerTheme 块、TemplateKey 花括号、IsMouseOver 删、误删 HorizontalContentAlignment 回滚（详见下文） |
-
-**当前精确统计（2026-08-29）**：**1 唯一错误 / 1 build 汇总错误**——仅剩 `App.axaml` 的 AVLN3000（App 类有自定义构造函数但缺 `AvaloniaXamlLoader.Load(this)` 调用，修复见「下一步行动」）。
+| `e6466dd` | AVLN 103→1 | xamlpass7 + 定向手工修复：typed property、事件签名、PART_TextPresenter、ItemContainerTheme 块、TemplateKey 花括号、IsMouseOver 删、误删 HorizontalContentAlignment 回滚 |
+| （本轮） | AVLN 1→**0** + 运行时推进 | App 生命周期迁移 + 运行时冒烟修复链（资产大小写/BitmapImage shim/代理 owner 窗口/ColorConverter/对话框 NRE，详见「运行时冒烟已修复的问题」） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
-| 2 XAML (AVLN) 清零 | 🔄 **收尾（103→1）** | 仅剩 App.axaml 的 AVLN3000（构造函数缺 `AvaloniaXamlLoader.Load(this)`） |
-| 3 运行时验证 | 🔄 进行中 | 已跑通：App 构造 + IPC；下一步：XAML 清零后跑 MainWindow |
+| 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
+| 3 运行时验证 | 🔄 进行中 | App 启动 + IPC + 主题加载；当前卡 Textblock.axaml 延迟构建的 StaticResource |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-## 剩余 1 错误（2026-08-29，pass7 后）
+## 运行时阻塞：Textblock.axaml StaticResource（当前唯一阻塞，2026-08-29）
 
+**现象**：`dotnet run` 启动时抛
 ```
-App.axaml : AVLN3000: No call to AvaloniaXamlLoader.Load(this) call found anywhere in the type ForkPlus.App and type seems to have custom constructors.
+System.Collections.Generic.KeyNotFoundException: Static resource 'Avalonia.Controls.TextBlock' not found.
+   at StaticResourceExtension.ProvideValue ...
+   at CompiledAvaloniaXaml.!AvaloniaResources.XamlClosure_43.Build_3 in Theme/Styles/Textblock.axaml:line 12
 ```
 
-**修复方案**：`App.axaml.cs` 的 `public App()` 构造函数末尾加一行 `AvaloniaXamlLoader.Load(this);`（补 `using Avalonia.Markup.Xaml;`）。Avalonia XAML 编译器对含自定义构造函数的类型要求显式 Load 调用以便 IL 重写。
+**触发链**（从堆栈反推）：某个 TextBlock 的属性挂 `{DynamicResource Xxx}` → 主题变体解析触发 `DynamicResourceExpression.PublishValue` → `FindResource` 沿 Application 资源链查找 → 命中 `Generic.axaml` 合并的 `Textblock.axaml` 字典里**延迟构建的 ControlTheme**（ControlTheme 存资源字典是 deferred content，首次访问才构建）→ 构建时求值 `BasedOn="{StaticResource {x:Type TextBlock}}"` → 抛异常。
 
-**⚠️ 同时必须修的运行时问题（App 启动流程断裂）**：`App.axaml.cs` 里的 `protected void OnStartup(object e)` 是 WPF 风格方法，**没有 override、永远不会被调用**——ServiceLocator.Initialize、InitializeTheme、RefreshWindowBorderBrush、IPC 服务器、`new MainWindow().Show()` 全部没有挂接。Avalonia 的启动入口是 `OnFrameworkInitializationCompleted()`（当前只 new 了 MainWindow 没挂启动逻辑）。修复：把 OnStartup 主体逻辑搬进 OnFrameworkInitializationCompleted（desktop lifetime 分支内），OnExit 对应挂 `desktop.ShutdownRequested` 或 LifetimeExit 事件。
+**根因分析**：`{x:Type TextBlock}` 的 ControlTheme 定义在 `Button.axaml`（Generic.axaml 合并顺序在 Textblock.axaml 之前），但**延迟构建内部的 StaticResource 查找范围不含跨字典的兄弟/祖先合并字典**（编译期把 `StaticResourceExtension` 求值绑定到 deferred builder 的局部 resolver，不是运行时全资源链）。WPF 的 StaticResource 沿 merge 顺序向上找得到，Avalonia 的 deferred 场景找不到。
+
+**候选修复**（按优先级）：
+1. 把 `Button.axaml` 里的 `{x:Type TextBlock}` 基础 ControlTheme **搬进 `Textblock.axaml` 顶部**（同文件 StaticResource 一定能找到；注意 Button.axaml 里删掉避免重复键）。
+2. 或改 `BasedOn="{DynamicResource {x:Type TextBlock}}"`（需验证 ControlTheme.BasedOn 是否接受动态资源）。
+3. 或删 BasedOn 把基类 4 个 Setter（FontFamily/FontSize/Foreground/TextWrapping/TextTrimming）内联进每个派生主题。
+**全仓扫描**：所有 `BasedOn="{StaticResource {x:Type ...}}"` 的跨文件引用都要按同思路处理（`grep -rn 'BasedOn="{StaticResource' --include='*.axaml'`）。
+
+## 本轮运行时修复链（2026-08-29，AVLN 清零后冒烟推进）
+
+按出现顺序，每个都是「启动 → 抛异常 → 修 → 下一个」推进出来的：
+
+1. **资产目录大小写（FileNotFoundException: avares://ForkPlus/Assets/ForkPlusIcon.png）**：物理目录是小写 `assets/`、文件名全小写，XAML 里引用 PascalCase。Linux 区分大小写直接炸。**修复**：`git mv` 把 193 个资产重命名为 PascalCase（`assets/` → `Assets/`），脚本批量改 324 处引用。**教训：pack URI 大小写敏感，跨平台必须统一 PascalCase。**
+2. **对话框 NRE（ConfigureGitInstanceWindow.get_IsSubmitAllowed）**：`OnContentChanged` 里立刻 `InitializeDialogChrome` 访问 x:Name 字段，但字段尚未生成。**修复**：`Dispatcher.UIThread.Post(InitializeDialogChrome)` 延迟到模板应用后。
+3. **启动期对话框 owner（InvalidOperationException: Cannot show window with non-visible owner）**：启动流程里弹对话框时 MainWindow 还没 Show。**修复**：`WindowDialogCompat` 里无可见 owner 时建 1x1 透明代理窗口兜底（`ForkPlusDialogWindow.cs`）。
+4. **颜色字符串（FormatException: Invalid color string '##54A353'）**：ColorConverter shim 的 `ConvertFromString` 给已带 `#` 的串又加了一遍前缀。**修复**：仅在缺失时补 `#`。
+5. **图片资源类型（InvalidCastException: String → IImage）**：`Images.Light/Dark.axaml` 里 256 个 `x:String` 存 URI，`Image.Source="{DynamicResource XxxIcon}"` 绑定时炸。**修复**：`WpfCompat.Batch2.cs` 新增 `BitmapImage : IImage` shim（可 XAML 声明 + UriSource 属性内部 `AssetLoader.Open` 加载），两文件 128x2 条全部转 `wpf:BitmapImage`。
+6. **App 生命周期**：`OnStartup`/`OnExit` 是 WPF 风格方法永远不会被调。**修复**：主体搬进 `OnFrameworkInitializationCompleted`（desktop lifetime 分支），`App()` 构造补 `AvaloniaXamlLoader.Load(this)`（同时消掉 AVLN3000）。
+7. **重复资源键**：`Textbox.axaml`/`Listview.axaml` 存在同 key ControlTheme（Avalonia 合并时后写的会覆盖但不报错，行为不可控）。**修复**：`scan_dup_keys.py` 扫描去重。
+8. **ThemeTypeExtensions**：主题切换动态加载的 URI 后缀还是 `.xaml`，改成 `.axaml`。
 
 ## pass7 修复记录（103→1，错误清单已全部消灭）
 
@@ -171,11 +193,10 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 
 ## 下一步行动（按优先级）
 
-1. **修掉最后 1 个 AVLN（App.axaml）**：`App()` 构造函数加 `AvaloniaXamlLoader.Load(this);`（详见「剩余 1 错误」一节）。
-2. **App 启动流程迁移（运行时关键）**：`OnStartup` 逻辑（ServiceLocator.Initialize、InitializeTheme、InitializeForkInstance、new MainWindow()）搬进 `OnFrameworkInitializationCompleted()`；`OnExit` 挂 `desktop.ShutdownRequested`。注意 `Program.cs`（若有 Main 入口）需确认 `BuildAvaloniaApp` / lifetime 配置与 IPC 单实例逻辑（HandleCommandLineArguments 在构造函数里）兼容。
-3. **运行时冒烟**：XAML 清零后 `Xvfb :99` + `DISPLAY=:99 dotnet run`，逐个修 MainWindow 加载起的运行时异常（资源查找失败、模板绑定错误等）。
-4. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
-5. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
+1. **修 Textblock.axaml StaticResource 阻塞**（详见「运行时阻塞」一节）：优先把 `{x:Type TextBlock}` 基础 ControlTheme 从 `Button.axaml` 搬进 `Textblock.axaml` 顶部，并全仓扫 `BasedOn="{StaticResource {x:Type ...}}"` 跨文件引用统一处理。
+2. **继续运行时冒烟**：`Xvfb :99` + `DISPLAY=:99 dotnet run`，逐个修 MainWindow 加载起的运行时异常（资源查找失败、模板绑定错误等）。已修清单见「本轮运行时修复链」。
+3. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
+4. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
 
 ## 本轮新增的已验证修复模式（57→0 直接套用）
 

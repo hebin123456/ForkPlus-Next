@@ -185,7 +185,16 @@ namespace ForkPlus.UI.WpfCompat
     public static class ColorConverter
     {
         public static object ConvertFromString(string s)
-            => global::Avalonia.Media.Color.Parse(s.TrimStart('#').Length == 6 ? "#" + s : s);
+        {
+            // TODO 迁移：WPF 允许省略 # 前缀（6/8 位十六进制直接解析）；Avalonia Color.Parse
+            // 必须带 #。原实现对已带 # 的串再前置 # 会得到 "##54A353"（FormatException）。
+            s = s.Trim();
+            if (!s.StartsWith("#") && (s.Length == 6 || s.Length == 8))
+            {
+                s = "#" + s;
+            }
+            return global::Avalonia.Media.Color.Parse(s);
+        }
     }
 
     /// <summary>

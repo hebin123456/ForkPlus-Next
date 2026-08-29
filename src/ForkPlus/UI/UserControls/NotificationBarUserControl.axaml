@@ -21,7 +21,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.Children>
-          <Image Grid.Column="0" Margin="5,4,5,4" Width="18" VerticalAlignment="Center" Source="avares://ForkPlus/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" />
+          <Image Grid.Column="0" Margin="5,4,5,4" Width="18" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Warning.png" x:Name="StatusImage" />
           <TextBlock Grid.Column="1" Margin="0,4,0,4" VerticalAlignment="Center" FontSize="14" x:Name="NotificationTextBlock" />
           <Grid Grid.Column="1" x:Name="RebaseContainer" IsVisible="False">
             <Grid.ColumnDefinitions>

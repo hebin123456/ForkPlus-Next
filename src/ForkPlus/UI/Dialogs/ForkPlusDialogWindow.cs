@@ -256,8 +256,10 @@ namespace ForkPlus.UI.Dialogs
 					OnContentChanged(e.OldValue, e.NewValue);
 				}
 			};
-{			base.Styles.Clear();base.Styles.Add(Application.Current?.TryFindResource("ForkPlusDialogWindowStyle") as Style);
-}			if (!IsDesignMode)
+			// TODO 迁移：WPF `Style = TryFindResource(...) as Style`；资源实为 ControlTheme，
+			// 经 StyleCompat.SetStyle 挂 Theme（base 不能作参数，等价 this）。
+			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(this, Application.Current?.TryFindResource("ForkPlusDialogWindowStyle"));
+			if (!IsDesignMode)
 			{
 				WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 			}
@@ -344,10 +346,19 @@ namespace ForkPlus.UI.Dialogs
 		// 由构造函数订阅 PropertyChanged（ContentProperty）转发，保持子类重写形态。
 		protected void OnContentChanged(object oldContent, object newContent)
 		{
-			if (IsInitialized)
+			if (!IsInitialized)
+			{
+				return;
+			}
+			// TODO 迁移：WPF 中 Content 在 BAML 解析末尾（x:Name 字段已赋值后）才设置；
+			// Avalonia XamlIl 在 populate 中途即设 Content，此时子类 x:Name 字段（如
+			// ConfigureGitInstanceWindow.GitPathTextBox）尚未赋值——直接初始化 chrome 会让
+			// IsSubmitAllowed 虚属性 NRE。推迟到下一帧（populate/构造函数完成后）再执行，
+			// _dialogChromeInitialized 幂等 + _pending* 字段机制保证语义与 WPF 一致。
+			global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
 			{
 				InitializeDialogChrome();
-			}
+			});
 		}
 
 		private void InitializeDialogChrome()

@@ -55,7 +55,7 @@ namespace ForkPlus.UI.Controls
 					};
 					global::Avalonia.Controls.ToolTip.SetTip(hyperlink,uri);
 					global::Avalonia.Controls.ToolTip.SetTip(hyperlink,uri);
-{					hyperlink.Styles.Clear();hyperlink.Styles.Add(global::ForkPlus.UI.Theme.FindStyle("BugtrackerHyperlinkStyle"));
+{					global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(hyperlink, global::ForkPlus.UI.Theme.FindStyle("BugtrackerHyperlinkStyle"));
 }					hyperlink.ContextMenu = CreateBugtrackerHyperlinkContextMenu(text2, uri.AbsoluteUri);
 					textBlock.Inlines.Add(hyperlink);
 					if (range.End == text.Length)

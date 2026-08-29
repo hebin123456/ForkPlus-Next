@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib">
-  <Image x:Key="TransparentPatternImage" Source="avares://ForkPlus/Assets/TransparentPatternLight.png" />
+  <!-- TODO 迁移：原 WPF 工程即缺失 TransparentPatternLight.png；映射到基础 TransparentPattern.png。 -->
+  <Image x:Key="TransparentPatternImage" Source="avares://ForkPlus/Assets/TransparentPattern.png" />
   <Color x:Key="LabelColor">#083344</Color>
   <Color x:Key="SecondaryLabelColor">#808080</Color>
   <Color x:Key="AccentColor">#06B6D4</Color>

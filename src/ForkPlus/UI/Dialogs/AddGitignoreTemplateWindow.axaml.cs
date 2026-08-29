@@ -146,7 +146,7 @@ namespace ForkPlus.UI.Dialogs
                                 Content = new Run(".gitignore"),
                                 NavigateUri = new Uri("https://git-scm.com/docs/gitignore")
                         };
-{                       hyperlink.Styles.Clear();hyperlink.Styles.Add((Style)this.TryFindResource("BlueUnderlineHyperlinkStyle"));
+{                       global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(hyperlink, this.TryFindResource("BlueUnderlineHyperlinkStyle"));
 }			base.DescriptionTextBlock.Inlines.Add(hyperlink);
 			base.DescriptionTextBlock.Inlines.Add(new Run(" template for your project"));
 			LoadTemplates();

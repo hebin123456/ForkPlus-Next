@@ -36,7 +36,9 @@
       </Setter.Value>
     </Setter>
   
-    <Style Selector="^[IsInactive=True] /template/ ContentPresenter#Presenter">
+    <!-- TODO 迁移：WPF CalendarButton.IsInactive 是普通 CLR 属性（非 AvaloniaProperty，选择器不可用）；
+         Avalonia 12 官方 Fluent 主题用 :inactive 伪类（CalendarItem 运行时设置），选择器改伪类语法。 -->
+    <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
         <Setter Value="{DynamicResource Calendar.ButtonInactiveForeground}" Property="Foreground" />
     </Style></ControlTheme>
   <ControlTheme x:Key="CalendarDayButtonStyle" TargetType="CalendarDayButton">
@@ -57,10 +59,11 @@
       </Setter.Value>
     </Setter>
   
-    <Style Selector="^[IsSelected=True] /template/ Border#Border">
+    <!-- TODO 迁移：WPF [IsSelected=True]/[IsInactive=True] 是 CLR 属性选择器；Avalonia 12 用 :selected/:inactive 伪类。 -->
+    <Style Selector="^:selected /template/ Border#Border">
         <Setter Value="{DynamicResource Calendar.ButtonSelectedBackground}" Property="Background" />
     </Style>
-    <Style Selector="^[IsInactive=True] /template/ ContentPresenter#Presenter">
+    <Style Selector="^:inactive /template/ ContentPresenter#Presenter">
         <Setter Value="{DynamicResource Calendar.ButtonInactiveForeground}" Property="Foreground" />
     </Style></ControlTheme>
   <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="Button">

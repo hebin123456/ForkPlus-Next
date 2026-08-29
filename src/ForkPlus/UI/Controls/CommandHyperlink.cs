@@ -41,8 +41,9 @@ namespace ForkPlus.UI.Controls
 			_closePopupTimer.Interval = TimeSpan.FromMilliseconds(100.0);
 			_showPopupTimer.Tick += _showPopupTimer_Tick;
 			_closePopupTimer.Tick += _closePopupTimer_Tick;
-{			base.Styles.Clear();base.Styles.Add(Application.Current.TryFindResource("BugtrackerHyperlinkStyle") as Style);
-}			base.Click += CommandHyperlink_Click;
+			// TODO 迁移：WPF `Style = ... as Style`；资源实为 ControlTheme，经 StyleCompat 挂 Theme（base 不能作参数）。
+			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(this, Application.Current.TryFindResource("BugtrackerHyperlinkStyle"));
+			base.Click += CommandHyperlink_Click;
 			base.PointerEntered += delegate(object s, global::Avalonia.Input.PointerEventArgs e)
 			{
 				e.Handled = true;

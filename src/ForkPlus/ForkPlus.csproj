@@ -35,13 +35,13 @@
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="assets\**\*.*" />
+    <None Remove="Assets\**\*.*" />
     <None Remove="ForkPlus.Assets.Legal.txt" />
     <None Remove="ForkPlus.Assets.gitignore.txt" />
     <None Remove="ForkPlus.Assets.md-ai-output.css" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaResource Include="assets\**\*.*" />
+    <AvaloniaResource Include="Assets\**\*.*" />
     <Content Include="Languages\**\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -18,6 +18,45 @@ namespace ForkPlus.UI.WpfCompat
 {
     // （TryFindResource / SetResourceReference 见 WpfCompat.Controls.cs 的 ResourceCompat）
 
+    // ===== WPF System.Windows.Media.BitmapImage（XAML 可声明的 IImage 资源）=====
+
+    /// <summary>
+    /// WPF BitmapImage shim：主题字典里 `<BitmapImage x:Key="CommitIcon" UriSource="pack://..."/>`
+    /// 迁移为 `<wpf:BitmapImage x:Key="CommitIcon" UriSource="avares://..."/>`。
+    /// Avalonia 的 Bitmap 无 XAML 可设属性（构造函数要求流/文件名），x:String 存 URI
+    /// 又会让 `{DynamicResource XxxIcon}` 绑定 Image.Source 时 InvalidCastException（string→IImage），
+    /// 故用本类补齐"可声明+可设 UriSource"的 IImage。
+    /// </summary>
+    public class BitmapImage : global::Avalonia.Media.IImage
+    {
+        private global::Avalonia.Media.Imaging.Bitmap _bitmap;
+
+        private global::System.Uri _uriSource;
+
+        public global::System.Uri UriSource
+        {
+            get => _uriSource;
+            set
+            {
+                if (object.Equals(_uriSource, value))
+                {
+                    return;
+                }
+                _uriSource = value;
+                _bitmap = (value == null) ? null : new global::Avalonia.Media.Imaging.Bitmap(
+                    global::Avalonia.Platform.AssetLoader.Open(value));
+            }
+        }
+
+        public global::Avalonia.Size Size => _bitmap?.Size ?? default;
+
+        public void Draw(global::Avalonia.Media.DrawingContext context, global::Avalonia.Rect sourceRect, global::Avalonia.Rect destRect)
+        {
+            // Bitmap 的 Draw 是 IImage 显式接口实现，不能直接调用成员
+            (_bitmap as global::Avalonia.Media.IImage)?.Draw(context, sourceRect, destRect);
+        }
+    }
+
     // ===== WPF Window.Owner（Avalonia 只能经 ShowDialog(owner) 设置）=====
 
     public static class WindowOwnerCompat

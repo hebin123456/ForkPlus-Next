@@ -64,26 +64,59 @@ namespace ForkPlus.UI.WpfCompat
         {
             if (self == null) return null;
             var owner = WindowOwnerCompat.TryGetOwner(self) ?? WpfApp.ActiveWindow(self);
+            Window proxyOwner = null;
             if (owner == null)
             {
-                // 没有可用 owner（启动早期）：退化为非模态 Show，立即返回 null
-                self.Show();
-                return null;
+                // TODO 迁移：WPF ShowDialog() 无 owner 也能模态阻塞（如启动期 ConfigureGitInstanceWindow）；
+                // Avalonia 12 的 ShowDialog(owner) 强制要求 owner，且 owner 必须 IsVisible=true
+                // （否则 InvalidOperationException: Cannot show window with non-visible owner）。
+                // 方案：创建 1x1 全透明代理窗口做 owner，保持模态语义；对话框关闭后一并关闭。
+                // 注意：代理可见（Opacity=0）所以不会进 WpfApp.ActiveWindow 的可见窗口筛选逻辑外泄。
+                proxyOwner = new Window
+                {
+                    ShowInTaskbar = false,
+                    ShowActivated = false,
+                    Width = 1,
+                    Height = 1,
+                    Opacity = 0.0,
+                    CanResize = false,
+                    Title = string.Empty,
+                };
+                // 居中定位：让 CenterOwner 的对话框出现在屏幕中央而非 (0,0)
+                var screen = proxyOwner.Screens?.Primary;
+                if (screen != null)
+                {
+                    var wa = screen.WorkingArea;
+                    proxyOwner.Position = new global::Avalonia.PixelPoint(
+                        wa.X + (wa.Width - 1) / 2, wa.Y + (wa.Height - 1) / 2);
+                }
+                proxyOwner.Show();
+                owner = proxyOwner;
             }
             _modalWindows.Remove(self);
             _modalWindows.Add(self, new object());
             Task<bool?> task = self.ShowDialog<bool?>(owner);
-            if (task.IsCompleted) return task.Result;
-            var frame = new DispatcherFrame();
-            task.ContinueWith(_ =>
+            try
+            {
+                if (task.IsCompleted) return task.Result;
+                var frame = new DispatcherFrame();
+                task.ContinueWith(_ =>
+                    {
+                        _modalWindows.Remove(self);
+                        Dispatcher.UIThread.Post(() => frame.Continue = false);
+                    },
+                    TaskScheduler.Default);
+                Dispatcher.UIThread.PushFrame(frame);
+                return task.Status == TaskStatus.RanToCompletion ? task.Result : null;
+            }
+            finally
+            {
+                _modalWindows.Remove(self);
+                if (proxyOwner != null)
                 {
-                    _modalWindows.Remove(self);
-                    Dispatcher.UIThread.Post(() => frame.Continue = false);
-                },
-                TaskScheduler.Default);
-            Dispatcher.UIThread.PushFrame(frame);
-            _modalWindows.Remove(self);
-            return task.Status == TaskStatus.RanToCompletion ? task.Result : null;
+                    proxyOwner.Close();
+                }
+            }
         }
     }
 
@@ -621,6 +654,15 @@ namespace ForkPlus.UI.WpfCompat
             element.Styles.Clear();
             switch (style)
             {
+                // TODO 迁移：主题资源（x:Key 的 Style）迁移后全部是 ControlTheme（WPF Style 的 Avalonia 对应物），
+                // 与 Style 互不继承但都实现 IStyle。ControlTheme 塞进 Styles 集合不会生效，
+                // 必须挂到 TemplatedControl.Theme（等价 XAML 里 Theme="{...}" 引用）。
+                case ControlTheme ct:
+                    if (element is TemplatedControl templatedControl)
+                    {
+                        templatedControl.Theme = ct;
+                    }
+                    break;
                 case Style s:
                     element.Styles.Add(s);
                     break;

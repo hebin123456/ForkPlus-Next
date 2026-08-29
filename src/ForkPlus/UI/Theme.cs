@@ -23,16 +23,16 @@ namespace ForkPlus.UI
 
 		public static class FileListMultiselectionTreeView
 		{
-			public static Style DefaultStyle => FindStyle("FileListMultiselectionTreeViewDefaultStyle");
+			public static global::Avalonia.Styling.IStyle DefaultStyle => FindStyle("FileListMultiselectionTreeViewDefaultStyle");
 
-			public static Style GridViewStyle => FindStyle("FileListMultiselectionTreeViewWithGridViewStyle");
+			public static global::Avalonia.Styling.IStyle GridViewStyle => FindStyle("FileListMultiselectionTreeViewWithGridViewStyle");
 		}
 
 		public static class CommitUserControl
 		{
-			public static Style CommitButtonVisibleDropdownStyle => FindStyle("CommitButtonVisibleDropdownStyle");
+			public static global::Avalonia.Styling.IStyle CommitButtonVisibleDropdownStyle => FindStyle("CommitButtonVisibleDropdownStyle");
 
-			public static Style CommitButtonHiddenDropdownStyle => FindStyle("CommitButtonHiddenDropdownStyle");
+			public static global::Avalonia.Styling.IStyle CommitButtonHiddenDropdownStyle => FindStyle("CommitButtonHiddenDropdownStyle");
 		}
 
 		public static class Diff
@@ -207,13 +207,13 @@ namespace ForkPlus.UI
 
 		public static Geometry RemoteGeometry => FindGeometry("GenericRemoteGeometry");
 
-		public static Style BranchOptionButtonStyle => FindStyle("BranchOptionButton");
+		public static global::Avalonia.Styling.IStyle BranchOptionButtonStyle => FindStyle("BranchOptionButton");
 
-		public static Style CustomContentMenuItemStyle => FindStyle("CustomContentMenuItemStyle");
+		public static global::Avalonia.Styling.IStyle CustomContentMenuItemStyle => FindStyle("CustomContentMenuItemStyle");
 
-		public static Style SidebarTabButtonPathStyle => FindStyle("SidebarTabButtonPath");
+		public static global::Avalonia.Styling.IStyle SidebarTabButtonPathStyle => FindStyle("SidebarTabButtonPath");
 
-		public static Style TransparentButtonStyle => FindStyle("TransparentButtonStyle");
+		public static global::Avalonia.Styling.IStyle TransparentButtonStyle => FindStyle("TransparentButtonStyle");
 
 		public static ScaleTransform LayoutScaleTransform => FindTransform("LayoutScaleTransform");
 
@@ -233,9 +233,13 @@ namespace ForkPlus.UI
 			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res2) ? __res2 as Brush : null);
 		}
 
-		public static Style FindStyle(string resourceKey)
+		public static global::Avalonia.Styling.IStyle FindStyle(string resourceKey)
 		{
-			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res3) ? __res3 as Style : null);
+			// TODO 迁移：主题资源（x:Key 的 Style）迁移后全部是 ControlTheme，与 Style 互不继承，
+			// 原 `as Style` 恒得 null（运行时 ControlTheme 再被 Styles.Add(null) 炸 NRE）。
+			// 返回 IStyle（ControlTheme/Style 公共接口）；ControlTheme 消费方须经 StyleCompat.SetStyle
+			// 挂到 TemplatedControl.Theme。
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res3) ? __res3 as global::Avalonia.Styling.IStyle : null);
 		}
 
 		public static ScaleTransform FindTransform(string resourceKey)

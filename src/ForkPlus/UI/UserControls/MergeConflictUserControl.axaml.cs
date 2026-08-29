@@ -466,12 +466,12 @@ namespace ForkPlus.UI.UserControls
 						ResolveInExternalMergerButton.Content = PreferencesLocalization.FormatCurrent("Merge in {0}", externalTool.Name);
 						if (list.Count > 1)
 						{
-{							ResolveInExternalMergerButton.Styles.Clear();ResolveInExternalMergerButton.Styles.Add(global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle);
+{							global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(ResolveInExternalMergerButton, global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle);
 }							ResolveInExternalMergerDropdownButton.Show();
 						}
 						else
 						{
-{							ResolveInExternalMergerButton.Styles.Clear();ResolveInExternalMergerButton.Styles.Add(global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle);
+{							global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(ResolveInExternalMergerButton, global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle);
 }							ResolveInExternalMergerDropdownButton.Collapse();
 						}
 					}

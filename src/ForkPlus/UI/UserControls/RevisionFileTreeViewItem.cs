@@ -10,7 +10,7 @@ namespace ForkPlus.UI.UserControls
 {
 	public class RevisionFileTreeViewItem : MultiselectionTreeViewItem
 	{
-		private static readonly global::Avalonia.Media.Imaging.Bitmap FolderIcon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("pack://application:,,,/ForkPlus;component/Assets/Folder.png")));
+		private static readonly global::Avalonia.Media.Imaging.Bitmap FolderIcon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("avares://ForkPlus/Assets/Folder.png")));
 
 		private GitModule _gitModule;
 

@@ -16,6 +16,7 @@ using Avalonia.Controls.Documents;
 //（WPF 在 Controls.Primitives），此处补 using 以修复 CS0246。
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -343,6 +344,10 @@ namespace ForkPlus
 		_askPassIpcServer = new IpcServer(NamedPipeHelper.AskPassPipeName, AskPassIpcMessageHandler);
 		_defaultIpcServer = new IpcServer(NamedPipeHelper.DefaultPipeName, DefaultIpcMessageHandler);
 		HandleCommandLineArguments();
+		// TODO 迁移：App 类有自定义构造函数，Avalonia XAML 编译器要求显式调用
+		// AvaloniaXamlLoader.Load(this)（否则 AVLN3000）；构建时该调用会被 IL 重写
+		// 替换为编译好的资源填充（App.axaml 的 MergedDictionaries/Styles）。
+		AvaloniaXamlLoader.Load(this);
 	}
 
 	private void RegisterGlobalExceptionLogging()
@@ -582,7 +587,10 @@ namespace ForkPlus
 			}
 		}
 
-		protected void OnStartup(global::System.Object e)
+		// TODO 迁移：WPF App.OnStartup(StartupEventArgs) 由 Application.Startup 事件驱动；
+		// Avalonia 无该事件，启动入口是 OnFrameworkInitializationCompleted()（见文件末尾重写），
+		// 主体逻辑保留在 RunStartup() 中由其调用。
+		private void RunStartup()
 		{
 			ServiceLocator.Initialize(
 				dispatcher: new WpfDispatcher(global::Avalonia.Threading.Dispatcher.UIThread),
@@ -605,7 +613,15 @@ namespace ForkPlus
 			else if (IsDebug || InitializeForkInstance())
 			{
 				ConfigureThreadPool();
-				new MainWindow().Show();
+				// TODO 迁移：WPF new MainWindow().Show()；Avalonia 需同时把主窗口赋给
+				// IClassicDesktopStyleApplicationLifetime.MainWindow（lifetime 主窗口跟踪，
+				// WpfApp.MainWindow / 关闭逻辑都依赖它）。
+				MainWindow mainWindow = new MainWindow();
+				if (global::ForkPlus.UI.WpfCompat.WpfApp.Lifetime is global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+				{
+					desktop.MainWindow = mainWindow;
+				}
+				mainWindow.Show();
 			}
 		}
 
@@ -903,7 +919,9 @@ namespace ForkPlus
 			}
 		}
 
-		protected void OnExit(global::System.Object e)
+		// TODO 迁移：WPF App.OnExit(ExitEventArgs) 由 Application.Exit 事件驱动；
+		// Avalonia 挂 IClassicDesktopStyleApplicationLifetime.ShutdownRequested（见文件末尾）。
+		private void RunExit()
 		{
 			ForkPlusSettings.Default.Save();
 			_askPassIpcServer.Dispose();
@@ -1114,13 +1132,24 @@ namespace ForkPlus
 
 		private static bool IsSystemAccentBrushEnabled()
 		{
-			using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\DWM");
-			object obj = registryKey?.GetValue("ColorPrevalence");
-			if (obj != null)
+			// TODO 迁移：WPF 下 Windows 注册表恒可用；非 Windows（Linux/macOS）Registry.CurrentUser
+			// 不可用（返回 null / 抛异常），原代码无 try-catch 会 NRE。语义上"系统强调色边框"
+			// 仅 Windows DWM 有效，非 Windows 平台直接返回 false（与 GetSystemTheme 的防御模式一致）。
+			try
 			{
-				return (int)obj > 0;
+				using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\DWM");
+				object obj = registryKey?.GetValue("ColorPrevalence");
+				if (obj != null)
+				{
+					return (int)obj > 0;
+				}
+				return false;
 			}
-			return false;
+			catch (Exception ex)
+			{
+				Log.Error("Failed to read DWM ColorPrevalence from registry", ex);
+				return false;
+			}
 		}
 
 		private static SystemTheme GetSystemTheme()
@@ -1168,11 +1197,19 @@ namespace ForkPlus
 				return -1;
 			}
 		}
+        // TODO 迁移：WPF Application 的 Startup/Exit 生命周期事件在 Avalonia 不存在。
+        // 启动入口 = OnFrameworkInitializationCompleted（RunStartup 即原 OnStartup 主体：
+        // ServiceLocator/主题/边框画刷/首选项订阅/git 实例校验/主窗口显示）；
+        // 退出 = desktop.ShutdownRequested（RunExit 即原 OnExit 主体：保存设置 + 释放 IPC）。
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+                desktop.ShutdownRequested += delegate (object sender, global::Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs e)
+                {
+                    RunExit();
+                };
+                RunStartup();
             }
 
             base.OnFrameworkInitializationCompleted();

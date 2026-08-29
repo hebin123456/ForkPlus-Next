@@ -87,7 +87,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <ProgressBar Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Width="14" Height="14" HorizontalAlignment="Right" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="BusyIndicator" Theme="{DynamicResource CircularProgressBar}" IsVisible="False" />
-      <Image Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Width="18" HorizontalAlignment="Right" VerticalAlignment="Center" Source="avares://ForkPlus/ForkPlus;component/Assets/Warning.png" x:Name="StatusImage" IsVisible="False" />
+      <Image Grid.Row="4" Grid.Column="0" Margin="0,0,0,0" Width="18" HorizontalAlignment="Right" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Warning.png" x:Name="StatusImage" IsVisible="False" />
       <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
         <TextBlock Margin="8,3,0,0" FontSize="13" x:Name="StatusTextBlock" IsVisible="False" />
         <Button Content="Test Connection" Margin="4,0,0,0" HorizontalAlignment="Left" Click="TestButton_Click" x:Name="TestButton" Theme="{DynamicResource TextButtonStyle}" IsVisible="False" />

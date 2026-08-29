@@ -244,7 +244,7 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,15,0,0">
-          <Image DockPanel.Dock="Left" Width="20" Height="NaN" Source="avares://ForkPlus/ForkPlus;component/Assets/Warning.png" />
+          <Image DockPanel.Dock="Left" Width="20" Height="NaN" Source="avares://ForkPlus/Assets/Warning.png" />
           <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" FontSize="16" Text="Merge conflict" FontWeight="Medium" />
         </DockPanel>
         <TextBlock Grid.Row="1" Margin="0,4,0,0" HorizontalAlignment="Center" FontSize="14" Text="Select the changes or merge them manually" Foreground="{DynamicResource SecondaryLabelBrush}" />
@@ -356,7 +356,7 @@
         <RowDefinition Height="*" />
       </Grid.RowDefinitions>
       <DockPanel LastChildFill="True" HorizontalAlignment="Stretch">
-        <Image DockPanel.Dock="Left" Width="32" Margin="10,0,8,0" Height="32" Source="avares://ForkPlus/ForkPlus;component/Assets/ResolvedIcon.png" />
+        <Image DockPanel.Dock="Left" Width="32" Margin="10,0,8,0" Height="32" Source="avares://ForkPlus/Assets/ResolvedIcon.png" />
         <Button DockPanel.Dock="Right" Content="Stage" Margin="0,0,15,0" IsTabStop="False" Focusable="False" Click="StageButton_Click" x:Name="StageButton" />
         <TextBlock DockPanel.Dock="Left" FontSize="18" Margin="0" VerticalAlignment="Center" FontWeight="Medium" Text="File conflicts are resolved." />
         <TextBlock Margin="6,0,0,-2" FontSize="15" VerticalAlignment="Center" Text="You can stage the file now." Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ConflictResolvedSubtitle" />
