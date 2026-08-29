@@ -78,7 +78,7 @@
         <Setter Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" Property="BorderBrush" />
     </Style></ControlTheme>
   <ControlTheme x:Key="VerticalScrollBarStyle" TargetType="ScrollBar">
-    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false" />
+
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
@@ -95,26 +95,28 @@
               <RowDefinition Height="10" />
             </Grid.RowDefinitions>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
-            <RepeatButton IsEnabled="{TemplateBinding IsMouseOver}" x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
+            <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
               <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
             </RepeatButton>
-            <Track IsDirectionReversed="true" IsEnabled="{TemplateBinding IsMouseOver}" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
+            <Track IsDirectionReversed="true" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
+<!-- TODO 迁移：WPF Track.Resources 块（Avalonia 无 SystemParameters 键）。原始片段：
               <Track.Resources>
                 <ResourceDictionary>
-                  <sys:Double x:Key="{x:StaticExtension SystemParameters.VerticalScrollBarButtonHeightKey}">60</sys:Double>
+                  <sys:Double x:Key="VerticalScrollBarButtonHeightKey">60</sys:Double>
                 </ResourceDictionary>
-              </Track.Resources>
-              <Track.DecreaseRepeatButton>
+              </Track.Resources>-->
+
+              <Track.DecreaseButton>
                 <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
-              </Track.DecreaseRepeatButton>
-              <Track.IncreaseRepeatButton>
+              </Track.DecreaseButton>
+              <Track.IncreaseButton>
                 <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}" />
-              </Track.IncreaseRepeatButton>
+              </Track.IncreaseButton>
               <Track.Thumb>
                 <Thumb Theme="{DynamicResource ScrollBarThumbVertical}" />
               </Track.Thumb>
             </Track>
-            <RepeatButton IsEnabled="{TemplateBinding IsMouseOver}" Grid.Row="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
+            <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
               <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
             </RepeatButton>
           </Grid>
@@ -144,12 +146,12 @@
                   <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
                 </RepeatButton>
                 <Track Grid.Column="1" IsEnabled="{TemplateBinding IsMouseOver}" Margin="0,0,0,0" x:Name="PART_Track">
-                  <Track.DecreaseRepeatButton>
+                  <Track.DecreaseButton>
                     <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
-                  </Track.DecreaseRepeatButton>
-                  <Track.IncreaseRepeatButton>
+                  </Track.DecreaseButton>
+                  <Track.IncreaseButton>
                     <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}" />
-                  </Track.IncreaseRepeatButton>
+                  </Track.IncreaseButton>
                   <Track.Thumb>
                     <Thumb Theme="{DynamicResource ScrollBarThumbHorizontal}" />
                   </Track.Thumb>
@@ -217,7 +219,7 @@
         <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
     </Style></ControlTheme>
   <ControlTheme x:Key="HorizontalScrollBarStyle" TargetType="ScrollBar">
-    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false" />
+
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
@@ -234,21 +236,21 @@
               <RowDefinition Height="10" />
             </Grid.RowDefinitions>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
-            <RepeatButton IsEnabled="{TemplateBinding IsMouseOver}" x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
+            <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
               <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
             </RepeatButton>
-            <Track IsDirectionReversed="true" IsEnabled="{TemplateBinding IsMouseOver}" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
-              <Track.DecreaseRepeatButton>
+            <Track IsDirectionReversed="true" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
+              <Track.DecreaseButton>
                 <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
-              </Track.DecreaseRepeatButton>
-              <Track.IncreaseRepeatButton>
+              </Track.DecreaseButton>
+              <Track.IncreaseButton>
                 <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}" />
-              </Track.IncreaseRepeatButton>
+              </Track.IncreaseButton>
               <Track.Thumb>
                 <Thumb Theme="{DynamicResource ScrollBarThumbVertical}" />
               </Track.Thumb>
             </Track>
-            <RepeatButton IsEnabled="{TemplateBinding IsMouseOver}" Grid.Row="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
+            <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
               <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
             </RepeatButton>
           </Grid>
@@ -278,12 +280,12 @@
                   <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
                 </RepeatButton>
                 <Track Grid.Column="1" IsEnabled="{TemplateBinding IsMouseOver}" Margin="0,0,0,0" x:Name="PART_Track">
-                  <Track.DecreaseRepeatButton>
+                  <Track.DecreaseButton>
                     <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
-                  </Track.DecreaseRepeatButton>
-                  <Track.IncreaseRepeatButton>
+                  </Track.DecreaseButton>
+                  <Track.IncreaseButton>
                     <RepeatButton x:Name="PART_PageDownButton" Theme="{DynamicResource RepeatButtonTransparent}" />
-                  </Track.IncreaseRepeatButton>
+                  </Track.IncreaseButton>
                   <Track.Thumb>
                     <Thumb Theme="{DynamicResource ScrollBarThumbHorizontal}" />
                   </Track.Thumb>
@@ -366,12 +368,12 @@
             </Grid.ColumnDefinitions>
             <Rectangle Grid.Row="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" Grid.Column="1" x:Name="Corner" />
             <ScrollContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" CanVerticallyScroll="False" CanHorizontallyScroll="False" x:Name="PART_ScrollContentPresenter" />
-            <ScrollBar ViewportSize="{TemplateBinding ViewportHeight}" Grid.Row="0" Minimum="0" Maximum="{TemplateBinding ScrollableHeight}" Grid.Column="1" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" x:Name="PART_VerticalScrollBar" Theme="{DynamicResource VerticalScrollBarStyle}"> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
+            <ScrollBar Grid.Row="0" Minimum="0" Grid.Column="1" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" x:Name="PART_VerticalScrollBar" Theme="{DynamicResource VerticalScrollBarStyle}"> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
               <ScrollBar.Value>
                 <Binding Path="VerticalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
               </ScrollBar.Value>
             </ScrollBar>
-            <ScrollBar ViewportSize="{TemplateBinding ViewportWidth}" Grid.Row="1" Orientation="Horizontal" Minimum="0" Maximum="{TemplateBinding ScrollableWidth}" Grid.Column="0" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" x:Name="PART_HorizontalScrollBar" Theme="{DynamicResource HorizontalScrollBarStyle}"> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
+            <ScrollBar Grid.Row="1" Orientation="Horizontal" Minimum="0" Grid.Column="0" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" x:Name="PART_HorizontalScrollBar" Theme="{DynamicResource HorizontalScrollBarStyle}"> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
               <ScrollBar.Value>
                 <Binding Path="HorizontalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
               </ScrollBar.Value>

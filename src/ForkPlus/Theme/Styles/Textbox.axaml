@@ -8,7 +8,7 @@
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     
-    <Setter Property="AllowDrop" Value="true" />
+<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="CornerRadius" Value="3" />
@@ -16,7 +16,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ScrollViewer Background="#00FFFFFF" Focusable="false" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
+            <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" />
           </Border>
           
         </ControlTemplate>
@@ -43,7 +43,7 @@
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     
-    <Setter Property="AllowDrop" Value="true" />
+<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="CornerRadius" Value="3" />
@@ -51,7 +51,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="PasswordBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <ScrollViewer Focusable="false" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
+            <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" />
           </Border>
           
         </ControlTemplate>

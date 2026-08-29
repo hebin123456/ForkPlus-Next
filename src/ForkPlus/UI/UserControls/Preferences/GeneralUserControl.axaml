@@ -123,9 +123,8 @@
 -->
       </TextBlock>
       <fuced:DiffCodeEditor Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Height="110" Margin="10,0,0,4" BorderThickness="1" x:Name="DiffCodeEditor">
-        <Control.BorderBrush>
-          <DynamicResource ResourceKey="BorderBrush" />
-        </Control.BorderBrush>
+<!-- TODO 迁移：Control.BorderBrush 块已删（DiffCodeEditor 基类无 BorderBrush） -->
+
         <ScrollViewer.VerticalScrollBarVisibility>Auto</ScrollViewer.VerticalScrollBarVisibility>
       </fuced:DiffCodeEditor>
       <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">

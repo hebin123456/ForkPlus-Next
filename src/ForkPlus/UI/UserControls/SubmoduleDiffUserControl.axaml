@@ -24,7 +24,8 @@
     </Grid>
     <usercontrols:RevisionsHeaderUserControl Grid.Row="1" Margin="0,4,0,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}" x:Name="RevisionHeaderUserControl" />
     <controls:NoUIAutomationListView SizeChanged="RevisionListView_SizeChanged" Grid.Row="2" Margin="0,0,0,0" x:Name="RevisionListView" Theme="{DynamicResource ListViewWithGridViewStyle}" ItemContainerTheme="{DynamicResource NoSelectionRevisionListViewItemStyle}">
-      <controls:NoUIAutomationListView.View>
+<!-- TODO 迁移：WPF controls:NoUIAutomationListView.View 已删（Avalonia 无 GridView 视图，原片段见 git 历史） -->
+
         <!--
       TODO(wpf2avalonia): <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
       原始片段：
@@ -170,7 +171,7 @@
                 </GridViewColumn>
               </GridView>
     -->
-      </controls:NoUIAutomationListView.View>
+      
     </controls:NoUIAutomationListView>
     <StackPanel Grid.Row="3" Margin="0,10,0,10" Orientation="Horizontal" HorizontalAlignment="Center">
       <Button Content="Update Submodule" x:Name="UpdateSubmoduleButton" IsVisible="False" />

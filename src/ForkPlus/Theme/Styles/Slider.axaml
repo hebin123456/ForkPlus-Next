@@ -44,12 +44,12 @@
           </Canvas>
         </Border>
         <Track Grid.Row="1" x:Name="PART_Track">
-          <Track.DecreaseRepeatButton>
+          <Track.DecreaseButton>
             <RepeatButton x:Name="PART_DecreaseLarge" Theme="{DynamicResource RepeatButtonTransparent}" />
-          </Track.DecreaseRepeatButton>
-          <Track.IncreaseRepeatButton>
+          </Track.DecreaseButton>
+          <Track.IncreaseButton>
             <RepeatButton x:Name="PART_IncreaseLarge" Theme="{DynamicResource RepeatButtonTransparent}" />
-          </Track.IncreaseRepeatButton>
+          </Track.IncreaseButton>
           <Track.Thumb>
             <Thumb Height="18" Width="11" VerticalAlignment="Center" Focusable="False" Template="{DynamicResource SliderThumbHorizontalDefault}" x:Name="Thumb" />
           </Track.Thumb>
@@ -67,7 +67,7 @@
     -->
   </ControlTemplate>
   <ControlTheme x:Key="OnionSkinSliderStyle" TargetType="Slider">
-    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />
+
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
     <Setter Property="Foreground" Value="{DynamicResource SliderThumb.Static.Foreground}" />

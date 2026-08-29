@@ -6,9 +6,8 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <ToggleButton Grid.Row="0" Background="#00FFFFFF" BorderThickness="0" MinHeight="0" MinWidth="0" Padding="0" IsCheckedChanged="HeaderToggleButton_CheckedChanged" x:Name="HeaderToggleButton">
-        <ToggleButton.FocusVisualStyle>
-          <x:Null />
-        </ToggleButton.FocusVisualStyle>
+<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
         <ToggleButton.Template>
           <ControlTemplate TargetType="ToggleButton">
             <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">

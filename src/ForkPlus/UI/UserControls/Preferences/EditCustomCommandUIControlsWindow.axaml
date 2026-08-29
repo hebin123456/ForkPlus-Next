@@ -21,12 +21,12 @@
           <RowDefinition Height="23" />
         </Grid.RowDefinitions>
         <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox" Theme="{DynamicResource {x:Type ListBox}}">
-          <local:DragAndDropListBox.ItemContainerStyle>
+          <local:DragAndDropListBox.ItemContainerTheme>
             <ControlTheme TargetType="local:DragAndDropListBoxItem" BasedOn="{StaticResource ListBoxItemWithBorderStyle}" x:Key="{x:Type local:DragAndDropListBoxItem}">
-              <Setter Property="AllowDrop" Value="True" />
+<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
     <!-- TODO 迁移：WPF EventSetter 已删（事件在 code-behind 中 AddHandler/+= 接线） -->
             </ControlTheme>
-          </local:DragAndDropListBox.ItemContainerStyle>
+          </local:DragAndDropListBox.ItemContainerTheme>
           <local:DragAndDropListBox.ItemTemplate>
             <DataTemplate>
               <StackPanel>

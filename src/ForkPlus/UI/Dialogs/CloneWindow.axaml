@@ -50,9 +50,8 @@
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Repository Url:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:PlaceholderTextBox TextChanged="RepositoryUrlTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,53,2" Placeholder="Git Repository Url" Icon="{DynamicResource SubmoduleIcon}" x:Name="RepositoryUrlTextBox" />
       <controls:DropDownButton Grid.Row="0" Grid.Column="1" Margin="1,1,3,1" Background="#00FFFFFF" Height="18" BorderThickness="0" HorizontalAlignment="Right" Focusable="False" x:Name="NetworkProtocolDropDownButton">
-        <controls:DropDownButton.FocusVisualStyle>
-          <x:Null />
-        </controls:DropDownButton.FocusVisualStyle>
+<!-- TODO 迁移：WPF controls:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
         <controls:DropDownButton.ContextMenu>
           <ContextMenu Opened="NetworkProtocolContextMenu_Opened" />
         </controls:DropDownButton.ContextMenu>
@@ -72,7 +71,7 @@
       <Grid Grid.Column="1" Grid.Row="2">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="NaN" />
+          <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox TextChanged="ParentDirectoryTextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Parent folder path" x:Name="ParentDirectoryTextBox" />
         <Button Grid.Column="1" Click="BrowseButton_Click" Theme="{DynamicResource BrowseButtonStyle}" />

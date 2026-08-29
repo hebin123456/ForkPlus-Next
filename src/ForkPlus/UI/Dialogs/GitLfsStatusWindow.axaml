@@ -16,7 +16,7 @@
         <RowDefinition Height="23" />
       </Grid.RowDefinitions>
       <controls:FilterTextBox Margin="0,0,0,4" x:Name="FilterTextBox" />
-      <ListBox Grid.Row="1" VerticalAlignment="Stretch" SelectionMode="Extended" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="LfsFilesListBox_SelectionChanged" x:Name="LfsFilesListBox">
+      <ListBox Grid.Row="1" VerticalAlignment="Stretch" SelectionMode="Toggle" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="LfsFilesListBox_SelectionChanged" x:Name="LfsFilesListBox">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid Height="20">

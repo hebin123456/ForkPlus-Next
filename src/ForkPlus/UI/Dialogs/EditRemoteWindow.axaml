@@ -51,9 +51,8 @@
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Repository Url:" />
       <controls:PlaceholderTextBox TextChanged="RepositoryUrlTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,53,2" Placeholder="Git Repository Url" Icon="{DynamicResource SubmoduleIcon}" x:Name="RepositoryUrlTextBox" />
       <controls:DropDownButton Grid.Row="1" Grid.Column="1" Margin="1,1,3,1" Background="#00FFFFFF" Height="18" BorderThickness="0" HorizontalAlignment="Right" Focusable="False" x:Name="NetworkProtocolDropDownButton">
-        <controls:DropDownButton.FocusVisualStyle>
-          <x:Null />
-        </controls:DropDownButton.FocusVisualStyle>
+<!-- TODO 迁移：WPF controls:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
         <controls:DropDownButton.ContextMenu>
           <ContextMenu Opened="NetworkProtocolContextMenu_Opened" />
         </controls:DropDownButton.ContextMenu>

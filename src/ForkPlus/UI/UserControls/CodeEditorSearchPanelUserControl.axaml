@@ -5,7 +5,7 @@
     </Border.Background>
     <Border.VerticalAlignment>Top</Border.VerticalAlignment>
     <Border.RenderTransform>
-      <TranslateTransform x:Name="TranslateTransform" />
+      <TranslateTransform />
     </Border.RenderTransform>
     <Border.Child>
       <DockPanel>

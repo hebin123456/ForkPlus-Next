@@ -160,7 +160,7 @@
         <Setter Value="{DynamicResource Button.Disabled.Border}" Property="BorderBrush" />
     </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type controls:DropDownButton}" TargetType="controls:DropDownButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
-    <Setter Property="ClickMode" Value="Press" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
   </ControlTheme>
   <ControlTheme x:Key="{x:Type editorControl:FloatingButton}" TargetType="editorControl:FloatingButton" BasedOn="{StaticResource {x:Type Button}}">
     <Setter Property="Margin" Value="2,2,2,2" />
@@ -273,7 +273,7 @@
         <Setter Property="Opacity" Value="0.6" />
     </Style></ControlTheme>
   <ControlTheme x:Key="ToolbarDropdownButton" TargetType="controls:ToolbarDropDownButton" BasedOn="{StaticResource ToolbarToggleButton}">
-    <Setter Property="ClickMode" Value="Press" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="controls:ToolbarDropDownButton">
@@ -313,7 +313,7 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="StashToolbarDropdownButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToolbarToggleButton}">
     <Setter Property="CornerRadius" Value="0,3,3,0" />
-    <Setter Property="ClickMode" Value="Press" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     
   
     <Style Selector="^:pointerover">
@@ -322,7 +322,7 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="BranchToolbarDropdownButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToolbarToggleButton}">
     <Setter Property="CornerRadius" Value="0,3,3,0" />
-    <Setter Property="ClickMode" Value="Press" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     
   
     <Style Selector="^:pointerover">
@@ -707,7 +707,7 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="ClickMode" Value="Press" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="Padding" Value="0" />
     <Setter Property="CornerRadius" Value="3,3,3,3" />
     <Setter Property="Template">
@@ -756,7 +756,7 @@
     <Setter Property="FontSize" Value="16" />
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="ClickMode" Value="Release" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="Padding" Value="6,0,4,0" />
     <Setter Property="Template">
       <Setter.Value>
@@ -788,7 +788,7 @@
     <Setter Property="Foreground" Value="{DynamicResource Button.Foreground}" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
     <Setter Property="Focusable" Value="false" />
-    <Setter Property="ClickMode" Value="Press" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="Padding" Value="0" />
     <Setter Property="BorderThickness" Value="0,1,1,1" />
     <Setter Property="CornerRadius" Value="0,3,3,0" />

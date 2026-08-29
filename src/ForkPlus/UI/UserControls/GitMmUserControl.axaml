@@ -36,11 +36,13 @@
         <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
     </Style></ControlTheme>
     <ControlTheme x:Key="GitMmSubrepoTabControlStyle" TargetType="controls:ModernTabControl" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
+<!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
       <Style.Resources>
         <ResourceDictionary>
           <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem" BasedOn="{StaticResource GitMmSubrepoTabItemStyle}" />
         </ResourceDictionary>
-      </Style.Resources>
+      </Style.Resources>-->
+
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="controls:ModernTabControl">
@@ -51,7 +53,7 @@
               </Grid.RowDefinitions>
               <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PreviewMouseWheel">
                 <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
-                  <TabPanel IsItemsHost="true" Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
+                  <ItemsPresenter Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
                   <Canvas>
                     <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />
                   </Canvas>
@@ -114,7 +116,7 @@
     <!-- v3.11.0：命令输出 Popup——与活动管理器相同的浮层风格
          (Border CornerRadius=6, DropShadowEffect, BorderThickness=1, BackgroundBrush)
          替代原底部覆盖层，不再突兀地贴在底部 -->
-    <Popup StaysOpen="False" AllowsTransparency="true" PopupAnimation="Slide" Placement="Mouse" VerticalOffset="-4" HorizontalOffset="4" x:Name="OutputPopup">
+    <Popup Placement="Pointer" VerticalOffset="-4" HorizontalOffset="4" x:Name="OutputPopup">
       <Border Width="720" Height="360" MinWidth="400" MinHeight="200" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" CornerRadius="6">
         <Border.Effect>
           <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" OffsetY="2" />

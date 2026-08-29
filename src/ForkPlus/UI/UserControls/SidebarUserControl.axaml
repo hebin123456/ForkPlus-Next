@@ -79,7 +79,7 @@
           <TextBlock Margin="8,2,0,2" FontSize="15" FontWeight="Medium" Text="Branches" IsVisible="False" />
           <controls:FilterTextBox Grid.Row="1" Margin="4" UseSecondaryTextBoxBackground="True" x:Name="FilterTextBox" />
           <Grid Grid.Row="2">
-            <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" x:Name="SidebarTreeView" Theme="{DynamicResource SideBarMultiselectionTreeViewStyle}">
+            <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Toggle" x:Name="SidebarTreeView" Theme="{DynamicResource SideBarMultiselectionTreeViewStyle}">
               <controls:MultiselectionTreeView.ItemTemplate>
                 <DataTemplate>
                   <ContentControl>

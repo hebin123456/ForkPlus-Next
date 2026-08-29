@@ -70,14 +70,14 @@
       </Setter.Value>
     </Setter>
   
-    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" Property="Background" />
     </Style>
-    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource TreeViewItem.SelectedActive.Background}" Property="Background" />
-        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style>
-    <Style Selector="^[IsSelectionActive=True]:selected /template/ ToggleButton#ExpandCollapseToggleButton">
+    <Style Selector="^:selected /template/ ToggleButton#ExpandCollapseToggleButton">
         <Setter Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" Property="Background" />
     </Style>
     <Style Selector="^:disabled /template/ Border#Bd">
@@ -155,20 +155,18 @@
       </Setter.Value>
     </Setter>
   
-    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" Property="Background" />
     </Style>
-    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource TreeViewItem.SelectedActive.Background}" Property="BorderBrush" />
         <Setter Value="{DynamicResource TreeViewItem.SelectedActive.Background}" Property="Background" />
-        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style>
-    <Style Selector="^[IsSelectionActive=True]:selected /template/ ToggleButton#ExpandCollapseToggleButton">
+    <Style Selector="^:selected /template/ ToggleButton#ExpandCollapseToggleButton">
         <Setter Value="{DynamicResource TreeViewItem.TreeArrow.Selected.Fill}" Property="Background" />
     </Style>
-    <Style Selector="^:disabled /template/ Border#Bd">
-        <Setter Value="#FF6D6D6D" Property="Foreground" />
-    </Style>
+<!-- TODO 迁移：WPF 在 Border#Bd 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） -->
     <!--
       TODO(wpf2avalonia): ControlTemplate 内 DataTrigger（DataContext/VM 属性条件）需人工改写（模板部件条件外观建议 Tag/Classes + 属性匹配器）。
       原始片段：
@@ -249,16 +247,14 @@
       </Setter.Value>
     </Setter>
   
-    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource TreeViewItem.SelectedInactive.Background}" Property="Background" />
     </Style>
-    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource TreeViewItem.SelectedActive.Background}" Property="Background" />
-        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style>
-    <Style Selector="^:disabled /template/ Border#Bd">
-        <Setter Value="{DynamicResource ForegroundBrush}" Property="Foreground" />
-    </Style></ControlTheme>
+<!-- TODO 迁移：WPF 在 Border#Bd 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） --></ControlTheme>
   <ControlTheme x:Key="FileListMultiselectionTreeViewWithGridViewStyle" TargetType="controls:MultiselectionTreeView" BasedOn="{StaticResource {x:Type controls:MultiselectionTreeView}}">
     <Setter Property="Padding" Value="0" />
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->

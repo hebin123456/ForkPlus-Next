@@ -27,9 +27,8 @@
                 <CheckBox.IsChecked>
                   <Binding Path="Selected" />
                 </CheckBox.IsChecked>
-                <CheckBox.FocusVisualStyle>
-                  <x:Null />
-                </CheckBox.FocusVisualStyle>
+<!-- TODO 迁移：WPF CheckBox.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
               </CheckBox>
               <Image Grid.Column="1" VerticalAlignment="Center" Width="16" Margin="4,0,4,0">
                 <Image.Source>

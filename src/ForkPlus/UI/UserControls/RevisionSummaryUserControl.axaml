@@ -33,9 +33,8 @@
           <Grid DockPanel.Dock="Left">
             <controls:SelectableTextBlock Margin="8,0,14,-1" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorEmailTextBlock" />
             <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" IsCheckedChanged="AuthorColorsToggleButton_Changed" x:Name="AuthorColorsToggleButton" Theme="{DynamicResource CodeEditorHeaderToggleButtonStyle}" IsVisible="False">
-              <ToggleButton.FocusVisualStyle>
-                <x:Null />
-              </ToggleButton.FocusVisualStyle>
+<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
               <Path Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ComboBox.Static.Glyph}" Data="{DynamicResource ArrowGeometry}" />
             </ToggleButton>
           </Grid>
@@ -59,9 +58,8 @@
           <Grid DockPanel.Dock="Left">
             <controls:SelectableTextBlock Margin="8,0,14,-1" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommitterEmailTextBlock" />
             <ToggleButton Height="12" Width="12" Margin="2,2,2,0" HorizontalAlignment="Right" IsCheckedChanged="CommitterColorsToggleButton_Changed" x:Name="CommitterColorsToggleButton" Theme="{DynamicResource CodeEditorHeaderToggleButtonStyle}" IsVisible="False">
-              <ToggleButton.FocusVisualStyle>
-                <x:Null />
-              </ToggleButton.FocusVisualStyle>
+<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
               <Path Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ComboBox.Static.Glyph}" Data="{DynamicResource ArrowGeometry}" />
             </ToggleButton>
           </Grid>

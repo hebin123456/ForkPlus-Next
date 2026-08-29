@@ -31,7 +31,7 @@
                         <ProgressBar.Theme>
                           <DynamicResource ResourceKey="CircularProgressBar" />
                         </ProgressBar.Theme>
-                        <ProgressBar.IsVisible>Hidden</ProgressBar.IsVisible>
+                        <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
                       </ProgressBar>
                       <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="SecondaryTitleTextBlock" PointerPressed="TitleTextBlock_MouseUp">
                         <TextBlock.Foreground>
@@ -46,7 +46,7 @@
                         <ProgressBar.Theme>
                           <DynamicResource ResourceKey="CircularProgressBar" />
                         </ProgressBar.Theme>
-                        <ProgressBar.IsVisible>Hidden</ProgressBar.IsVisible>
+                        <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
                       </ProgressBar>
                       <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock" PointerPressed="TitleTextBlock_MouseUp">
                         <TextBlock.Foreground>
@@ -57,7 +57,7 @@
                   </Grid>
                 </Grid.Children>
                 <Grid.RenderTransform>
-                  <TranslateTransform x:Name="TitleContainerTranslateTransform" Y="-8" />
+                  <TranslateTransform Y="-8" />
                 </Grid.RenderTransform>
               </Grid>
             </Grid.Children>
@@ -66,7 +66,7 @@
             <Button.Background>
               <SolidColorBrush>#00FFFFFF</SolidColorBrush>
             </Button.Background>
-            <Button.IsVisible>Collapsed</Button.IsVisible>
+            <Button.IsVisible>False</Button.IsVisible>
             <Button.Theme>
               <DynamicResource ResourceKey="InlineButton" />
             </Button.Theme>
@@ -81,16 +81,15 @@
               <ToggleButton.Theme>
                 <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
               </ToggleButton.Theme>
-              <ToggleButton.FocusVisualStyle>
-                <x:Null />
-              </ToggleButton.FocusVisualStyle>
+<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
               <Image>
                 <Image.Source>
                   <DynamicResource ResourceKey="ListIcon" />
                 </Image.Source>
               </Image>
             </ToggleButton>
-            <Popup StaysOpen="False" AllowsTransparency="true" HorizontalOffset="-370" PopupAnimation="Slide" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" x:Name="ActivityManagerPopup">
+            <Popup HorizontalOffset="-370" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" x:Name="ActivityManagerPopup">
               <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
             </Popup>
             <!-- v3.11.0：git mm Output 切换按钮（仅 git mm 激活时可见，紧邻活动管理器按钮右侧） -->
@@ -131,7 +130,7 @@
                   <Image.Source>
                     <DynamicResource ResourceKey="BranchIcon" />
                   </Image.Source>
-                  <Image.IsVisible>Collapsed</Image.IsVisible>
+                  <Image.IsVisible>False</Image.IsVisible>
                   <Image.HorizontalAlignment>Left</Image.HorizontalAlignment>
                   <Image.VerticalAlignment>Center</Image.VerticalAlignment>
                   <ToolTip.Tip>Cancel</ToolTip.Tip>

@@ -116,7 +116,7 @@
       </DockPanel>
     </Grid>
     <Grid Grid.Row="1">
-      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Extended" Margin="0" x:Name="TreeView" Theme="{DynamicResource SideBarSearchMultiselectionTreeViewStyle}">
+      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Toggle" Margin="0" x:Name="TreeView" Theme="{DynamicResource SideBarSearchMultiselectionTreeViewStyle}">
         <controls:MultiselectionTreeView.ItemTemplate>
           <DataTemplate>
             <ContentControl>

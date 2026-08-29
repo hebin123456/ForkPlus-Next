@@ -63,11 +63,10 @@
         <CheckBox Grid.Column="4" Margin="30,0,4,4" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="13" Content="Update dependent branches" ToolTip.Tip="--update-refs" x:Name="UpdateRefsCheckBox" />
       </Grid>
       <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Background="{DynamicResource BackgroundBrush}">
-        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Extended" x:Name="RevisionListView" DoubleTapped="RevisionListView_MouseDoubleClick" Theme="{DynamicResource ListViewWithGridViewStyle}">
-          <dialogs:MultiselectionListView.FocusVisualStyle>
-            <x:Null />
-          </dialogs:MultiselectionListView.FocusVisualStyle>
-          <dialogs:MultiselectionListView.ItemContainerStyle>
+        <dialogs:MultiselectionListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" BorderThickness="0" SelectionMode="Toggle" x:Name="RevisionListView" DoubleTapped="RevisionListView_MouseDoubleClick" Theme="{DynamicResource ListViewWithGridViewStyle}">
+<!-- TODO 迁移：WPF dialogs:MultiselectionListView.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
+          <dialogs:MultiselectionListView.ItemContainerTheme>
             <ControlTheme TargetType="dialogs:MultiselectionListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}" x:Key="{x:Type dialogs:MultiselectionListViewItem}">
               
               <Setter Property="Height" Value="22" />
@@ -75,11 +74,12 @@
               <Setter Property="VerticalContentAlignment" Value="Stretch" />
               <Setter Property="Padding" Value="0" />
               <Setter Property="Margin" Value="0" />
-              <Setter Property="AllowDrop" Value="True" />
+<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
     <!-- TODO 迁移：WPF EventSetter 已删（事件在 code-behind 中 AddHandler/+= 接线） -->
             </ControlTheme>
-          </dialogs:MultiselectionListView.ItemContainerStyle>
-          <dialogs:MultiselectionListView.View>
+          </dialogs:MultiselectionListView.ItemContainerTheme>
+<!-- TODO 迁移：WPF dialogs:MultiselectionListView.View 已删（Avalonia 无 GridView 视图，原片段见 git 历史） -->
+
             <!--
       TODO(wpf2avalonia): <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
       原始片段：
@@ -333,7 +333,7 @@
                     </GridViewColumn>
                   </GridView>
     -->
-          </dialogs:MultiselectionListView.View>
+          
         </dialogs:MultiselectionListView>
       </Grid>
       <userControls:RevisionDetailsUserControl Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" BorderThickness="0" Background="{DynamicResource BackgroundBrush}" x:Name="RevisionDetails" />

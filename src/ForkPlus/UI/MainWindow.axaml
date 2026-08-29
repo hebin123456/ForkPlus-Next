@@ -16,12 +16,11 @@
                       <DockPanel>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                           <ToggleButton ToolTip.Tip="Notifications" x:Name="Part_NotificationManagerToggleButton" Theme="{DynamicResource WindowRoundedToggleButton}">
-                            <ToggleButton.FocusVisualStyle>
-                              <x:Null />
-                            </ToggleButton.FocusVisualStyle>
+<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
                             <Image Source="{DynamicResource NotificationIcon}" Height="16" Width="16" VerticalAlignment="Center" />
                           </ToggleButton>
-                          <Popup StaysOpen="False" HorizontalOffset="-340" VerticalOffset="3" PopupAnimation="None" PlacementTarget="{Binding ElementName=Part_NotificationManagerToggleButton}" IsOpen="{Binding IsChecked, ElementName=Part_NotificationManagerToggleButton}" x:Name="NotificationManagerPopup">
+                          <Popup HorizontalOffset="-340" VerticalOffset="3" PlacementTarget="{Binding ElementName=Part_NotificationManagerToggleButton}" IsOpen="{Binding IsChecked, ElementName=Part_NotificationManagerToggleButton}" x:Name="NotificationManagerPopup">
                             <userControls:NotificationManagerUserControl x:Name="NotificationManagerUserControl" />
                           </Popup>
                           <Button x:Name="PART_MinimizeButton" Theme="{DynamicResource WindowButton}">
@@ -74,9 +73,8 @@
     </Grid.RowDefinitions>
     <userControls:ToolbarUserControl Grid.Row="0" x:Name="Toolbar" />
     <controls:ClosableTabControl Grid.Row="1" x:Name="TabControl">
-      <controls:ClosableTabControl.FocusVisualStyle>
-        <x:Null />
-      </controls:ClosableTabControl.FocusVisualStyle>
+<!-- TODO 迁移：WPF controls:ClosableTabControl.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
     </controls:ClosableTabControl>
   </Grid>
 </ui:CustomWindow>

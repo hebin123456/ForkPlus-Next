@@ -1,5 +1,5 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <ControlTheme x:Key="RepositoryTitleHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <ControlTheme x:Key="RepositoryTitleHyperlinkStyle" TargetType="HyperlinkButton">
     
     <Setter Property="TextDecorations">
       <Setter.Value>

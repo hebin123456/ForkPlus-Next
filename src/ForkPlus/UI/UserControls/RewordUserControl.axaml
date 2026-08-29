@@ -1,4 +1,4 @@
-<UserControl Height="180" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RewordUserControl" PreviewKeyDown="UserControl_PreviewKeyDown" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+<UserControl Height="180" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RewordUserControl" KeyDown="UserControl_PreviewKeyDown" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
   <Grid>
     <Grid.Children>
       <Border Margin="8">
@@ -12,7 +12,8 @@
               <DynamicResource ResourceKey="DropShadowColor" />
             </DropShadowEffect.Color>
             <DropShadowEffect.Opacity>0.2</DropShadowEffect.Opacity>
-            <DropShadowEffect.ShadowDepth>1</DropShadowEffect.ShadowDepth>
+<!-- TODO 迁移：WPF DropShadowEffect.ShadowDepth 已删（Avalonia 用 OffsetY） -->
+
           </DropShadowEffect>
         </Border.Effect>
       </Border>
@@ -31,7 +32,7 @@
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.Children>
-              <fuc:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" PreviewKeyDown="CommitSubjectTextBox_PreviewKeyDown" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,32,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" x:Name="CommitSubjectTextBox">
+              <fuc:SpellingPlaceholderTextBox TextChanged="CommitSubjectTextBox_TextChanged" KeyDown="CommitSubjectTextBox_PreviewKeyDown" Grid.Row="0" HorizontalAlignment="Stretch" Padding="4,1,32,1" BorderThickness="1,1,1,0" Placeholder="Commit subject" x:Name="CommitSubjectTextBox">
                 <fuc:SpellingPlaceholderTextBox.Theme>
                   <DynamicResource ResourceKey="CommitPlaceholderTextBox" />
                 </fuc:SpellingPlaceholderTextBox.Theme>
@@ -46,7 +47,7 @@
                 <Border.VerticalAlignment>Bottom</Border.VerticalAlignment>
                 <Border.Margin>1,0,1,0</Border.Margin>
               </Border>
-              <fuc:CommitDescriptionTextBox PreviewKeyDown="CommitDescriptionTextBox_PreviewKeyDown" Grid.Row="1" Margin="0" Padding="4,2,4,3" HorizontalAlignment="Stretch" BorderThickness="1,0,1,1" TextWrapping="Wrap" AcceptsReturn="True" Placeholder="Description" x:Name="CommitDescriptionTextBox" />
+              <fuc:CommitDescriptionTextBox KeyDown="CommitDescriptionTextBox_PreviewKeyDown" Grid.Row="1" Margin="0" Padding="4,2,4,3" HorizontalAlignment="Stretch" BorderThickness="1,0,1,1" TextWrapping="Wrap" AcceptsReturn="True" Placeholder="Description" x:Name="CommitDescriptionTextBox" />
               <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
                 <StackPanel.Children>
                   <Button Click="CommitMessageCancelButton_Click">Cancel<Button.Margin>2,6,5,-3</Button.Margin><Button.Padding>10,2</Button.Padding></Button>

@@ -54,7 +54,7 @@
       </Setter.Value>
     </Setter>
   </ControlTheme>
-  <ControlTheme x:Key="BugtrackerHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <ControlTheme x:Key="BugtrackerHyperlinkStyle" TargetType="HyperlinkButton">
     
     <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Setter Property="TextDecorations">
@@ -68,7 +68,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
         <Setter Property="TextDecorations" Value="Underline" />
     </Style></ControlTheme>
-  <ControlTheme x:Key="BlueHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <ControlTheme x:Key="BlueHyperlinkStyle" TargetType="HyperlinkButton">
     
     <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     
@@ -76,7 +76,7 @@
     <Style Selector="^:pointerover">
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     </Style></ControlTheme>
-  <ControlTheme x:Key="BlueUnderlineHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <ControlTheme x:Key="BlueUnderlineHyperlinkStyle" TargetType="HyperlinkButton">
     
     <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     <Setter Property="TextDecorations">
@@ -90,7 +90,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
         <Setter Property="TextDecorations" Value="Underline" />
     </Style></ControlTheme>
-  <ControlTheme x:Key="GrayHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource {x:Type Hyperlink}}">
+  <ControlTheme x:Key="GrayHyperlinkStyle" TargetType="HyperlinkButton">
     
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush.Gray}" />
     
@@ -117,7 +117,7 @@
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="ToolTip">
+    <Setter Property="ToolTip.Tip">
       <Setter.Value>
         <ToolTip>
           <ToolTip.DataContext>

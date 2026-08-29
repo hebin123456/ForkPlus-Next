@@ -57,10 +57,9 @@
         <ControlTemplate TargetType="Expander">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
             <DockPanel>
-              <ToggleButton ContentTemplate="{TemplateBinding HeaderTemplate}" ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}" Content="{TemplateBinding Header}" DockPanel.Dock="Top" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}" FontStyle="{TemplateBinding FontStyle}" FontStretch="{TemplateBinding FontStretch}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" Margin="0" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" Theme="{StaticResource ExpanderDownHeaderStyle}">
-                <ToggleButton.FocusVisualStyle>
-                  <x:Null />
-                </ToggleButton.FocusVisualStyle>
+              <ToggleButton ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" DockPanel.Dock="Top" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}" FontStyle="{TemplateBinding FontStyle}" FontStretch="{TemplateBinding FontStretch}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" Margin="0" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" Theme="{StaticResource ExpanderDownHeaderStyle}">
+<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
                 <ToggleButton.IsChecked>
                   <Binding Path="IsExpanded"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
                 </ToggleButton.IsChecked>

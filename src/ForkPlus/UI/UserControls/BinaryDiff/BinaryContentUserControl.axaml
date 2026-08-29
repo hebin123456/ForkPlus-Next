@@ -145,9 +145,8 @@
               <SolidColorBrush>#00FFFFFF</SolidColorBrush>
             </fuc:DropDownButton.Background>
             <fuc:DropDownButton.Focusable>False</fuc:DropDownButton.Focusable>
-            <fuc:DropDownButton.FocusVisualStyle>
-              <x:Null />
-            </fuc:DropDownButton.FocusVisualStyle>
+<!-- TODO 迁移：WPF fuc:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
             <fuc:DropDownButton.ContextMenu>
               <ContextMenu>
                 <ContextMenu.Items>

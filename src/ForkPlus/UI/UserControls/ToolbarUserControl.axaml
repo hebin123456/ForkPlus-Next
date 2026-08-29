@@ -185,7 +185,7 @@
               <p:DynamicResource ResourceKey="PullPushBadge" />
             </p:Border.Style>
 -->
-            <p:Border.IsVisible>Collapsed</p:Border.IsVisible>
+            <p:Border.IsVisible>False</p:Border.IsVisible>
             <p:Border.Child>
               <p:TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PullBadgeText">
                 <p:TextBlock.Foreground>
@@ -201,7 +201,7 @@
               <p:DynamicResource ResourceKey="PullPushBadge" />
             </p:Border.Style>
 -->
-            <p:Border.IsVisible>Collapsed</p:Border.IsVisible>
+            <p:Border.IsVisible>False</p:Border.IsVisible>
             <p:Border.Child>
               <p:TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PushBadgeText">
                 <p:TextBlock.Foreground>

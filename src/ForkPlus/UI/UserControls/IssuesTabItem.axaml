@@ -72,7 +72,7 @@
       <controls:FilterTextBox Margin="4,0,4,4" UseSecondaryTextBoxBackground="True" ShowDropdown="True" x:Name="FilterTextBox" />
     </StackPanel>
     <Grid Grid.Row="1">
-      <controls:MultiselectionTreeView SelectionMode="Extended" Margin="0" x:Name="TreeView" Theme="{DynamicResource SideBarIssuesMultiselectionTreeViewStyle}">
+      <controls:MultiselectionTreeView SelectionMode="Toggle" Margin="0" x:Name="TreeView" Theme="{DynamicResource SideBarIssuesMultiselectionTreeViewStyle}">
         <controls:MultiselectionTreeView.ItemTemplate>
           <DataTemplate>
             <ContentControl>

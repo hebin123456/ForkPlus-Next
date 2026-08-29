@@ -14,15 +14,15 @@
           </Setter.Value>
         </Setter>
       
-    <Style Selector="^[IsSelectionActive=False]:selected /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style>
-    <Style Selector="^[IsSelectionActive=True]:selected /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-        <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style></ControlTheme>
       <DataTemplate x:Key="CommandProviderItemTemplate" DataType="local:CommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
@@ -150,9 +150,8 @@
       </StackPanel>
     </Border>
     <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" x:Name="RepositoriesListBox" PointerPressed="RepositoriesListBox_MouseUp" ItemContainerTheme="{DynamicResource QuickLaunchListBoxItemStyle}">
-      <ListBox.FocusVisualStyle>
-        <x:Null />
-      </ListBox.FocusVisualStyle>
+<!-- TODO 迁移：WPF ListBox.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
       <ListBox.ItemTemplate>
         <DataTemplate>
           <ContentControl>

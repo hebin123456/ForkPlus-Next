@@ -1,5 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <PopupAnimation x:Key="{x:StaticExtension SystemParameters.MenuPopupAnimationKey}">None</PopupAnimation>
+<!-- TODO 迁移：WPF PopupAnimation 资源（Avalonia 无此类型）。原始片段：
+  <PopupAnimation x:Key="MenuPopupAnimationKey">None</PopupAnimation>-->
+
   <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
   
   <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />

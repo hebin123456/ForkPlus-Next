@@ -50,7 +50,7 @@
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewHover.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewHover.Border}" Property="BorderBrush" />
     </Style>
-    <Style Selector="^:selected[IsMouseOver=False]:focus /template/ Border#Bd">
+    <Style Selector="^:selected:focus /template/ Border#Bd">
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelected.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelected.Border}" Property="BorderBrush" />
     </Style>
@@ -58,11 +58,11 @@
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelectedHover.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelectedHover.Border}" Property="BorderBrush" />
     </Style>
-    <Style Selector="^:selected[IsMouseOver=False][IsKeyboardFocused=False] /template/ Border#Bd">
+    <Style Selector="^:selected[IsKeyboardFocused=False] /template/ Border#Bd">
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelectedNoFocus.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelectedNoFocus.Border}" Property="BorderBrush" />
     </Style>
-    <Style Selector="^[IsSelected=False][IsMouseOver=False]:focus /template/ Border#Bd">
+    <Style Selector="^[IsSelected=False]:focus /template/ Border#Bd">
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewFocus.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewFocus.Border}" Property="BorderBrush" />
     </Style>
@@ -87,7 +87,7 @@
     
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
     <Setter Property="Focusable" Value="false" />
-    <Setter Property="ClickMode" Value="Press" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
@@ -232,7 +232,7 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition MinWidth="20" Width="0" />
       </Grid.ColumnDefinitions>
-      <Popup AllowsTransparency="true" Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="1" Margin="1" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="1" Margin="1" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
@@ -267,7 +267,7 @@
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
-      <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+      <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
     </Grid>
     <!--
       TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
@@ -300,7 +300,7 @@
   </ControlTemplate>
   <ControlTheme x:Key="ComboBoxEditableTextBox" TargetType="TextBox">
     
-    <Setter Property="AllowDrop" Value="true" />
+<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
     <Setter Property="MinWidth" Value="0" />
     <Setter Property="MinHeight" Value="0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -311,7 +311,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
-          <ScrollViewer Background="#00FFFFFF" Focusable="false" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
+          <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -322,7 +322,7 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition MinWidth="20" Width="0" />
       </Grid.ColumnDefinitions>
-      <Popup AllowsTransparency="true" Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
@@ -424,7 +424,7 @@
     <Setter Property="Margin" Value="0,2,0,2" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
     <Setter Property="Focusable" Value="false" />
-    <Setter Property="ClickMode" Value="Press" />
+<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
@@ -448,7 +448,7 @@
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="10" />
       </Grid.ColumnDefinitions>
-      <Popup AllowsTransparency="true" Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" Margin="1" TextElement.Foreground="{DynamicResource ForegroundBrush}" x:Name="PART_Popup">
+      <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" Margin="1" TextElement.Foreground="{DynamicResource ForegroundBrush}" x:Name="PART_Popup">
         <Popup.IsOpen>
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
@@ -483,7 +483,7 @@
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
-      <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" TextElement.Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
+      <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" TextElement.Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
     </Grid>
     <!--
       TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
@@ -522,12 +522,14 @@
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Template" Value="{StaticResource InteractiveRebaseComboBoxTemplate}" />
+<!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
     <Style.Resources>
       <ResourceDictionary>
         <ControlTheme x:Key="{x:Type ComboBoxItem}" TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
           
         </ControlTheme>
       </ResourceDictionary>
-    </Style.Resources>
+    </Style.Resources>-->
+
   </ControlTheme>
 </ResourceDictionary>

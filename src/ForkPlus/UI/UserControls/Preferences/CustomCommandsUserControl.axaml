@@ -3,7 +3,7 @@
     <ResourceDictionary>
       
       <ControlTheme x:Key="QuestionmarkTextBlock" TargetType="TextBlock" BasedOn="{StaticResource HintTextBlock}">
-        <Setter Property="ToolTip">
+        <Setter Property="ToolTip.Tip">
           <Setter.Value>
             <ToolTip>
               <ToolTip.DataContext>
@@ -22,7 +22,7 @@
         </Setter>
       </ControlTheme>
       <ControlTheme x:Key="NameQuestionmarkTextBlock" TargetType="TextBlock" BasedOn="{StaticResource HintTextBlock}">
-        <Setter Property="ToolTip">
+        <Setter Property="ToolTip.Tip">
           <Setter.Value>
             <ToolTip>
               <ToolTip.DataContext>

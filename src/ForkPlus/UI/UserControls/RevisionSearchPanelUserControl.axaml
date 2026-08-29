@@ -5,7 +5,7 @@
     </Border.Background>
     <Border.VerticalAlignment>Top</Border.VerticalAlignment>
     <Border.RenderTransform>
-      <TranslateTransform x:Name="TranslateTransform" />
+      <TranslateTransform />
     </Border.RenderTransform>
     <Border.Child>
       <DockPanel>
@@ -71,7 +71,7 @@
                     <ProgressBar.Theme>
                       <DynamicResource ResourceKey="CircularProgressBar" />
                     </ProgressBar.Theme>
-                    <ProgressBar.IsVisible>Collapsed</ProgressBar.IsVisible>
+                    <ProgressBar.IsVisible>False</ProgressBar.IsVisible>
                     <ProgressBar.Width>12</ProgressBar.Width>
                     <ProgressBar.Height>12</ProgressBar.Height>
                     <ProgressBar.Foreground>

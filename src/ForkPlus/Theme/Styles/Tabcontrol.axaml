@@ -27,6 +27,7 @@
     </Setter>
   </ControlTheme>
   <ControlTheme TargetType="TabControl">
+<!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
     <Style.Resources>
       <ResourceDictionary>
         <ControlTheme TargetType="TabPanel">
@@ -34,7 +35,8 @@
         </ControlTheme>
         <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}" />
       </ResourceDictionary>
-    </Style.Resources>
+    </Style.Resources>-->
+
     <Setter Property="Padding" Value="2" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -47,14 +49,14 @@
         <ControlTemplate TargetType="TabControl">
           <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" x:Name="templateRoot">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition x:Name="ColumnDefinition0" />
-              <ColumnDefinition Width="0" x:Name="ColumnDefinition1" />
+              <ColumnDefinition />
+              <ColumnDefinition Width="0" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-              <RowDefinition Height="NaN" x:Name="RowDefinition0" />
-              <RowDefinition Height="*" x:Name="RowDefinition1" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TabPanel Grid.Column="0" IsItemsHost="true" Margin="0" Grid.Row="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
+            <ItemsPresenter Grid.Column="0" Margin="0" Grid.Row="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" Grid.Row="1" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel" TabIndex="2">
               <ContentPresenter Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
             </Border>
@@ -64,7 +66,7 @@
       </Setter.Value>
     </Setter>
   
-    <Style Selector="^[TabStripPlacement=Bottom] /template/ TabPanel#headerPanel">
+    <Style Selector="^[TabStripPlacement=Bottom] /template/ ItemsPresenter#headerPanel">
         <Setter Property="Grid.Row" Value="1" />
     </Style>
     <Style Selector="^[TabStripPlacement=Bottom] /template/ Border#contentPanel">
@@ -76,7 +78,7 @@
     <Style Selector="^[TabStripPlacement=Bottom] /template/ RowDefinition#RowDefinition1">
         <Setter Property="RowDefinition.Height" Value="Auto" />
     </Style>
-    <Style Selector="^[TabStripPlacement=Left] /template/ TabPanel#headerPanel">
+    <Style Selector="^[TabStripPlacement=Left] /template/ ItemsPresenter#headerPanel">
         <Setter Property="Grid.Row" Value="0" />
         <Setter Property="Grid.Column" Value="0" />
     </Style>
@@ -96,7 +98,7 @@
     <Style Selector="^[TabStripPlacement=Left] /template/ RowDefinition#RowDefinition1">
         <Setter Property="RowDefinition.Height" Value="0" />
     </Style>
-    <Style Selector="^[TabStripPlacement=Right] /template/ TabPanel#headerPanel">
+    <Style Selector="^[TabStripPlacement=Right] /template/ ItemsPresenter#headerPanel">
         <Setter Property="Grid.Row" Value="0" />
         <Setter Property="Grid.Column" Value="1" />
     </Style>
@@ -238,7 +240,7 @@
     <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Static.Background}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
-    <Setter Property="AllowDrop" Value="True" />
+<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="controls:ClosableTabItem">
@@ -385,6 +387,7 @@
 <!-- TODO 迁移：WPF Foreground Setter 已删（Avalonia Border 无 Foreground 属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type controls:ModernTabControl}" TargetType="controls:ModernTabControl" BasedOn="{StaticResource {x:Type TabControl}}">
+<!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
     <Style.Resources>
       <ResourceDictionary>
         <ControlTheme x:Key="{x:Type TabPanel}" TargetType="TabPanel">
@@ -392,22 +395,23 @@
         </ControlTheme>
         <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem" BasedOn="{StaticResource ModernTabControlTabItemStyle}" />
       </ResourceDictionary>
-    </Style.Resources>
+    </Style.Resources>-->
+
     <Setter Property="BorderThickness" Value="0,1,0,0" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TabControl">
           <Grid ClipToBounds="true" KeyboardNavigation.TabNavigation="Local" x:Name="templateRoot">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition x:Name="ColumnDefinition0" />
-              <ColumnDefinition Width="0" x:Name="ColumnDefinition1" />
+              <ColumnDefinition />
+              <ColumnDefinition Width="0" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-              <RowDefinition Height="NaN" x:Name="RowDefinition0" />
-              <RowDefinition Height="*" x:Name="RowDefinition1" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid Grid.Column="0" Grid.Row="0">
-              <TabPanel IsItemsHost="true" Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
+              <ItemsPresenter Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
             </Grid>
             <Canvas Grid.Column="0" Grid.Row="0">
               <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />
@@ -421,10 +425,9 @@
       </Setter.Value>
     </Setter>
   
-    <Style Selector="^:disabled /template/ Grid#templateRoot">
-        <Setter Value="{DynamicResource Disabled.ForegroundColor}" Property="Foreground" />
-    </Style></ControlTheme>
+<!-- TODO 迁移：WPF 在 Grid#templateRoot 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） --></ControlTheme>
   <ControlTheme x:Key="RepositoryManagerTabControl" TargetType="controls:ModernTabControl" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
+<!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
     <Style.Resources>
       <ResourceDictionary>
         <ControlTheme x:Key="{x:Type TabPanel}" TargetType="TabPanel">
@@ -434,6 +437,7 @@
           <Setter Property="FontSize" Value="14" />
         </ControlTheme>
       </ResourceDictionary>
-    </Style.Resources>
+    </Style.Resources>-->
+
   </ControlTheme>
 </ResourceDictionary>

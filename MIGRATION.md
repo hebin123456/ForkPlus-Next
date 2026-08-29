@@ -62,17 +62,88 @@ git push origin HEAD
 | `0922795` | 57 | docs: 迁移文档刷新（纯文档提交） |
 | `3c3837c` | 57→0 | IBrush/Rect 不可变簇 + 滚轮转发 + WeakEventManagerBase 4 泛型 + PointerPressed 合成 + BinaryDiff 绘制簇等 20 类修复 |
 | `3335377` | C# 0 / AVLN 1198 | IPC 管道修复 + 文档记录 XAML 编译静默失败根因 |
-| （本轮） | AVLN 1198→390 | xamlpass1-4 批量 XAML 修复（详见下节「XAML 批量修复方法论」） |
+| `a64e8e2` | AVLN 1198→390 | xamlpass1-4 批量 XAML 修复（详见下节「XAML 批量修复方法论」） |
+| `a526bfc` | 390 | docs: 390 错误模式分组 + pass4 未生效复盘 |
+| （本轮） | AVLN 390→103 | xamlpass5-6：错误驱动精确修复（FocusVisualStyle 块删、ItemContainerTheme→Style、IsCheckable→ToggleType、PreviewKeyDown→KeyDown、ViewportWidth 等 TemplateBinding 簇、Resources on Style 删） |
 
-**2026-08-29 复盘**：pass4 的 Phase2 全局变换（TabPanel→ItemsPresenter、删 AllowDrop/StaysOpen/FocusVisualStyle、ComponentResourceKey 转普通键等）实际未生效——pass3 的 Auto→NaN 误伤（RowDefinition Height="NaN"）和 pass3 之后的文件状态说明最后一次写盘的是 pass3。pass4 规则本身正确，对当前状态重跑即可生效。当前精确统计：**390 唯一错误消息 / 426 唯一签名 / 339 唯一 file:line 位置 / 964 原始日志行**（错误会在多工程构建中重复报告）。
+**当前精确统计（2026-08-29）**：**103 唯一错误消息 / 92 build 汇总错误**。剩余错误已全部定位到 file:line，清单见下文「剩余 103 错误精确清单」。
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
-| 2 XAML (AVLN) 清零 | 🔄 **进行中** | 1198→390（唯一错误），剩余模式已归类，见下文 |
+| 2 XAML (AVLN) 清零 | 🔄 **进行中** | 1198→390→103（唯一错误），剩余已逐条定位，见下文清单 |
 | 3 运行时验证 | 🔄 进行中 | 已跑通：App 构造 + IPC；卡在：MainWindow XAML 加载（依赖阶段 2） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
+
+## 剩余 103 错误精确清单（2026-08-29，已逐条定位）
+
+**按修复策略分组**（后续 agent 按组处理即可，全部为 XAML 层面，无需动 C# 编译）：
+
+### A. Style 选择器里的 WPF 属性（~20 处，删/改选择器）
+- `[IsDefaulted=true]`：Button.axaml:119/562（WPF Button 默认按钮态，Avalonia 无 → 删整个 Style 块）
+- `[HasContent=true]`：Button.axaml:446、Checkbox.axaml:45（→ 删块或改 `^:not(:empty)`，建议直接删）
+- `[IsKeyboardFocused=False]`：Combobox.axaml:49/61（→ Avalonia 用 `:focus` 伪类，如 `^:not(:focus):pointerover`）
+- `[IsEditable=true]`：Combobox.axaml:105/417 + Combobox.axaml:122/157/177/199 的 `<Binding Path="IsEditable">`（Avalonia ComboBox 无 IsEditable → IsEditable ComboBox 需后期单独实现，先删）
+- `[IsSelectionActive]`：Textbox.axaml:27/62（→ 删）
+- `[HasDropShadow=True]`：Commonresources.axaml:192/195（→ 删块）
+- `[IsPressed]` Binding：Combobox.axaml:132/152/172 `<Binding Path="IsPressed">` Self（→ `:pressed` 伪类做不到 Binding，删这些 Setter 或改 TemplateBinding 等价物）
+- `^[Role=TopLevelHeader]`/`^[Role=TopLevelItem]`/`^[Role=SubmenuHeader]`：Menu.axaml:609/617/624（Avalonia MenuItem 无 Role → 用 `/template/` 或 Menu 的 ItemContainerTheme 区分，先删）
+- `^[ResizeMode=CanResizeWithGrip].../template/ ResizeGrip#ResizeGrip`：Window.axaml:208-210/262-264（ResizeGrip 不存在 → 删块）
+
+### B. DynamicResource 里的 WPF TemplateKey（5 处，Menu.axaml）
+`Value="{DynamicResource {SubmenuItemTemplateKey}}"` 这类（Menu.axaml:596/606/614/621/625）——XAML 把 `{SubmenuItemTemplateKey}` 当类型解析。修复：去掉内层花括号，改 `{DynamicResource SubmenuItemTemplateKey}` 字符串键；同时 Menu.axaml 内部定义模板处（原 ComponentResourceKey 定义）保持同名字符串键。若模板定义已删则引用处也要删。
+
+### C. 事件处理器签名错配（4 处，XAML 引用 + code-behind 签名要改）
+- MainWindow.axaml:1 `Closing="Window_Closing"` → code-behind 改 `EventHandler<WindowClosingEventArgs>`（WPF 是 CancelEventHandler）
+- OnionSkinImageDiffUserControl.axaml:85 `ValueChanged="Slider_ValueChanged"` → 改 `EventHandler<RangeBaseValueChangedEventArgs>`
+- InteractiveRebaseWindow.axaml:70（SizeChanged/DoubleTapped 簇）→ 对照 code-behind 签名逐个改
+- EditCustomCommandUIControlsWindow.axaml:25（同上，Position 25,14 空消息错误）
+- **通用法**：`dotnet build` 的 AVLN3000 空消息/EventHandler`1 错误 = 事件签名不匹配；去 code-behind 找 handler，把参数改成 Avalonia 事件参数类型
+
+### D. 大小写/枚举值错（1 处）
+- RemoveRemoteBranchWindow.axaml:21 `VerticalAlignment="top"` → `"Top"`（Avalonia 枚举解析区分大小写，WPF 不区分）
+
+### E. HighlightString 用 `<Binding>` 赋 CLR 属性（2 处）
+- SearchTabItem.axaml:23/71 `<controls:RevisionSubjectTextField.HighlightString><Binding Path="SearchString"/></...>`——HighlightString 是普通 CLR 属性收不了 Binding。修复：在控件 C# 里改成 `StyledProperty<string>`（TextBlock 的 HighlightableTextBlock / TextField 同理），或删该 property-element 块
+
+### F. ControlTheme 缺 x:Key / 用错位置（4 处）
+- Commonresources.axaml:77 `<ControlTheme TargetType="GridSplitter">` 无 x:Key → 加 `x:Key="{x:Type GridSplitter}"`
+- Tabcontrol.axaml:29 `<ControlTheme TargetType="TabControl">` 无 x:Key → 同上
+- InteractiveRebaseWindow.axaml:70 + EditCustomCommandUIControlsWindow.axaml:25：`<X.ItemContainerTheme><ControlTheme x:Key="{x:Type ...}">`——属性元素值里的 ControlTheme 不能带 x:Key → 删 x:Key
+
+### G. 无对应属性的 Setter（~15 处，直接删 Setter + TODO 注释）
+- `TextDecorations` on HyperlinkButton：Textblock.axaml:4/14/60/69/82/91/102/111（9 处，HyperlinkButton 无下划线概念 → 删；运行期下划线视觉损失可后续用 TextBlock 内容+TextDecorations 补）
+- `HorizontalContentAlignment` on ListBox：Listview.axaml:46/50/114/158、StatisticsUserControl.axaml:50/114/158、GeneralUserControl.axaml:46（→ 删，或改 ItemsPresenter 的 HorizontalAlignment）
+- `HorizontalContentAlignment` on MultiselectionTreeView：Multiselectiontreeview.axaml:209
+- `CommandTarget` on RepeatButton：Scrollviewer.axaml:108/145
+- `CalendarDayButtonStyle`/`CalendarButtonStyle` on Calendar：Calendar.axaml:239/240
+- `PanningMode` on ScrollViewer：Scrollviewer.axaml:54
+- `LayoutTransform` on ContextMenu：某文件:19
+- `IsMainMenu` on Menu：Menu.axaml:45
+- `HasDropShadow` Setter：Commonresources.axaml:174
+- `Template` on TextBlock：Textblock.axaml:29/47（TextBlock 无 Template → 删 Setter；LfsLabel 需改用 ContentControl 或 Label 主题）
+- `Viewport` on VisualBrush：某文件:2
+
+### H. 'Auto' 传 double 属性（8 处）
+- Button.axaml:666 `Height="Auto"` Setter → 删或 NaN
+- Multiselectiontreeview.axaml:122/200、Scrollviewer.axaml:130/264 → 同类
+- CloneWindow.axaml:64、EditRemoteWindow.axaml:90、NotificationBarUserControl.axaml:24 → 看具体属性（多为 Width/Height="Auto" → 删属性）
+
+### I. 其余单点（~10 处）
+- `SelectionMode="Extended"` → `"Multiple"`（Listview.axaml 某处）
+- `PasswordBox` 类型不存在 → TextBox + `PasswordChar="●"`（Textbox.axaml:52 附近）
+- `MenuScrollingVisibilityConverter`：Menu.axaml:119/156 → 删该 Converter 资源及引用
+- `ListViewItem`/`ListView` TargetType 残留：Listview.axaml:42/53/91/127/172/196/206/238、Textblock.axaml 若干 → ListBoxItem/ListBox
+- `PART_Indicator` on ProgressBar（1 处）：模板里加 `<Border x:Name="PART_Indicator">`
+- `WindowResizeBorderThicknessProperty`/`HideMinimizeMaximizeButtonsProperty` typed property 错误：Window.axaml:8/163、MainWindow.axaml:8——XAML 里 `{Binding XxxClass.YyyProperty}` 引用了静态字段 → 改成属性名 `{Binding WindowResizeBorderThickness}`（无 Property 后缀）或 TemplateBinding
+- `IsSelectionActive` on TextBox：Textbox.axaml:27/62
+
+### 修复优先级
+1. Theme/Styles/*.axaml 先修（错误乘数高）
+2. 然后 MainWindow.axaml + Dialogs（单点）
+3. 每修一批 `dotnet build` 验证，目标 0 AVLN 后跑运行时冒烟
+
 
 ## XAML 编译静默失败（关键机制，必读）
 
@@ -116,9 +187,9 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 2. WPF Trigger/Storyboard/EventSetter 块整体删除或转 Avalonia 选择器（`:pointerover`/`:pressed`/`:focus` 等）；转换器本应注释掉的块残留了
 3. 每修一批就 Rebuild 验证 `CompiledAvaloniaXaml` 类型数 > 0，最终目标是全部 XAML 编译通过
 
-## XAML 批量修复方法论（xamlpass1-4，已验证有效）
+## XAML 批量修复方法论（xamlpass1-6，已验证有效）
 
-对 1198 个去重 AVLN 错误逐个手改不现实。已验证的批量路径：**用 Python 脚本处理 .axaml 文本，每次 Rebuild 收集新错误清单再迭代**。脚本在 `/data/user/work/xamlpass1.py` ~ `xamlpass4.py`，要点：
+对 1198 个去重 AVLN 错误逐个手改不现实。已验证的批量路径：**用 Python 脚本处理 .axaml 文本，每次 Rebuild 收集新错误清单再迭代**。脚本在 `/data/user/work/xamlpass1.py` ~ `xamlpass6.py`，要点：
 
 1. **XML 注释状态机**（所有 pass 共用）：XAML 里有 `<!-- ... -->` 注释块（含多行 Storyboard 注释化产物），绝不能把注释里的内容再改一遍。`split_active_regions()` 按 `<!--`/`-->` 切分，只处理非注释区。注释体内含 `--` 会破坏 XML，删除时用不带 `--` 的说明文本。
 2. **错误驱动**：`dotnet build -clp:ErrorsOnly` 输出 → tee 到 /tmp/build_outN.txt → 脚本解析 `path(line,col): error AVLN2000: ...` 建立 `{file: {line: [(kind, detail)]}}` 索引 → 只改报错行。盲改全仓风险高。
@@ -137,13 +208,7 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 
 ## 下一步行动（按优先级）
 
-1. **XAML (AVLN) 错误继续清零**（390→0，运行时阻塞项）。剩余簇及建议处理法：
-   - `TabPanel`(43)：WPF TabControl 模板用 `<TabPanel>` 排 Tab 头。Avalonia 无此类型。方案：`ItemsPresenter` 本身支持横排；或用普通 `StackPanel` + `IsItemsHost` 删（Avalonia ItemsPresenter 已带面板语义）。Tabcontrol.axaml 需人工重写模板结构，参考 Avalonia 官方 Fluent ControlTheme。
-   - `ComponentResourceKey`(25)：WPF 资源键机制。在 Menu.axaml/Window.axaml 里多用于 `Foreground="{ComponentResourceKey ...}"`。方案：直接删该属性或换成字面值/`{DynamicResource 键}`。
-   - `FocusVisualStyle`(29)：WPF-only 概念，Avalonia 无焦点可视化样式属性。方案：整属性删除（XAML 属性形式 `FocusVisualStyle="{x:Null}"` 常见）。
-   - `Name` 未解析(26)：多为 ControlTheme/ControlTemplate 里 TargetType 是基类但 x:Name 挂在不支持的位置，逐个看。
-   - `StaysOpen/PopupAnimation/AllowsTransparency/AllowDrop/Uid/TabIndex/TextDecorations` 等：直接删属性（Avalonia 无对应或机制不同）。
-   - AVLN3000 的 ControlTheme-in-ResourceDictionary：WPF `<Style>` 可直接放 ResourceDictionary，Avalonia 必须 `<ResourceDictionary><StyleSelector/>...` 或套 `<Styles>`。Menu.axaml:43、Tabcontrol.axaml:29 是典型。
+1. **XAML (AVLN) 错误继续清零**（103→0，运行时阻塞项）：全部错误已按修复策略分 A-I 组列在「剩余 103 错误精确清单」一节，逐组处理即可。xamlpass5/6 的脚本在 `/data/user/work/xamlpass5.py`、`/data/user/work/xamlpass6.py`，模式可复用。
 2. **运行时冒烟继续**：XAML 清零前 MainWindow 无法加载。清零后重跑 `DISPLAY=:99 dotnet run` 逐个修运行时异常。
 3. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
 4. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。

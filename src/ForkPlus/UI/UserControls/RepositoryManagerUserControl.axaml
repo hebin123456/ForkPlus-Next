@@ -83,7 +83,7 @@
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="350" MinWidth="200" />
       <ColumnDefinition Width="Auto" />
-      <ColumnDefinition Width="* " />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
     <TextBlock Text="Repository Manager" FontSize="22" VerticalAlignment="Center" Margin="20,10,10,10" FontWeight="Medium" Foreground="{DynamicResource ForegroundBrush}" x:Name="RepositoryManagerTitleTextBlock" />
     <Grid Grid.Row="2" Grid.Column="0" Background="{DynamicResource FallbackBackgroundBrush}" x:Name="FallbackView">
@@ -100,9 +100,8 @@
             <ContentControl.Content>
               <Binding />
             </ContentControl.Content>
-            <ContentControl.FocusVisualStyle>
-              <x:Null />
-            </ContentControl.FocusVisualStyle>
+<!-- TODO 迁移：WPF ContentControl.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+
           </ContentControl>
         </DataTemplate>
       </controls:MultiselectionTreeView.ItemTemplate>
