@@ -47,7 +47,7 @@
                               <Image Source="{TemplateBinding Icon}" />
                               <ContentControl Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
                                 <Label.IsVisible>
-                                  <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" Converter="{StaticResource BooleanToVisibility}" />
+                                  <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" />
                                 </Label.IsVisible>
                               </ContentControl>
                             </StackPanel>

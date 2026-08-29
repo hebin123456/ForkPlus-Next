@@ -285,7 +285,7 @@
                 <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
                 <Path HorizontalAlignment="Center" Margin="32,3,0,0" VerticalAlignment="Center" Fill="{DynamicResource ToolbarForeground}" Data="{DynamicResource ArrowGeometry}">
                   <Path.IsVisible>
-                    <Binding Path="IsArrowVisible" RelativeSource="{RelativeSource TemplatedParent}" Converter="{StaticResource BooleanToVisibility}" />
+                    <Binding Path="IsArrowVisible" RelativeSource="{RelativeSource TemplatedParent}" />
                   </Path.IsVisible>
                 </Path>
               </Grid>

@@ -1,6 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StreamGeometry x:Key="MenuArrowGeometry">M5.51,5L0.792,9.718L0.115,9.039L4.154,5L0.115,0.961L0.792,0.282L5.51,5Z</StreamGeometry>
-  <ControlTheme x:Key="MenuShadowBorderStyle" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+  <ControlTheme x:Key="MenuShadowBorderStyle" TargetType="Border">
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Padding" Value="8" />
     <Setter Property="CornerRadius" Value="6" />

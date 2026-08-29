@@ -1,15 +1,15 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <ControlTheme x:Key="SettingsHeaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+  <ControlTheme x:Key="SettingsHeaderTextBlockStyle" TargetType="TextBlock">
     <Setter Property="FontSize" Value="14" />
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="Margin" Value="0,12,0,6" />
   </ControlTheme>
-  <ControlTheme x:Key="ReferenceLabelTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+  <ControlTheme x:Key="ReferenceLabelTextBlockStyle" TargetType="TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource ReferenceForeground}" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Margin" Value="2,-1,2,1" />
   </ControlTheme>
-  <ControlTheme x:Key="ToolbarButtonTitle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+  <ControlTheme x:Key="ToolbarButtonTitle" TargetType="TextBlock">
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="FontSize" Value="11" />
@@ -102,7 +102,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
 <!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style></ControlTheme>
-  <ControlTheme x:Key="HintTextBlock" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+  <ControlTheme x:Key="HintTextBlock" TargetType="TextBlock">
     <Setter Property="Text" Value="?" />
     <Setter Property="Margin" Value="4,2,6,2" />
     <Setter Property="VerticalAlignment" Value="Center" />

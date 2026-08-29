@@ -42,10 +42,11 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：编译全清零 + XAML 编译恢复 + 运行时冒烟推进中（2026-08-29）。**
-- `dotnet build` 0 错误；AVLN XAML 错误 0（App.axaml 的 AVLN3000 已修）。
-- XAML IL 重写恢复（`CompiledAvaloniaXaml.*` 类型已生成），`dotnet run` 能启动并跑到主题加载。
-- 当前阻塞：主题字典延迟构建时 `StaticResource {x:Type TextBlock}` 查找失败（详见「运行时阻塞：Textblock.axaml StaticResource」一节）。
+**🎉 里程碑：主窗口 UI 成功渲染（2026-08-29 本轮）。**
+- `dotnet build` 0 错误；AVLN XAML 错误 0。
+- `dotnet run`（Xvfb）**零未处理异常**，主窗口完整渲染：标题 "ForkPlus"、菜单栏 File/Window/Help（PART_MainMenu 生效）、通知按钮、侧边栏。
+- 之前的运行时阻塞（Textblock StaticResource / 图片转换 / 对话框 NRE）已全部解决（见「运行时修复链」两节）。
+- 本轮核心突破：`CustomWindow.StyleKeyOverride` 根因修复（见「重大发现 #7」，Avalonia implicit ControlTheme 查找机制），一改此前"模板退化为 ContentControl 默认 FuncControlTemplate、所有 PART 部件找不到"的死局。
 
 错误数轨迹（按唯一错误去重统计）：
 
@@ -68,16 +69,17 @@ git push origin HEAD
 | `415db4d` | AVLN 390→103 | xamlpass5-6：错误驱动精确修复（FocusVisualStyle 块删、ItemContainerTheme→Style、IsCheckable→ToggleType、PreviewKeyDown→KeyDown、ViewportWidth 等 TemplateBinding 簇、Resources on Style 删） |
 | `e6466dd` | AVLN 103→1 | xamlpass7 + 定向手工修复：typed property、事件签名、PART_TextPresenter、ItemContainerTheme 块、TemplateKey 花括号、IsMouseOver 删、误删 HorizontalContentAlignment 回滚 |
 | （本轮） | AVLN 1→**0** + 运行时推进 | App 生命周期迁移 + 运行时冒烟修复链（资产大小写/BitmapImage shim/代理 owner 窗口/ColorConverter/对话框 NRE，详见「运行时冒烟已修复的问题」） |
+| （本轮2） | 运行时：**主窗口渲染成功** | StyleKeyOverride 根因修复 + TabControl ItemsPanel FuncTemplate + SelectionChanged 初始化时序 NRE + 16 文件样式修复（详见「运行时修复链 2」） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中 | App 启动 + IPC + 主题加载；当前卡 Textblock.axaml 延迟构建的 StaticResource |
+| 3 运行时验证 | 🔄 进行中 | **主窗口已渲染、零崩溃**；待验证：交互（菜单/按钮/仓库打开）、次级窗口、剩余 UI 细节（窗口控制按钮图标、菜单 `_` 前缀显示） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-## 运行时阻塞：Textblock.axaml StaticResource（当前唯一阻塞，2026-08-29）
+## 运行时阻塞：Textblock.axaml StaticResource（✅ 已解决，存档备考）
 
 **现象**：`dotnet run` 启动时抛
 ```
@@ -90,11 +92,7 @@ System.Collections.Generic.KeyNotFoundException: Static resource 'Avalonia.Contr
 
 **根因分析**：`{x:Type TextBlock}` 的 ControlTheme 定义在 `Button.axaml`（Generic.axaml 合并顺序在 Textblock.axaml 之前），但**延迟构建内部的 StaticResource 查找范围不含跨字典的兄弟/祖先合并字典**（编译期把 `StaticResourceExtension` 求值绑定到 deferred builder 的局部 resolver，不是运行时全资源链）。WPF 的 StaticResource 沿 merge 顺序向上找得到，Avalonia 的 deferred 场景找不到。
 
-**候选修复**（按优先级）：
-1. 把 `Button.axaml` 里的 `{x:Type TextBlock}` 基础 ControlTheme **搬进 `Textblock.axaml` 顶部**（同文件 StaticResource 一定能找到；注意 Button.axaml 里删掉避免重复键）。
-2. 或改 `BasedOn="{DynamicResource {x:Type TextBlock}}"`（需验证 ControlTheme.BasedOn 是否接受动态资源）。
-3. 或删 BasedOn 把基类 4 个 Setter（FontFamily/FontSize/Foreground/TextWrapping/TextTrimming）内联进每个派生主题。
-**全仓扫描**：所有 `BasedOn="{StaticResource {x:Type ...}}"` 的跨文件引用都要按同思路处理（`grep -rn 'BasedOn="{StaticResource' --include='*.axaml'`）。
+**实际修复**：`fix_basedon.py` 批量移除 15 处失效 `BasedOn="{StaticResource {x:Type ...}}"` 引用（Textblock.axaml 等文件），派生主题内联基类 Setter。**全仓同类引用**：`grep -rn 'BasedOn="{StaticResource' --include='*.axaml'` 检查跨文件引用时同样按此思路处理。
 
 ## 本轮运行时修复链（2026-08-29，AVLN 清零后冒烟推进）
 
@@ -108,6 +106,26 @@ System.Collections.Generic.KeyNotFoundException: Static resource 'Avalonia.Contr
 6. **App 生命周期**：`OnStartup`/`OnExit` 是 WPF 风格方法永远不会被调。**修复**：主体搬进 `OnFrameworkInitializationCompleted`（desktop lifetime 分支），`App()` 构造补 `AvaloniaXamlLoader.Load(this)`（同时消掉 AVLN3000）。
 7. **重复资源键**：`Textbox.axaml`/`Listview.axaml` 存在同 key ControlTheme（Avalonia 合并时后写的会覆盖但不报错，行为不可控）。**修复**：`scan_dup_keys.py` 扫描去重。
 8. **ThemeTypeExtensions**：主题切换动态加载的 URI 后缀还是 `.xaml`，改成 `.axaml`。
+
+## 运行时修复链 2（2026-08-29 本轮：主窗口渲染成功）
+
+上一轮遗留的终极阻塞：`ForkWindow_Loaded` 抛 NRE（`_menuManager` 为 null）→ 根因是 **PART_MainMenu 模板部件找不到 → 自定义窗口模板从未应用**。诊断证据：`OnApplyTemplate` 时 `Theme` 已正确等于 `MainWindowStyle`，但 `Template` 是 `FuncControlTemplate`、可视树只有 1 个 `ContentPresenter`。
+
+1. **【根因】CustomWindow implicit ControlTheme 查找失败 → `StyleKeyOverride` 修复**：
+   - Avalonia 查找 implicit ControlTheme 的链路（反编译 Avalonia 12.1.1 `StyledElement.GetEffectiveTheme`）：`Theme` 属性为 null 时 → `TryFindResource(StyleKey)` —— 用 **StyleKey** 作 key 精确匹配资源。
+   - `Window` 基类自带 `protected override Type StyleKeyOverride => typeof(Window)`，因此 `MainWindow.StyleKey == typeof(Window)`；而 `Window.axaml` 里 ControlTheme 的 key 是 `{x:Type ui:CustomWindow}`（= `typeof(CustomWindow)`）——**key 永远对不上，隐式主题永不应用**，模板退化为 ContentControl 默认模板。
+   - **修复**：`CustomWindow.cs` 加 `protected override Type StyleKeyOverride => typeof(CustomWindow);`。所有 CustomWindow 子类（MainWindow/ReflogWindow/各 Dialog）随即全部命中 `Window.axaml` 的 ControlTheme。显式 `Theme="{DynamicResource MainWindowStyle}"` 优先级高于隐式主题，BasedOn 链不受影响。
+   - **验证效果**：visCount 1→19，shape 出现完整窗口 chrome（Border/DockPanel/ToggleButton/Popup/Button×4），PART_MainMenu FOUND，_menuManager SET。
+2. **TabControl 模板 `UniformGrid IsItemsHost="True"`（MethodAccessException）**：`Panel.IsItemsHost` setter 是 internal，XAML 设置运行时炸。**修复**：`ClosableTabControl` 构造函数用 `FuncTemplate<Panel>` 设 `ItemsPanel`（`new UniformGrid { Rows = 1 }`），模板里改 `<ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}"/>`，原背景由样式选择器 `^ /template/ ItemsPresenter > UniformGrid` 设置。
+3. **XAML EndInit 期 SelectionChanged NRE**：Avalonia `TabControl` 在 XAML `EndInit` 就触发 `SelectionChanged`（WPF 需交互后才触发），此时 `RepositoryDetailsUserControl` 构造函数还没执行到 `_updatePreviewAction = new DelayedAction(...)`。**修复**：处理器加 `_updatePreviewAction != null` 防御。**模式：XAML 事件处理器一律假设"字段可能未初始化"**。
+4. **16 个样式文件微修**（本轮提交可见）：BooleanToVisibilityConverter 残留引用删除、ReflogWindow/BinaryContentUserControl 的属性迁移等。
+
+**冒烟方法**（验证 UI 渲染）：
+```bash
+export DISPLAY=:99   # 需先 Xvfb :99 -screen 0 1920x1080x24
+timeout 30 dotnet run --project src/ForkPlus/ForkPlus.csproj 2>&1 | grep -c "Unhandled"  # 预期 0
+# 截图（import 来自 imagemagick）：import -window root /tmp/ui.png
+```
 
 ## pass7 修复记录（103→1，错误清单已全部消灭）
 
@@ -193,10 +211,13 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 
 ## 下一步行动（按优先级）
 
-1. **修 Textblock.axaml StaticResource 阻塞**（详见「运行时阻塞」一节）：优先把 `{x:Type TextBlock}` 基础 ControlTheme 从 `Button.axaml` 搬进 `Textblock.axaml` 顶部，并全仓扫 `BasedOn="{StaticResource {x:Type ...}}"` 跨文件引用统一处理。
-2. **继续运行时冒烟**：`Xvfb :99` + `DISPLAY=:99 dotnet run`，逐个修 MainWindow 加载起的运行时异常（资源查找失败、模板绑定错误等）。已修清单见「本轮运行时修复链」。
-3. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
-4. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
+1. **交互冒烟**（当前阶段）：主窗口已渲染，下一步验证交互链路——File 菜单展开/命令执行、仓库打开（File→Open Repository 选真实 git 仓库）、TabControl 切换、对话框弹出。方法：Xvfb 截图 + `xdotool` 模拟点击，或直接读 NLog 日志（`logs/` 目录）确认无运行时异常。
+2. **UI 细节修复**（截图发现的遗留）：
+   - 窗口控制按钮（最小化/最大化/关闭）未显示——查 `Window.axaml` 模板里 PART_CloseButton 等的 Path 图标资源（`MinimizeGeometry` 等 StaticResource）是否解析成功，以及按钮尺寸/背景色。
+   - 菜单项显示 `_File` 原始下划线——WPF AccessText 语法，Avalonia Menu 的 Header 不解析 `_` 前缀，需删前缀或改 `AccessText`。
+3. **次级窗口冒烟**：Preferences/Commit/Blame 等 Dialog 打开是否正常（依赖 `WindowDialogCompat` 代理窗口链路）。
+4. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
+5. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
 
 ## 本轮新增的已验证修复模式（57→0 直接套用）
 
@@ -286,6 +307,14 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
    - `TextView` 有 `ScrollOffsetChanged`（EventHandler）普通事件，直接 `+=` 也行。
    - TextEditor 有 `ViewportHeight/ViewportWidth/ExtentHeight/ExtentWidth` 直达属性。
 6. **`PipeTransmissionMode.Message`（Linux PlatformNotSupportedException）**：非 Windows 平台 NamedPipe 不支持消息模式。协议若自带分帧（如本项目的 4 字节长度前缀）直接降级 `PipeTransmissionMode.Byte` 即可，用 `OperatingSystem.IsWindows()` 分支。
+
+7. **【本轮最重要】Avalonia implicit ControlTheme 的 StyleKey 匹配机制（反编译验证）**：
+   - 控件查找隐式 ControlTheme 的链路：`GetEffectiveTheme()` → `Theme` 属性非 null 则直接用 → 否则 `TryFindResource(StyleKey)` **以 StyleKey 为 key 精确匹配资源字典**。
+   - `StyleKey = StyleKeyOverride`，基类 `Window` 已声明 `=> typeof(Window)`。**自定义控件基类的 ControlTheme（`x:Key="{x:Type MyControlBase}"`）若想被派生类隐式命中，基类必须 override `StyleKeyOverride => typeof(MyControlBase)`**，否则派生类的 StyleKey 还是 `typeof(Window)`，与 `{x:Type MyControlBase}` key 对不上——症状是模板静默退化为 ContentControl 默认模板、所有 PART 部件找不到（OnApplyTemplate 里 GetTemplateChild 全 null）。
+   - 这类问题**编译期零报错**，且 `Theme` 属性值正确（`Theme="{DynamicResource Xxx}"` 的资源能找到），极具迷惑性。诊断方法：`OnApplyTemplate` 里打印 `Template.GetType().Name`（默认模板是 `FuncControlTemplate`）+ `GetVisualDescendants(this).Count()`（默认模板只有 1 个 ContentPresenter）。
+   - 排查工具链（已验证有效）：`ilspycmd`（`~/.dotnet/tools`，注意 `DOTNET_ROOT=$HOME/.dotnet` 必须设）反编译 `~/.nuget/packages/avalonia/12.1.1/lib/net8.0/Avalonia.Base.dll` 看 `StyledElement.GetEffectiveTheme/ApplyControlTheme` 实现。
+
+8. **Avalonia 样式应用时序**（`ApplyStyling` 调用点，反编译）：`EndInit()`（XAML 加载完）、`OnAttachedToLogicalTreeCore`、`Layoutable.MeasureCore`（每次布局测量）。**XAML 事件（如 SelectionChanged）可能在 EndInit 期间触发**——早于构造函数后续语句，code-behind 处理器必须容忍字段未初始化。
 
 ## 修复方法论（已验证有效）
 

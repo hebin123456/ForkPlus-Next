@@ -5,7 +5,7 @@
       <ControlTheme x:Key="SidebarHideButton" TargetType="Button" BasedOn="{StaticResource BranchOptionButton}" />
       <ControlTheme x:Key="SidebarPinButton" TargetType="Button" BasedOn="{StaticResource BranchOptionButton}" />
       <ControlTheme x:Key="SidebarTruncateHyperlink" TargetType="HyperlinkButton" BasedOn="{StaticResource GrayUnderlineHyperlinkStyle}" />
-      <ControlTheme x:Key="SidebarTagTitleTextBlock" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}" />
+      <ControlTheme x:Key="SidebarTagTitleTextBlock" TargetType="TextBlock" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid Background="{DynamicResource Sidebar.Static.Background}">

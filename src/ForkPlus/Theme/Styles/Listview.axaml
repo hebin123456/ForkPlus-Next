@@ -1,10 +1,10 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   
-  <ControlTheme x:Key="ListItemRoundedBorderStyle" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+  <ControlTheme x:Key="ListItemRoundedBorderStyle" TargetType="Border">
     <Setter Property="Margin" Value="4,0,4,0" />
     <Setter Property="CornerRadius" Value="4" />
   </ControlTheme>
-  <ControlTheme x:Key="ListItemNotRoundedBorderStyle" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+  <ControlTheme x:Key="ListItemNotRoundedBorderStyle" TargetType="Border">
     <Setter Property="Margin" Value="4,0,4,0" />
     <Setter Property="CornerRadius" Value="0" />
   </ControlTheme>

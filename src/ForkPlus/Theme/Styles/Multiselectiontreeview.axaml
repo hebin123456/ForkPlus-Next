@@ -59,7 +59,7 @@
                   <Binding Path="IsExpanded" />
                 </ToggleButton.IsChecked>
                 <ToggleButton.IsVisible>
-                  <Binding Path="ShowExpander" Converter="{StaticResource BooleanToVisibility}" />
+                  <Binding Path="ShowExpander" />
                 </ToggleButton.IsVisible>
               </ToggleButton>
               <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -144,7 +144,7 @@
                   <Binding Path="IsExpanded" />
                 </ToggleButton.IsChecked>
                 <ToggleButton.IsVisible>
-                  <Binding Path="ShowExpander" Converter="{StaticResource BooleanToVisibility}" />
+                  <Binding Path="ShowExpander" />
                 </ToggleButton.IsVisible>
               </ToggleButton>
               <ContentPresenter Grid.Column="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />

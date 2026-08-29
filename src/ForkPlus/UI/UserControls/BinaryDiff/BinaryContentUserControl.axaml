@@ -1,4 +1,18 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuub="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.BinaryDiff.BinaryContentUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <UserControl.Styles>
+    <!-- 原 WPF LfsProgressBar Style（Theme/Styles/Progressbar.axaml）迁移：
+         ControlTheme 无 BasedOn 会失去 Fluent 模板，改用 Classes + Style 叠加到默认主题上 -->
+    <Style Selector="ProgressBar.lfs">
+      <Setter Property="Maximum" Value="100" />
+      <Setter Property="Height" Value="3" />
+      <Setter Property="MinWidth" Value="10" />
+      <Setter Property="MaxWidth" Value="100" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="{DynamicResource BinaryDiffProgressBackground}" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
+    </Style>
+  </UserControl.Styles>
   <Grid Margin="0,0,0,22" MinHeight="20" HorizontalAlignment="Center" VerticalAlignment="Top">
     <Grid.RowDefinitions>
       <RowDefinition Height="35" />
@@ -115,11 +129,7 @@
                                   <DynamicResource ResourceKey="ForegroundBrush.Gray" />
                                 </TextBlock.Foreground>
                               </TextBlock>
-                              <ProgressBar Grid.Row="2" Margin="2,4,2,0" VerticalAlignment="Center" x:Name="LfsProgressBar">
-                                <ProgressBar.Theme>
-                                  <DynamicResource ResourceKey="LfsProgressBar" />
-                                </ProgressBar.Theme>
-                              </ProgressBar>
+                              <ProgressBar Grid.Row="2" Margin="2,4,2,0" VerticalAlignment="Center" x:Name="LfsProgressBar" Classes="lfs" />
                             </Grid.Children>
                           </Grid>
                         </Grid.Children>

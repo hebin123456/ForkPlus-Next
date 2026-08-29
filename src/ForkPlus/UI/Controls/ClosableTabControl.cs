@@ -17,6 +17,16 @@ namespace ForkPlus.UI.Controls
 
 		public EventHandler<EventArgs<ClosableTabItem>> SelectedTabItemChanged;
 
+		// TODO 迁移：WPF 模板里 UniformGrid IsItemsHost=True Rows=1（Avalonia Panel.IsItemsHost setter 为
+		// internal，XAML 设置运行时 MethodAccessException）。改为 FuncTemplate 提供 items 面板，
+		// 模板里 ItemsPresenter ItemsPanel={TemplateBinding ItemsPanel}。
+		// Background 由 Tabcontrol.axaml 样式选择器（/template/ ItemsPresenter > UniformGrid）设置。
+		public ClosableTabControl()
+		{
+			ItemsPanel = new global::Avalonia.Controls.Templates.FuncTemplate<global::Avalonia.Controls.Panel>(
+				() => new global::Avalonia.Controls.Primitives.UniformGrid { Rows = 1 });
+		}
+
 		[Null]
 		public ClosableTabItem SelectedTab => base.SelectedItem as ClosableTabItem;
 

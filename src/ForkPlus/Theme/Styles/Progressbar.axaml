@@ -216,14 +216,7 @@
     </DoubleAnimationUsingKeyFrames>
   </Storyboard>
  -->
-  <ControlTheme x:Key="LfsProgressBar" TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
-    <Setter Property="Maximum" Value="100" />
-    <Setter Property="Height" Value="3" />
-    <Setter Property="MinWidth" Value="10" />
-    <Setter Property="MaxWidth" Value="100" />
-    <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Background" Value="{DynamicResource BinaryDiffProgressBackground}" />
-    <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
-  </ControlTheme>
+  <!-- LfsProgressBar ControlTheme 已迁至 UI/UserControls/BinaryDiff/BinaryContentUserControl.axaml
+       （Style Selector="ProgressBar.lfs"）：ControlTheme 无 BasedOn 会失去 Fluent 模板，
+       且 {x:Type ProgressBar} 键在延迟构建场景 StaticResource 找不到。 -->
 </ResourceDictionary>

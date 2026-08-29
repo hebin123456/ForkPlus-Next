@@ -371,7 +371,9 @@ namespace ForkPlus.UI.UserControls
 
 		private void ModernTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (e.AddedItems.Count >= 1 && e.AddedItems[0] is TabItem)
+			// TODO 迁移：Avalonia TabControl 在 XAML EndInit 即触发 SelectionChanged（WPF 需交互后触发），
+			// 此时 _updatePreviewAction 尚未初始化（构造顺序：InitializeComponent → new DelayedAction）。
+			if (e.AddedItems.Count >= 1 && e.AddedItems[0] is TabItem && _updatePreviewAction != null)
 			{
 				_updatePreviewAction.ReinvokeNow();
 			}

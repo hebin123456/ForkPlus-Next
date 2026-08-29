@@ -146,17 +146,17 @@ namespace ForkPlus.UI
 		}
 
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
+	{
+		base.OnApplyTemplate(e);
+		if (IsDesignMode)
 		{
-			base.OnApplyTemplate(e);
-			if (IsDesignMode)
-			{
-				return;
-			}
-			if (base.Template.TryFindName<Menu>("PART_MainMenu", this, out _templatePartMainMenu))
-			{
-				_templatePartMainMenu.SetValue(WindowChrome.IsHitTestVisibleInChromeProperty, true);
-				_menuManager = new MainWindowMenuManager(_templatePartMainMenu);
-			}
+			return;
+		}
+		if (base.Template.TryFindName<Menu>("PART_MainMenu", this, out _templatePartMainMenu))
+		{
+			_templatePartMainMenu.SetValue(WindowChrome.IsHitTestVisibleInChromeProperty, true);
+			_menuManager = new MainWindowMenuManager(_templatePartMainMenu);
+		}
 			if (base.Template.TryFindName<ToggleButton>("Part_NotificationManagerToggleButton", this, out _templatePartNotificationManagerToggleButton))
 		{
 			NotificationManager.Current.IsActiveChanged += delegate
@@ -303,8 +303,8 @@ namespace ForkPlus.UI
 		}
 
 		private void ForkWindow_Loaded(object sender, RoutedEventArgs e)
-		{
-			if (IsDesignMode)
+	{
+		if (IsDesignMode)
 			{
 				return;
 			}

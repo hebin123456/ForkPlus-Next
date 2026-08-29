@@ -1,5 +1,5 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <ControlTheme x:Key="NotificationBarBorder" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+  <ControlTheme x:Key="NotificationBarBorder" TargetType="Border">
     
   
     <!--
@@ -29,7 +29,7 @@
               </DataTrigger.ExitActions>
             </DataTrigger>
     --></ControlTheme>
-  <ControlTheme x:Key="BinaryDiffShadowBorder" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+  <ControlTheme x:Key="BinaryDiffShadowBorder" TargetType="Border">
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="BorderThickness" Value="0" />
@@ -40,7 +40,7 @@
       </Setter.Value>
     </Setter>
   </ControlTheme>
-  <ControlTheme x:Key="TileBorder" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+  <ControlTheme x:Key="TileBorder" TargetType="Border">
     <Setter Property="CornerRadius" Value="4" />
     <Setter Property="Margin" Value="8,4,8,0" />
     <Setter Property="Padding" Value="0" />
@@ -51,7 +51,7 @@
   <ControlTheme x:Key="TileBorderDark" TargetType="Border" BasedOn="{StaticResource TileBorder}">
     <Setter Property="Background" Value="{DynamicResource TileBackgroundBrushDark}" />
   </ControlTheme>
-  <ControlTheme x:Key="PullPushBadge" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+  <ControlTheme x:Key="PullPushBadge" TargetType="Border">
     <Setter Property="Height" Value="12" />
     <Setter Property="MinWidth" Value="12" />
     <Setter Property="Background" Value="{DynamicResource Toolbar.PullPushBadgeBrush}" />

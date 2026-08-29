@@ -1,5 +1,5 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <ControlTheme x:Key="ComboboxShadowBorderStyle" TargetType="Border" BasedOn="{StaticResource {x:Type Border}}">
+  <ControlTheme x:Key="ComboboxShadowBorderStyle" TargetType="Border">
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Padding" Value="8,0,8,8" />
     <Setter Property="CornerRadius" Value="6" />

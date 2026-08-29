@@ -19,6 +19,15 @@ namespace ForkPlus.UI
 	[global::Avalonia.Controls.Metadata.TemplatePartAttribute(Name = "PART_WindowHeader", Type = typeof(global::Avalonia.Controls.Control))]
 	public class CustomWindow : Window
 	{
+		// TODO 迁移（根因修复）：Avalonia 的 implicit ControlTheme 查找用 StyleKey（Window 基类
+		// StyleKeyOverride=typeof(Window)），而 Window.axaml 的 ControlTheme key 是 {x:Type ui:CustomWindow}，
+		// 二者不匹配导致隐式主题永不应用、模板退化为 ContentControl 默认 FuncControlTemplate
+		// （PART_MainMenu 等模板部件全部找不到 → ForkWindow_Loaded NRE）。
+		// override StyleKeyOverride 为 CustomWindow 后，CustomWindow 及其所有子类
+		// （MainWindow/ReflogWindow...）均能命中 {x:Type ui:CustomWindow} ControlTheme。
+		// 显式 Theme="{DynamicResource MainWindowStyle}" 优先级高于隐式主题，BasedOn 链不受影响。
+		protected override global::System.Type StyleKeyOverride => typeof(CustomWindow);
+
 		protected const string PartNameWindowHeader = "PART_WindowHeader";
 
 		protected const string PartNameCloseButton = "PART_CloseButton";

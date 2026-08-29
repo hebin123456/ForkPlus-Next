@@ -205,7 +205,7 @@
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="24" />
             </Grid.ColumnDefinitions>
-            <UniformGrid Grid.Row="0" Grid.Column="0" IsItemsHost="True" Rows="1" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="HeaderPanel" />
+            <ItemsPresenter Grid.Row="0" Grid.Column="0" x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
             <Border Grid.Column="1" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource ClosableTabItem.TopBorder}" />
             <Button Grid.Row="0" Grid.Column="1" x:Name="PART_Add" Theme="{DynamicResource AddButtonStyle}" />
             <Border Grid.Column="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" />
@@ -216,6 +216,11 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <!-- items 面板（UniformGrid，由 ClosableTabControl 构造函数 FuncTemplate 提供）的背景，
+         原 WPF UniformGrid IsItemsHost=True 上的 Background -->
+    <Style Selector="^ /template/ ItemsPresenter > UniformGrid">
+      <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Static.Background}" />
+    </Style>
   </ControlTheme>
   <!--
       TODO(wpf2avalonia): 焦点视觉样式 TabItemFocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
