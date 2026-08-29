@@ -275,7 +275,7 @@ namespace ForkPlus.Settings
 
 			public RepositoryManagerSettings([Null] string[] sourceDirectories, Category[] categories, Repository[] repositories, int scanDepth)
 			{
-				SourceDirectories = sourceDirectories ?? new string[1] { Environment.ExpandEnvironmentVariables("%userprofile%") };
+				SourceDirectories = sourceDirectories ?? new string[1] { SystemEnvironment.UserProfileDirectory };
 				Categories = categories;
 				Repositories = repositories;
 				ScanDepth = scanDepth;

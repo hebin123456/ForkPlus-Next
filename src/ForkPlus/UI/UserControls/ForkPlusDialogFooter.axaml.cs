@@ -32,12 +32,14 @@ namespace ForkPlus.UI.UserControls
 
 		private void CancelButton_Click(object sender, RoutedEventArgs e)
 		{
+			Log.Warn("[diag] CancelButton_Click fired");
 			e.Handled = true;
 			this.Cancel?.Invoke(this, EventArgs.Empty);
 		}
 
 		private void SubmitButton_Click(object sender, RoutedEventArgs e)
 		{
+			Log.Warn("[diag] SubmitButton_Click fired");
 			e.Handled = true;
 			this.Submit?.Invoke(this, EventArgs.Empty);
 		}

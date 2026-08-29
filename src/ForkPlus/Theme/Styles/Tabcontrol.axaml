@@ -13,7 +13,11 @@
       <Setter.Value>
         <ControlTemplate TargetType="TabItem">
           <Grid x:Name="templateRoot">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter" Content="{TemplateBinding Content}">
+            <!-- TODO 迁移：WPF ContentSource="Header"（TabItem 标签头显示 Header 而非 Content）。
+                 Avalonia 12 无 ContentSource，须显式 Content="{TemplateBinding Header}"；
+                 误绑 Content 会导致同一内容控件同时被塞进标签头与 PART_SelectedContentHost，
+                 抛 "already has a visual parent" 异常 -->
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" x:Name="contentPresenter" Content="{TemplateBinding Header}">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>
@@ -371,7 +375,8 @@
       <Setter.Value>
         <ControlTemplate TargetType="TabItem">
           <Grid Background="#00FFFFFF" x:Name="templateRoot">
-            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" x:Name="contentPresenter" Content="{TemplateBinding Content}">
+            <!-- TODO 迁移：同上，WPF ContentSource="Header" → 显式绑定 Header -->
+            <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" x:Name="contentPresenter" Content="{TemplateBinding Header}">
               <ContentPresenter.HorizontalAlignment>
                 <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
               </ContentPresenter.HorizontalAlignment>

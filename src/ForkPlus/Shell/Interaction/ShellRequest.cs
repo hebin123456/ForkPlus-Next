@@ -124,7 +124,8 @@ namespace ForkPlus.Shell.Interaction
 		private ProcessStartInfo CreateProcessStartInfo(bool redirectStdInput = false)
 		{
 			string text = _command.ArgumentsString;
-			if (FilePath.EndsWith("git.exe"))
+			// TODO 迁移：git 可执行文件名跨平台（原 "git.exe" 后缀判断在 Unix 失效，credential helper 不生效）。
+			if (SystemEnvironment.IsGitExecutable(FilePath))
 			{
 				text = string.Join(" ", App.OverrideCredentialHelper) + " " + text;
 			}

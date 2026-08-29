@@ -130,33 +130,42 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 
 			private static bool ValidatePath(string gitExecutablePath)
+		{
+			try
 			{
-				try
+				if (!File.Exists(gitExecutablePath))
 				{
-					if (!File.Exists(gitExecutablePath))
+					new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'", gitExecutablePath)).ShowDialog();
+					return false;
+				}
+				// TODO 迁移：git 二进制名跨平台（原 "git.exe" 硬编码在 Unix 永远 false）。
+				if (!SystemEnvironment.IsGitExecutable(gitExecutablePath))
+				{
+					new ErrorWindow(PreferencesLocalization.FormatCurrent("Invalid git binary: '{0}'", gitExecutablePath)).ShowDialog();
+					return false;
+				}
+				string directoryName = Path.GetDirectoryName(gitExecutablePath);
+				if (Directory.Exists(directoryName))
+				{
+					// TODO 迁移：bash/sh 配套校验跨平台。Windows Git-for-Windows 布局在 git 同目录
+					// 提供 bash.exe/sh.exe；Unix 上 bash/sh 通常在系统目录而非 git 同目录，
+					// 故 Unix 下同目录不存在时回退系统 PATH 探测。
+					bool isUnix = !OperatingSystem.IsWindows();
+					string bashName = isUnix ? "bash" : "bash.exe";
+					string shName = isUnix ? "sh" : "sh.exe";
+					bool bashOk = File.Exists(Path.Combine(directoryName, bashName)) || (isUnix && SystemEnvironment.ExistsOnPath(bashName));
+					bool shOk = File.Exists(Path.Combine(directoryName, shName)) || (isUnix && SystemEnvironment.ExistsOnPath(shName));
+					if (!bashOk)
 					{
-						new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'", gitExecutablePath)).ShowDialog();
+						new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'. Missing bash.exe", gitExecutablePath)).ShowDialog();
 						return false;
 					}
-					if (Path.GetFileName(gitExecutablePath) != "git.exe")
+					if (!shOk)
 					{
-						new ErrorWindow(PreferencesLocalization.FormatCurrent("Invalid git binary: '{0}'", gitExecutablePath)).ShowDialog();
+						new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'. Missing sh.exe", gitExecutablePath)).ShowDialog();
 						return false;
 					}
-					string directoryName = Path.GetDirectoryName(gitExecutablePath);
-					if (Directory.Exists(directoryName))
-					{
-						if (!File.Exists(Path.Combine(directoryName, "bash.exe")))
-						{
-							new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'. Missing bash.exe", gitExecutablePath)).ShowDialog();
-							return false;
-						}
-						if (!File.Exists(Path.Combine(directoryName, "sh.exe")))
-						{
-							new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'. Missing sh.exe", gitExecutablePath)).ShowDialog();
-							return false;
-						}
-					}
+				}
 				}
 				catch (Exception ex)
 				{
@@ -286,7 +295,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				break;
 			case GitInstanceType.AddCustom:
 			{
-				string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
+				string initialDirectory = SystemEnvironment.UserProfileDirectory;
 				if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git instance"), initialDirectory, out var filePath))
 				{
 					string gitInstancePath = PathHelper.Normalize(filePath);
@@ -475,7 +484,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			break;
 		case GitInstanceType.AddCustom:
 		{
-			string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
+			string initialDirectory = SystemEnvironment.UserProfileDirectory;
 			if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git-mm instance"), initialDirectory, out var filePath))
 			{
 				string normalized = PathHelper.Normalize(filePath);

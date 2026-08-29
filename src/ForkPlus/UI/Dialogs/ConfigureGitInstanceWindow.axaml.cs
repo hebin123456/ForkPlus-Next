@@ -78,7 +78,10 @@ namespace ForkPlus.UI.Dialogs
 				{
 					Title = Translate("Select git instance"),
 					InitialDirectory = initialDirectory,
-					Filter = Translate("Applications") + " (*.exe)|*.exe",
+					// TODO 迁移：跨平台过滤器。原 "(*.exe)|*.exe" 在 Unix 上选不到无扩展名的 git。
+					Filter = Translate("Applications") + (OperatingSystem.IsWindows()
+						? " (*.exe)|*.exe"
+						: " (git;git.exe)|git;git.exe"),
 					CheckFileExists = true,
 					Multiselect = false
 				};
@@ -131,6 +134,18 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return ForkPlusSettings.Default.GitInstancePath;
 			}
+			// TODO 迁移：Unix 上直接探测常见安装位置（原 %programfiles% 展开在 Unix 永远失败）。
+			if (!OperatingSystem.IsWindows())
+			{
+				foreach (string path in SystemEnvironment.GetUnixCommonGitPaths())
+				{
+					if (File.Exists(path))
+					{
+						return path;
+					}
+				}
+				return "";
+			}
 			string programFiles = Environment.ExpandEnvironmentVariables("%programfiles%\\Git\\bin\\git.exe");
 			if (File.Exists(programFiles))
 			{
@@ -171,7 +186,8 @@ namespace ForkPlus.UI.Dialogs
 				{
 					continue;
 				}
-				string gitPath = Path.Combine(Environment.ExpandEnvironmentVariables(directory.Trim()), "git.exe");
+				// TODO 迁移：git 二进制名跨平台（Unix 无 .exe 扩展名）。
+				string gitPath = Path.Combine(Environment.ExpandEnvironmentVariables(directory.Trim()), SystemEnvironment.GitExecutableName);
 				if (File.Exists(gitPath))
 				{
 					yield return gitPath;
@@ -181,6 +197,18 @@ namespace ForkPlus.UI.Dialogs
 
 		private static IEnumerable<string> GetCommonGitCandidates()
 		{
+			// TODO 迁移：Unix 常见安装位置（/usr/bin、/opt/homebrew 等）。
+			if (!OperatingSystem.IsWindows())
+			{
+				foreach (string path in SystemEnvironment.GetUnixCommonGitPaths())
+				{
+					if (File.Exists(path))
+					{
+						yield return path;
+					}
+				}
+				yield break;
+			}
 			string[] paths =
 			{
 				"%programfiles%\\Git\\bin\\git.exe",
@@ -202,6 +230,11 @@ namespace ForkPlus.UI.Dialogs
 
 		private static IEnumerable<string> GetPortableGitCandidates()
 		{
+			// TODO 迁移：PortableGit 是 Windows 特有的便携版布局，Unix 直接跳过。
+			if (!OperatingSystem.IsWindows())
+			{
+				yield break;
+			}
 			string[] roots =
 			{
 				Environment.GetEnvironmentVariable("SystemDrive") + "\\",
@@ -236,7 +269,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private static void AddCandidate(List<GitCandidate> result, HashSet<string> seen, string source, string gitPath)
 		{
-			if (string.IsNullOrWhiteSpace(gitPath) || !File.Exists(gitPath) || !string.Equals(Path.GetFileName(gitPath), "git.exe", StringComparison.OrdinalIgnoreCase))
+			// TODO 迁移：文件名校验跨平台（原 git.exe 硬编码在 Unix 永远 false）。
+			if (string.IsNullOrWhiteSpace(gitPath) || !File.Exists(gitPath) || !SystemEnvironment.IsGitExecutable(gitPath))
 			{
 				return;
 			}
@@ -259,7 +293,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private static bool ValidateGitPath(string gitPath, bool showError)
 		{
-			if (string.IsNullOrWhiteSpace(gitPath) || !File.Exists(gitPath) || !string.Equals(Path.GetFileName(gitPath), "git.exe", StringComparison.OrdinalIgnoreCase))
+			// TODO 迁移：文件名校验跨平台（原 git.exe 硬编码在 Unix 永远 false，"继续"按钮永禁用）。
+			if (string.IsNullOrWhiteSpace(gitPath) || !File.Exists(gitPath) || !SystemEnvironment.IsGitExecutable(gitPath))
 			{
 				if (showError)
 				{

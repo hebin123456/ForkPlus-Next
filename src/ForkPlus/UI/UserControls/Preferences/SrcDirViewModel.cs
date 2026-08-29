@@ -28,7 +28,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private static bool SrcFolderIsValid(string path)
 		{
-			string value = Environment.ExpandEnvironmentVariables("%userprofile%");
+			string value = SystemEnvironment.UserProfileDirectory;
 			if (!path.TrimEnd("\\").Equals("c:", StringComparison.OrdinalIgnoreCase))
 			{
 				return !path.TrimEnd("\\").Equals(value, StringComparison.OrdinalIgnoreCase);

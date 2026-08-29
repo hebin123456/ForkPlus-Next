@@ -56,23 +56,18 @@ namespace ForkPlus.UI.WpfCompat
         // WPF ComponentDispatcher.IsThreadModal 近似：记录经本 shim ShowDialog 打开的窗口。
         private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Window, object> _modalWindows = new();
 
-        /// <summary>WPF ComponentDispatcher.IsThreadModal 的按窗口近似（该窗口是否以 ShowDialog 方式打开）。</summary>
-        public static bool IsShownAsDialog(this Window self)
-            => self != null && _modalWindows.TryGetValue(self, out _);
+        // TODO 迁移：启动期代理 owner 全局复用。此前每对话框各建各关，对话框关闭后应用
+        // 0 窗口，ClassicDesktopStyleApplicationLifetime 的 OnLastWindowClose 立即开始
+        // Shutdown → 后续对话框（如 WelcomeWindow）PushFrame 抛
+        // "InvalidOperationException: Dispatcher shut down"（首启流程实证）。
+        // 改为单例复用：真窗口（MainWindow）出现且可见时才关闭代理（TryCloseProxyOwner）。
+        private static Window _proxyOwner;
 
-        public static bool? ShowDialog(this Window self)
+        private static Window GetOrCreateProxyOwner()
         {
-            if (self == null) return null;
-            var owner = WindowOwnerCompat.TryGetOwner(self) ?? WpfApp.ActiveWindow(self);
-            Window proxyOwner = null;
-            if (owner == null)
+            if (_proxyOwner == null || !_proxyOwner.IsVisible)
             {
-                // TODO 迁移：WPF ShowDialog() 无 owner 也能模态阻塞（如启动期 ConfigureGitInstanceWindow）；
-                // Avalonia 12 的 ShowDialog(owner) 强制要求 owner，且 owner 必须 IsVisible=true
-                // （否则 InvalidOperationException: Cannot show window with non-visible owner）。
-                // 方案：创建 1x1 全透明代理窗口做 owner，保持模态语义；对话框关闭后一并关闭。
-                // 注意：代理可见（Opacity=0）所以不会进 WpfApp.ActiveWindow 的可见窗口筛选逻辑外泄。
-                proxyOwner = new Window
+                _proxyOwner = new Window
                 {
                     ShowInTaskbar = false,
                     ShowActivated = false,
@@ -83,15 +78,53 @@ namespace ForkPlus.UI.WpfCompat
                     Title = string.Empty,
                 };
                 // 居中定位：让 CenterOwner 的对话框出现在屏幕中央而非 (0,0)
-                var screen = proxyOwner.Screens?.Primary;
+                var screen = _proxyOwner.Screens?.Primary;
                 if (screen != null)
                 {
                     var wa = screen.WorkingArea;
-                    proxyOwner.Position = new global::Avalonia.PixelPoint(
+                    _proxyOwner.Position = new global::Avalonia.PixelPoint(
                         wa.X + (wa.Width - 1) / 2, wa.Y + (wa.Height - 1) / 2);
                 }
-                proxyOwner.Show();
-                owner = proxyOwner;
+                _proxyOwner.Show();
+            }
+            return _proxyOwner;
+        }
+
+        /// <summary>
+        /// 关闭闲置代理 owner。仅当存在其他可见窗口（如 MainWindow）时执行——
+        /// 0 窗口时关闭会触发 OnLastWindowClose 提前终止应用。
+        /// </summary>
+        private static void TryCloseProxyOwner()
+        {
+            var proxy = _proxyOwner;
+            if (proxy == null) return;
+            if (WpfApp.Windows.Any(w => w != proxy && w.IsVisible))
+            {
+                _proxyOwner = null;
+                proxy.Close();
+            }
+        }
+
+        /// <summary>WPF ComponentDispatcher.IsThreadModal 的按窗口近似（该窗口是否以 ShowDialog 方式打开）。</summary>
+        public static bool IsShownAsDialog(this Window self)
+            => self != null && _modalWindows.TryGetValue(self, out _);
+
+        public static bool? ShowDialog(this Window self)
+        {
+            if (self == null) return null;
+            var owner = WindowOwnerCompat.TryGetOwner(self) ?? WpfApp.ActiveWindow(self);
+            if (owner == null)
+            {
+                // TODO 迁移：WPF ShowDialog() 无 owner 也能模态阻塞（如启动期 ConfigureGitInstanceWindow）；
+                // Avalonia 12 的 ShowDialog(owner) 强制要求 owner，且 owner 必须 IsVisible=true
+                // （否则 InvalidOperationException: Cannot show window with non-visible owner）。
+                // 方案：复用全局 1x1 全透明代理窗口做 owner，保持模态语义（见 GetOrCreateProxyOwner）。
+                owner = GetOrCreateProxyOwner();
+            }
+            else
+            {
+                // 有真实 owner：代理已无用，顺手清理
+                TryCloseProxyOwner();
             }
             _modalWindows.Remove(self);
             _modalWindows.Add(self, new object());
@@ -112,10 +145,8 @@ namespace ForkPlus.UI.WpfCompat
             finally
             {
                 _modalWindows.Remove(self);
-                if (proxyOwner != null)
-                {
-                    proxyOwner.Close();
-                }
+                // 代理窗口不随单个对话框关闭（全局复用，见 _proxyOwner 注释）
+                TryCloseProxyOwner();
             }
         }
     }

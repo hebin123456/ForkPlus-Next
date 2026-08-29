@@ -21,7 +21,7 @@ namespace ForkPlus.UI.Commands
 			{
 				return;
 			}
-			string text2 = Environment.ExpandEnvironmentVariables("%userprofile%");
+			string text2 = SystemEnvironment.UserProfileDirectory;
 			if (directoryPath == text2 || directoryPath == text)
 			{
 				new MessageBoxWindow("Invalid directory", "It's not a good idea to make your source folder a repository. Please create a subfolder instead.", "Close", "Cancel", showCancelButton: false).ShowDialog();

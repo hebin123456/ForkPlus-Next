@@ -50,6 +50,15 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.ShowLogo = false;
 			InitializeComponent();
+			// [diag] 输入诊断：窗口级指针事件（临时，验证后移除）
+			this.PointerPressed += delegate(object s, Avalonia.Input.PointerPressedEventArgs e)
+			{
+				Log.Warn("[diag] WelcomeWindow PointerPressed at " + e.GetPosition(this));
+			};
+			this.PointerMoved += delegate(object s, Avalonia.Input.PointerEventArgs e)
+			{
+				Log.Warn("[diag] WelcomeWindow PointerMoved at " + e.GetPosition(this));
+			};
 			// TODO 迁移：WPF 构造期 TitleTextBlock 已就绪可直接改属性；Avalonia 12 的 chrome
 			// 延迟初始化，改走 CustomizeTitleTextBlock pending 机制（构造期安全）。
 			CustomizeTitleTextBlock(delegate(TextBlock t)
@@ -62,7 +71,7 @@ namespace ForkPlus.UI.Dialogs
 			base.SubmitButtonTitle = Translate("Finish");
 			ProgressBarContainer.Collapse();
 			Refresh();
-			DefaultCloneDirectoryTextBox.Text = Environment.ExpandEnvironmentVariables("%userprofile%");
+			DefaultCloneDirectoryTextBox.Text = SystemEnvironment.UserProfileDirectory;
 		}
 
 		protected override async void OnSubmit()
@@ -90,7 +99,12 @@ namespace ForkPlus.UI.Dialogs
 				if (!gitCommandResult.Succeeded)
 				{
 					new ErrorWindow(null, gitCommandResult.Error).ShowDialog();
-					(global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+					// TODO 迁移：与 App.DoShutdown 同因——启动期直接 Lifetime.Shutdown 会关闭
+					// Dispatcher，MainLoop 内的 PushFrame 抛 "Dispatcher shut down"；改为 Post 延迟。
+					global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+					{
+						(global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+					});
 					return;
 				}
 				ForkPlusSettings.Default.Guid = Guid.NewGuid().ToString();
@@ -121,7 +135,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void BrowseButton_Click(object sender, RoutedEventArgs e)
 		{
-			string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
+			string initialDirectory = SystemEnvironment.UserProfileDirectory;
 			if (OpenDialog.SelectDirectory(this, Translate("Select location"), initialDirectory, out var directoryPath))
 			{
 				DefaultCloneDirectoryTextBox.Text = directoryPath;

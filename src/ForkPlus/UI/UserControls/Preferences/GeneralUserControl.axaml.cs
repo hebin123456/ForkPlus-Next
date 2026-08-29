@@ -312,7 +312,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void AddSrcDir()
 		{
-			string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
+			string initialDirectory = SystemEnvironment.UserProfileDirectory;
 			if (OpenDialog.SelectDirectory(_parentWindow, "Select location", initialDirectory, out var directoryPath))
 			{
 				if (!directoryPath.EndsWith("\\"))

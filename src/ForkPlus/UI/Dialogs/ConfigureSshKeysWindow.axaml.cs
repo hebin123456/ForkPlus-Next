@@ -86,7 +86,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void BrowseKeyMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			string initialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%");
+			string initialDirectory = SystemEnvironment.UserProfileDirectory;
 			if (OpenDialog.SelectFile(this, "Select SSH key", initialDirectory, "SSH key", "*.pub", out var filePath))
 			{
 				string[] sshKeys = ForkPlusSettings.Default.SshKeys;

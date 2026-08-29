@@ -930,9 +930,17 @@ namespace ForkPlus
 
 		private void DoShutdown()
 	{
-		// TODO 迁移：WPF Application.Shutdown()；Avalonia 经 IClassicDesktopStyleApplicationLifetime.Shutdown()
-		// 关闭应用（WpfCompat WpfApp.Shutdown 即转发到该 API）。
-		global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown();
+		// TODO 迁移：WPF Application.Shutdown() 在 Startup 事件里调用合法（消息循环已运行）；
+		// Avalonia 12 的 OnFrameworkInitializationCompleted 发生在 lifetime.Start 进
+		// MainLoop 之前，此刻直接 Lifetime.Shutdown 会关闭 Dispatcher，随后的
+		// Dispatcher.UIThread.MainLoop 抛 "InvalidOperationException: Dispatcher shut down"
+		// （首启取消路径实证：Welcome 对话框返回 false → DoShutdown → MainLoop 崩）。
+		// 改为 Post 延迟到主循环运行后执行；调用方均为 DoShutdown+return false 形态，
+		// 无同步停止依赖，语义等价。
+		global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+		{
+			global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown();
+		});
 	}
 
 		private static string GetEnvironmentGitInstancePath()
@@ -942,14 +950,21 @@ namespace ForkPlus
 				string environmentVariable = Environment.GetEnvironmentVariable(Consts.ForkPlus.GitInstanceEnvVariable);
 				if (environmentVariable != null)
 				{
-					if (environmentVariable.EndsWith("git.exe") && File.Exists(environmentVariable))
+					// TODO 迁移：git 二进制名跨平台（Unix 无 .exe）。变量可能直接指向 git 路径或其所在目录。
+					if (SystemEnvironment.IsGitExecutable(environmentVariable) && File.Exists(environmentVariable))
 					{
 						return environmentVariable;
 					}
-					string text = Path.Combine(environmentVariable, "bin", "git.exe");
+					string text = Path.Combine(environmentVariable, "bin", SystemEnvironment.GitExecutableName);
 					if (File.Exists(text))
 					{
 						return text;
+					}
+					// TODO 迁移：Unix 上 git 通常在目录本身（/usr/bin 形式传入时下面直接拼名字）。
+					string text2 = Path.Combine(environmentVariable, SystemEnvironment.GitExecutableName);
+					if (File.Exists(text2))
+					{
+						return text2;
 					}
 				}
 			}
@@ -961,7 +976,8 @@ namespace ForkPlus
 
 		private static string GetForkGitInstancePath()
 		{
-			return Path.Combine(ForkDirectoryPath, "gitInstance", "2.50.1", "bin", "git.exe");
+			// TODO 迁移：git 二进制名跨平台。
+			return Path.Combine(ForkDirectoryPath, "gitInstance", "2.50.1", "bin", SystemEnvironment.GitExecutableName);
 		}
 
 		private static void MigrateLegacyAppData()
