@@ -42,11 +42,14 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：主窗口 UI 成功渲染（2026-08-29 本轮）。**
+**🎉 里程碑：主窗口 UI 完整渲染，含窗口控制按钮与主内容区（2026-08-29 本轮2）。**
 - `dotnet build` 0 错误；AVLN XAML 错误 0。
-- `dotnet run`（Xvfb）**零未处理异常**，主窗口完整渲染：标题 "ForkPlus"、菜单栏 File/Window/Help（PART_MainMenu 生效）、通知按钮、侧边栏。
-- 之前的运行时阻塞（Textblock StaticResource / 图片转换 / 对话框 NRE）已全部解决（见「运行时修复链」两节）。
-- 本轮核心突破：`CustomWindow.StyleKeyOverride` 根因修复（见「重大发现 #7」，Avalonia implicit ControlTheme 查找机制），一改此前"模板退化为 ContentControl 默认 FuncControlTemplate、所有 PART 部件找不到"的死局。
+- `dotnet run`（Xvfb）**零未处理异常**。主窗口截图验证（2026-08-29）：
+  - 标题栏：标题 "ForkPlus" + **最小化/最大化/关闭三按钮全部渲染**（本轮 ContentPresenter 修复前为空白）。
+  - 菜单栏：File/Window/Help（PART_MainMenu 生效）。
+  - 工具栏：Quick Launch / Fetch / Pull / Push / Stash / Undo / Branch / AI-Assisted Dev / Console / Appearance / Workspaces。
+  - **主内容区完整渲染**（本轮修复前空白）：左侧 Repository Manager（含 fork 水印图标、"Drop repository here to add"）、右侧仓库详情（Uncommitted File/Commits/Initial Commit/Last Commit/Remotes/Branches/Tags/README.MD）。
+- 本轮两大突破：① `CustomWindow.StyleKeyOverride` 根因修复（见「重大发现 #7」）；② **模板内裸 ContentPresenter 补 `Content="{TemplateBinding Content}"`**（见「重大发现 #9」，修复窗口按钮图标 + 主内容区空白）。
 
 错误数轨迹（按唯一错误去重统计）：
 
@@ -119,6 +122,21 @@ System.Collections.Generic.KeyNotFoundException: Static resource 'Avalonia.Contr
 2. **TabControl 模板 `UniformGrid IsItemsHost="True"`（MethodAccessException）**：`Panel.IsItemsHost` setter 是 internal，XAML 设置运行时炸。**修复**：`ClosableTabControl` 构造函数用 `FuncTemplate<Panel>` 设 `ItemsPanel`（`new UniformGrid { Rows = 1 }`），模板里改 `<ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}"/>`，原背景由样式选择器 `^ /template/ ItemsPresenter > UniformGrid` 设置。
 3. **XAML EndInit 期 SelectionChanged NRE**：Avalonia `TabControl` 在 XAML `EndInit` 就触发 `SelectionChanged`（WPF 需交互后才触发），此时 `RepositoryDetailsUserControl` 构造函数还没执行到 `_updatePreviewAction = new DelayedAction(...)`。**修复**：处理器加 `_updatePreviewAction != null` 防御。**模式：XAML 事件处理器一律假设"字段可能未初始化"**。
 4. **16 个样式文件微修**（本轮提交可见）：BooleanToVisibilityConverter 残留引用删除、ReflogWindow/BinaryContentUserControl 的属性迁移等。
+5. **【本轮2 核心】模板内裸 ContentPresenter 导致按钮图标空白 + 主内容区空白**：
+   - 现象：窗口控制按钮（PART_MinimizeButton 等）位置正确（46x26、可见）但 Path 图标不渲染；CustomWindow 模板主 ContentPresenter 尺寸 0x0 → 整个窗口内容区空白。
+   - 根因：**WPF 模板内 `<ContentPresenter/>` 自动显示 TemplatedParent.Content；Avalonia 12 无此机制**（反编译验证：`ContentControl.RegisterContentPresenter` 只做 presenter 注册，`ContentPresenter.Content` 是独立 styled property，TemplatedParentChanged 不做数据传递）。官方 Fluent 主题全部显式写 `Content="{TemplateBinding Content}"`。
+   - 修复：`/data/user/work/fix_cpresenter.py` 批量给模板内裸 ContentPresenter 补 `Content="{TemplateBinding Content}"`。已修 7 个文件：Window.axaml、MainWindow.axaml、CommitUserControl.axaml、QuickLaunchWindow.axaml、GitMmStart/Sync/UploadWindow.axaml。
+   - **全仓尚有约 67 处同类未修**（扫描脚本见下，主要在 Theme/Styles/*.axaml 的各控件模板里，当前未造成崩溃但内容显示空白）。**下一个 agent 优先跑这个脚本处理剩余文件**（先备份，跑完构建验证）：
+     ```bash
+     cd /data/user/work/migration/ForkPlus-Next
+     python3 /data/user/work/fix_cpresenter.py src/ForkPlus/Theme/Styles/*.axaml
+     # 注意脚本会跳过 x:Name="PART_SelectedContentHost"（TabControl 内部机制填充的特例）
+     ```
+6. **IMultiValueConverter 的 UnsetValue 强转崩溃**（本轮2）：Avalonia MultiBinding 子绑定未解析时传 `Avalonia.UnsetValueType`（WPF 传 null），`(SolidColorBrush)values[0]` 直接 InvalidCastException。修复：`TabEllipseVisibilityConverter.cs` / `TabEllipseFillBrushConverter.cs` 改用 `as` + 宽松 bool 解析（try Convert.ToBoolean，失败按 false）。**模式：所有 IMultiValueConverter 的 Convert 必须防御 values 里出现 UnsetValueType/DoNothing/null**。全仓扫描命令：
+   ```bash
+   grep -rln "IMultiValueConverter" src/ForkPlus --include="*.cs" | xargs grep -lE '\(SolidColorBrush\)values\[|\(bool\)values\['
+   # 当前输出为空（已全修），新迁移文件再出现时按同模式修
+   ```
 
 **冒烟方法**（验证 UI 渲染）：
 ```bash
@@ -209,15 +227,21 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 1. **IPC 命名管道消息模式（PlatformNotSupportedException）**：`IpcServer.cs:26` 的 `PipeTransmissionMode.Message` 仅 Windows 支持。协议本身用 4 字节长度前缀分帧（`PipeStreamExtensions.ReadString`），不依赖消息边界，已改为 `OperatingSystem.IsWindows() ? Message : Byte`。
 2. **沙盒无显示服务器**：`apt-get install -y xvfb` 后 `Xvfb :99 -screen 0 1920x1080x24` + `export DISPLAY=:99` 即可跑 GUI 冒烟。
 
-## 下一步行动（按优先级）
+## 下一步行动（按优先级，2026-08-29 本轮2 更新）
 
-1. **交互冒烟**（当前阶段）：主窗口已渲染，下一步验证交互链路——File 菜单展开/命令执行、仓库打开（File→Open Repository 选真实 git 仓库）、TabControl 切换、对话框弹出。方法：Xvfb 截图 + `xdotool` 模拟点击，或直接读 NLog 日志（`logs/` 目录）确认无运行时异常。
-2. **UI 细节修复**（截图发现的遗留）：
-   - 窗口控制按钮（最小化/最大化/关闭）未显示——查 `Window.axaml` 模板里 PART_CloseButton 等的 Path 图标资源（`MinimizeGeometry` 等 StaticResource）是否解析成功，以及按钮尺寸/背景色。
-   - 菜单项显示 `_File` 原始下划线——WPF AccessText 语法，Avalonia Menu 的 Header 不解析 `_` 前缀，需删前缀或改 `AccessText`。
-3. **次级窗口冒烟**：Preferences/Commit/Blame 等 Dialog 打开是否正常（依赖 `WindowDialogCompat` 代理窗口链路）。
-4. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
-5. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
+1. **【最高优先级】批量修剩余 ~67 处裸 ContentPresenter**（详见「运行时修复链 2」第 5 条）：
+   ```bash
+   cd /data/user/work/migration/ForkPlus-Next
+   python3 /data/user/work/fix_cpresenter.py src/ForkPlus/Theme/Styles/*.axaml
+   dotnet build src/ForkPlus/ForkPlus.sln -v q -nologo  # 验证 0 错误
+   # 然后按「冒烟方法」跑 Xvfb 截图，对比各控件内容是否显示
+   ```
+   预期收益：侧边栏按钮图标、各 Dialog 的内容区、列表项内容等大量"空壳"控件恢复显示。
+2. **交互冒烟**（当前阶段）：主窗口已完整渲染，验证交互链路——File 菜单展开/命令执行、仓库打开（选真实 git 仓库）、TabControl 切换、Preferences 等对话框。方法：Xvfb 截图 + NLog 日志（`logs/` 目录）确认无运行时异常。
+3. **菜单 `_` 前缀**：菜单显示 `_File` 原始下划线——WPF AccessText 语法，Avalonia Menu 的 Header 不解析 `_` 前缀。低优先级，后续统一批量删前缀或改 AccessText。
+4. **次级窗口冒烟**：Preferences/Commit/Blame 等 Dialog 打开是否正常（依赖 `WindowDialogCompat` 代理窗口链路）。
+5. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
+6. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
 
 ## 本轮新增的已验证修复模式（57→0 直接套用）
 
@@ -315,6 +339,15 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
    - 排查工具链（已验证有效）：`ilspycmd`（`~/.dotnet/tools`，注意 `DOTNET_ROOT=$HOME/.dotnet` 必须设）反编译 `~/.nuget/packages/avalonia/12.1.1/lib/net8.0/Avalonia.Base.dll` 看 `StyledElement.GetEffectiveTheme/ApplyControlTheme` 实现。
 
 8. **Avalonia 样式应用时序**（`ApplyStyling` 调用点，反编译）：`EndInit()`（XAML 加载完）、`OnAttachedToLogicalTreeCore`、`Layoutable.MeasureCore`（每次布局测量）。**XAML 事件（如 SelectionChanged）可能在 EndInit 期间触发**——早于构造函数后续语句，code-behind 处理器必须容忍字段未初始化。
+
+9. **【本轮2 最重要】模板内 ContentPresenter 不会自动继承 TemplatedParent.Content**：
+   - WPF：`<ControlTemplate TargetType="Button"><ContentPresenter/></ControlTemplate>` 裸 presenter 自动显示 Button.Content。
+   - Avalonia 12：**必须显式 `Content="{TemplateBinding Content}"`**（官方 Fluent 主题的写法，GitHub 源码可查：`src/Avalonia.Themes.Fluent/Controls/Button.xaml`）。裸 ContentPresenter 的 Content 为 null → 渲染空白。
+   - 唯一特例：TabControl 模板的 `<ContentPresenter x:Name="PART_SelectedContentHost"/>` 由内部机制填充（官方也不写绑定）。
+   - 症状识别：控件"占位但空"（如按钮有背景无边框内图标）、模板主内容区 0x0。
+   - wpf2ava 转换器**不会**自动补这个绑定，全仓 74 处模板受影响（已修 7 文件，剩约 67 处在 Theme/Styles/*.axaml）。
+
+10. **MultiBinding 初始化期传 UnsetValueType**：子绑定未解析时 WPF 传 null，Avalonia 传 `Avalonia.UnsetValueType`（结构体）。所有 IMultiValueConverter 的强转（`(SolidColorBrush)values[0]`、`(bool)values[1]`）在模板初始化期必炸。防御模式：`as` 类型转换 + `is bool` 模式匹配 / try-Convert。
 
 ## 修复方法论（已验证有效）
 

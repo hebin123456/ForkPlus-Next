@@ -28,7 +28,7 @@
           <Button.Template>
             <ControlTemplate TargetType="Button">
               <Border Background="{TemplateBinding Background}">
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
             </ControlTemplate>
           </Button.Template>

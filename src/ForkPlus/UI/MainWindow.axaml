@@ -55,7 +55,7 @@
                         </Border>
                       </DockPanel>
                     </Border>
-                    <ContentPresenter ClipToBounds="True" Grid.Row="1" />
+                    <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1" />
     <!-- TODO 迁移：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
                   </Grid>
                 </Border>

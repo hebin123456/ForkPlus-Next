@@ -308,7 +308,7 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			StartupTimeReporter.MainWindowLoaded();
+		StartupTimeReporter.MainWindowLoaded();
 			_menuManager.Initialize();
 			InitializeKeyBindings();
 			TabManager.RestoreSession();

@@ -16,12 +16,24 @@ namespace ForkPlus.UI.Controls
 			{
 				return Brushes.Transparent;
 			}
-			SolidColorBrush solidColorBrush = (SolidColorBrush)values[0];
-			if (!(bool)values[1])
-			{
-				return Brushes.Transparent;
-			}
-			return solidColorBrush ?? ClosableTabItem.IsDirtyDefaultBrush;
+			// TODO 迁移：Avalonia MultiBinding 子绑定未解析时传 Avalonia.UnsetValueType（WPF 传 null），
+		// 模板初始化期必然发生，强转 SolidColorBrush 抛 InvalidCastException；改用 as + 防御。
+		SolidColorBrush solidColorBrush = values[0] as SolidColorBrush;
+		bool flag;
+		if (values[1] is bool b)
+		{
+			flag = b;
+		}
+		else
+		{
+			try { flag = global::System.Convert.ToBoolean(values[1], culture); }
+			catch { flag = false; }
+		}
+		if (!flag)
+		{
+			return Brushes.Transparent;
+		}
+		return solidColorBrush ?? ClosableTabItem.IsDirtyDefaultBrush;
 		}
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
