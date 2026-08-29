@@ -1,77 +1,86 @@
 <UserControl Background="{DynamicResource Sidebar.Static.Background}" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryManagerUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <!-- TODO 迁移：原 WPF 的 4 个 DataTemplate 用 x:Key="{DataTemplateKey {x:Type T}}" 实现
+       按类型隐式查找（WPF FindResource(DataTemplateKey(type))）。Avalonia 12 的
+       ContentPresenter 只走 FindDataTemplate：先 ContentTemplate，再沿逻辑树遍历每个
+       Control.DataTemplates 集合（反编译 DataTemplateExtensions 实证），完全不查资源
+       字典。字符串 key 化后按类型查找彻底失效 → 仓库列表渲染成
+       "ForkPlus.UI.UserControls.RepositoryManagerRepositoryItem" 类型名（主窗口截图实证）。
+       修法：搬进根元素 UserControl.DataTemplates 集合，DataType 驱动 Match。 -->
+  <UserControl.DataTemplates>
+    <DataTemplate DataType="userControls:RepositoryManagerSectionItem">
+      <Grid Height="22">
+        <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium">
+          <TextBlock.Text>
+            <Binding Path="Title" />
+          </TextBlock.Text>
+        </TextBlock>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="userControls:RepositoryManagerSourceDirectoryItem">
+      <Grid Height="22">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="20" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Folder.png" />
+        <TextBlock Grid.Column="1" FontSize="14" Height="22" Margin="0,2,0,0" VerticalAlignment="Center">
+          <TextBlock.Text>
+            <Binding Path="Title" />
+          </TextBlock.Text>
+          <ToolTip.Tip>
+            <Binding Path="SourceDir" />
+          </ToolTip.Tip>
+        </TextBlock>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="userControls:RepositoryManagerRepositoryFolderItem">
+      <Grid Height="22">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="20" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Folder.png" />
+        <TextBlock Grid.Column="1" FontSize="14" Height="22" Margin="0,2,0,0" VerticalAlignment="Center">
+          <TextBlock.Text>
+            <Binding Path="Title" />
+          </TextBlock.Text>
+        </TextBlock>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="userControls:RepositoryManagerRepositoryItem">
+      <Grid Height="22">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="18" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="17" />
+        </Grid.ColumnDefinitions>
+        <Image Grid.Column="0" Margin="-1,2,3,0" Width="16" Height="16">
+          <Image.Source>
+            <Binding Path="RepositoryIcon" />
+          </Image.Source>
+        </Image>
+        <controls:RepositoryManagerEditableTextBlock Grid.Column="1" FontSize="14" Height="22">
+          <controls:RepositoryManagerEditableTextBlock.Value>
+            <Binding Path="Name" />
+          </controls:RepositoryManagerEditableTextBlock.Value>
+          <controls:RepositoryManagerEditableTextBlock.IsInEditMode>
+            <Binding Path="IsInEditMode" />
+          </controls:RepositoryManagerEditableTextBlock.IsInEditMode>
+        </controls:RepositoryManagerEditableTextBlock>
+        <Ellipse Grid.Column="2" Width="9" Height="9" Margin="4,2,4,2" HorizontalAlignment="Right" StrokeThickness="2">
+          <Ellipse.IsVisible>
+            <Binding Path="RepositoryColor"><Binding.Converter><controls:NullToVisibilityConverter /></Binding.Converter></Binding>
+          </Ellipse.IsVisible>
+          <Ellipse.Stroke>
+            <Binding Path="RepositoryColor" />
+          </Ellipse.Stroke>
+        </Ellipse>
+      </Grid>
+    </DataTemplate>
+  </UserControl.DataTemplates>
   <UserControl.Resources>
     <ResourceDictionary>
       <ControlTheme x:Key="{x:Type controls:RepositoryManagerEditableTextBlock}" TargetType="controls:RepositoryManagerEditableTextBlock" BasedOn="{StaticResource {x:Type controls:EditableTextBlock}}" />
-      <DataTemplate x:Key="RepositoryManagerSectionItemTemplate" DataType="userControls:RepositoryManagerSectionItem">
-        <Grid Height="22">
-          <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-          </TextBlock>
-        </Grid>
-      </DataTemplate>
-      <DataTemplate x:Key="RepositoryManagerSourceDirectoryItemTemplate" DataType="userControls:RepositoryManagerSourceDirectoryItem">
-        <Grid Height="22">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Folder.png" />
-          <TextBlock Grid.Column="1" FontSize="14" Height="22" Margin="0,2,0,0" VerticalAlignment="Center">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-            <ToolTip.Tip>
-              <Binding Path="SourceDir" />
-            </ToolTip.Tip>
-          </TextBlock>
-        </Grid>
-      </DataTemplate>
-      <DataTemplate x:Key="RepositoryManagerRepositoryFolderItemTemplate" DataType="userControls:RepositoryManagerRepositoryFolderItem">
-        <Grid Height="22">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Margin="2,2,4,2" Width="14" Height="14" VerticalAlignment="Center" Source="avares://ForkPlus/Assets/Folder.png" />
-          <TextBlock Grid.Column="1" FontSize="14" Height="22" Margin="0,2,0,0" VerticalAlignment="Center">
-            <TextBlock.Text>
-              <Binding Path="Title" />
-            </TextBlock.Text>
-          </TextBlock>
-        </Grid>
-      </DataTemplate>
-      <DataTemplate x:Key="RepositoryManagerRepositoryItemTemplate" DataType="userControls:RepositoryManagerRepositoryItem">
-        <Grid Height="22">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="18" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="17" />
-          </Grid.ColumnDefinitions>
-          <Image Grid.Column="0" Margin="-1,2,3,0" Width="16" Height="16">
-            <Image.Source>
-              <Binding Path="RepositoryIcon" />
-            </Image.Source>
-          </Image>
-          <controls:RepositoryManagerEditableTextBlock Grid.Column="1" FontSize="14" Height="22">
-            <controls:RepositoryManagerEditableTextBlock.Value>
-              <Binding Path="Name" />
-            </controls:RepositoryManagerEditableTextBlock.Value>
-            <controls:RepositoryManagerEditableTextBlock.IsInEditMode>
-              <Binding Path="IsInEditMode" />
-            </controls:RepositoryManagerEditableTextBlock.IsInEditMode>
-          </controls:RepositoryManagerEditableTextBlock>
-          <Ellipse Grid.Column="2" Width="9" Height="9" Margin="4,2,4,2" HorizontalAlignment="Right" StrokeThickness="2">
-            <Ellipse.IsVisible>
-              <Binding Path="RepositoryColor"><Binding.Converter><controls:NullToVisibilityConverter /></Binding.Converter></Binding>
-            </Ellipse.IsVisible>
-            <Ellipse.Stroke>
-              <Binding Path="RepositoryColor" />
-            </Ellipse.Stroke>
-          </Ellipse>
-        </Grid>
-      </DataTemplate>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid x:Name="RepositoryManagerGrid">
