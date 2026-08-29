@@ -17,8 +17,9 @@ namespace ForkPlus.UI
 			double num4 = windowLocationStateX.Height * ratio;
 			double left = num - num3 / 2.0;
 			double top = num2 - num4 / 2.0;
-			window.Left = left;
-			window.Top = top;
+			// TODO 迁移：WPF Window.Left/Top（DIP）→ Avalonia Window.Position（物理像素），按父窗口 RenderScaling 换算。
+			double scale = parent.RenderScaling;
+			window.Position = new global::Avalonia.PixelPoint((int)(left * scale), (int)(top * scale));
 			window.Width = num3;
 			window.Height = num4;
 			window.Show();

@@ -53,6 +53,13 @@ namespace ForkPlus.UI.WpfCompat
     /// </summary>
     public static class WindowDialogCompat
     {
+        // WPF ComponentDispatcher.IsThreadModal 近似：记录经本 shim ShowDialog 打开的窗口。
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Window, object> _modalWindows = new();
+
+        /// <summary>WPF ComponentDispatcher.IsThreadModal 的按窗口近似（该窗口是否以 ShowDialog 方式打开）。</summary>
+        public static bool IsShownAsDialog(this Window self)
+            => self != null && _modalWindows.TryGetValue(self, out _);
+
         public static bool? ShowDialog(this Window self)
         {
             if (self == null) return null;
@@ -63,12 +70,19 @@ namespace ForkPlus.UI.WpfCompat
                 self.Show();
                 return null;
             }
+            _modalWindows.Remove(self);
+            _modalWindows.Add(self, new object());
             Task<bool?> task = self.ShowDialog<bool?>(owner);
             if (task.IsCompleted) return task.Result;
             var frame = new DispatcherFrame();
-            task.ContinueWith(_ => Dispatcher.UIThread.Post(() => frame.Continue = false),
+            task.ContinueWith(_ =>
+                {
+                    _modalWindows.Remove(self);
+                    Dispatcher.UIThread.Post(() => frame.Continue = false);
+                },
                 TaskScheduler.Default);
             Dispatcher.UIThread.PushFrame(frame);
+            _modalWindows.Remove(self);
             return task.Status == TaskStatus.RanToCompletion ? task.Result : null;
         }
     }

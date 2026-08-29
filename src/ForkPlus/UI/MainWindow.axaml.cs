@@ -94,6 +94,9 @@ namespace ForkPlus.UI
 				};
 			}
 			InitializeComponent();
+			// TODO 迁移：WPF Window.OnDrop override → Avalonia DragDrop.DropEvent 订阅转发。
+			global::Avalonia.Input.DragDrop.SetAllowDrop(this, true);
+			AddHandler(global::Avalonia.Input.DragDrop.DropEvent, (s, e) => OnDrop(e));
 			base.IsTitleVisible = true;
 			if (flag)
 			{
@@ -199,8 +202,8 @@ namespace ForkPlus.UI
 			}
 			// 先同步 WPF 依赖属性到目标值，避免 WPF 在 Show 流程中用 XAML 默认值（Width=1000/Height=600）
 			// 覆盖 SetWindowPlacement 设置的 HWND 位置/尺寸，导致窗口位置/大小不恢复。
-			base.Left = windowLocationState.Left;
-			base.Top = windowLocationState.Top;
+			// TODO 迁移：WPF Window.Left/Top → Avalonia Window.Position（DIP→物理像素换算依赖 RenderScaling，实际恢复由 SetWindowPlacement 完成）。
+			base.Position = new global::Avalonia.PixelPoint((int)windowLocationState.Left, (int)windowLocationState.Top);
 			base.Width = windowLocationState.Width;
 			base.Height = windowLocationState.Height;
 			// 再用 Win32 SetWindowPlacement 精确恢复（处理多显示器、DPI、还原矩形）。
@@ -288,7 +291,6 @@ namespace ForkPlus.UI
 
 		protected void OnDrop(DragEventArgs e)
 		{
-			base.OnDrop(e);
 			if (e.WpfData().GetData(DataFormats.FileDrop) is string[] array && array.Length != 0)
 			{
 				string[] array2 = array;

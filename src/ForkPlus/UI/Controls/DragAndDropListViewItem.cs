@@ -51,7 +51,7 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (!base.IsPointerCaptured)
+			if (!this.IsPointerCaptured()) // TODO 迁移：WPF UIElement.IsPointerCaptured 属性 → InputCompat 扩展
 			{
 				base.OnPointerMoved(e);
 				return;

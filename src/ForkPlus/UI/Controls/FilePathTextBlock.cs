@@ -114,10 +114,11 @@ namespace ForkPlus.UI.Controls
 
 		private bool TextIsTrimmed()
 		{
-			if (!(base.Parent is Panel { ActualWidth: var num } panel))
+			if (!(base.Parent is Panel panel))
 			{
 				return false;
 			}
+			double num = panel.Bounds.Width; // TODO 迁移：WPF Panel.ActualWidth → Avalonia Panel.Bounds.Width
 			foreach (global::Avalonia.Controls.Control child in panel.Children)
 			{
 				if (child != this)

@@ -208,7 +208,9 @@ namespace ForkPlus.UI.Dialogs
 
 		protected virtual bool ApplyAutomaticLocalization => true;
 
-		private bool IsWindowModal => ComponentDispatcher.IsThreadModal;
+		// TODO 迁移：WPF ComponentDispatcher.IsThreadModal（Win32 消息循环模态标记）→
+                // WindowDialogCompat.IsShownAsDialog（本窗口是否经 ShowDialog shim 打开）。
+                private bool IsWindowModal => this.IsShownAsDialog();
 
 		private IEnumerable<global::Avalonia.Input.InputElement> EditableControls => FindVisualChildren<Control>(this);
 
@@ -224,7 +226,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public ForkPlusDialogWindow(bool preventMainWindowRefresh = true)
 		{
-			base.OverridesDefaultStyle = true;
+			// TODO 迁移：WPF Window.OverridesDefaultStyle（无默认模板）在 Avalonia 无对应概念，移除。
 			Activated += delegate
 			{
 				OnActivated(EventArgs.Empty);
@@ -234,7 +236,7 @@ namespace ForkPlus.UI.Dialogs
 				MainWindow instance = MainWindow.Instance;
 				if (instance != null)
 				{
-					base.SetOwnerCompat(instance);
+					this.SetOwnerCompat(instance);
 					if (preventMainWindowRefresh)
 					{
 						instance.PreventRefreshAfterChildDialogClose(GetType().Name);
@@ -246,6 +248,14 @@ namespace ForkPlus.UI.Dialogs
 			ResizeMode = ResizeMode.NoResize;
 			base.Initialized += ForkPlusDialogWindow_Initialized;
 			base.Loaded += ForkPlusDialogWindow_Loaded;
+			// TODO 迁移：WPF OnContentChanged override → Avalonia ContentProperty 变更订阅转发（见 OnContentChanged）。
+			PropertyChanged += delegate(object s, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
+			{
+				if (e.Property == global::Avalonia.Controls.ContentControl.ContentProperty)
+				{
+					OnContentChanged(e.OldValue, e.NewValue);
+				}
+			};
 {			base.Styles.Clear();base.Styles.Add(Application.Current?.TryFindResource("ForkPlusDialogWindowStyle") as Style);
 }			if (!IsDesignMode)
 			{
@@ -330,9 +340,10 @@ namespace ForkPlus.UI.Dialogs
 			InitializeDialogChrome();
 		}
 
+		// TODO 迁移：WPF ContentControl.OnContentChanged override 在 Avalonia 无对应虚方法，
+		// 由构造函数订阅 PropertyChanged（ContentProperty）转发，保持子类重写形态。
 		protected void OnContentChanged(object oldContent, object newContent)
 		{
-			base.OnContentChanged(oldContent, newContent);
 			if (IsInitialized)
 			{
 				InitializeDialogChrome();
@@ -547,7 +558,7 @@ namespace ForkPlus.UI.Dialogs
 			Source = new DrawingImage(new GeometryDrawing
 			{
 				Geometry = Geometry.Parse("M4,2 L12,2 L12,14 L4,14 Z M6,4 L6,12 L10,12 L10,4 Z M2,4 L2,16 L14,16 L14,14 L13,14 L13,15 L3,15 L3,5 L4,5 L4,4 Z"),
-				Brush = (Application.Current.TryFindResource("SecondaryLabelBrush") as Brush) ?? Brushes.Gray
+				Brush = (Application.Current.TryFindResource("SecondaryLabelBrush") as global::Avalonia.Media.IBrush) ?? (global::Avalonia.Media.IBrush)Brushes.Gray
 			}),
 			Width = 14.0,
 			Height = 14.0
@@ -695,7 +706,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (IsWindowModal)
 				{
-					(base).Close(false);
+					Close(false);
 				}
 				else
 				{
@@ -721,7 +732,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (IsWindowModal)
 				{
-					(base).Close(true);
+					Close(true);
 				}
 				else
 				{

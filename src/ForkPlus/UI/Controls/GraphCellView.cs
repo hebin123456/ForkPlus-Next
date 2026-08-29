@@ -127,7 +127,8 @@ namespace ForkPlus.UI.Controls
 		protected override void OnPointerEntered(global::Avalonia.Input.PointerEventArgs e)
 		{
 			e.Handled = true;
-			if (ShowGraphToolTip && base.DataContext is DecoratedRevision decoratedRevision && e.LeftButton != MouseButtonState.Pressed)
+			// TODO 迁移：WPF PointerEventArgs.LeftButton != MouseButtonState.Pressed → GetCurrentPoint().Properties.IsLeftButtonPressed
+			if (ShowGraphToolTip && base.DataContext is DecoratedRevision decoratedRevision && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				base.OnPointerEntered(e);
 				if (decoratedRevision.GetParents().Length > 1)
@@ -167,7 +168,8 @@ namespace ForkPlus.UI.Controls
 		{
 			e.Handled = true;
 			base.OnPointerPressed(e);
-			if (IsMouseOver && e.ChangedButton == MouseButton.Left && base.DataContext is DecoratedRevision decoratedRevision)
+			// TODO 迁移：WPF PointerPressedEventArgs.ChangedButton == MouseButton.Left → GetCurrentPoint().Properties.IsLeftButtonPressed
+			if (IsMouseOver && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && base.DataContext is DecoratedRevision decoratedRevision)
 			{
 				this.ExpandToggle?.Invoke(this, EventArgs.Empty);
 				if (ShowGraphToolTip && decoratedRevision.GetParents().Length > 1)

@@ -171,12 +171,13 @@ namespace ForkPlus.UI
 
 		static CustomWindow()
 		{
-			HeaderHeightProperty = global::Avalonia.AvaloniaProperty.Register("HeaderHeight", typeof(double), typeof(CustomWindow), new global::Avalonia.StyledPropertyMetadata(22.0));
-			ShowHeaderProperty = global::Avalonia.AvaloniaProperty.Register("ShowHeader", typeof(bool), typeof(CustomWindow), new global::Avalonia.StyledPropertyMetadata(true, OnShowHeaderChanged));
-			HideMinimizeMaximizeButtonsProperty = global::Avalonia.AvaloniaProperty.Register("HideMinimizeMaximizeButtons", typeof(bool), typeof(CustomWindow), new global::Avalonia.StyledPropertyMetadata(false));
-			IsTitleVisibleProperty = global::Avalonia.AvaloniaProperty.Register("IsTitleVisible", typeof(bool), typeof(CustomWindow), new global::Avalonia.StyledPropertyMetadata(false));
-			WindowResizeBorderThicknessProperty = global::Avalonia.AvaloniaProperty.Register("WindowResizeBorderThickness", typeof(Thickness), typeof(CustomWindow), new global::Avalonia.StyledPropertyMetadata(default(Thickness)));
-			global::Avalonia.Controls.Control.DefaultStyleKeyProperty.OverrideMetadata(typeof(CustomWindow), new global::Avalonia.StyledPropertyMetadata(typeof(CustomWindow)));
+			// TODO 迁移：WPF DependencyProperty.Register + PropertyMetadata → WpfPropertyCompat.Register（Avalonia StyledProperty）。
+			HeaderHeightProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, double>("HeaderHeight", 22.0);
+			ShowHeaderProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, bool>("ShowHeader", true, (owner, e) => OnShowHeaderChanged(owner, e));
+			HideMinimizeMaximizeButtonsProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, bool>("HideMinimizeMaximizeButtons", false);
+			IsTitleVisibleProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, bool>("IsTitleVisible", false);
+			WindowResizeBorderThicknessProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, global::Avalonia.Thickness>("WindowResizeBorderThickness", default(global::Avalonia.Thickness));
+			// TODO 迁移：WPF DefaultStyleKeyProperty.OverrideMetadata 在 Avalonia 由 ControlTheme 接管，移除。
 		}
 
 		public CustomWindow()
@@ -190,7 +191,7 @@ namespace ForkPlus.UI
 			}
 			WindowChrome windowChrome = new WindowChrome
 			{
-				CornerRadius = default(CornerRadius),
+				CornerRadius = 0.0,
 				GlassFrameThickness = new Thickness(0.0, 0.0, 0.0, 1.0),
 				UseAeroCaptionButtons = false
 			};
@@ -248,7 +249,8 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			HwndSource.FromHwnd(new WindowInteropHelper(this).EnsureHandle()).AddHook(HwndSourceHook);
+			// TODO 迁移：WPF HwndSource.AddHook(WM_NCCALCSIZE 等自绘 chrome 钩子)为 Win32 专用，
+			// Avalonia 由 SystemDecorations/ExtendClientAreaChromeIntoTitleBar 替代，暂 no-op 保留 HwndSourceHook 方法。
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)

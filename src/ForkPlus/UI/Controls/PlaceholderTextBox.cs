@@ -44,7 +44,37 @@ namespace ForkPlus.UI.Controls
 			{
 				base.ContextMenu = GetContextMenu();
 			};
+			// TODO 迁移：WPF TextBox.OnTextChanged / OnIsKeyboardFocusWithinChanged 虚方法
+			// 在 Avalonia 无对应虚方法，这里经事件/属性变更转发，保持子类 override 形态。
+			TextChanged += delegate (object s, global::Avalonia.Controls.TextChangedEventArgs e)
+			{
+				OnTextChanged(e);
+			};
+			PropertyChanged += delegate (object s, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
+			{
+				if (e.Property == global::Avalonia.Input.InputElement.IsKeyboardFocusWithinProperty)
+				{
+					OnIsKeyboardFocusWithinChanged(e);
+				}
+			};
 		}
+
+		protected virtual void OnTextChanged(global::Avalonia.Controls.TextChangedEventArgs e)
+		{
+		}
+
+		protected virtual void OnIsKeyboardFocusWithinChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)
+		{
+		}
+
+		/// <summary>WPF TextBoxBase.SelectionLength（Avalonia 无，由 SelectionStart/SelectionEnd 推导）。</summary>
+		public int SelectionLength => global::System.Math.Abs(SelectionEnd - SelectionStart);
+
+		/// <summary>WPF TextBoxBase.IsSelectionActive（Avalonia 无，近似映射 IsFocused）。</summary>
+		public bool IsSelectionActive => IsFocused;
+
+		/// <summary>WPF UIElement.IsKeyboardFocused（Avalonia 无，近似映射 IsFocused）。</summary>
+		public bool IsKeyboardFocused => IsFocused;
 
 		protected virtual ContextMenu GetContextMenu()
 		{

@@ -33,8 +33,8 @@ namespace ForkPlus.UI.Controls
 				Margin = icon.Margin,
 				Stretch = icon.Stretch,
 				HorizontalAlignment = icon.HorizontalAlignment,
-				VerticalAlignment = icon.VerticalAlignment,
-				SnapsToDevicePixels = true
+				VerticalAlignment = icon.VerticalAlignment
+				// TODO 迁移：WPF Image.SnapsToDevicePixels 在 Avalonia 无对应（位图渲染由布局取整保证），移除。
 			};
 		}
 	}
