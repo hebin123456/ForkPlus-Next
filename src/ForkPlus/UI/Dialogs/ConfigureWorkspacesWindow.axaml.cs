@@ -127,10 +127,7 @@ namespace ForkPlus.UI.Dialogs
 		private void RemoveWorkspace(WorkspaceViewModel workspace)
 		{
 			if (new MessageBoxWindow("Do you want to delete the workspace '" + workspace.Name + "'?", "You can't undo this action", "Delete", "Cancel", showCancelButton: true, 500.0)
-			{
-				Owner = this,
-				global::Avalonia.Controls.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterOwner
-			}.ShowDialog().GetValueOrDefault())
+				.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
 			{
 				int num = _workspaceViewModels.IndexOf(workspace);
 				_workspaceViewModels.Remove(workspace);

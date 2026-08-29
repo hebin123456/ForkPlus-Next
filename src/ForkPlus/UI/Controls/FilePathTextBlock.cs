@@ -52,7 +52,7 @@ namespace ForkPlus.UI.Controls
 			base.PointerEntered += delegate(object s, global::Avalonia.Input.PointerEventArgs e)
 			{
 				e.Handled = true;
-				global::Avalonia.Controls.ToolTip.SetTip(base,(TextIsTrimmed() ? GetToolTipText() : null));
+				global::Avalonia.Controls.ToolTip.SetTip(this, (TextIsTrimmed() ? GetToolTipText() : null));
 			};
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 		}

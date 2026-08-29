@@ -41,13 +41,11 @@ namespace ForkPlus.UI.Dialogs.Accounts
 
 		private void AddAccountButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (new AddAccountWindow
-			{
-				Owner = this
-			}.ShowDialog().GetValueOrDefault())
-			{
-				Activate();
-			}
+			if (new AddAccountWindow()
+			.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=this } → 链式扩展。
+		{
+			Activate();
+		}
 			Refresh();
 			AccountsListBox.SelectedItem = _accountViewModels.LastOrDefault();
 			MainWindow.ActiveRepositoryUserControl?.InvalidateAndRefresh(SubDomain.Remotes);
@@ -57,9 +55,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 		{
 			Account account = (AccountsListBox.SelectedItem as AccountViewModel)?.Account;
 			if (account != null && new MessageBoxWindow(string.Format(Translate("Log out of {0}?"), account.ServerUrl), Translate("You can always log back in at any time"), Translate("Log out"), Translate("Cancel"), showCancelButton: true, 500.0)
-			{
-				Owner = this
-			}.ShowDialog().GetValueOrDefault())
+			.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=this } → 链式扩展。
 			{
 				AccountManager.Current.LogOut(account);
 				Refresh();

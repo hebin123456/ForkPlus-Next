@@ -230,9 +230,9 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			if (WpfApp.MainWindow?.WindowState == global::Avalonia.Controls.WindowState.Maximized)
-			{
-				global::Avalonia.Controls.WindowState = global::Avalonia.Controls.WindowState.Maximized;
-			}
+		{
+			WindowState = global::Avalonia.Controls.WindowState.Maximized; // TODO 迁移：自动转换误将属性名写成全限定类型名，恢复属性赋值。
+		}
 		}
 
 		private void AiDevelopmentWindow_Loaded(object sender, RoutedEventArgs e)

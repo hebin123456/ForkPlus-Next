@@ -32,7 +32,7 @@ namespace ForkPlus.UI.Controls
 
 		public DateRangeButton()
 		{
-			global::ForkPlus.UI.WpfCompat.Events.AddChecked(base,delegate
+			global::ForkPlus.UI.WpfCompat.Events.AddChecked(this, delegate // TODO 迁移：base 不能作为独立参数
 			{
 				CreateCalendarPopup(this);
 			});

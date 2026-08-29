@@ -587,10 +587,8 @@ namespace ForkPlus.UI.UserControls
 		};
 		customColorsItem.Click += delegate
 		{
-			var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog
-			{
-				Owner = global::Avalonia.Controls.TopLevel.GetTopLevel(this)
-			};
+			var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog();
+			dialog.SetOwnerAndCenter(global::Avalonia.Controls.TopLevel.GetTopLevel(this) as global::Avalonia.Controls.Window); // TODO 迁移：WPF { Owner=TopLevel } → 链式扩展。
 			dialog.ShowDialog();
 			// 对话框关闭后刷新主题菜单（IsChecked 状态可能因 OK/Cancel 变化）
 			InitializeAppearanceToolBarButtonContextMenu();

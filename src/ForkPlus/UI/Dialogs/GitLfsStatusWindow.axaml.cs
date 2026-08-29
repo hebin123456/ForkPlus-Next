@@ -188,12 +188,12 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (dictionary.TryGetValue(list[i].Path, out var value))
 				{
-					list[i].SetOwnerCompat(value);
+					list[i].Owner = value; // TODO 迁移：LFS 锁持有者是 ViewModel 字符串属性，误转成了 Window 扩展，恢复直接赋值。
 					dictionary2.Remove(list[i].Path);
 				}
 				else
 				{
-					list[i].SetOwnerCompat(null);
+					list[i].Owner = null;
 				}
 			}
 			foreach (KeyValuePair<string, string> item in dictionary2)

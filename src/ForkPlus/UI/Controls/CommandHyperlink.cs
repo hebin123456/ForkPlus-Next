@@ -118,7 +118,7 @@ namespace ForkPlus.UI.Controls
 			// TODO 迁移：WPF 用 Hyperlink 的 ElementStart/ElementEnd GetCharacterRect 求内联文本在 TextBlock 内的矩形；
 			// Avalonia 中本控件是 HyperlinkButton（包在 InlineUIContainer 里），改用 TranslatePoint 把自身 Bounds 映射到
 			// placementTarget(TextBlock) 坐标系，再水平平移半宽以复刻 WPF 的 placementRectangle.X += Width/2 定位。
-			Point? topLeft = TranslatePoint(new Point(0.0, 0.0), placementTarget);
+			Point? topLeft = this.TranslatePoint(new Point(0.0, 0.0), placementTarget); // TODO 迁移：扩展方法需显式 this 接收者
 			Rect placementRectangle = new Rect(topLeft ?? new Point(0.0, 0.0), Bounds.Size);
 			placementRectangle = placementRectangle.WithX(placementRectangle.X + placementRectangle.Width / 2.0);
 			obj.PlacementRect = placementRectangle;

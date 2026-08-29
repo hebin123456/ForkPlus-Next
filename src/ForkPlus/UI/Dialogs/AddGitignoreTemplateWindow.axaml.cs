@@ -140,9 +140,13 @@ namespace ForkPlus.UI.Dialogs
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Add");
 			base.DescriptionTextBlock.Inlines.Clear();
 			base.DescriptionTextBlock.Inlines.Add(new Run("Choose "));
-			global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton(new Run(".gitignore"));
-			hyperlink.NavigateUri = new Uri("https://git-scm.com/docs/gitignore");
-{			hyperlink.Styles.Clear();hyperlink.Styles.Add((Style)TryFindResource("BlueUnderlineHyperlinkStyle"));
+			// TODO 迁移：WPF Hyperlink(Run) → Avalonia HyperlinkButton（Content 承载 Run）。
+                        global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton
+                        {
+                                Content = new Run(".gitignore"),
+                                NavigateUri = new Uri("https://git-scm.com/docs/gitignore")
+                        };
+{                       hyperlink.Styles.Clear();hyperlink.Styles.Add((Style)this.TryFindResource("BlueUnderlineHyperlinkStyle"));
 }			base.DescriptionTextBlock.Inlines.Add(hyperlink);
 			base.DescriptionTextBlock.Inlines.Add(new Run(" template for your project"));
 			LoadTemplates();

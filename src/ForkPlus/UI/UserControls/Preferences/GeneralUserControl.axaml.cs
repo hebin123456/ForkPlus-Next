@@ -347,10 +347,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private void RemoveSrcDir(string path)
 		{
 			if (new MessageBoxWindow("Do you want to remove the selected source directory?", "Fork will not look for repositories in this folder automatically", "Remove", "Cancel", showCancelButton: true, 550.0)
-			{
-				Owner = _parentWindow,
-				global::Avalonia.Controls.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterOwner
-			}.ShowDialog().GetValueOrDefault())
+				.SetOwnerAndCenter(_parentWindow).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
 			{
 				List<string> list = new List<string>(RepositoryManager.Instance.SourceDirs);
 				list.Remove(path);

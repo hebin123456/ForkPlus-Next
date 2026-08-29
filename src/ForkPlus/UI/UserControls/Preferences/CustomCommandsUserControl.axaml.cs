@@ -187,10 +187,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private void RemoveCustomCommandButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (CustomCommandsListBox.SelectedItem is CustomCommandViewModel item && new MessageBoxWindow("Do you want to remove the selected custom command?", "You can't undo this action", "Remove", "Cancel", showCancelButton: true, 550.0)
-			{
-				Owner = _parentWindow,
-				global::Avalonia.Controls.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterOwner
-			}.ShowDialog().GetValueOrDefault())
+			.SetOwnerAndCenter(_parentWindow).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
 			{
 				int num = _customCommandViewModels.IndexOf(item) - 1;
 				_customCommandViewModels.Remove(item);

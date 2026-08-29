@@ -387,6 +387,25 @@ namespace ForkPlus.UI.WpfCompat
         public FillBehavior FillBehavior { get; set; } = FillBehavior.HoldEnd;
         public IEasingFunctionBase EasingFunction { get; set; }
         public object BeginTime { get; set; }
+
+        // TODO 迁移：WPF DoubleAnimation(from, to, duration) 构造函数（TimeSpan 或 Duration 重载）。
+        public DoubleAnimation() { }
+        public DoubleAnimation(double? from, double? to, Duration duration)
+        {
+            From = from;
+            To = to;
+            Duration = duration;
+        }
+        public DoubleAnimation(double from, double to, TimeSpan duration)
+        {
+            From = from;
+            To = to;
+            Duration = new Duration(duration);
+        }
+
+        /// <summary>WPF Timeline.Completed 事件，由 WpfAnimation 补间结束时触发。</summary>
+        public event EventHandler Completed;
+        internal void RaiseCompleted() => Completed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>WPF ThicknessAnimation stub。</summary>
@@ -477,7 +496,10 @@ namespace ForkPlus.UI.WpfCompat
                     if (t >= 1.0)
                     {
                         timer.Stop();
+                        target.SetValue(property, to); // 终值精确落点
                         _running.TryRemove(new KeyValuePair<(AvaloniaObject, AvaloniaProperty), DispatcherTimer>((target, property), timer));
+                        // TODO 迁移：WPF Timeline.Completed 在动画结束时触发。
+                        da.RaiseCompleted();
                     }
                 };
                 _running[(target, property)] = timer;

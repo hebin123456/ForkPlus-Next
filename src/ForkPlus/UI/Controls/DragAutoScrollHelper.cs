@@ -22,9 +22,10 @@ namespace ForkPlus.UI.Controls
 		public DragAutoScrollHelper(ItemsControl control)
 		{
 			_control = control;
-			_control.DragOver += OnDragOver;
-			_control.DragLeave += OnDragLeave;
-			_control.Drop += OnDrop;
+			// TODO 迁移：WPF 拖放事件属性（DragOver/DragLeave/Drop）→ Avalonia DragDrop 静态路由事件订阅。
+			global::Avalonia.Input.DragDrop.AddDragOverHandler(_control, OnDragOver);
+			global::Avalonia.Input.DragDrop.AddDragLeaveHandler(_control, OnDragLeave);
+			global::Avalonia.Input.DragDrop.AddDropHandler(_control, OnDrop);
 		}
 
 		private void OnDragOver(object sender, DragEventArgs e)

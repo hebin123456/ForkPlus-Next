@@ -7,9 +7,9 @@ namespace ForkPlus.UI.Controls
 {
 	public class ContentContainer : Grid
 	{
-		private global::Avalonia.Input.InputElement _childControl;
+		private global::Avalonia.Controls.Control _childControl; // TODO 迁移：WPF UIElement → Avalonia Control（Children.Remove/TryAddChild 需 Control）
 
-		public void ShowControl(global::Avalonia.Input.InputElement control)
+		public void ShowControl(global::Avalonia.Controls.Control control)
 		{
 			base.Children.Remove(_childControl);
 			if (!VisualTreeAttachmentHelper.TryAddChild(this, control, GetType().Name + ".ShowControl"))

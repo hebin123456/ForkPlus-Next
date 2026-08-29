@@ -26,7 +26,7 @@ namespace ForkPlus.UI.Controls
 		public AutoTooltipTextBlock()
 		{
 			base.TextTrimming = TextTrimming.CharacterEllipsis;
-			global::Avalonia.Controls.ToolTip.SetTip(base,"");
+			global::Avalonia.Controls.ToolTip.SetTip(this, ""); // TODO 迁移：base 不能作为独立参数，改 this（同一对象引用）
 			// TODO 迁移：WPF FrameworkElement.ToolTipOpening 事件 → Avalonia ToolTip.ToolTipOpeningEvent 路由事件订阅。
 			// （lambda 内不可用 base 关键字，改用 this。）
 			global::Avalonia.Controls.ToolTip.AddToolTipOpeningHandler(this, (s, e) =>

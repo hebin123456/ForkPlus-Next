@@ -34,6 +34,16 @@ namespace ForkPlus.UI.WpfCompat
             Owners.Add(self, new StrongBox<Window>(owner));
         }
 
+        /// <summary>
+        /// TODO 迁移：WPF 对象初始化器 { Owner = owner, WindowStartupLocation = CenterOwner } 的等价物。
+        /// Avalonia 对话框居中由 ShowDialog(owner) 保证，这里只登记 owner 并返回自身以便链式调用。
+        /// </summary>
+        public static Window SetOwnerAndCenter(this Window self, Window owner)
+        {
+            self.SetOwnerCompat(owner);
+            return self;
+        }
+
         internal static Window TryGetOwner(Window self)
             => Owners.TryGetValue(self, out var box) ? box.Value : null;
     }
