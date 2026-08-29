@@ -11,9 +11,9 @@
       <DockPanel>
         <DockPanel.Children>
           <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="CloseSearchContainerButton_Click">
-            <Button.Style>
+            <Button.Theme>
               <DynamicResource ResourceKey="IconButtonStyle" />
-            </Button.Style>
+            </Button.Theme>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>
@@ -26,9 +26,9 @@
             </Image>
           </Button>
           <Button DockPanel.Dock="Right" Margin="0,0,2,0" Click="JumpToNextSearchResultButton_Click">
-            <Button.Style>
+            <Button.Theme>
               <DynamicResource ResourceKey="IconButtonStyle" />
-            </Button.Style>
+            </Button.Theme>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>
@@ -41,9 +41,9 @@
             </Image>
           </Button>
           <Button DockPanel.Dock="Right" Margin="2,0,2,0" Click="JumpToPreviousSearchResultButton_Click">
-            <Button.Style>
+            <Button.Theme>
               <DynamicResource ResourceKey="IconButtonStyle" />
-            </Button.Style>
+            </Button.Theme>
             <Button.Padding>0</Button.Padding>
             <Button.BorderThickness>0</Button.BorderThickness>
             <Image>
@@ -56,9 +56,9 @@
             </Image>
           </Button>
           <fuc:PlaceholderTextBox TextChanged="SearchTextBox_TextChanged" HorizontalAlignment="Stretch" Placeholder="Find" x:Name="SearchTextBox">
-            <fuc:PlaceholderTextBox.Style>
+            <fuc:PlaceholderTextBox.Theme>
               <DynamicResource ResourceKey="SearchPanelPlaceholderTextBox" />
-            </fuc:PlaceholderTextBox.Style>
+            </fuc:PlaceholderTextBox.Theme>
             <fuc:PlaceholderTextBox.Icon>
               <DynamicResource ResourceKey="SearchIcon" />
             </fuc:PlaceholderTextBox.Icon>

@@ -12,10 +12,10 @@
       <StackPanel Grid.Column="0" Orientation="Horizontal" x:Name="TextModeNavigationButtonsContainer" IsVisible="False">
         <StackPanel.Children>
           <Button IsTabStop="False" Click="PreviousButton_Click" x:Name="PreviousButton">
-            <Button.Style>
+            <Button.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
-            </Button.Style>
-            <ToolTipService.ToolTip>Go to previous change</ToolTipService.ToolTip>
+            </Button.Theme>
+            <ToolTip.Tip>Go to previous change</ToolTip.Tip>
             <Image>
               <Image.Source>
                 <DynamicResource ResourceKey="UpIcon" />
@@ -24,10 +24,10 @@
             </Image>
           </Button>
           <Button IsTabStop="False" Click="NextButton_Click" x:Name="NextButton">
-            <Button.Style>
+            <Button.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
-            </Button.Style>
-            <ToolTipService.ToolTip>Go to next change</ToolTipService.ToolTip>
+            </Button.Theme>
+            <ToolTip.Tip>Go to next change</ToolTip.Tip>
             <Image>
               <Image.Source>
                 <DynamicResource ResourceKey="DownIcon" />
@@ -51,17 +51,18 @@
       <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="TextModeButtonsContainer" IsVisible="False">
         <StackPanel.Children>
           <ToggleButton IsTabStop="False" Click="IgnoreWhitespacesToggleButton_Click" x:Name="IgnoreWhitespacesToggleButton">
-            <ToggleButton.Style>
+            <ToggleButton.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-            </ToggleButton.Style>
-            <ToolTipService.ToolTip>Ignore whitespaces</ToolTipService.ToolTip>
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Ignore whitespaces</ToolTip.Tip>
             <Image>
               <Image.Style>
                 <Style>
                   <Style.TargetType>
                     <x:Type Type="Image" />
                   </Style.TargetType>
-                  <Style.Triggers>
+                  <!-- TODO 迁移：WPF Style.Triggers 块注释化（Avalonia 无触发器，视觉状态需用样式选择器/伪类实现：:pointerover/:pressed/:disabled/:focus/:selected 等）。
+                    原始片段：<Style.Triggers>
                     <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
                       <Setter>
                         <Setter.Property>
@@ -82,23 +83,25 @@
                         </Setter.Value>
                       </Setter>
                     </DataTrigger>
-                  </Style.Triggers>
+                  </Style.Triggers> -->
+
                 </Style>
               </Image.Style>
             </Image>
           </ToggleButton>
           <ToggleButton IsTabStop="False" Click="ShowHiddenSymbolsToggleButton_Click" x:Name="ShowHiddenSymbolsToggleButton">
-            <ToggleButton.Style>
+            <ToggleButton.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-            </ToggleButton.Style>
-            <ToolTipService.ToolTip>Show hidden symbols</ToolTipService.ToolTip>
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Show hidden symbols</ToolTip.Tip>
             <Image>
               <Image.Style>
                 <Style>
                   <Style.TargetType>
                     <x:Type Type="Image" />
                   </Style.TargetType>
-                  <Style.Triggers>
+                  <!-- TODO 迁移：WPF Style.Triggers 块注释化（Avalonia 无触发器，视觉状态需用样式选择器/伪类实现：:pointerover/:pressed/:disabled/:focus/:selected 等）。
+                    原始片段：<Style.Triggers>
                     <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
                       <Setter>
                         <Setter.Property>
@@ -119,23 +122,25 @@
                         </Setter.Value>
                       </Setter>
                     </DataTrigger>
-                  </Style.Triggers>
+                  </Style.Triggers> -->
+
                 </Style>
               </Image.Style>
             </Image>
           </ToggleButton>
           <ToggleButton IsTabStop="False" Click="WordWrapToggleButton_Click" x:Name="WordWrapToggleButton">
-            <ToggleButton.Style>
+            <ToggleButton.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-            </ToggleButton.Style>
-            <ToolTipService.ToolTip>Word wrap</ToolTipService.ToolTip>
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Word wrap</ToolTip.Tip>
             <Image>
               <Image.Style>
                 <Style>
                   <Style.TargetType>
                     <x:Type Type="Image" />
                   </Style.TargetType>
-                  <Style.Triggers>
+                  <!-- TODO 迁移：WPF Style.Triggers 块注释化（Avalonia 无触发器，视觉状态需用样式选择器/伪类实现：:pointerover/:pressed/:disabled/:focus/:selected 等）。
+                    原始片段：<Style.Triggers>
                     <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
                       <Setter>
                         <Setter.Property>
@@ -156,16 +161,17 @@
                         </Setter.Value>
                       </Setter>
                     </DataTrigger>
-                  </Style.Triggers>
+                  </Style.Triggers> -->
+
                 </Style>
               </Image.Style>
             </Image>
           </ToggleButton>
           <Button IsTabStop="False" Click="DecreaseVisibleLines_Click" x:Name="DecreaseNumberOfVisibleLinesButton">
-            <Button.Style>
+            <Button.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
-            </Button.Style>
-            <ToolTipService.ToolTip>Decrease number of visible lines</ToolTipService.ToolTip>
+            </Button.Theme>
+            <ToolTip.Tip>Decrease number of visible lines</ToolTip.Tip>
             <Image>
               <Image.Source>
                 <DynamicResource ResourceKey="DecreaseVisibleLinesIcon" />
@@ -173,10 +179,10 @@
             </Image>
           </Button>
           <Button IsTabStop="False" Click="IncreaseVisibleLines_Click" x:Name="IncreaseNumberOfVisibleLinesButton">
-            <Button.Style>
+            <Button.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderButtonStyle" />
-            </Button.Style>
-            <ToolTipService.ToolTip>Increase number of visible lines</ToolTipService.ToolTip>
+            </Button.Theme>
+            <ToolTip.Tip>Increase number of visible lines</ToolTip.Tip>
             <Image>
               <Image.Source>
                 <DynamicResource ResourceKey="IncreaseVisibleLinesIcon" />
@@ -184,17 +190,18 @@
             </Image>
           </Button>
           <ToggleButton IsTabStop="False" Click="ShowEntireFileToggleButton_Click" x:Name="ShowEntireFileToggleButton">
-            <ToggleButton.Style>
+            <ToggleButton.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-            </ToggleButton.Style>
-            <ToolTipService.ToolTip>Show entire file</ToolTipService.ToolTip>
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Show entire file</ToolTip.Tip>
             <Image>
               <Image.Style>
                 <Style>
                   <Style.TargetType>
                     <x:Type Type="Image" />
                   </Style.TargetType>
-                  <Style.Triggers>
+                  <!-- TODO 迁移：WPF Style.Triggers 块注释化（Avalonia 无触发器，视觉状态需用样式选择器/伪类实现：:pointerover/:pressed/:disabled/:focus/:selected 等）。
+                    原始片段：<Style.Triggers>
                     <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
                       <Setter>
                         <Setter.Property>
@@ -215,22 +222,24 @@
                         </Setter.Value>
                       </Setter>
                     </DataTrigger>
-                  </Style.Triggers>
+                  </Style.Triggers> -->
+
                 </Style>
               </Image.Style>
             </Image>
           </ToggleButton>
           <ToggleButton IsTabStop="False" Click="DiffLayoutModeToggleButton_Click" x:Name="DiffLayoutModeToggleButton">
-            <ToggleButton.Style>
+            <ToggleButton.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-            </ToggleButton.Style>
+            </ToggleButton.Theme>
             <Image>
               <Image.Style>
                 <Style>
                   <Style.TargetType>
                     <x:Type Type="Image" />
                   </Style.TargetType>
-                  <Style.Triggers>
+                  <!-- TODO 迁移：WPF Style.Triggers 块注释化（Avalonia 无触发器，视觉状态需用样式选择器/伪类实现：:pointerover/:pressed/:disabled/:focus/:selected 等）。
+                    原始片段：<Style.Triggers>
                     <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
                       <Setter>
                         <Setter.Property>
@@ -251,7 +260,8 @@
                         </Setter.Value>
                       </Setter>
                     </DataTrigger>
-                  </Style.Triggers>
+                  </Style.Triggers> -->
+
                 </Style>
               </Image.Style>
             </Image>
@@ -261,17 +271,18 @@
       <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="ImageModeButtonsContainer" IsVisible="False">
         <StackPanel.Children>
           <ToggleButton IsTabStop="False" Click="HighlightPixelsToggleButton_Click" x:Name="HighlightPixelsToggleButton">
-            <ToggleButton.Style>
+            <ToggleButton.Theme>
               <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-            </ToggleButton.Style>
-            <ToolTipService.ToolTip>Highlight pixels</ToolTipService.ToolTip>
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Highlight pixels</ToolTip.Tip>
             <Image>
               <Image.Style>
                 <Style>
                   <Style.TargetType>
                     <x:Type Type="Image" />
                   </Style.TargetType>
-                  <Style.Triggers>
+                  <!-- TODO 迁移：WPF Style.Triggers 块注释化（Avalonia 无触发器，视觉状态需用样式选择器/伪类实现：:pointerover/:pressed/:disabled/:focus/:selected 等）。
+                    原始片段：<Style.Triggers>
                     <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="True">
                       <Setter>
                         <Setter.Property>
@@ -292,7 +303,8 @@
                         </Setter.Value>
                       </Setter>
                     </DataTrigger>
-                  </Style.Triggers>
+                  </Style.Triggers> -->
+
                 </Style>
               </Image.Style>
             </Image>

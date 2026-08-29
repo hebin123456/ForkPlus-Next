@@ -72,7 +72,7 @@
       <Grid Grid.Column="1" Grid.Row="2">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="NaN" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox TextChanged="ParentDirectoryTextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Parent folder path" x:Name="ParentDirectoryTextBox" />
         <Button Grid.Column="1" Click="BrowseButton_Click" Theme="{DynamicResource BrowseButtonStyle}" />

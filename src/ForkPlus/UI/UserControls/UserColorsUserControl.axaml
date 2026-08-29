@@ -10,7 +10,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Grid Margin="1">
-              <ToggleButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="UserColorRadioButton" Theme="{DynamicResource UserColorToggleButton}">
+              <ToggleButton IsCheckedChanged="ColorButton_Changed" x:Name="UserColorRadioButton" Theme="{DynamicResource UserColorToggleButton}">
                 <ToggleButton.Background>
                   <Binding Path="Brush" />
                 </ToggleButton.Background>

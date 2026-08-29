@@ -9,11 +9,11 @@
     <Button Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Right" Content="Open" Margin="0,0,20,0" Click="OpenRepositoryButton_Click" />
     <StackPanel Grid.Row="1" Orientation="Horizontal">
       <TextBlock Margin="25,0,0,10" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" x:Name="RepositoryPath" />
-      <Button IsTabStop="False" Margin="4,1,0,10" Padding="0" Height="14" Width="14" ToolTip="Open in File Explorer" Click="OpeneInFileExplorerButton_Click" x:Name="OpeneInExplorerButton">
+      <Button IsTabStop="False" Margin="4,1,0,10" Padding="0" Height="14" Width="14" ToolTip.Tip="Open in File Explorer" Click="OpeneInFileExplorerButton_Click" x:Name="OpeneInExplorerButton">
         <Image Source="{DynamicResource OpenInExplorerArrowIcon}" Height="10" Width="10" />
       </Button>
     </StackPanel>
-    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Background="#00FFFFFF">
+    <ScrollViewer Grid.Row="2" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="#00FFFFFF">
       <Grid Background="#00FFFFFF">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
@@ -72,9 +72,9 @@
                         </TextBlock.Text>
                       </TextBlock>
                       <TextBlock Grid.Column="2" FontSize="13" Margin="8,0,8,0" Padding="0" VerticalAlignment="Bottom">
-                        <TextBlock.Visibility>
+                        <TextBlock.IsVisible>
                           <Binding Path="IsWebsiteVisible" />
-                        </TextBlock.Visibility>
+                        </TextBlock.IsVisible>
                         <HyperlinkButton Theme="{StaticResource BlueHyperlinkStyle}">
                           <HyperlinkButton.NavigateUri>
                             <Binding Path="WebsiteUrl" />
@@ -87,9 +87,9 @@
                         </HyperlinkButton>
                       </TextBlock>
                       <TextBlock Grid.Column="3" FontSize="13" Margin="8,0,8,0" Padding="0" VerticalAlignment="Bottom">
-                        <TextBlock.Visibility>
+                        <TextBlock.IsVisible>
                           <Binding Path="IsIssuesVisible" />
-                        </TextBlock.Visibility>
+                        </TextBlock.IsVisible>
                         <HyperlinkButton Theme="{StaticResource GrayHyperlinkStyle}">
                           <HyperlinkButton.NavigateUri>
                             <Binding Path="IssuesUrl" />
@@ -98,9 +98,9 @@
                         </HyperlinkButton>
                       </TextBlock>
                       <TextBlock Grid.Column="4" FontSize="13" Margin="8,0,8,0" Padding="0" VerticalAlignment="Bottom">
-                        <TextBlock.Visibility>
+                        <TextBlock.IsVisible>
                           <Binding Path="IsPullRequestsVisible" />
-                        </TextBlock.Visibility>
+                        </TextBlock.IsVisible>
                         <HyperlinkButton Theme="{StaticResource GrayHyperlinkStyle}">
                           <HyperlinkButton.NavigateUri>
                             <Binding Path="PullRequestsUrl" />

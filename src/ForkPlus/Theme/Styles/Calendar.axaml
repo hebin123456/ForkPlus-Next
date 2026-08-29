@@ -120,6 +120,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="CalendarItem">
+<!-- TODO 迁移：WPF ControlTemplate.Resources 块注释化（Avalonia ControlTemplate 无 Resources，模板内资源须上移至 ControlTheme.Resources 或改用 DataTemplates 集合）。原始片段：
           <ControlTemplate.Resources>
             <ResourceDictionary>
               <DataTemplate x:Key="{x:StaticExtension CalendarItem.DayTitleTemplateResourceKey}">
@@ -131,6 +132,7 @@
               </DataTemplate>
             </ResourceDictionary>
           </ControlTemplate.Resources>
+-->
           <Grid x:Name="PART_Root">
             <!--
       TODO(wpf2avalonia): VisualStateManager.VisualStateGroups：Avalonia 无 VSM，改伪类样式 + Animation。

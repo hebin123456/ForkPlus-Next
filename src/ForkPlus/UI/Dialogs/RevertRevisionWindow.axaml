@@ -33,7 +33,7 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Commit the changes" ToolTip="--no-commit (when unchecked)" Checked="CommitCheckBox_Changed" Unchecked="CommitCheckBox_Changed" x:Name="CommitCheckBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,8,0,0" HorizontalAlignment="Left" Content="Commit the changes" ToolTip.Tip="--no-commit (when unchecked)" IsCheckedChanged="CommitCheckBox_Changed" x:Name="CommitCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

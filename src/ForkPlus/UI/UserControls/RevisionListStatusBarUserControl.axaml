@@ -20,9 +20,9 @@
             </TextBlock.Foreground>
           </TextBlock>
           <Button Margin="0,0,0,0" VerticalAlignment="Center" FontSize="12" Click="StatusBarButton_Click" x:Name="StatusBarButton">
-            <Button.Style>
+            <Button.Theme>
               <DynamicResource ResourceKey="TextButtonStyle" />
-            </Button.Style>
+            </Button.Theme>
           </Button>
         </StackPanel.Children>
       </StackPanel>

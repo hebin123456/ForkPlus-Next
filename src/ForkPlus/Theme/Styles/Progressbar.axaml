@@ -123,6 +123,7 @@
                     </MultiTrigger.ExitActions>
                   </MultiTrigger>
     --></ControlTheme>
+<!-- TODO 迁移：WPF Storyboard 块注释化（Avalonia 动画须用 Style.Animations/Animation 类改写，KeyFrame 语义可用 Avalonia Animation KeyFrame + Easing 实现）。原始片段：
   <Storyboard x:Key="BusyIndicatorStoryboard" BeginTime="00:00:00" RepeatBehavior="Forever">
     <DoubleAnimationUsingKeyFrames BeginTime="00:00:00">
       <EasingDoubleKeyFrame KeyTime="00:00:00.00" Value="1" />
@@ -213,6 +214,7 @@
       <EasingDoubleKeyFrame KeyTime="00:00:00.55" Value="1" />
     </DoubleAnimationUsingKeyFrames>
   </Storyboard>
+ -->
   <ControlTheme x:Key="LfsProgressBar" TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
     <Setter Property="Maximum" Value="100" />
     <Setter Property="Height" Value="3" />

@@ -17,9 +17,9 @@
         <TextBlock Margin="8,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="360" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="WorkspacePathTextBlock" />
       </StackPanel>
       <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource SecondaryLabelBrush}" Text="Pulling only this repository may leave the other subrepos in the git mm workspace out of sync." />
-      <RadioButton Margin="0,14,0,0" FontSize="13" HorizontalAlignment="Left" VerticalAlignment="Center" GroupName="MmPullChoice" IsChecked="True" Content="Sync the git mm workspace (recommended)" ToolTip="Switch to the git mm workspace and run git mm sync" Checked="Option_Changed" x:Name="MmSyncRadioButton" />
+      <RadioButton Margin="0,14,0,0" FontSize="13" HorizontalAlignment="Left" VerticalAlignment="Center" GroupName="MmPullChoice" IsChecked="True" Content="Sync the git mm workspace (recommended)" ToolTip.Tip="Switch to the git mm workspace and run git mm sync" IsCheckedChanged="Option_Changed" x:Name="MmSyncRadioButton" />
       <TextBlock Margin="24,4,0,0" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Text="Switch to the git mm workspace and keep all subrepos consistent with git mm sync." />
-      <RadioButton Margin="0,10,0,0" FontSize="13" HorizontalAlignment="Left" VerticalAlignment="Center" GroupName="MmPullChoice" Content="Pull this repository only" ToolTip="Skip git mm sync and pull this repository as a standalone repository" Checked="Option_Changed" x:Name="SinglePullRadioButton" />
+      <RadioButton Margin="0,10,0,0" FontSize="13" HorizontalAlignment="Left" VerticalAlignment="Center" GroupName="MmPullChoice" Content="Pull this repository only" ToolTip.Tip="Skip git mm sync and pull this repository as a standalone repository" IsCheckedChanged="Option_Changed" x:Name="SinglePullRadioButton" />
       <TextBlock Margin="24,4,0,0" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Text="Skip git mm sync and pull this repository as a standalone repository." />
     </StackPanel>
   </Grid>

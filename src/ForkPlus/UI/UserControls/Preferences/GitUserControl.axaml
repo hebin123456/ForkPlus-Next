@@ -52,7 +52,7 @@
         </DataTemplate>
       </ComboBox.ItemTemplate>
     </ComboBox>
-    <CheckBox Grid.Row="1" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable verbose Git output" Checked="VerboseGitOutputCheckBox_Checked" Unchecked="VerboseGitOutputCheckBox_Checked" x:Name="VerboseGitOutputCheckBox" />
+    <CheckBox Grid.Row="1" Grid.Column="2" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Enable verbose Git output" IsCheckedChanged="VerboseGitOutputCheckBox_Checked" x:Name="VerboseGitOutputCheckBox" />
     <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,4,0,0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="git-mm Instance:" />
     <ComboBox Grid.Row="2" Grid.Column="2" Margin="8,8,0,4" HorizontalContentAlignment="Stretch" SelectionChanged="GitMmInstanceComboBox_SelectionChanged" x:Name="GitMmInstanceComboBox" ItemContainerTheme="{DynamicResource GitInstanceComboBoxItemStyle}">
       <ComboBox.ItemTemplate>

@@ -20,7 +20,7 @@
         <RowDefinition Height="23" />
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
-      <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ContextMenuOpening="WorkspacesListBox_ContextMenuOpening" KeyDown="WorkspacesListBox_KeyDown" x:Name="WorkspacesListBox">
+      <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="WorkspacesListBox_KeyDown" x:Name="WorkspacesListBox">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>
@@ -77,7 +77,7 @@
           </Button>
         </StackPanel>
       </Border>
-      <CheckBox Grid.Row="2" Margin="0,8,0,0" Content="Show workspace name in title bar" Checked="ShowWorkspaceInTitleCheckBox_Changed" Unchecked="ShowWorkspaceInTitleCheckBox_Changed" x:Name="ShowWorkspaceInTitleCheckBox" />
+      <CheckBox Grid.Row="2" Margin="0,8,0,0" Content="Show workspace name in title bar" IsCheckedChanged="ShowWorkspaceInTitleCheckBox_Changed" x:Name="ShowWorkspaceInTitleCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

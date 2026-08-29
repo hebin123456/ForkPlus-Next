@@ -20,7 +20,7 @@
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="New Name:" />
       <controls:ReferenceTextBox TextChanged="BranchName_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Enter new branch name" Icon="{DynamicResource BranchIcon}" x:Name="BranchNameTextBox" />
-      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Checked="RenameRemoteBranchCheckbox_Changed" Unchecked="RenameRemoteBranchCheckbox_Changed" x:Name="RenameRemoteBranchCheckbox" />
+      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" IsCheckedChanged="RenameRemoteBranchCheckbox_Changed" x:Name="RenameRemoteBranchCheckbox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

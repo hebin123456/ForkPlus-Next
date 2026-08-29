@@ -27,7 +27,7 @@
                     </ControlTemplate>
                   </ToggleButton.Template>
                 </ToggleButton>
-                <ContentPresenter DockPanel.Dock="Bottom" ContentSource="Content" x:Name="ExpandSite" IsVisible="False" />
+                <ContentPresenter DockPanel.Dock="Bottom" x:Name="ExpandSite" IsVisible="False" />
               </DockPanel>
               
             </ControlTemplate>
@@ -103,27 +103,27 @@
             <ComboBoxItem Content="mixedreg" />
             <ComboBoxItem Content="underpath" />
           </ComboBox>
-          <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_All sub repositories" IsChecked="True" Checked="AllSubreposCheckBox_Changed" Unchecked="AllSubreposCheckBox_Changed" x:Name="AllSubreposCheckBox" />
+          <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_All sub repositories" IsChecked="True" IsCheckedChanged="AllSubreposCheckBox_Changed" x:Name="AllSubreposCheckBox" />
           <Grid Grid.Column="1" Grid.Row="3" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="180" />
               <ColumnDefinition Width="180" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow tag" ToolTip="--allow-tag" x:Name="AllowTagCheckBox" />
-            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Allow commit" ToolTip="--allow-commit" x:Name="AllowCommitCheckBox" />
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow tag" ToolTip.Tip="--allow-tag" x:Name="AllowTagCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Allow commit" ToolTip.Tip="--allow-commit" x:Name="AllowCommitCheckBox" />
           </Grid>
           <Grid Grid.Column="1" Grid.Row="4" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="180" />
               <ColumnDefinition Width="180" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow no tracking branch" ToolTip="--allow-no-track" x:Name="AllowNoTrackCheckBox" />
-            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Start from HEAD" ToolTip="--head" x:Name="HeadCheckBox" />
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Allow no tracking branch" ToolTip.Tip="--allow-no-track" x:Name="AllowNoTrackCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Start from HEAD" ToolTip.Tip="--head" x:Name="HeadCheckBox" />
           </Grid>
         </Grid>
       </Expander>
       <TextBlock Grid.Column="0" Grid.Row="8" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
-      <ScrollViewer Grid.Column="1" Grid.Row="8" MaxHeight="120" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
+      <ScrollViewer Grid.Column="1" Grid.Row="8" MaxHeight="120" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
         <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
       </ScrollViewer>
     </Grid>

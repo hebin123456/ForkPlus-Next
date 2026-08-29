@@ -55,7 +55,7 @@
         <Setter Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Fill" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
-        <Setter Value="{DynamicResource Disabled.ForegroundBrush}" Property="Foreground" />
+<!-- TODO 迁移：WPF Foreground Setter 已删（Avalonia Border 无 Foreground 属性） -->
     </Style>
     <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
         <Setter Value="{DynamicResource OptionMark.Pressed.Background}" Property="Background" />

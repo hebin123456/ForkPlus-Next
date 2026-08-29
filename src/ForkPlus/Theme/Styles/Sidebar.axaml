@@ -79,14 +79,14 @@
         <Setter Property="Opacity" Value="0.4" />
         <Setter Property="Background" Value="#00FFFFFF" />
     </Style></ControlTheme>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SidebarGroupItem}}" DataType="ui:SidebarGroupItem">
+  <DataTemplate x:Key="SidebarGroupItemTemplate" DataType="ui:SidebarGroupItem">
     <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium" FontSize="13.5">
       <TextBlock.Text>
         <Binding Path="Title" />
       </TextBlock.Text>
     </TextBlock>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteSidebarItem}}" DataType="ui:RemoteSidebarItem">
+  <DataTemplate x:Key="RemoteSidebarItemTemplate" DataType="ui:RemoteSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -101,13 +101,13 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </ToolTip.Tip>
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableRemoteSidebarItem}}" DataType="ui:FilterableRemoteSidebarItem">
+  <DataTemplate x:Key="FilterableRemoteSidebarItemTemplate" DataType="ui:FilterableRemoteSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -124,20 +124,20 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </ToolTip.Tip>
       </TextBlock>
       <Button Grid.Column="2" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="3" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
@@ -198,7 +198,7 @@
               <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
             </MultiDataTrigger>
     --></DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FolderSidebarItem}}" DataType="ui:FolderSidebarItem">
+  <DataTemplate x:Key="FolderSidebarItemTemplate" DataType="ui:FolderSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -212,7 +212,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:FilterableFolderSidebarItem}}" DataType="ui:FilterableFolderSidebarItem">
+  <DataTemplate x:Key="FilterableFolderSidebarItemTemplate" DataType="ui:FilterableFolderSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="18" />
@@ -227,15 +227,15 @@
         </TextBlock.Text>
       </TextBlock>
       <Button Grid.Column="2" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="3" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
@@ -296,7 +296,7 @@
               <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
             </MultiDataTrigger>
     --></DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TruncateSidebarItem}}" DataType="ui:TruncateSidebarItem">
+  <DataTemplate x:Key="TruncateSidebarItemTemplate" DataType="ui:TruncateSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -313,7 +313,7 @@
       </TextBlock>
     </Grid>
   </DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:TagSidebarItem}}" DataType="ui:TagSidebarItem">
+  <DataTemplate x:Key="TagSidebarItemTemplate" DataType="ui:TagSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -323,27 +323,27 @@
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
       <Image Grid.Column="0" Source="{DynamicResource TagIcon}" Height="16" Width="16" x:Name="TagImage" />
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" ToolTip="" x:Name="TagTitleTextBlock" Theme="{DynamicResource SidebarTagTitleTextBlock}">
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" ToolTip.Tip="" x:Name="TagTitleTextBlock" Theme="{DynamicResource SidebarTagTitleTextBlock}">
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
       </TextBlock>
       <Button Grid.Column="2" x:Name="PinButton" Theme="{DynamicResource SidebarPinButton}" IsVisible="{Binding IsMouseOver}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="PinTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
       <Button Grid.Column="3" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="4" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource SearchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
@@ -533,7 +533,7 @@
               <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
             </MultiDataTrigger>
     --></DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:RemoteBranchSidebarItem}}" DataType="ui:RemoteBranchSidebarItem">
+  <DataTemplate x:Key="RemoteBranchSidebarItemTemplate" DataType="ui:RemoteBranchSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -547,26 +547,26 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </ToolTip.Tip>
       </TextBlock>
       <Button Grid.Column="2" x:Name="PinButton" Theme="{DynamicResource SidebarPinButton}" IsVisible="{Binding IsMouseOver}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="PinTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
       <Button Grid.Column="3" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="4" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
@@ -756,7 +756,7 @@
               <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
             </MultiDataTrigger>
     --></DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:LocalBranchSidebarItem}}" DataType="ui:LocalBranchSidebarItem">
+  <DataTemplate x:Key="LocalBranchSidebarItemTemplate" DataType="ui:LocalBranchSidebarItem">
     <Grid HorizontalAlignment="Stretch">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -775,9 +775,9 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </ToolTip.Tip>
       </TextBlock>
       <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4,0,2,0">
         <TextBlock.Text>
@@ -785,21 +785,21 @@
         </TextBlock.Text>
       </TextBlock>
       <Button Grid.Column="3" x:Name="PinButton" Theme="{DynamicResource SidebarPinButton}" IsVisible="{Binding IsMouseOver}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="PinTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource PinOnIcon}" x:Name="PinButtonImage" />
       </Button>
       <Button Grid.Column="4" x:Name="FilterButton" Theme="{DynamicResource SidebarFilterButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="FilterTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource BranchFilterOnIcon}" x:Name="FilterButtonImage" />
       </Button>
       <Button Grid.Column="5" x:Name="HideButton" Theme="{DynamicResource SidebarHideButton}" IsVisible="{Binding !FilterState}">
-        <Button.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="HideTooltip" />
-        </Button.ToolTip>
+        </ToolTip.Tip>
         <Image Source="{DynamicResource HideBranchOnIcon}" x:Name="HideButtonImage" />
       </Button>
     </Grid>
@@ -1028,7 +1028,7 @@
               <Setter TargetName="HideButton" Property="IsVisible" Value="True" />
             </MultiDataTrigger>
     --></DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:StashSidebarItem}}" DataType="ui:StashSidebarItem">
+  <DataTemplate x:Key="StashSidebarItemTemplate" DataType="ui:StashSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -1039,9 +1039,9 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </ToolTip.Tip>
       </TextBlock>
     </Grid>
     
@@ -1065,7 +1065,7 @@
               <Setter TargetName="StashImage" Value="{DynamicResource SidebarStashSelectedIcon}" Property="Source" />
             </MultiDataTrigger>
     --></DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:SubmoduleSidebarItem}}" DataType="ui:SubmoduleSidebarItem">
+  <DataTemplate x:Key="SubmoduleSidebarItemTemplate" DataType="ui:SubmoduleSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -1099,7 +1099,7 @@
               <Setter TargetName="SubmoduleImage" Value="{DynamicResource SubmoduleSelectedIcon}" Property="Source" />
             </MultiDataTrigger>
     --></DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:WorktreeSidebarItem}}" DataType="ui:WorktreeSidebarItem">
+  <DataTemplate x:Key="WorktreeSidebarItemTemplate" DataType="ui:WorktreeSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -1110,9 +1110,9 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </ToolTip.Tip>
       </TextBlock>
     </Grid>
     
@@ -1146,7 +1146,7 @@
               <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
             </DataTrigger>
     --></DataTemplate>
-  <DataTemplate x:Key="{DataTemplateKey {x:Type ui:MainWorktreeSidebarItem}}" DataType="ui:MainWorktreeSidebarItem">
+  <DataTemplate x:Key="MainWorktreeSidebarItemTemplate" DataType="ui:MainWorktreeSidebarItem">
     <Grid>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16" />
@@ -1157,9 +1157,9 @@
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
-        <TextBlock.ToolTip>
+        <ToolTip.Tip>
           <Binding Path="Tooltip" />
-        </TextBlock.ToolTip>
+        </ToolTip.Tip>
       </TextBlock>
     </Grid>
     

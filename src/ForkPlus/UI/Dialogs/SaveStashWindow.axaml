@@ -28,10 +28,10 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox Grid.Column="0" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" TextChanged="StashMessageTextBox_TextChanged" x:Name="StashMessageTextBox" />
-        <controls:AiActionButton Grid.Column="1" Margin="6,0,0,0" Click="AiGenerateStashNameButton_Click" ToolTip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton" />
+        <controls:AiActionButton Grid.Column="1" Margin="6,0,0,0" Click="AiGenerateStashNameButton_Click" ToolTip.Tip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton" />
       </Grid>
       <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Vertical" Margin="8,6,0,4">
-        <CheckBox Content="Stage new files" FontSize="13" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="StageNewFilesCheckBox" />
+        <CheckBox Content="Stage new files" FontSize="13" IsCheckedChanged="CheckBox_Changed" x:Name="StageNewFilesCheckBox" />
         <TextBlock Margin="22,0,0,0" Text="By default stash ignores new files until you stage them" FontSize="12" Foreground="{DynamicResource ForegroundBrush.WindowsInfo}" />
       </StackPanel>
     </Grid>

@@ -18,7 +18,7 @@
         <ColumnDefinition />
       </Grid.ColumnDefinitions>
       <DockPanel Grid.Column="0">
-        <CheckBox Margin="0,0,0,0" Width="320" HorizontalContentAlignment="Stretch" HorizontalAlignment="Left" Checked="AllRemoteCheckBox_Changed" Unchecked="AllRemoteCheckBox_Changed" x:Name="AllRemoteCheckBox" Theme="{StaticResource MergerSelectAllCheckBox}">
+        <CheckBox Margin="0,0,0,0" Width="320" HorizontalAlignment="Left" IsCheckedChanged="AllRemoteCheckBox_Changed" x:Name="AllRemoteCheckBox" Theme="{StaticResource MergerSelectAllCheckBox}">
           <Grid HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
               <RowDefinition Height="18" />
@@ -50,7 +50,7 @@
           </StackPanel>
         </DockPanel>
         <DockPanel>
-          <CheckBox Margin="0,0,0,0" Width="360" HorizontalContentAlignment="Stretch" HorizontalAlignment="Left" Checked="AllLocalCheckBox_Changed" Unchecked="AllLocalCheckBox_Changed" x:Name="AllLocalCheckBox" Theme="{StaticResource MergerSelectAllCheckBox}">
+          <CheckBox Margin="0,0,0,0" Width="360" HorizontalAlignment="Left" IsCheckedChanged="AllLocalCheckBox_Changed" x:Name="AllLocalCheckBox" Theme="{StaticResource MergerSelectAllCheckBox}">
             <Grid HorizontalAlignment="Stretch">
               <Grid.RowDefinitions>
                 <RowDefinition Height="18" />
@@ -90,10 +90,10 @@
       <controls:FileMergeControl Grid.Row="2" x:Name="FileMergeControl" />
     </Border>
     <DockPanel Grid.Row="3" Margin="0,12,0,2" HorizontalAlignment="Left">
-      <ToggleButton Margin="0" Padding="4,0" Height="22" ToolTip="Switch orientation" Checked="LayoutOrientationToggleButton_Changed" Unchecked="LayoutOrientationToggleButton_Changed" x:Name="LayoutOrientationToggleButton">
+      <ToggleButton Margin="0" Padding="4,0" Height="22" ToolTip.Tip="Switch orientation" IsCheckedChanged="LayoutOrientationToggleButton_Changed" x:Name="LayoutOrientationToggleButton">
         <Image Source="{DynamicResource HorizontalMergerIcon}" Width="16" Height="16" VerticalAlignment="Center" x:Name="LayoutOrientationToggleButtonImage" />
       </ToggleButton>
-      <controls:AiActionButton ActionVerb="Resolve" Margin="6,0,0,0" Click="AiResolveButton_Click" ToolTip="Use AI to resolve all conflicts" x:Name="AiResolveButton" />
+      <controls:AiActionButton ActionVerb="Resolve" Margin="6,0,0,0" Click="AiResolveButton_Click" ToolTip.Tip="Use AI to resolve all conflicts" x:Name="AiResolveButton" />
     </DockPanel>
   </Grid>
 </local:ForkPlusDialogWindow>

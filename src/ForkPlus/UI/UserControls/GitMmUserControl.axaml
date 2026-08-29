@@ -10,7 +10,7 @@
           <ControlTemplate TargetType="TabItem">
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
-              <ContentPresenter ContentSource="Header" Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" />
             </Grid>
             
           </ControlTemplate>
@@ -49,7 +49,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
               </Grid.RowDefinitions>
-              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" CanContentScroll="False" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PreviewMouseWheel">
+              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PreviewMouseWheel">
                 <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
                   <TabPanel IsItemsHost="true" Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
                   <Canvas>
@@ -58,7 +58,7 @@
                 </Grid>
               </ScrollViewer>
               <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel" TabIndex="2">
-                <ContentPresenter ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
+                <ContentPresenter Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
               </Border>
             </Grid>
           </ControlTemplate>
@@ -78,7 +78,7 @@
       <DockPanel>
         <!-- 标题栏 -->
         <DockPanel DockPanel.Dock="Top" Margin="8,6,8,4">
-          <Button DockPanel.Dock="Right" Margin="4,-2,0,-2" Padding="6,0" Width="24" Height="24" Foreground="{DynamicResource SecondaryLabelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" Content="?" FontWeight="SemiBold" ToolTip="git mm help" Click="GitMmHelpButton_Click" x:Name="GitMmHelpButton" Theme="{DynamicResource TransparentButtonStyle}" />
+          <Button DockPanel.Dock="Right" Margin="4,-2,0,-2" Padding="6,0" Width="24" Height="24" Foreground="{DynamicResource SecondaryLabelBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" Content="?" FontWeight="SemiBold" ToolTip.Tip="git mm help" Click="GitMmHelpButton_Click" x:Name="GitMmHelpButton" Theme="{DynamicResource TransparentButtonStyle}" />
           <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="8,1" Foreground="{DynamicResource SecondaryLabelBrush}" Click="SubrepoFilterButton_Click" x:Name="SubrepoFilterButton" Theme="{DynamicResource TextButtonStyle}" />
           <TextBlock Text="Sub repositories" FontWeight="Medium" VerticalAlignment="Center" x:Name="SubreposTitleTextBlock" />
           <WrapPanel Margin="10,0,0,0" VerticalAlignment="Center" x:Name="SubrepoSummaryPanel" />
@@ -87,21 +87,21 @@
         <!-- 工具栏 -->
         <WrapPanel DockPanel.Dock="Top" Margin="8,0,8,0" Orientation="Horizontal">
           <controls:ToolbarButton Margin="0,3,0,3" Title="Start" Click="StartButton_Click" x:Name="StartButton">
-            <controls:ToolbarButton.Style>
+            <controls:ToolbarButton.Theme>
               <DynamicResource ResourceKey="ToolbarButton" />
-            </controls:ToolbarButton.Style>
+            </controls:ToolbarButton.Theme>
             <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource BranchIcon}" />
           </controls:ToolbarButton>
           <controls:ToolbarButton Margin="0,3,0,3" Title="Sync" Click="SyncButton_Click" x:Name="SyncButton">
-            <controls:ToolbarButton.Style>
+            <controls:ToolbarButton.Theme>
               <DynamicResource ResourceKey="ToolbarButton" />
-            </controls:ToolbarButton.Style>
+            </controls:ToolbarButton.Theme>
             <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PullIcon}" />
           </controls:ToolbarButton>
           <controls:ToolbarButton Margin="0,3,0,3" Title="Upload" Click="UploadButton_Click" x:Name="UploadButton">
-            <controls:ToolbarButton.Style>
+            <controls:ToolbarButton.Theme>
               <DynamicResource ResourceKey="ToolbarButton" />
-            </controls:ToolbarButton.Style>
+            </controls:ToolbarButton.Theme>
             <Image Width="20" Height="20" VerticalAlignment="Center" Source="{DynamicResource PushIcon}" />
           </controls:ToolbarButton>
         </WrapPanel>
@@ -136,7 +136,7 @@
             <DockPanel LastChildFill="True">
               <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" Theme="{DynamicResource TextButtonStyle}" />
               <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
-              <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled">
                 <WrapPanel x:Name="UploadLinksPanel" />
               </ScrollViewer>
             </DockPanel>
@@ -144,7 +144,7 @@
 
           <!-- RichTextBox 输出区 -->
           <Border Grid.Row="2" BorderThickness="0" Background="{DynamicResource CodeEditorBackground}">
-            <TextBox BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
+            <TextBox BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
           </Border>
         </Grid>
       </Border>

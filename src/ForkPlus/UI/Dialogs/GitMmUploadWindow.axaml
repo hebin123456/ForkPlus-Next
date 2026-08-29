@@ -27,7 +27,7 @@
                     </ControlTemplate>
                   </ToggleButton.Template>
                 </ToggleButton>
-                <ContentPresenter DockPanel.Dock="Bottom" ContentSource="Content" x:Name="ExpandSite" IsVisible="False" />
+                <ContentPresenter DockPanel.Dock="Bottom" x:Name="ExpandSite" IsVisible="False" />
               </DockPanel>
               
             </ControlTemplate>
@@ -89,9 +89,9 @@
               <ColumnDefinition Width="145" />
               <ColumnDefinition Width="170" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="_Force upload" ToolTip="-f" x:Name="ForceUploadCheckBox" />
-            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Assume yes" ToolTip="-y" IsChecked="True" x:Name="AssumeYesCheckBox" />
-            <CheckBox Grid.Column="2" HorizontalAlignment="Left" Content="Current branch only" ToolTip="--cbr" x:Name="CurrentBranchOnlyCheckBox" />
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="_Force upload" ToolTip.Tip="-f" x:Name="ForceUploadCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Assume yes" ToolTip.Tip="-y" IsChecked="True" x:Name="AssumeYesCheckBox" />
+            <CheckBox Grid.Column="2" HorizontalAlignment="Left" Content="Current branch only" ToolTip.Tip="--cbr" x:Name="CurrentBranchOnlyCheckBox" />
           </Grid>
           <Grid Grid.Column="1" Grid.Row="1" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
@@ -100,15 +100,15 @@
               <ColumnDefinition Width="170" />
               <ColumnDefinition Width="170" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Upload HEAD" ToolTip="--head" x:Name="HeadCheckBox" />
-            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Ready" ToolTip="--ready" x:Name="ReadyCheckBox" />
-            <CheckBox Grid.Column="2" HorizontalAlignment="Left" Content="Work in progress" ToolTip="--wip" x:Name="WipCheckBox" />
-            <CheckBox Grid.Column="3" HorizontalAlignment="Left" Content="No update manifest" ToolTip="-N" x:Name="NoUpdateManifestCheckBox" />
+            <CheckBox Grid.Column="0" HorizontalAlignment="Left" Content="Upload HEAD" ToolTip.Tip="--head" x:Name="HeadCheckBox" />
+            <CheckBox Grid.Column="1" HorizontalAlignment="Left" Content="Ready" ToolTip.Tip="--ready" x:Name="ReadyCheckBox" />
+            <CheckBox Grid.Column="2" HorizontalAlignment="Left" Content="Work in progress" ToolTip.Tip="--wip" x:Name="WipCheckBox" />
+            <CheckBox Grid.Column="3" HorizontalAlignment="Left" Content="No update manifest" ToolTip.Tip="-N" x:Name="NoUpdateManifestCheckBox" />
           </Grid>
         </Grid>
       </Expander>
       <TextBlock Grid.Column="0" Grid.Row="7" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
-      <ScrollViewer Grid.Column="1" Grid.Row="7" MaxHeight="120" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
+      <ScrollViewer Grid.Column="1" Grid.Row="7" MaxHeight="120" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
         <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
       </ScrollViewer>
     </Grid>

@@ -19,7 +19,7 @@
         <ColumnDefinition Width="220" />
         <ColumnDefinition />
       </Grid.ColumnDefinitions>
-      <ListBox Grid.Column="0" VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="AccountsListBox_SelectionChanged" x:Name="AccountsListBox" ItemContainerTheme="{DynamicResource ListBoxItemWithBorderStyle}">
+      <ListBox Grid.Column="0" VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="AccountsListBox_SelectionChanged" x:Name="AccountsListBox" ItemContainerTheme="{DynamicResource ListBoxItemWithBorderStyle}">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <Grid>

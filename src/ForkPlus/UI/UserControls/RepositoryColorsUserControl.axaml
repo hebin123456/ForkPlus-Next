@@ -1,61 +1,61 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryColorsUserControl">
   <StackPanel Orientation="Horizontal">
     <StackPanel.Children>
-      <RadioButton Padding="0,2,2,2" Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color0Button">
-        <RadioButton.Style>
+      <RadioButton Padding="0,2,2,2" IsCheckedChanged="ColorButton_Changed" x:Name="Color0Button">
+        <RadioButton.Theme>
           <DynamicResource ResourceKey="RepositoryColorRadioButton" />
-        </RadioButton.Style>
+        </RadioButton.Theme>
       </RadioButton>
-      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color1Button">
+      <RadioButton IsCheckedChanged="ColorButton_Changed" x:Name="Color1Button">
         <RadioButton.Background>
           <SolidColorBrush>#FF008000</SolidColorBrush>
         </RadioButton.Background>
-        <RadioButton.Style>
+        <RadioButton.Theme>
           <DynamicResource ResourceKey="RepositoryColorRadioButton" />
-        </RadioButton.Style>
+        </RadioButton.Theme>
       </RadioButton>
-      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color2Button">
+      <RadioButton IsCheckedChanged="ColorButton_Changed" x:Name="Color2Button">
         <RadioButton.Background>
           <SolidColorBrush>#FFFFA500</SolidColorBrush>
         </RadioButton.Background>
-        <RadioButton.Style>
+        <RadioButton.Theme>
           <DynamicResource ResourceKey="RepositoryColorRadioButton" />
-        </RadioButton.Style>
+        </RadioButton.Theme>
       </RadioButton>
-      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color3Button">
+      <RadioButton IsCheckedChanged="ColorButton_Changed" x:Name="Color3Button">
         <RadioButton.Background>
           <SolidColorBrush>#FF0000FF</SolidColorBrush>
         </RadioButton.Background>
-        <RadioButton.Style>
+        <RadioButton.Theme>
           <DynamicResource ResourceKey="RepositoryColorRadioButton" />
-        </RadioButton.Style>
+        </RadioButton.Theme>
       </RadioButton>
-      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color4Button">
+      <RadioButton IsCheckedChanged="ColorButton_Changed" x:Name="Color4Button">
         <RadioButton.Background>
           <SolidColorBrush>#FFFFFF00</SolidColorBrush>
         </RadioButton.Background>
-        <RadioButton.Style>
+        <RadioButton.Theme>
           <DynamicResource ResourceKey="RepositoryColorRadioButton" />
-        </RadioButton.Style>
+        </RadioButton.Theme>
       </RadioButton>
-      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="Color5Button">
+      <RadioButton IsCheckedChanged="ColorButton_Changed" x:Name="Color5Button">
         <RadioButton.Background>
           <SolidColorBrush>#FFFF00FF</SolidColorBrush>
         </RadioButton.Background>
-        <RadioButton.Style>
+        <RadioButton.Theme>
           <DynamicResource ResourceKey="RepositoryColorRadioButton" />
-        </RadioButton.Style>
+        </RadioButton.Theme>
       </RadioButton>
-      <RadioButton Checked="ColorButton_Changed" Unchecked="ColorButton_Changed" x:Name="NoColorButton">
+      <RadioButton IsCheckedChanged="ColorButton_Changed" x:Name="NoColorButton">
         <RadioButton.BorderBrush>
           <DynamicResource ResourceKey="SecondaryLabelBrush" />
         </RadioButton.BorderBrush>
         <RadioButton.Background>
           <DynamicResource ResourceKey="NoColorButtonBrush" />
         </RadioButton.Background>
-        <RadioButton.Style>
+        <RadioButton.Theme>
           <DynamicResource ResourceKey="RepositoryColorRadioButton" />
-        </RadioButton.Style>
+        </RadioButton.Theme>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="CancelSearchIcon" />

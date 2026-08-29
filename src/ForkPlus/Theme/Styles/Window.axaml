@@ -170,16 +170,16 @@
                 <Border Grid.Row="0" Background="{DynamicResource Window.TitleBar.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
                   <DockPanel>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                      <Button Command="SystemCommands.MinimizeWindowCommand" x:Name="PART_MinimizeButton" Theme="{DynamicResource WindowButton}">
+                      <Button x:Name="PART_MinimizeButton" Theme="{DynamicResource WindowButton}">
                         <Path Data="{StaticResource MinimizeGeometry}" Theme="{DynamicResource WindowPathStyle}" />
                       </Button>
-                      <Button Command="SystemCommands.RestoreWindowCommand" x:Name="PART_RestoreButton" Theme="{DynamicResource WindowButton}">
+                      <Button x:Name="PART_RestoreButton" Theme="{DynamicResource WindowButton}">
                         <Path Data="{StaticResource RestoreGeometry}" Theme="{DynamicResource WindowPathStyle}" />
                       </Button>
-                      <Button Command="SystemCommands.MaximizeWindowCommand" x:Name="PART_MaximizeButton" Theme="{DynamicResource WindowButton}">
+                      <Button x:Name="PART_MaximizeButton" Theme="{DynamicResource WindowButton}">
                         <Path Data="{StaticResource MaximizeGeometry}" Theme="{DynamicResource WindowPathStyle}" />
                       </Button>
-                      <Button Command="SystemCommands.CloseWindowCommand" x:Name="PART_CloseButton" Theme="{DynamicResource WindowCloseButton}">
+                      <Button x:Name="PART_CloseButton" Theme="{DynamicResource WindowCloseButton}">
                         <Path Data="{StaticResource CloseGeometry}" Theme="{DynamicResource WindowCloseButtonPathStyle}" />
                       </Button>
                     </StackPanel>
@@ -187,16 +187,16 @@
                       <StackPanel Orientation="Horizontal">
                         <Image Source="{TemplateBinding Icon}" />
                         <ContentControl Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
-                          <Label.Visibility>
+                          <Label.IsVisible>
                             <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" Converter="{StaticResource BooleanToVisibility}" />
-                          </Label.Visibility>
+                          </Label.IsVisible>
                         </ContentControl>
                       </StackPanel>
                     </Border>
                   </DockPanel>
                 </Border>
                 <ContentPresenter ClipToBounds="True" Grid.Row="1" />
-                <ResizeGrip Grid.Row="1" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsTabStop="False" x:Name="ResizeGrip" IsVisible="False" />
+    <!-- TODO 迁移：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
             </Border>
           </Border>
@@ -224,16 +224,16 @@
                 <Border Grid.Row="0" Background="{DynamicResource Window.Dialog.Background}" BorderThickness="0" Padding="0" x:Name="PART_WindowHeader">
                   <DockPanel>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                      <Button Command="SystemCommands.MinimizeWindowCommand" x:Name="PART_MinimizeButton" Theme="{DynamicResource WindowButton}">
+                      <Button x:Name="PART_MinimizeButton" Theme="{DynamicResource WindowButton}">
                         <Path Data="{StaticResource MinimizeGeometry}" Theme="{DynamicResource WindowPathStyle}" />
                       </Button>
-                      <Button Command="SystemCommands.RestoreWindowCommand" x:Name="PART_RestoreButton" Theme="{DynamicResource WindowButton}">
+                      <Button x:Name="PART_RestoreButton" Theme="{DynamicResource WindowButton}">
                         <Path Data="{StaticResource RestoreGeometry}" Theme="{DynamicResource WindowPathStyle}" />
                       </Button>
-                      <Button Command="SystemCommands.MaximizeWindowCommand" x:Name="PART_MaximizeButton" Theme="{DynamicResource WindowButton}">
+                      <Button x:Name="PART_MaximizeButton" Theme="{DynamicResource WindowButton}">
                         <Path Data="{StaticResource MaximizeGeometry}" Theme="{DynamicResource WindowPathStyle}" />
                       </Button>
-                      <Button Command="SystemCommands.CloseWindowCommand" x:Name="PART_CloseButton" Theme="{DynamicResource WindowCloseButton}">
+                      <Button x:Name="PART_CloseButton" Theme="{DynamicResource WindowCloseButton}">
                         <Path Data="{StaticResource CloseGeometry}" Theme="{DynamicResource WindowCloseButtonPathStyle}" />
                       </Button>
                     </StackPanel>
@@ -241,16 +241,16 @@
                       <StackPanel Orientation="Horizontal">
                         <Image Source="{TemplateBinding Icon}" />
                         <ContentControl Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">
-                          <Label.Visibility>
+                          <Label.IsVisible>
                             <Binding Path="IsTitleVisible" RelativeSource="{RelativeSource TemplatedParent}" Converter="{StaticResource BooleanToVisibility}" />
-                          </Label.Visibility>
+                          </Label.IsVisible>
                         </ContentControl>
                       </StackPanel>
                     </Border>
                   </DockPanel>
                 </Border>
                 <ContentPresenter ClipToBounds="True" Grid.Row="1" />
-                <ResizeGrip Grid.Row="1" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsTabStop="False" x:Name="ResizeGrip" IsVisible="False" />
+    <!-- TODO 迁移：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
             </Border>
           </Border>

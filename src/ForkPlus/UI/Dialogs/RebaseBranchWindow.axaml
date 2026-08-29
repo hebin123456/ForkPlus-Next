@@ -25,7 +25,7 @@
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="SourceGitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="On:" />
       <controls:GitPointView Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Update dependent branches" ToolTip="--update-refs" Checked="UpdateRefsCheckBox_Changed" Unchecked="UpdateRefsCheckBox_Changed" x:Name="UpdateRefsCheckBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Update dependent branches" ToolTip.Tip="--update-refs" IsCheckedChanged="UpdateRefsCheckBox_Changed" x:Name="UpdateRefsCheckBox" />
       <ListBox Grid.Row="3" Grid.Column="1" MaxHeight="72" Margin="30,0,0,2" Background="{DynamicResource TextBox.Static.Background}" Padding="0" x:Name="LocalBranchesListBox" Theme="{DynamicResource NoSelectionListBoxStyle}">
         <ListBox.ItemTemplate>
           <DataTemplate>
@@ -44,7 +44,7 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
-      <CheckBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Stash and reapply local changes" Checked="AutostashCheckBox_Changed" Unchecked="AutostashCheckBox_Changed" x:Name="AutostashCheckBox" />
+      <CheckBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Stash and reapply local changes" IsCheckedChanged="AutostashCheckBox_Changed" x:Name="AutostashCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

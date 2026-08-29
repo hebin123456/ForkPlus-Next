@@ -11,8 +11,8 @@
     </Grid.ColumnDefinitions>
     <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" ClipToBounds="True" Background="{DynamicResource HeaderToolbarBackgroundBrush}">
       <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" MinHeight="17" x:Name="MenuRow" />
-        <RowDefinition Height="Auto" x:Name="FilterPanelRow" />
+        <RowDefinition Height="NaN" MinHeight="17" x:Name="MenuRow" />
+        <RowDefinition Height="NaN" x:Name="FilterPanelRow" />
         <RowDefinition Height="34" x:Name="UnstagedFilesHeaderRow" />
         <RowDefinition Height="*" x:Name="UnstagedFilesRow" />
       </Grid.RowDefinitions>
@@ -23,19 +23,19 @@
         </controls:FilterTextBox.AnimationPlaceholder>
       </controls:FilterTextBox>
       <DockPanel Grid.Row="0" HorizontalAlignment="Stretch" LastChildFill="False" Background="{DynamicResource HeaderToolbarBackgroundBrush}">
-        <Button DockPanel.Dock="Left" ToolTip="Filter" Click="FilterButton_Click" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+        <Button DockPanel.Dock="Left" ToolTip.Tip="Filter" Click="FilterButton_Click" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
           <Image Source="{DynamicResource SearchIcon}" />
         </Button>
-        <controls:DropDownButton DockPanel.Dock="Right" ToolTip="View Mode" ClickMode="Press" x:Name="FileListSettingsDropdownButton" Theme="{DynamicResource CodeEditorHeaderDropDownButtonStyle}">
+        <controls:DropDownButton DockPanel.Dock="Right" ToolTip.Tip="View Mode" ClickMode="Press" x:Name="FileListSettingsDropdownButton" Theme="{DynamicResource CodeEditorHeaderDropDownButtonStyle}">
           <Image Source="{DynamicResource ListIcon}" VerticalAlignment="Center" />
           <controls:DropDownButton.ContextMenu>
             <ContextMenu Opened="FileListSettingsDropdownButton_ContextMenuOpened" />
           </controls:DropDownButton.ContextMenu>
         </controls:DropDownButton>
-        <Button DockPanel.Dock="Right" ToolTip="Show diff side-by-side (space bar)" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+        <Button DockPanel.Dock="Right" ToolTip.Tip="Show diff side-by-side (space bar)" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
           <Image Source="{DynamicResource PreviewIcon}" />
         </Button>
-        <Button DockPanel.Dock="Right" ToolTip="Stage All" Click="StageAllButton_Click" x:Name="StageAllButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+        <Button DockPanel.Dock="Right" ToolTip.Tip="Stage All" Click="StageAllButton_Click" x:Name="StageAllButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
           <Image Source="{DynamicResource StatageAllIcon}" x:Name="StageAllButtonIcon" />
         </Button>
       </DockPanel>
@@ -46,7 +46,7 @@
           <TextBlock DockPanel.Dock="Left" Margin="0,3,0,3" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="UnstagedStatusTextBlock" />
         </DockPanel>
       </Border>
-      <userControls:FileListUserControl ContextMenuOpening="UnstagedFilesFileListUserControl_ContextMenuOpening" ColumnHeaderSizeChanged="UnstagedFilesFileListUserControl_ColumnHeaderSizeChanged" Grid.Row="3" EnableMultiSelection="True" x:Name="UnstagedFilesFileListUserControl">
+      <userControls:FileListUserControl ColumnHeaderSizeChanged="UnstagedFilesFileListUserControl_ColumnHeaderSizeChanged" Grid.Row="3" EnableMultiSelection="True" x:Name="UnstagedFilesFileListUserControl">
         <userControls:FileListUserControl.ContextMenu>
           <ContextMenu />
         </userControls:FileListUserControl.ContextMenu>
@@ -63,7 +63,7 @@
           <TextBlock Text="Staged" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="10,2,4,3" FontSize="14" FontWeight="Medium" x:Name="StagedTitleTextBlock" />
         </DockPanel>
       </Border>
-      <userControls:FileListUserControl ContextMenuOpening="StagedFilesFileListUserControl_ContextMenuOpening" ColumnHeaderSizeChanged="StagedFilesFileListUserControl_ColumnHeaderSizeChanged" Grid.Row="2" EnableMultiSelection="True" x:Name="StagedFilesFileListUserControl">
+      <userControls:FileListUserControl ColumnHeaderSizeChanged="StagedFilesFileListUserControl_ColumnHeaderSizeChanged" Grid.Row="2" EnableMultiSelection="True" x:Name="StagedFilesFileListUserControl">
         <userControls:FileListUserControl.ContextMenu>
           <ContextMenu />
         </userControls:FileListUserControl.ContextMenu>

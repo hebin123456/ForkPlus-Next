@@ -289,7 +289,7 @@ namespace ForkPlus.UI.Dialogs
 			UpdateHsvFromMouse(e.GetPosition(HsvCanvas));
 		}
 
-		private void HsvCanvas_MouseUp(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		private void HsvCanvas_MouseUp(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
 			_isDraggingHsv = false;
 			HsvCanvas.ReleaseMouseCapture();
@@ -328,7 +328,7 @@ namespace ForkPlus.UI.Dialogs
 			UpdateHueFromMouse(e.GetPosition(HueCanvas));
 		}
 
-		private void HueCanvas_MouseUp(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		private void HueCanvas_MouseUp(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
 			_isDraggingHue = false;
 			HueCanvas.ReleaseMouseCapture();

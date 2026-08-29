@@ -34,7 +34,7 @@
           <ListBox.ItemTemplate>
             <DataTemplate>
               <DockPanel>
-                <CheckBox Margin="2,2,4,2" VerticalAlignment="Center" Checked="SshKeyCheckBox_Changed" Unchecked="SshKeyCheckBox_Changed">
+                <CheckBox Margin="2,2,4,2" VerticalAlignment="Center" IsCheckedChanged="SshKeyCheckBox_Changed">
                   <CheckBox.IsChecked>
                     <Binding Path="IsActive" />
                   </CheckBox.IsChecked>

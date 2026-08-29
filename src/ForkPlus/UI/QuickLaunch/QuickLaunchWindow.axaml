@@ -24,7 +24,7 @@
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
         <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
     </Style></ControlTheme>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:CommandProviderItem}}" DataType="local:CommandProviderItem">
+      <DataTemplate x:Key="CommandProviderItemTemplate" DataType="local:CommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
             <Image.Source>
@@ -40,9 +40,9 @@
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
           <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" x:Name="DashTextBlock">
-            <TextBlock.Visibility>
+            <TextBlock.IsVisible>
               <Binding Path="DescriptionVisibility" />
-            </TextBlock.Visibility>
+            </TextBlock.IsVisible>
           </TextBlock>
           <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
             <controls:FuzzyHighlightableTextBlock.Text>
@@ -75,7 +75,7 @@
                   </Setter>
                 </DataTrigger>
     --></DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:HeaderCommandProviderItem}}" DataType="local:HeaderCommandProviderItem">
+      <DataTemplate x:Key="HeaderCommandProviderItemTemplate" DataType="local:HeaderCommandProviderItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <TextBlock DockPanel.Dock="Left" FontSize="13.5" Margin="0,0,0,4" FontWeight="Medium" VerticalAlignment="Bottom" x:Name="NameTextBlock">
             <TextBlock.Text>
@@ -84,7 +84,7 @@
           </TextBlock>
         </DockPanel>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type local:RepositoryInfoItem}}" DataType="local:RepositoryInfoItem">
+      <DataTemplate x:Key="RepositoryInfoItemTemplate" DataType="local:RepositoryInfoItem">
         <DockPanel Height="25" LastChildFill="True" Margin="10,0,0,0">
           <Image DockPanel.Dock="Left" Height="14" Width="14" VerticalAlignment="Bottom" Margin="0,0,4,4" x:Name="IconImage">
             <Image.Source>
@@ -100,9 +100,9 @@
             </controls:FuzzyHighlightableTextBlock.FuzzySearchString>
           </controls:FuzzyHighlightableTextBlock>
           <TextBlock Text="—" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="4,0,4,4" VerticalAlignment="Bottom" x:Name="DashTextBlock">
-            <TextBlock.Visibility>
+            <TextBlock.IsVisible>
               <Binding Path="DescriptionVisibility" />
-            </TextBlock.Visibility>
+            </TextBlock.IsVisible>
           </TextBlock>
           <controls:FuzzyHighlightableTextBlock FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Bottom" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" x:Name="PathTextBlock">
             <controls:FuzzyHighlightableTextBlock.Text>
@@ -149,7 +149,7 @@
         <controls:CommandTextBox FontSize="16" BorderThickness="0" x:Name="CommandTextBox" />
       </StackPanel>
     </Border>
-    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" x:Name="RepositoriesListBox" PointerReleased="RepositoriesListBox_MouseUp" ItemContainerTheme="{DynamicResource QuickLaunchListBoxItemStyle}">
+    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" x:Name="RepositoriesListBox" PointerPressed="RepositoriesListBox_MouseUp" ItemContainerTheme="{DynamicResource QuickLaunchListBoxItemStyle}">
       <ListBox.FocusVisualStyle>
         <x:Null />
       </ListBox.FocusVisualStyle>

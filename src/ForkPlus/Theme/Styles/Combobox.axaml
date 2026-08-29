@@ -41,7 +41,7 @@
     </Setter>
   
     <Style Selector="^:disabled /template/ Border#Bd">
-        <Setter Value="#FF6D6D6D" Property="Foreground" />
+<!-- TODO 迁移：WPF Foreground Setter 已删（Avalonia Border 无 Foreground 属性） -->
     </Style>
     <Style Selector="^:selected /template/ Border#SelectionIndicator">
         <Setter Property="IsVisible" Value="True" />
@@ -267,7 +267,7 @@
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
-      <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding SelectionBoxItem}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
+      <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
     </Grid>
     <!--
       TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
@@ -306,12 +306,12 @@
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     
-    <Setter Property="PanningMode" Value="VerticalFirst" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
-          <ScrollViewer Background="#00FFFFFF" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
+          <ScrollViewer Background="#00FFFFFF" Focusable="false" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Hidden" x:Name="PART_ContentHost" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -408,9 +408,9 @@
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Padding" Value="6,3,0,3" />
     <Setter Property="Height" Value="24" />
-    <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
-    <Setter Property="PanningMode" Value="Both" />
-    <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}" />
     
   
@@ -483,7 +483,7 @@
           <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
-      <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding SelectionBoxItem}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" TextElement.Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
+      <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" TextElement.Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
     </Grid>
     <!--
       TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。

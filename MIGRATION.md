@@ -14,15 +14,19 @@
 ## 环境与构建（重要）
 
 ```bash
-# dotnet 不在默认 PATH，必须先 export（沙盒环境）
-export PATH="/opt/dotnet:$PATH"
-export DOTNET_ROOT="/opt/dotnet"
+# dotnet 不在默认 PATH，必须先 export（沙盒环境重置后 SDK 装在 ~/.dotnet）
+export PATH="$HOME/.dotnet:$PATH"
+export DOTNET_ROOT="$HOME/.dotnet"
+# 若 ~/.dotnet 只有 sentinel 没有 binary（沙盒重置），用 /data/user/work/dotnet-install.sh 重装：
+# bash /data/user/work/dotnet-install.sh --channel 10.0 --version 10.0.400 --install-dir $HOME/.dotnet
 
 # 编译主工程（在 /data/user/work/migration/ForkPlus-Next/src/ForkPlus 下）
 dotnet build --no-restore -v q -nologo 2>&1 | grep -E "error CS" | sed -E 's/ \[.*//' | sort -u
 
-# 编译整个解决方案（7 个工程：主程序 + AskPass + RI + 4 个测试工程）
-cd /data/user/work/migration/ForkPlus-Next/src && dotnet build ForkPlus.sln -v q -nologo
+# 编译整个解决方案并收集 AVLN 错误（XAML 批量修复的标准命令）
+cd /data/user/work/migration/ForkPlus-Next/src && dotnet build ForkPlus.sln -clp:ErrorsOnly -nologo 2>&1 | tee /tmp/build_outN.txt | tail -3
+grep -oP 'error AVLN\d+' /tmp/build_outN.txt | sort | uniq -c | sort -rn   # 错误码分布
+grep -oP 'error AVLN\d+.*' /tmp/build_outN.txt | sort -u | wc -l          # 唯一错误数
 
 # 查看源生成器产物（调试 x:Name 字段问题时极其有用）
 dotnet build --no-restore -v q -nologo -p:EmitCompilerGeneratedFiles=true
@@ -57,14 +61,15 @@ git push origin HEAD
 | `fccada2` | 154→57 | Visual 可视树遍历 + GetParent/HitTest/Run 模式簇 + SshPassphrase/GitMmStart/Clipboard/Dispatcher.Post 修复 |
 | `0922795` | 57 | docs: 迁移文档刷新（纯文档提交） |
 | `3c3837c` | 57→0 | IBrush/Rect 不可变簇 + 滚轮转发 + WeakEventManagerBase 4 泛型 + PointerPressed 合成 + BinaryDiff 绘制簇等 20 类修复 |
-| （本轮） | C# 保持 0 | 运行时冒烟：IPC 管道修复；发现 XAML 编译静默失败（1198 去重错误为运行时阻塞项） |
+| `3335377` | C# 0 / AVLN 1198 | IPC 管道修复 + 文档记录 XAML 编译静默失败根因 |
+| （本轮） | AVLN 1198→390 | xamlpass1-4 批量 XAML 修复（详见下节「XAML 批量修复方法论」） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
-| 2 XAML (AVLN) 清零 | 🔴 **运行时阻塞项** | XAML 编译静默失败，AVLN 错误必须清零（见下文分析） |
-| 3 运行时验证 | 🔄 进行中 | 已跑通：App 构造 + IPC；卡在：MainWindow XAML 加载 |
+| 2 XAML (AVLN) 清零 | 🔄 **进行中** | 1198→390（唯一错误），剩余模式已归类，见下文 |
+| 3 运行时验证 | 🔄 进行中 | 已跑通：App 构造 + IPC；卡在：MainWindow XAML 加载（依赖阶段 2） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
 ## XAML 编译静默失败（关键机制，必读）
@@ -86,28 +91,39 @@ dotnet build -t:Rebuild -v n -nologo 2>&1 | grep "error AVLN" | wc -l
 ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 ```
 
-**错误分布**（去重后 ~1198 处，按文件）：
-| 文件 | 错误数 | 主要问题 |
-|---|---:|---|
-| Theme/Styles/Listview.axaml | 66 | Trigger/Condition/EventSetter 等 WPF 结构 |
-| Theme/Styles/Menu.axaml | 56 | 同上 |
-| UI/UserControls/FileControlHeaderUserControl.axaml | 52 | 同上 |
-| Theme/Styles/Tabcontrol.axaml | 45 | TabPanel 类型未解析等 |
-| Theme/Styles/Window.axaml | 42 | ResizeGrip 未解析等 |
-| UI/MainWindow.axaml | 35 | 见下文 |
-| 其余 ~190 个文件 | 各 2-28 | 同类问题 |
+**错误分布**（本轮修复后剩 ~390 去重，重点文件）：
+| 文件 | 主要问题 |
+|---|---|
+| Theme/Styles/Tabcontrol.axaml | TabPanel 未解析（43 处，全仓最大簇）、ControlTheme 嵌套问题 |
+| Theme/Styles/Menu.axaml | ComponentResourceKey 未解析（25 处全在此 + Window.axaml）、ControlTheme 直接放 ResourceDictionary |
+| UI/UserControls/GitMmUserControl.axaml | FocusVisualStyle/AllowDrop 等属性未解析 |
+| UI/Dialogs/InteractiveRebaseWindow.axaml | 同类属性簇 |
 
-**错误类别**：
-- AVLN2000 "Unable to resolve type X"（最多）：WPF-only 类型残留在 XAML —— `ResizeGrip`、`TabPanel`、`Condition`、`Trigger`、`Storyboard`、`EventSetter`、`EasingDoubleKeyFrame`、`DataTemplateKey`
-- AVLN2000 "Unable to resolve property X on type Y"：WPF 属性在 Avalonia 类型上不存在 —— `IsMouseOver`（→ `:pointerover` 选择器）、`HasContent`、`IsDefaulted`、`AllowsTransparency`、`ContentTemplateSelector`、`ContentStringFormat`、`Style.Resources`、`ControlTemplate.Resources`、`Border.Foreground`、`VisualBrush.Viewport/ViewportUnits`
-- AVLN1000（18）：格式转换错误（如 `'Auto'` 传给数字属性）
-- AVLN2200（60）：属性值无法转换
-- AVLN3000（262）：需确认（疑似 x:DataType/绑定相关）
+**剩余错误类别**（本轮统计，按频次）：
+- AVLN2000 类型未解析（82）：`TabPanel`(43，WPF TabControl 面板) / `ComponentResourceKey`(25) / `Hyperlink`(6) / `ListViewItem`(5→ListBoxItem) / `Stylus`(3) / `ListView`(3) / `ResizeGrip`(2) / `MenuScrollingVisibilityConverter`(2)
+- AVLN2000 属性未解析（214）：`FocusVisualStyle`(29，WPF-only) / `Name`(26，非 StyledElement 上 x:Name) / `AllowDrop`(9) / `TextDecorations`(8) / `Resources`(8，Style/ControlTemplate 上) / `Horizontal/VerticalContentAlignment`(13) / `StaysOpen`(5) / `PopupAnimation`(5) / `Increase/DecreaseRepeatButton`(10，Track) / `AllowsTransparency`(5) / 零散（Uid/ZIndex/TabIndex/ViewportWidth 等）
+- AVLN3000（60）：setter/adder 不匹配 —— ControlTheme 直接放 ResourceDictionary 子元素、Popup.Placement 值等
+- AVLN2200（25）：值转换失败（多为 `{Unknown type}`，即引用了被注释/不存在的资源）
+- AVLN1000（18）：格式错误（`Auto` 传数字属性等）
 
 **修复策略**：
 1. 先修 Theme/Styles/*.axaml（错误乘数最高——每个错误会被所有引用它的入口文件重复报告）
 2. WPF Trigger/Storyboard/EventSetter 块整体删除或转 Avalonia 选择器（`:pointerover`/`:pressed`/`:focus` 等）；转换器本应注释掉的块残留了
 3. 每修一批就 Rebuild 验证 `CompiledAvaloniaXaml` 类型数 > 0，最终目标是全部 XAML 编译通过
+
+## XAML 批量修复方法论（xamlpass1-4，已验证有效）
+
+对 1198 个去重 AVLN 错误逐个手改不现实。已验证的批量路径：**用 Python 脚本处理 .axaml 文本，每次 Rebuild 收集新错误清单再迭代**。脚本在 `/data/user/work/xamlpass1.py` ~ `xamlpass4.py`，要点：
+
+1. **XML 注释状态机**（所有 pass 共用）：XAML 里有 `<!-- ... -->` 注释块（含多行 Storyboard 注释化产物），绝不能把注释里的内容再改一遍。`split_active_regions()` 按 `<!--`/`-->` 切分，只处理非注释区。注释体内含 `--` 会破坏 XML，删除时用不带 `--` 的说明文本。
+2. **错误驱动**：`dotnet build -clp:ErrorsOnly` 输出 → tee 到 /tmp/build_outN.txt → 脚本解析 `path(line,col): error AVLN2000: ...` 建立 `{file: {line: [(kind, detail)]}}` 索引 → 只改报错行。盲改全仓风险高。
+3. **各 pass 覆盖**：
+   - pass1：Trigger/Condition 块、WPF-only Setter 删除
+   - pass2：Storyboard 块注释化、ResizeGrip 删、EventSetter 删、SystemCommands 属性删、事件名/签名错配（扫 code-behind 的 handler 参数类型反推）
+   - pass3：核心 API 映射 —— `Visibility`→`IsVisible`（值转换）、`ToolTip`→`ToolTip.Tip`、`ListView`→`ListBox`/`ListViewItem`→`ListBoxItem`、`Auto`→`NaN`（区分 GridLength）、`PART_ContentHost` ScrollViewer→TextPresenter(PART_TextPresenter)、Track 的 `Increase/DecreaseRepeatButton`→`Increase/DecreaseButton`、Popup `Placement="Mouse"`→`"Pointer"`
+   - pass4：错误驱动单行修复（按行号定位删 Setter/属性）+ 控件级整块处理
+4. **验证闭环**：`dotnet build src/ForkPlus.sln -clp:ErrorsOnly 2>&1 | tee /tmp/build_outN.txt` → 统计 `grep -oP 'error AVLN\d+' | sort | uniq -c`。每轮预期降 200-400。
+5. **注意事项**：删除块时留下的 `<!-- TODO 迁移：... -->` 注释要单行（多行嵌套 `--` 会炸）；`git diff` 抽查再提交。
 
 ## 运行时冒烟已修复的问题
 
@@ -116,7 +132,13 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 
 ## 下一步行动（按优先级）
 
-1. **XAML (AVLN) 错误清零**（运行时阻塞项，见上节策略）。修复顺序：Theme/Styles → 主窗口链路（MainWindow.axaml + CustomWindow + TabManager 相关）→ 其余窗口。可用 `dotnet build -t:Rebuild -v n 2>&1 | grep "error AVLN"` 实时统计。
+1. **XAML (AVLN) 错误继续清零**（390→0，运行时阻塞项）。剩余簇及建议处理法：
+   - `TabPanel`(43)：WPF TabControl 模板用 `<TabPanel>` 排 Tab 头。Avalonia 无此类型。方案：`ItemsPresenter` 本身支持横排；或用普通 `StackPanel` + `IsItemsHost` 删（Avalonia ItemsPresenter 已带面板语义）。Tabcontrol.axaml 需人工重写模板结构，参考 Avalonia 官方 Fluent ControlTheme。
+   - `ComponentResourceKey`(25)：WPF 资源键机制。在 Menu.axaml/Window.axaml 里多用于 `Foreground="{ComponentResourceKey ...}"`。方案：直接删该属性或换成字面值/`{DynamicResource 键}`。
+   - `FocusVisualStyle`(29)：WPF-only 概念，Avalonia 无焦点可视化样式属性。方案：整属性删除（XAML 属性形式 `FocusVisualStyle="{x:Null}"` 常见）。
+   - `Name` 未解析(26)：多为 ControlTheme/ControlTemplate 里 TargetType 是基类但 x:Name 挂在不支持的位置，逐个看。
+   - `StaysOpen/PopupAnimation/AllowsTransparency/AllowDrop/Uid/TabIndex/TextDecorations` 等：直接删属性（Avalonia 无对应或机制不同）。
+   - AVLN3000 的 ControlTheme-in-ResourceDictionary：WPF `<Style>` 可直接放 ResourceDictionary，Avalonia 必须 `<ResourceDictionary><StyleSelector/>...` 或套 `<Styles>`。Menu.axaml:43、Tabcontrol.axaml:29 是典型。
 2. **运行时冒烟继续**：XAML 清零前 MainWindow 无法加载。清零后重跑 `DISPLAY=:99 dotnet run` 逐个修运行时异常。
 3. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
 4. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。

@@ -16,20 +16,20 @@
       </controls:FilterTextBox.AnimationPlaceholder>
     </controls:FilterTextBox>
     <DockPanel Grid.Row="0" Height="17" HorizontalAlignment="Stretch" Background="{DynamicResource BackgroundBrush}" LastChildFill="False">
-      <Button DockPanel.Dock="Left" Margin="6,0,0,0" ToolTip="Filter" Click="FilterButton_Click" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+      <Button DockPanel.Dock="Left" Margin="6,0,0,0" ToolTip.Tip="Filter" Click="FilterButton_Click" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
         <Image Source="{DynamicResource SearchIcon}" />
       </Button>
-      <controls:DropDownButton DockPanel.Dock="Right" ToolTip="View Mode" ClickMode="Press" x:Name="FileListSettingsDropdownButton" Theme="{DynamicResource CodeEditorHeaderDropDownButtonStyle}">
+      <controls:DropDownButton DockPanel.Dock="Right" ToolTip.Tip="View Mode" ClickMode="Press" x:Name="FileListSettingsDropdownButton" Theme="{DynamicResource CodeEditorHeaderDropDownButtonStyle}">
         <Image Source="{DynamicResource ListIcon}" VerticalAlignment="Center" />
         <controls:DropDownButton.ContextMenu>
           <ContextMenu Opened="FileListSettingsDropdownButton_ContextMenuOpened" />
         </controls:DropDownButton.ContextMenu>
       </controls:DropDownButton>
-      <Button DockPanel.Dock="Right" ToolTip="Show diff side-by-side (space bar)" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+      <Button DockPanel.Dock="Right" ToolTip.Tip="Show diff side-by-side (space bar)" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
         <Image Source="{DynamicResource PreviewIcon}" />
       </Button>
     </DockPanel>
-    <userControls:FileListUserControl ContextMenuOpening="FileListUserControl_ContextMenuOpening" Grid.Row="2" Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" x:Name="FileListUserControl">
+    <userControls:FileListUserControl Grid.Row="2" Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" x:Name="FileListUserControl">
       <userControls:FileListUserControl.ContextMenu>
         <ContextMenu />
       </userControls:FileListUserControl.ContextMenu>

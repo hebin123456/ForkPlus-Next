@@ -53,15 +53,15 @@
         <RowDefinition Height="*" />
         <RowDefinition Height="23" />
       </Grid.RowDefinitions>
-      <ListBox VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="CustomCommandsListBox_SelectionChanged" x:Name="CustomCommandsListBox" ItemContainerTheme="{DynamicResource ListBoxItemWithBorderStyle}">
+      <ListBox VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="CustomCommandsListBox_SelectionChanged" x:Name="CustomCommandsListBox" ItemContainerTheme="{DynamicResource ListBoxItemWithBorderStyle}">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <StackPanel>
               <DockPanel>
                 <Image DockPanel.Dock="Right" Width="16" Height="16" Margin="4,0,0,0" VerticalAlignment="Center" Source="{DynamicResource ShareIcon}">
-                  <Image.Visibility>
+                  <Image.IsVisible>
                     <Binding Path="Shared" Converter="{StaticResource BooleanToVisibilityConverter}" />
-                  </Image.Visibility>
+                  </Image.IsVisible>
                 </Image>
                 <TextBlock FontSize="13" Margin="4,0,4,0" TextTrimming="CharacterEllipsis">
                   <TextBlock.Text>
@@ -166,8 +166,8 @@
               <ColumnDefinition Width="90" />
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
-              <RadioButton Margin="10,0,0,0" Content="Local" Checked="LocationRadioButton_Changed" x:Name="LocalRadioButton" />
-              <RadioButton Margin="15,0,0,0" Content="Shared" Checked="LocationRadioButton_Changed" x:Name="SharedRadioButton" />
+              <RadioButton Margin="10,0,0,0" Content="Local" IsCheckedChanged="LocationRadioButton_Changed" x:Name="LocalRadioButton" />
+              <RadioButton Margin="15,0,0,0" Content="Shared" IsCheckedChanged="LocationRadioButton_Changed" x:Name="SharedRadioButton" />
             </StackPanel>
             <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
               <Image Source="{DynamicResource ShareIcon}" Width="16" Height="16" Margin="-10,0,0,0" VerticalAlignment="Center" x:Name="ShareIcon" />
@@ -244,14 +244,14 @@
             </TextBlock>
           </Grid>
           <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="6,4,0,4">
-            <RadioButton Margin="4,0,0,0" Content="UI" Checked="UIMode_Changed" x:Name="UiRadioButton" />
-            <RadioButton Margin="15,0,0,0" Content="Action" Checked="UIMode_Changed" x:Name="ProcessRadioButton" />
+            <RadioButton Margin="4,0,0,0" Content="UI" IsCheckedChanged="UIMode_Changed" x:Name="UiRadioButton" />
+            <RadioButton Margin="15,0,0,0" Content="Action" IsCheckedChanged="UIMode_Changed" x:Name="ProcessRadioButton" />
           </StackPanel>
           <TextBlock Grid.Row="5" Grid.Column="0" Text="Action:" FontSize="13" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="ProcessActionTypeTextBlock" />
           <Button Grid.Row="5" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,3" HorizontalContentAlignment="Stretch" Click="ProcessActionButton_Click" x:Name="ProcessActionButton">
-            <Button.ToolTip>
+            <ToolTip.Tip>
               <Binding Path="SelectedItem.ActionViewModel.ToolTip" />
-            </Button.ToolTip>
+            </ToolTip.Tip>
             <DockPanel>
               <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
               <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium" x:Name="ProcessActionButtonTitleTextBlock">
@@ -342,9 +342,9 @@
                 <Button.IsEnabled>
                   <Binding Path="IsChecked" />
                 </Button.IsEnabled>
-                <Button.ToolTip>
+                <ToolTip.Tip>
                   <Binding Path="SelectedItem.UIViewModel.Button1ActionViewModel.ToolTip" />
-                </Button.ToolTip>
+                </ToolTip.Tip>
                 <DockPanel>
                   <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                   <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">
@@ -385,9 +385,9 @@
                 <Button.IsEnabled>
                   <Binding Path="IsChecked" />
                 </Button.IsEnabled>
-                <Button.ToolTip>
+                <ToolTip.Tip>
                   <Binding Path="SelectedItem.UIViewModel.Button2ActionViewModel.ToolTip" />
-                </Button.ToolTip>
+                </ToolTip.Tip>
                 <DockPanel>
                   <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="Medium" Text="..." Margin="4,0,4,0" VerticalAlignment="Bottom" />
                   <TextBlock DockPanel.Dock="Left" Margin="4,0,4,0" FontSize="13" FontWeight="Medium">
@@ -406,7 +406,7 @@
           </Grid>
         </Grid>
         <Border Grid.Column="1" Margin="16,0,0,0" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource BorderBrush}">
-          <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" VerticalScrollBarVisibility="Auto">
+          <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <controls:SelectableTextBlock VerticalAlignment="Stretch" FontSize="12" TextWrapping="Wrap" x:Name="DescriptionTextBlock" />
           </ScrollViewer>
         </Border>

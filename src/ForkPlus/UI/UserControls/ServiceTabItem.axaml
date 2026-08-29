@@ -6,17 +6,17 @@
           <DynamicResource ResourceKey="Sidebar.Static.Background" />
         </fuc:ModernTabControl.Background>
         <local:PullRequestsTabItem Header="Pull Requests" x:Name="PullRequestsTabItem">
-          <local:PullRequestsTabItem.Style>
+          <local:PullRequestsTabItem.Theme>
             <DynamicResource ResourceKey="ModernTabControlTabItemStyle" />
-          </local:PullRequestsTabItem.Style>
+          </local:PullRequestsTabItem.Theme>
           <local:PullRequestsTabItem.Background>
             <DynamicResource ResourceKey="Sidebar.Static.Background" />
           </local:PullRequestsTabItem.Background>
         </local:PullRequestsTabItem>
         <local:IssuesTabItem Header="Issues" x:Name="IssuesTabItem">
-          <local:IssuesTabItem.Style>
+          <local:IssuesTabItem.Theme>
             <DynamicResource ResourceKey="ModernTabControlTabItemStyle" />
-          </local:IssuesTabItem.Style>
+          </local:IssuesTabItem.Theme>
           <local:IssuesTabItem.Background>
             <DynamicResource ResourceKey="Sidebar.Static.Background" />
           </local:IssuesTabItem.Background>

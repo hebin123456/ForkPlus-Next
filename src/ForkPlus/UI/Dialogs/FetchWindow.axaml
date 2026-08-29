@@ -37,7 +37,7 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,4" HorizontalAlignment="Left" Content="Fetch all remotes" ToolTip="--all" Checked="FetchAllRemotesCheckBox_Checked" Unchecked="FetchAllRemotesCheckBox_Checked" x:Name="FetchAllRemotesCheckBox" />
+      <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,4" HorizontalAlignment="Left" Content="Fetch all remotes" ToolTip.Tip="--all" IsCheckedChanged="FetchAllRemotesCheckBox_Checked" x:Name="FetchAllRemotesCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

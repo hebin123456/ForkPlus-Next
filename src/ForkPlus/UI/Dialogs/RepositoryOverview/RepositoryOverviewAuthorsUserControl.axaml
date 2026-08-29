@@ -1,6 +1,6 @@
 <UserControl xmlns:RepositoryOverview="clr-namespace:ForkPlus.UI.Dialogs.RepositoryOverview" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RepositoryOverview.RepositoryOverviewAuthorsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <Grid>
-    <ListBox BorderThickness="1" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="AuthorsListBox">
+    <ListBox BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="AuthorsListBox">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <Grid Height="30">
@@ -18,9 +18,9 @@
                 <controls:AvatarImage.UserIdentity>
                   <Binding Path="Author" />
                 </controls:AvatarImage.UserIdentity>
-                <controls:AvatarImage.ToolTip>
+                <ToolTip.Tip>
                   <Binding Path="FullCredentialsString" />
-                </controls:AvatarImage.ToolTip>
+                </ToolTip.Tip>
               </controls:AvatarImage>
             </Grid>
             <controls:AutoTooltipTextBlock Grid.Row="0" Grid.Column="1" Margin="4,0,2,0" FontSize="13" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis">

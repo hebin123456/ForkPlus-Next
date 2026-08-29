@@ -28,12 +28,12 @@
                   <Grid Grid.Row="0" HorizontalAlignment="Center" x:Name="SecondaryTitleGrid">
                     <Grid.Children>
                       <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" Width="14" Height="14" x:Name="SecondaryBusyIndicator">
-                        <ProgressBar.Style>
+                        <ProgressBar.Theme>
                           <DynamicResource ResourceKey="CircularProgressBar" />
-                        </ProgressBar.Style>
-                        <ProgressBar.Visibility>Hidden</ProgressBar.Visibility>
+                        </ProgressBar.Theme>
+                        <ProgressBar.IsVisible>Hidden</ProgressBar.IsVisible>
                       </ProgressBar>
-                      <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="SecondaryTitleTextBlock" PointerReleased="TitleTextBlock_MouseUp">
+                      <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="SecondaryTitleTextBlock" PointerPressed="TitleTextBlock_MouseUp">
                         <TextBlock.Foreground>
                           <DynamicResource ResourceKey="LabelBrush" />
                         </TextBlock.Foreground>
@@ -43,12 +43,12 @@
                   <Grid Grid.Row="1" HorizontalAlignment="Center" x:Name="TitleGrid">
                     <Grid.Children>
                       <ProgressBar Margin="0,0,-14,0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="14" Height="14" x:Name="BusyIndicator">
-                        <ProgressBar.Style>
+                        <ProgressBar.Theme>
                           <DynamicResource ResourceKey="CircularProgressBar" />
-                        </ProgressBar.Style>
-                        <ProgressBar.Visibility>Hidden</ProgressBar.Visibility>
+                        </ProgressBar.Theme>
+                        <ProgressBar.IsVisible>Hidden</ProgressBar.IsVisible>
                       </ProgressBar>
-                      <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock" PointerReleased="TitleTextBlock_MouseUp">
+                      <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,0" TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock" PointerPressed="TitleTextBlock_MouseUp">
                         <TextBlock.Foreground>
                           <DynamicResource ResourceKey="LabelBrush" />
                         </TextBlock.Foreground>
@@ -66,10 +66,10 @@
             <Button.Background>
               <SolidColorBrush>#00FFFFFF</SolidColorBrush>
             </Button.Background>
-            <Button.Visibility>Collapsed</Button.Visibility>
-            <Button.Style>
+            <Button.IsVisible>Collapsed</Button.IsVisible>
+            <Button.Theme>
               <DynamicResource ResourceKey="InlineButton" />
-            </Button.Style>
+            </Button.Theme>
             <Image>
               <Image.Source>
                 <DynamicResource ResourceKey="CancelJobIcon" />
@@ -78,9 +78,9 @@
           </Button>
           <fuc:CenteredDockPanel Grid.Row="1" Grid.ColumnSpan="3">
             <ToggleButton DockPanel.Dock="Left" Margin="2,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" x:Name="ShowActivityManagerToggleButton" ToolTip.Tip="Activity Manager">
-              <ToggleButton.Style>
+              <ToggleButton.Theme>
                 <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
-              </ToggleButton.Style>
+              </ToggleButton.Theme>
               <ToggleButton.FocusVisualStyle>
                 <x:Null />
               </ToggleButton.FocusVisualStyle>
@@ -95,9 +95,9 @@
             </Popup>
             <!-- v3.11.0：git mm Output 切换按钮（仅 git mm 激活时可见，紧邻活动管理器按钮右侧） -->
             <Button DockPanel.Dock="Left" Margin="2,0,0,0" Height="14" Width="14" VerticalAlignment="Bottom" Click="GitMmOutputButton_Click" x:Name="GitMmOutputButton" IsVisible="False" ToolTip.Tip="Command Output">
-              <Button.Style>
+              <Button.Theme>
                 <DynamicResource ResourceKey="BranchOptionButton" />
-              </Button.Style>
+              </Button.Theme>
               <Image x:Name="GitMmOutputButtonImage">
                 <Image.Source>
                   <DynamicResource ResourceKey="ConsoleIcon" />
@@ -106,9 +106,9 @@
             </Button>
             <!-- v3.11.0：git mm History 按钮（仅 git mm 激活时可见，紧邻 Output 按钮右侧） -->
             <Button DockPanel.Dock="Left" Margin="2,0,0,0" Height="14" Width="14" VerticalAlignment="Bottom" Click="GitMmHistoryButton_Click" x:Name="GitMmHistoryButton" IsVisible="False" ToolTip.Tip="Command History">
-              <Button.Style>
+              <Button.Theme>
                 <DynamicResource ResourceKey="BranchOptionButton" />
-              </Button.Style>
+              </Button.Theme>
               <Image>
                 <Image.Source>
                   <DynamicResource ResourceKey="RevisionListIcon" />
@@ -116,9 +116,9 @@
               </Image>
             </Button>
             <Button DockPanel.Dock="Right" Margin="0,0,2,2" Height="14" Width="14" VerticalAlignment="Bottom" Click="FilterButton_Click" x:Name="FilterButton">
-              <Button.Style>
+              <Button.Theme>
                 <DynamicResource ResourceKey="BranchOptionButton" />
-              </Button.Style>
+              </Button.Theme>
               <Image x:Name="FilterButtonImage">
                 <Image.Source>
                   <DynamicResource ResourceKey="BranchFilterOffIcon" />
@@ -131,12 +131,12 @@
                   <Image.Source>
                     <DynamicResource ResourceKey="BranchIcon" />
                   </Image.Source>
-                  <Image.Visibility>Collapsed</Image.Visibility>
+                  <Image.IsVisible>Collapsed</Image.IsVisible>
                   <Image.HorizontalAlignment>Left</Image.HorizontalAlignment>
                   <Image.VerticalAlignment>Center</Image.VerticalAlignment>
-                  <ToolTipService.ToolTip>Cancel</ToolTipService.ToolTip>
+                  <ToolTip.Tip>Cancel</ToolTip.Tip>
                 </Image>
-                <TextBlock Margin="14,-2,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" x:Name="DescriptionTextBlock" PointerReleased="DescriptionTextBlock_MouseUp">
+                <TextBlock Margin="14,-2,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" x:Name="DescriptionTextBlock" PointerPressed="DescriptionTextBlock_MouseUp">
                   <TextBlock.Foreground>
                     <DynamicResource ResourceKey="LabelBrush" />
                   </TextBlock.Foreground>

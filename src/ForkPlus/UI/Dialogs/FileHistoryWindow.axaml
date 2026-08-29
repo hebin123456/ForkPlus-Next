@@ -1,7 +1,7 @@
 <ui:CustomWindow xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.FileHistoryWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns="https://github.com/avaloniaui">
   <ui:CustomWindow.Resources>
     <ResourceDictionary>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:HistoryEntryViewModel}}" DataType="dialogs:HistoryEntryViewModel">
+      <DataTemplate x:Key="HistoryEntryViewModelTemplate" DataType="dialogs:HistoryEntryViewModel">
         <Grid Height="57">
           <Grid.RowDefinitions>
             <RowDefinition />
@@ -31,13 +31,13 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip>
+            <ToolTip.Tip>
               <TextBlock>
                 <TextBlock.Text>
                   <Binding Path="AuthorDate" />
                 </TextBlock.Text>
               </TextBlock>
-            </TextBlock.ToolTip>
+            </ToolTip.Tip>
           </TextBlock>
           <TextBlock Grid.Column="3" Margin="6,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="ShaTextBlock">
             <TextBlock.Text>
@@ -45,18 +45,18 @@
             </TextBlock.Text>
           </TextBlock>
           <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Click="OpenRevisionInSeparateWindowButton_Click" Theme="{DynamicResource IconButtonStyle}">
-            <Button.ToolTip>
+            <ToolTip.Tip>
               <Binding Path="OpenInSeparateWindowButtonToolTip" />
-            </Button.ToolTip>
+            </ToolTip.Tip>
             <Image Source="{DynamicResource OpenInSeparateWindowIcon}" Height="12" Width="12" />
           </Button>
           <controls:AutoTooltipTextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Margin="4,0,2,0" FontSize="13" VerticalAlignment="Center" x:Name="RevisionSubjectTextBlock">
             <controls:AutoTooltipTextBlock.Text>
               <Binding Path="RevisionSubject" />
             </controls:AutoTooltipTextBlock.Text>
-            <controls:AutoTooltipTextBlock.ToolTip>
+            <ToolTip.Tip>
               <Binding Path="RevisionSubject" />
-            </controls:AutoTooltipTextBlock.ToolTip>
+            </ToolTip.Tip>
           </controls:AutoTooltipTextBlock>
           <Image Grid.Row="2" Grid.Column="0" Height="14" Width="14" Margin="4,0,4,0" VerticalAlignment="Center">
             <Image.Source>
@@ -88,9 +88,9 @@
                   <Setter TargetName="ShaTextBlock" Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
                 </DataTrigger>
     --></DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:FolderHistoryEntryViewModel}}" DataType="dialogs:FolderHistoryEntryViewModel">
+      <DataTemplate x:Key="FolderHistoryEntryViewModelTemplate" DataType="dialogs:FolderHistoryEntryViewModel">
         <Grid Height="18">
-          <Grid.ToolTip>
+          <ToolTip.Tip>
             <StackPanel Orientation="Horizontal">
               <TextBlock>
                 <TextBlock.Text>
@@ -104,7 +104,7 @@
                 </TextBlock.Text>
               </TextBlock>
             </StackPanel>
-          </Grid.ToolTip>
+          </ToolTip.Tip>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -127,23 +127,23 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip>
+            <ToolTip.Tip>
               <TextBlock>
                 <TextBlock.Text>
                   <Binding Path="AuthorDate" />
                 </TextBlock.Text>
               </TextBlock>
-            </TextBlock.ToolTip>
+            </ToolTip.Tip>
           </TextBlock>
           <Button Grid.Column="4" Width="14" Height="14" Padding="1" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Background="#00FFFFFF" Click="OpenRevisionInSeparateWindowButton_Click" Theme="{DynamicResource IconButtonStyle}">
-            <Button.ToolTip>
+            <ToolTip.Tip>
               <Binding Path="OpenInSeparateWindowButtonToolTip" />
-            </Button.ToolTip>
+            </ToolTip.Tip>
             <Image Source="{DynamicResource OpenInSeparateWindowIcon}" Height="12" Width="12" />
           </Button>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type dialogs:SubItemFileHistoryEntryViewModel}}" DataType="dialogs:SubItemFileHistoryEntryViewModel">
+      <DataTemplate x:Key="SubItemFileHistoryEntryViewModelTemplate" DataType="dialogs:SubItemFileHistoryEntryViewModel">
         <Grid Height="18">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -206,7 +206,7 @@
         <ColumnDefinition Width="1" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" ContextMenuOpening="TreeView_ContextMenuOpening" Grid.Column="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" x:Name="TreeView" DoubleTapped="TreeView_MouseDoubleClick" Theme="{DynamicResource FileHistoryMultiselectionTreeViewStyle}">
+      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" Grid.Column="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" x:Name="TreeView" DoubleTapped="TreeView_MouseDoubleClick" Theme="{DynamicResource FileHistoryMultiselectionTreeViewStyle}">
         <controls:MultiselectionTreeView.ContextMenu>
           <ContextMenu />
         </controls:MultiselectionTreeView.ContextMenu>

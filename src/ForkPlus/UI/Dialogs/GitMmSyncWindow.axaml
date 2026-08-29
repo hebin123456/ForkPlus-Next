@@ -27,7 +27,7 @@
                     </ControlTemplate>
                   </ToggleButton.Template>
                 </ToggleButton>
-                <ContentPresenter DockPanel.Dock="Bottom" ContentSource="Content" x:Name="ExpandSite" IsVisible="False" />
+                <ContentPresenter DockPanel.Dock="Bottom" x:Name="ExpandSite" IsVisible="False" />
               </DockPanel>
               
             </ControlTemplate>
@@ -108,18 +108,18 @@
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
           <Image Grid.Column="0" Grid.Row="0" Margin="0,4,0,0" Height="14" Width="14" VerticalAlignment="Center" HorizontalAlignment="Right" Source="avares://ForkPlus/Assets/Warning.png" x:Name="ForceSyncWarningImage" />
-          <CheckBox Grid.Column="1" Grid.Row="0" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force sync" ToolTip="--force-sync" x:Name="ForceSyncCheckBox" />
-          <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Detach local branches" ToolTip="-d" x:Name="DetachCheckBox" />
-          <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Update manifest" ToolTip="--update-manifest" x:Name="UpdateManifestCheckBox" />
+          <CheckBox Grid.Column="1" Grid.Row="0" Margin="8,4,0,0" HorizontalAlignment="Left" Content="_Force sync" ToolTip.Tip="--force-sync" x:Name="ForceSyncCheckBox" />
+          <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Detach local branches" ToolTip.Tip="-d" x:Name="DetachCheckBox" />
+          <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Update manifest" ToolTip.Tip="--update-manifest" x:Name="UpdateManifestCheckBox" />
           <Grid Grid.Column="1" Grid.Row="3" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="135" />
               <ColumnDefinition Width="135" />
               <ColumnDefinition Width="170" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" Content="Local only" ToolTip="-l" x:Name="LocalOnlyCheckBox" />
-            <CheckBox Grid.Column="1" Content="Network only" ToolTip="-n" x:Name="NetworkOnlyCheckBox" />
-            <CheckBox Grid.Column="2" Content="Fail fast" ToolTip="--fail-fast" x:Name="FailFastCheckBox" />
+            <CheckBox Grid.Column="0" Content="Local only" ToolTip.Tip="-l" x:Name="LocalOnlyCheckBox" />
+            <CheckBox Grid.Column="1" Content="Network only" ToolTip.Tip="-n" x:Name="NetworkOnlyCheckBox" />
+            <CheckBox Grid.Column="2" Content="Fail fast" ToolTip.Tip="--fail-fast" x:Name="FailFastCheckBox" />
           </Grid>
           <Grid Grid.Column="1" Grid.Row="4" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
@@ -127,9 +127,9 @@
               <ColumnDefinition Width="135" />
               <ColumnDefinition Width="170" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" Content="All branches" ToolTip="-a" x:Name="AllBranchesCheckBox" />
-            <CheckBox Grid.Column="1" Content="Fetch tags" ToolTip="--tags" x:Name="TagsCheckBox" />
-            <CheckBox Grid.Column="2" Content="Fetch submodules" ToolTip="--fetch-submodules" x:Name="FetchSubmodulesCheckBox" />
+            <CheckBox Grid.Column="0" Content="All branches" ToolTip.Tip="-a" x:Name="AllBranchesCheckBox" />
+            <CheckBox Grid.Column="1" Content="Fetch tags" ToolTip.Tip="--tags" x:Name="TagsCheckBox" />
+            <CheckBox Grid.Column="2" Content="Fetch submodules" ToolTip.Tip="--fetch-submodules" x:Name="FetchSubmodulesCheckBox" />
           </Grid>
           <Grid Grid.Column="1" Grid.Row="5" Margin="8,4,0,0">
             <Grid.ColumnDefinitions>
@@ -137,14 +137,14 @@
               <ColumnDefinition Width="135" />
               <ColumnDefinition Width="170" />
             </Grid.ColumnDefinitions>
-            <CheckBox Grid.Column="0" Content="Force checkout" ToolTip="--force-checkout" x:Name="ForceCheckoutCheckBox" />
-            <CheckBox Grid.Column="1" Content="Force fetch" ToolTip="--force-fetch" x:Name="ForceFetchCheckBox" />
-            <CheckBox Grid.Column="2" Content="Remove dirty projects" ToolTip="--force-remove-dirty" x:Name="ForceRemoveDirtyCheckBox" />
+            <CheckBox Grid.Column="0" Content="Force checkout" ToolTip.Tip="--force-checkout" x:Name="ForceCheckoutCheckBox" />
+            <CheckBox Grid.Column="1" Content="Force fetch" ToolTip.Tip="--force-fetch" x:Name="ForceFetchCheckBox" />
+            <CheckBox Grid.Column="2" Content="Remove dirty projects" ToolTip.Tip="--force-remove-dirty" x:Name="ForceRemoveDirtyCheckBox" />
           </Grid>
         </Grid>
       </Expander>
       <TextBlock Grid.Column="0" Grid.Row="8" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
-      <ScrollViewer Grid.Column="1" Grid.Row="8" MaxHeight="120" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
+      <ScrollViewer Grid.Column="1" Grid.Row="8" MaxHeight="120" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
         <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
       </ScrollViewer>
     </Grid>

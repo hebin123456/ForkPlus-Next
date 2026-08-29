@@ -2,7 +2,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ControlTheme x:Key="{x:Type controls:RepositoryManagerEditableTextBlock}" TargetType="controls:RepositoryManagerEditableTextBlock" BasedOn="{StaticResource {x:Type controls:EditableTextBlock}}" />
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerSectionItem}}" DataType="userControls:RepositoryManagerSectionItem">
+      <DataTemplate x:Key="RepositoryManagerSectionItemTemplate" DataType="userControls:RepositoryManagerSectionItem">
         <Grid Height="22">
           <TextBlock VerticalAlignment="Center" Margin="2,0,0,0" FontSize="13" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Medium">
             <TextBlock.Text>
@@ -11,7 +11,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerSourceDirectoryItem}}" DataType="userControls:RepositoryManagerSourceDirectoryItem">
+      <DataTemplate x:Key="RepositoryManagerSourceDirectoryItemTemplate" DataType="userControls:RepositoryManagerSourceDirectoryItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
@@ -22,13 +22,13 @@
             <TextBlock.Text>
               <Binding Path="Title" />
             </TextBlock.Text>
-            <TextBlock.ToolTip>
+            <ToolTip.Tip>
               <Binding Path="SourceDir" />
-            </TextBlock.ToolTip>
+            </ToolTip.Tip>
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerRepositoryFolderItem}}" DataType="userControls:RepositoryManagerRepositoryFolderItem">
+      <DataTemplate x:Key="RepositoryManagerRepositoryFolderItemTemplate" DataType="userControls:RepositoryManagerRepositoryFolderItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
@@ -42,7 +42,7 @@
           </TextBlock>
         </Grid>
       </DataTemplate>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:RepositoryManagerRepositoryItem}}" DataType="userControls:RepositoryManagerRepositoryItem">
+      <DataTemplate x:Key="RepositoryManagerRepositoryItemTemplate" DataType="userControls:RepositoryManagerRepositoryItem">
         <Grid Height="22">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="18" />
@@ -63,9 +63,9 @@
             </controls:RepositoryManagerEditableTextBlock.IsInEditMode>
           </controls:RepositoryManagerEditableTextBlock>
           <Ellipse Grid.Column="2" Width="9" Height="9" Margin="4,2,4,2" HorizontalAlignment="Right" StrokeThickness="2">
-            <Ellipse.Visibility>
+            <Ellipse.IsVisible>
               <Binding Path="RepositoryColor"><Binding.Converter><controls:NullToVisibilityConverter /></Binding.Converter></Binding>
-            </Ellipse.Visibility>
+            </Ellipse.IsVisible>
             <Ellipse.Stroke>
               <Binding Path="RepositoryColor" />
             </Ellipse.Stroke>

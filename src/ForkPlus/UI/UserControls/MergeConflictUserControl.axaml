@@ -176,7 +176,7 @@
     <Style Selector="^:indeterminate /template/ Rectangle#IndeterminateMark">
         <Setter Property="Opacity" Value="1" />
     </Style></ControlTheme>
-      <DataTemplate x:Key="{DataTemplateKey {x:Type userControls:MergeRevisionViewModel}}" DataType="userControls:MergeRevisionViewModel">
+      <DataTemplate x:Key="MergeRevisionViewModelTemplate" DataType="userControls:MergeRevisionViewModel">
         <Grid Height="20">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="22" />
@@ -188,9 +188,9 @@
             <controls:AvatarImage.UserIdentity>
               <Binding Path="Author" />
             </controls:AvatarImage.UserIdentity>
-            <controls:AvatarImage.ToolTip>
+            <ToolTip.Tip>
               <Binding Path="FullCredentialsString" />
-            </controls:AvatarImage.ToolTip>
+            </ToolTip.Tip>
           </controls:AvatarImage>
           <Button Grid.Column="1" Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Height="20" IsTabStop="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Click="ShaButton_Click" Theme="{DynamicResource TextButtonStyle}">
             <Button.Content>
@@ -206,9 +206,9 @@
             <TextBlock.Text>
               <Binding Path="AuthorDate" />
             </TextBlock.Text>
-            <TextBlock.ToolTip>
+            <ToolTip.Tip>
               <Binding Path="AuthorDate" />
-            </TextBlock.ToolTip>
+            </ToolTip.Tip>
           </TextBlock>
         </Grid>
       </DataTemplate>
@@ -244,7 +244,7 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,15,0,0">
-          <Image DockPanel.Dock="Left" Width="20" Height="Auto" Source="avares://ForkPlus/ForkPlus;component/Assets/Warning.png" />
+          <Image DockPanel.Dock="Left" Width="20" Height="NaN" Source="avares://ForkPlus/ForkPlus;component/Assets/Warning.png" />
           <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" FontSize="16" Text="Merge conflict" FontWeight="Medium" />
         </DockPanel>
         <TextBlock Grid.Row="1" Margin="0,4,0,0" HorizontalAlignment="Center" FontSize="14" Text="Select the changes or merge them manually" Foreground="{DynamicResource SecondaryLabelBrush}" />
@@ -283,7 +283,7 @@
               <controls:GitPointView Margin="6,0,0,0" x:Name="RemoteGitPointView" TextElement.FontSize="14" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource LabelBrush}" />
             </DockPanel>
             <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" x:Name="SrcSeparator" IsVisible="False" />
-            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" HorizontalContentAlignment="Stretch" x:Name="SrcRevisionsListBox" IsVisible="False" Theme="{DynamicResource NoSelectionListBoxStyle}" ItemContainerTheme="{DynamicResource MergeListBoxItemContainerStyle}">
+            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" x:Name="SrcRevisionsListBox" IsVisible="False" Theme="{DynamicResource NoSelectionListBoxStyle}" ItemContainerTheme="{DynamicResource MergeListBoxItemContainerStyle}">
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <ContentControl>
@@ -297,9 +297,9 @@
           </Grid>
         </CheckBox>
         <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="10,23,0,10">
-          <Grid.Visibility>
+          <Grid.IsVisible>
             <Binding ElementName="RemoteCheckBox" Path="IsChecked" Converter="{StaticResource BooleanToVisibilityConverter}" />
-          </Grid.Visibility>
+          </Grid.IsVisible>
           <Border HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemAccentBrush}" />
           <Border HorizontalAlignment="Right" VerticalAlignment="Stretch" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource SystemAccentBrush}" />
         </Grid>
@@ -318,7 +318,7 @@
               <controls:GitPointView Margin="6,0,0,0" x:Name="LocalGitPointView" TextElement.FontSize="14" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource LabelBrush}" />
             </DockPanel>
             <Separator Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,12,0,8" x:Name="DstSeparator" IsVisible="False" />
-            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" HorizontalContentAlignment="Stretch" x:Name="DstRevisionsListBox" IsVisible="False" Theme="{DynamicResource NoSelectionListBoxStyle}" ItemContainerTheme="{DynamicResource MergeListBoxItemContainerStyle}">
+            <ListBox Grid.Row="2" SelectionMode="Single" BorderThickness="0" MaxHeight="156" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="#00FFFFFF" x:Name="DstRevisionsListBox" IsVisible="False" Theme="{DynamicResource NoSelectionListBoxStyle}" ItemContainerTheme="{DynamicResource MergeListBoxItemContainerStyle}">
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <ContentControl>
@@ -332,15 +332,15 @@
           </Grid>
         </CheckBox>
         <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="0,23,10,4">
-          <Grid.Visibility>
+          <Grid.IsVisible>
             <Binding ElementName="LocalCheckBox" Path="IsChecked" Converter="{StaticResource BooleanToVisibilityConverter}" />
-          </Grid.Visibility>
+          </Grid.IsVisible>
           <Border HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource SystemAccentBrush}" BorderThickness="0,1,0,0" />
           <Border HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="-1,0,0,0" BorderBrush="{DynamicResource SystemAccentBrush}" BorderThickness="1,0,0,0" />
         </Grid>
         <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ResolveButton_Click" x:Name="ResolveButton" />
         <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <controls:AiActionButton ActionVerb="Resolve" Margin="0,0,6,0" Click="AiResolveButton_Click" ToolTip="Use AI to resolve all conflicts in this file" x:Name="AiResolveButton" />
+          <controls:AiActionButton ActionVerb="Resolve" Margin="0,0,6,0" Click="AiResolveButton_Click" ToolTip.Tip="Use AI to resolve all conflicts in this file" x:Name="AiResolveButton" />
           <Button DockPanel.Dock="Right" Padding="10,2,10,2" Margin="0" BorderThickness="1,1,1,1" Click="ResolveInExternalMergerButton_Click" x:Name="ResolveInExternalMergerButton" Theme="{DynamicResource CommitButtonVisibleDropdownStyle}" />
           <controls:DropDownButton Height="24" Margin="0" x:Name="ResolveInExternalMergerDropdownButton" Theme="{DynamicResource CommitDropDownButtonStyle}">
             <controls:DropDownButton.ContextMenu>

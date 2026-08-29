@@ -9,9 +9,7 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="AllowDrop" Value="True" />
-        <EventSetter Event="Drop" Handler="RevisionListViewItem_Drop" />
-        
-      
+    <!-- TODO 迁移：WPF EventSetter 已删（事件在 code-behind 中 AddHandler/+= 接线） -->
     <!--
       TODO(wpf2avalonia): Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
       原始片段：
@@ -385,7 +383,7 @@
       <RowDefinition />
     </Grid.RowDefinitions>
     <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
-    <controls:DragAndDropListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" ContextMenuOpening="RevisionListView_ContextMenuOpening" Grid.Row="1" BorderThickness="0" SelectionMode="Extended" Margin="0,0,0,0" x:Name="RevisionListView" DoubleTapped="RevisionListView_MouseDoubleClick" Theme="{DynamicResource ListViewWithGridViewStyle}" ItemContainerTheme="{DynamicResource ItemContainerStyle}">
+    <controls:DragAndDropListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" Grid.Row="1" BorderThickness="0" SelectionMode="Extended" Margin="0,0,0,0" x:Name="RevisionListView" DoubleTapped="RevisionListView_MouseDoubleClick" Theme="{DynamicResource ListViewWithGridViewStyle}" ItemContainerTheme="{DynamicResource ItemContainerStyle}">
       <controls:DragAndDropListView.ContextMenu>
         <ContextMenu />
       </controls:DragAndDropListView.ContextMenu>

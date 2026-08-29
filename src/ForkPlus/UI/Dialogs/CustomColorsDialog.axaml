@@ -10,7 +10,7 @@
     <TextBlock Grid.Row="0" x:Name="HeaderTextBlock" Margin="0,0,0,12" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource ForegroundBrush}" />
 
     <!-- 颜色列表 -->
-    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+    <ScrollViewer Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
       <ItemsControl x:Name="ColorListControl">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
@@ -24,7 +24,7 @@
               <!-- 颜色名 -->
               <TextBlock Grid.Column="0" Text="{Binding DisplayName}" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush}" TextTrimming="CharacterEllipsis" />
               <!-- 颜色预览（点击弹出颜色选择器） -->
-              <Border Grid.Column="1" Width="32" Height="22" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Left" Cursor="Hand" Tag="{Binding}" ToolTip="{Binding Key}" PointerReleased="ColorPreview_Click">
+              <Border Grid.Column="1" Width="32" Height="22" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Left" Cursor="Hand" Tag="{Binding}" ToolTip.Tip="{Binding Key}" PointerPressed="ColorPreview_Click">
                 <Rectangle Fill="{Binding PreviewBrush}" />
               </Border>
               <!-- hex 输入 -->
@@ -108,7 +108,7 @@
                   </LinearGradientBrush>
                 </Rectangle.Fill>
               </Rectangle>
-              <Line x:Name="HueIndicator" X1="0" Y1="0" X2="20" Y2="0" Stroke="White" StrokeThickness="2" />
+              <Line x:Name="HueIndicator" Stroke="White" StrokeThickness="2" StartPoint="0,0" EndPoint="20,0"/>
             </Canvas>
           </Grid>
 

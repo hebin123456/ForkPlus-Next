@@ -15,9 +15,9 @@
       <ContentControl Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" x:Name="RepositorySidebarContainer" />
       <ContentControl Grid.Row="2" Grid.Column="2" x:Name="RepositoryContentContainer" />
       <GridSplitter Grid.Row="2" Grid.Column="1" x:Name="SidebarGridSplitter">
-        <GridSplitter.Style>
+        <GridSplitter.Theme>
           <DynamicResource ResourceKey="VerticalGridSplitter" />
-        </GridSplitter.Style>
+        </GridSplitter.Theme>
       </GridSplitter>
     </Grid.Children>
   </Grid>

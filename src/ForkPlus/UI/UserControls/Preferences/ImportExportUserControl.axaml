@@ -17,9 +17,11 @@
 
       <!-- 导出区 -->
       <TextBlock Grid.Row="1" Text="Export" FontWeight="Medium" Margin="0,0,0,4">
+<!-- TODO 迁移：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
         <TextBlock.Style>
           <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
         </TextBlock.Style>
+-->
       </TextBlock>
       <CheckBox Grid.Row="2" x:Name="IncludeAccountsCheckBox" Content="Include accounts (contains tokens/credentials)" IsChecked="True" Margin="10,0,0,6" />
       <Button Grid.Row="3" x:Name="ExportButton" Content="Export to file..." Padding="12,4" Margin="10,0,0,0" HorizontalAlignment="Left" Click="ExportButton_Click" />
@@ -29,9 +31,11 @@
 
       <!-- 导入区 -->
       <TextBlock Grid.Row="5" Text="Import" FontWeight="Medium" Margin="0,0,0,4">
+<!-- TODO 迁移：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
         <TextBlock.Style>
           <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
         </TextBlock.Style>
+-->
       </TextBlock>
       <TextBlock Grid.Row="6" Text="Importing will overwrite your current configuration. ForkPlus will restart after import." Margin="10,0,0,6" TextWrapping="Wrap" Foreground="#FFACA899" />
       <Button Grid.Row="7" x:Name="ImportButton" Content="Import from file..." Padding="12,4" Margin="10,0,0,0" HorizontalAlignment="Left" Click="ImportButton_Click" />

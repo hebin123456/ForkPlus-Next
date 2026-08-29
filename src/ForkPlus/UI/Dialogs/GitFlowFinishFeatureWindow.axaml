@@ -35,9 +35,9 @@
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Delete branches" ToolTip="--keep (when unchecked)" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="DeleteBranchesCheckBox" />
-      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase before merging" ToolTip="--rebase" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="RebaseInsteadOfMergeCheckBox" />
-      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="No fast-forward" ToolTip="--no-ff" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" x:Name="NoFastForwardCheckBox" />
+      <CheckBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Delete branches" ToolTip.Tip="--keep (when unchecked)" IsCheckedChanged="CheckBox_Changed" x:Name="DeleteBranchesCheckBox" />
+      <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase before merging" ToolTip.Tip="--rebase" IsCheckedChanged="CheckBox_Changed" x:Name="RebaseInsteadOfMergeCheckBox" />
+      <CheckBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,0" HorizontalAlignment="Left" Content="No fast-forward" ToolTip.Tip="--no-ff" IsCheckedChanged="CheckBox_Changed" x:Name="NoFastForwardCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

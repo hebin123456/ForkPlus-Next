@@ -20,11 +20,11 @@
           <RowDefinition Height="*" />
           <RowDefinition Height="23" />
         </Grid.RowDefinitions>
-        <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox" Theme="{DynamicResource {x:Type ListBox}}">
+        <local:DragAndDropListBox SelectionChanged="ControlsListBox_SelectionChanged" VerticalAlignment="Stretch" MinHeight="250" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="ControlsListBox" Theme="{DynamicResource {x:Type ListBox}}">
           <local:DragAndDropListBox.ItemContainerStyle>
             <ControlTheme TargetType="local:DragAndDropListBoxItem" BasedOn="{StaticResource ListBoxItemWithBorderStyle}" x:Key="{x:Type local:DragAndDropListBoxItem}">
               <Setter Property="AllowDrop" Value="True" />
-              <EventSetter Event="Drop" Handler="ListBoxItem_Drop" />
+    <!-- TODO 迁移：WPF EventSetter 已删（事件在 code-behind 中 AddHandler/+= 接线） -->
             </ControlTheme>
           </local:DragAndDropListBox.ItemContainerStyle>
           <local:DragAndDropListBox.ItemTemplate>
@@ -221,11 +221,11 @@
               <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" x:Name="CheckBoxCheckedValueTextBox" />
               <TextBlock Grid.Row="1" Grid.Column="0" Text="Unchecked Value:" FontSize="13" Margin="10,4,0,4" VerticalAlignment="Center" HorizontalAlignment="Right" />
               <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="10,4,0,4" Padding="4,2,4,2" FontSize="13" x:Name="CheckBoxUncheckedValueTextBox" />
-              <CheckBox Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Checked by default" FontSize="13" Checked="CheckBoxDefaultValueCheckBox_Changed" Unchecked="CheckBoxDefaultValueCheckBox_Changed" x:Name="CheckBoxDefaultValueCheckBox" />
+              <CheckBox Grid.Row="2" Grid.Column="1" Margin="10,4,0,4" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Checked by default" FontSize="13" IsCheckedChanged="CheckBoxDefaultValueCheckBox_Changed" x:Name="CheckBoxDefaultValueCheckBox" />
             </Grid>
           </Grid>
           <Border Grid.Column="1" Margin="16,0,0,0" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource BorderBrush}">
-            <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Padding="6,6,2,0" Background="#00FFFFFF" ScrollViewer.VerticalScrollBarVisibility="Auto">
               <controls:SelectableTextBlock VerticalAlignment="Stretch" FontSize="12" TextWrapping="Wrap" x:Name="DescriptionTextBlock" />
             </ScrollViewer>
           </Border>

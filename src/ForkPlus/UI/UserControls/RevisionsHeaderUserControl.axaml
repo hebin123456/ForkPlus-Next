@@ -99,10 +99,10 @@
         <Button.Height>22</Button.Height>
         <Button.Padding>2</Button.Padding>
         <Button.Margin>0,0,10,0</Button.Margin>
-        <ToolTipService.ToolTip>Reverse Commits</ToolTipService.ToolTip>
-        <Button.Style>
+        <ToolTip.Tip>Reverse Commits</ToolTip.Tip>
+        <Button.Theme>
           <DynamicResource ResourceKey="RevisionDetailsSwapButtonStyle" />
-        </Button.Style>
+        </Button.Theme>
         <Image>
           <Image.Source>
             <DynamicResource ResourceKey="SwapIcon" />

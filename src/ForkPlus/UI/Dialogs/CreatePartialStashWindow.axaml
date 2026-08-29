@@ -23,7 +23,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <CheckBox Margin="8,0,4,0" VerticalAlignment="Center" Checked="FileCheckBox_Changed" Unchecked="FileCheckBox_Changed">
+              <CheckBox Margin="8,0,4,0" VerticalAlignment="Center" IsCheckedChanged="FileCheckBox_Changed">
                 <CheckBox.IsChecked>
                   <Binding Path="Selected" />
                 </CheckBox.IsChecked>
@@ -51,7 +51,7 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <controls:PlaceholderTextBox TextChanged="StashMessage_TextChanged" Grid.Column="0" Padding="4,2,4,2" Placeholder="Stash message (optional)" Icon="{DynamicResource SidebarStashIcon}" x:Name="StashMessageTextBox" />
-        <controls:AiActionButton Grid.Column="1" Margin="6,0,0,0" Click="AiGenerateStashNameButton_Click" ToolTip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton" />
+        <controls:AiActionButton Grid.Column="1" Margin="6,0,0,0" Click="AiGenerateStashNameButton_Click" ToolTip.Tip="Use AI to generate a stash message" x:Name="AiGenerateStashNameButton" />
       </Grid>
     </Grid>
   </Grid>

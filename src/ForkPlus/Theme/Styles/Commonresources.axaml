@@ -19,7 +19,7 @@
               <RowDefinition />
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
-            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" CanContentScroll="True" ContentTemplate="{x:Null}" VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" VerticalContentAlignment="Top" HorizontalContentAlignment="Left" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
+            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Grid.Row="1" Focusable="False" ContentTemplate="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
               <controls:TouchpadAwareScrollViewer.Content>
                 <Binding Path="TextArea">
                   <Binding.RelativeSource>
@@ -72,7 +72,7 @@
           </Setter>
         </Style>
     -->
-  <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter">
+  <ControlTheme TargetType="GridSplitter">
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
   </ControlTheme>
   <ControlTheme x:Key="HorizontalGridSplitter" TargetType="GridSplitter">
@@ -131,13 +131,13 @@
                 </Binding.RelativeSource>
               </Binding>
             </TextBlock.Text>
-            <TextBlock.Visibility>
+            <TextBlock.IsVisible>
               <Binding Path="IsInEditMode" Converter="{StaticResource InverseBooleanToVisibility}">
                 <Binding.RelativeSource>
                   <RelativeSource Mode="TemplatedParent" />
                 </Binding.RelativeSource>
               </Binding>
-            </TextBlock.Visibility>
+            </TextBlock.IsVisible>
           </TextBlock>
         </ControlTemplate>
       </Setter.Value>
