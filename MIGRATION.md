@@ -42,14 +42,11 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：主窗口 UI 完整渲染，含窗口控制按钮与主内容区（2026-08-29 本轮2）。**
+**🎉 里程碑：仓库打开链路全通——点击"打开"后 .nvm 仓库完整加载（2026-08-29 本轮3）。**
 - `dotnet build` 0 错误；AVLN XAML 错误 0。
-- `dotnet run`（Xvfb）**零未处理异常**。主窗口截图验证（2026-08-29）：
-  - 标题栏：标题 "ForkPlus" + **最小化/最大化/关闭三按钮全部渲染**（本轮 ContentPresenter 修复前为空白）。
-  - 菜单栏：File/Window/Help（PART_MainMenu 生效）。
-  - 工具栏：Quick Launch / Fetch / Pull / Push / Stash / Undo / Branch / AI-Assisted Dev / Console / Appearance / Workspaces。
-  - **主内容区完整渲染**（本轮修复前空白）：左侧 Repository Manager（含 fork 水印图标、"Drop repository here to add"）、右侧仓库详情（Uncommitted File/Commits/Initial Commit/Last Commit/Remotes/Branches/Tags/README.MD）。
-- 本轮两大突破：① `CustomWindow.StyleKeyOverride` 根因修复（见「重大发现 #7」）；② **模板内裸 ContentPresenter 补 `Content="{TemplateBinding Content}"`**（见「重大发现 #9」，修复窗口按钮图标 + 主内容区空白）。
+- 首启全流程冒烟（Xvfb 截图驱动，verification/15-*.png）：配置 Git 对话框（检测到 2 个 git）→ Git 版本警告 → 用户信息表单 → **主窗口（仓库管理器列表 .nvm/.oh-my-zsh + 仓库详情摘要/统计）** → 点击"打开" → **仓库视图加载完成**（状态栏 ".nvm 分离 HEAD"，侧栏 本地变更/所有提交/搜索/PR/Issues，主区 提交/变更/文件树 页签 + 作者/提交者/引用/SHA/父提交 列头）。全程零未处理异常。
+- 上一轮终点是"打开仓库后永远停在『正在加载...』"（verification/14-repo-opened-sidebar.png），本轮三根因修复后彻底打通（见「运行时修复链 3」）。
+- 本轮三大突破：① ClosableTabControl 选卡事件断链（SelectionChanged 虚方法降级死代码 → 订阅路由事件转发）；② XAML EndInit 期早期 SelectionChanged 的 NRE 防御；③ **DataTemplateKey → Application.DataTemplates 全局类型模板迁移（57 个模板，侧栏树/引用徽章/ReferencePanel）**。
 
 错误数轨迹（按唯一错误去重统计）：
 
@@ -73,13 +70,14 @@ git push origin HEAD
 | `e6466dd` | AVLN 103→1 | xamlpass7 + 定向手工修复：typed property、事件签名、PART_TextPresenter、ItemContainerTheme 块、TemplateKey 花括号、IsMouseOver 删、误删 HorizontalContentAlignment 回滚 |
 | （本轮） | AVLN 1→**0** + 运行时推进 | App 生命周期迁移 + 运行时冒烟修复链（资产大小写/BitmapImage shim/代理 owner 窗口/ColorConverter/对话框 NRE，详见「运行时冒烟已修复的问题」） |
 | （本轮2） | 运行时：**主窗口渲染成功** | StyleKeyOverride 根因修复 + TabControl ItemsPanel FuncTemplate + SelectionChanged 初始化时序 NRE + 16 文件样式修复（详见「运行时修复链 2」） |
+| （本轮3） | 运行时：**仓库打开链路全通** | ClosableTabControl 选卡事件断链 + 侧栏早期 SelectionChanged NRE + DataTemplateKey→App.DataTemplates 57 个模板迁移 + ReferencePanel ControlTheme + SelectableTextBlock（详见「运行时修复链 3」） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中 | **主窗口已渲染、零崩溃**；待验证：交互（菜单/按钮/仓库打开）、次级窗口、剩余 UI 细节（窗口控制按钮图标、菜单 `_` 前缀显示） |
+| 3 运行时验证 | 🔄 进行中 | **首启全流程 + 仓库打开已通、零崩溃**；待验证：提交列表数据填充（.nvm 单提交未显示）、侧栏分支/标签树数据、次级窗口、菜单交互 |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
 ## 运行时阻塞：Textblock.axaml StaticResource（✅ 已解决，存档备考）
@@ -144,6 +142,28 @@ export DISPLAY=:99   # 需先 Xvfb :99 -screen 0 1920x1080x24
 timeout 30 dotnet run --project src/ForkPlus/ForkPlus.csproj 2>&1 | grep -c "Unhandled"  # 预期 0
 # 截图（import 来自 imagemagick）：import -window root /tmp/ui.png
 ```
+
+## 运行时修复链 3（2026-08-29 本轮3：仓库打开链路全通）
+
+上一轮终点：打开仓库后永远停在"正在加载..."（toolbar 显示 loading、侧栏/主区全空）。逐个排查修复：
+
+1. **【根因A】ClosableTabControl 选卡事件断链**：
+   - WPF `TabControl.OnSelectionChanged` 是**框架调用的虚方法重写**，转换后变成普通方法（Avalonia 无此虚方法）→ 永不被调 → `SelectedTabItemChanged` 事件永不触发 → `TabManager.TabControl_SelectedTabItemChanged`（排队仓库刷新任务）整条链路断裂。
+   - **修复**：构造函数里 `base.SelectionChanged += (s,e) => OnSelectionChanged(e)`，订阅 Avalonia 路由事件转发到原方法（保留 `StopSelectionChangedEventWhileDropInProgress` 门控）。**模式：WPF 框架回调虚方法（OnXxx 重写）迁移后全部是死代码，必须找到等价事件显式接回。**
+2. **【根因B】XAML EndInit 期早期 SelectionChanged NRE（SidebarUserControl）**：
+   - Avalonia `SelectingItemsControl` 在 XAML `EndInit`（XamlIlPopulate 过程中）就初始化选区并触发 SelectionChanged；WPF 首次选卡发生在 Load 之后（x:Name 字段已赋值）。早期触发时 `ServiceTabItem`/`ServiceRadioButton`/`BranchesTabItem` 均为 null → `UpdateVisibleTabs` NRE 崩掉开仓链路。
+   - **修复**：`TabControl_SelectionChanged` 开头加 null 守卫直接 return（此时 `_repositoryData` 还是 Empty 无业务意义；真实数据到达后 `UpdateRepositoryData` 会再调 `UpdateVisibleTabs`）。**模式已在修复链 2 #3 出现过（RepositoryDetailsUserControl 同款）——XAML 事件处理器一律假设字段未初始化。**
+3. **【根因C】DataTemplateKey 按类型查找失效（侧栏树渲染 ToString 类型名）**：
+   - WPF：资源字典里 `x:Key="{DataTemplateKey {x:Type T}}"` 的 DataTemplate 可被 ContentPresenter 按类型隐式命中；转换后 key 降级成字符串，**Avalonia 12 ContentPresenter 只走 `FindDataTemplate`（逻辑树 Control.DataTemplates → 全局 IGlobalDataTemplates），资源字典字符串 key 永不命中** → 侧栏树/引用徽章/ReferencePanel 全渲染 ToString()。
+   - **修复**：`move_dtkey.py` / `move_sidebar_dt.py` 脚本把 DataTemplate 搬进 `App.axaml` `<Application.DataTemplates>`（IGlobalDataTemplates，FindDataTemplate 最后兜底）。共迁移：Sidebar.axaml 13 个（SidebarGroupItem/Remote/FilterableRemote/Folder/FilterableFolder/Truncate/Tag/LocalBranch/MainWorktree/RemoteBranch/Stash/Submodule/Worktree SidebarItem）+ Listview.axaml 9 个（ReferencesDataTemplates 的 Tag/LocalBranch/RemoteBranch/BisectMark/Stash ReferenceViewModel + ReferencePanelStyle ItemTemplate 的 ReferencePanel{Tag,LocalBranch,RemoteBranch,BisectMark}ViewModel）。
+   - **模板绑定属性已逐项核对存在**（BranchViewModel.BorderBrush/BackgroundBrush、HighlightableTextBlock.Text/HighlightString、RemoteIcon: IImage、ReflogName 等），画刷资源（RevisionList.*/RevisionSummary.*/Reference*）在 Brushes.axaml 均有定义。
+   - **已知丢失**：WPF DataTrigger 视觉状态（IsActive 加粗、IsWorktree 工作树图标、BisectGood 换色）无模板级等价物，TODO 注释保留原片段，待后续 VM 计算属性 + Classes 选择器补齐。
+4. **ReferencePanelStyle ControlTheme 修复（KeyNotFoundException）**：
+   - 转换误加 `BasedOn="{StaticResource {x:Type controls:ReferencePanel}}"`（WPF 原版无 BasedOn）→ Avalonia 无对应隐式 ControlTheme → KeyNotFoundException。已移除；并补 `Template`（WPF 依赖内置 ItemsControl 默认模板，Avalonia ControlTheme 无模板则条目不渲染）→ `<ItemsPresenter/>`。
+5. **SelectableTextBlock 反射崩溃（TypeInitializationException）**：
+   - 原实现反射调 PresentationFramework 内部 TextEditor（WPF-only）让 TextBlock 支持选择/复制；Avalonia 无此类型，Type.GetType null → 静态 cctor NRE（开仓库页签时 CommitUserControl → FilePathTextBlock → 此类）。**修复**：直接继承 `Avalonia.Controls.SelectableTextBlock`（自带选择/复制），删全部反射包装，`Focusable = true`。
+
+**验证方法**（本轮实际执行路径）：`Xvfb :98` + `interact4.sh`（launch/list/shot/click/type/key 分阶段驱动）→ 依次点"继续"→"确定"→"完成"→"打开" → 每步 `import -window` 截图 → 与 verification/ 编号截图对比。应用进程存活 + /tmp/run_log.txt 无 Unhandled = 通过。
 
 ## pass7 修复记录（103→1，错误清单已全部消灭）
 
@@ -227,19 +247,12 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 1. **IPC 命名管道消息模式（PlatformNotSupportedException）**：`IpcServer.cs:26` 的 `PipeTransmissionMode.Message` 仅 Windows 支持。协议本身用 4 字节长度前缀分帧（`PipeStreamExtensions.ReadString`），不依赖消息边界，已改为 `OperatingSystem.IsWindows() ? Message : Byte`。
 2. **沙盒无显示服务器**：`apt-get install -y xvfb` 后 `Xvfb :99 -screen 0 1920x1080x24` + `export DISPLAY=:99` 即可跑 GUI 冒烟。
 
-## 下一步行动（按优先级，2026-08-29 本轮2 更新）
+## 下一步行动（按优先级，2026-08-29 本轮3 更新）
 
-1. **【最高优先级】批量修剩余 ~67 处裸 ContentPresenter**（详见「运行时修复链 2」第 5 条）：
-   ```bash
-   cd /data/user/work/migration/ForkPlus-Next
-   python3 /data/user/work/fix_cpresenter.py src/ForkPlus/Theme/Styles/*.axaml
-   dotnet build src/ForkPlus/ForkPlus.sln -v q -nologo  # 验证 0 错误
-   # 然后按「冒烟方法」跑 Xvfb 截图，对比各控件内容是否显示
-   ```
-   预期收益：侧边栏按钮图标、各 Dialog 的内容区、列表项内容等大量"空壳"控件恢复显示。
-2. **交互冒烟**（当前阶段）：主窗口已完整渲染，验证交互链路——File 菜单展开/命令执行、仓库打开（选真实 git 仓库）、TabControl 切换、Preferences 等对话框。方法：Xvfb 截图 + NLog 日志（`logs/` 目录）确认无运行时异常。
-3. **菜单 `_` 前缀**：菜单显示 `_File` 原始下划线——WPF AccessText 语法，Avalonia Menu 的 Header 不解析 `_` 前缀。低优先级，后续统一批量删前缀或改 AccessText。
-4. **次级窗口冒烟**：Preferences/Commit/Blame 等 Dialog 打开是否正常（依赖 `WindowDialogCompat` 代理窗口链路）。
+1. **【最高优先级】提交列表数据填充**：仓库已打开（状态栏显示仓库状态），但提交列表为空（.nvm 实际有 1 个提交 ffec9fe/v0.40.2，detached HEAD）。排查 RevisionGrid/RevisionStorage 数据链路：`git log` 解析 → RevisionStorage → 列表 ItemsSource 绑定。可能是 NoUIAutomationListView/虚拟化列表的 ItemsSource 或绑定路径问题。同时排查侧栏"分支/标签"树是否填充（.nvm 有 v0.40.2 tag，侧栏树应显示）。
+2. **引用徽章渲染验证**：提交列表填充后确认"引用"列的 ReferenceViewModel 徽章用上新迁移的模板（标签蓝框 + 图标，而非 ToString 类型名）。ReferencePanel（提交详情面板的 refs 行）同理。
+3. **DataTrigger 视觉状态补齐**：IsActive 加粗 / IsWorktree 图标 / BisectGood 换色（原片段已注释保留在 App.axaml 模板旁），用 VM 计算属性 + Classes 选择器实现。
+4. **交互冒烟**：File 菜单展开/命令执行、TabControl 切换（提交/变更/文件树）、Preferences 等次级对话框。
 5. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
 6. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
 
