@@ -795,6 +795,8 @@ namespace ForkPlus.UI.Dialogs
 
 		protected void UpdateSubmitButton()
 		{
+			// [diag] 输入诊断：提交按钮状态（临时，验证后移除）
+			Log.Warn("[diag] UpdateSubmitButton: Footer=" + (Footer != null) + " btn=" + (Footer?.SubmitButton != null) + " allowed=" + IsSubmitAllowed + " type=" + GetType().Name);
 			if (Footer?.SubmitButton != null)
 			{
 				Footer.SubmitButton.IsEnabled = IsSubmitAllowed;

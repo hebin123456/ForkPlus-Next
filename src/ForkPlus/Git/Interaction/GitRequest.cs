@@ -210,12 +210,17 @@ namespace ForkPlus.Git.Interaction
 							process.StandardInput.Close();
 						}
 						string text = process.StandardOutput.ReadToEnd();
-						task.Wait();
-						if (process.ExitCode != 0 && !silent)
-						{
-							Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + error);
-						}
-						return new GitRequestResult(process.ExitCode, text.ToString(), error.ToString());
+					task.Wait();
+					// TODO 迁移：Unix 上 ReadToEnd 返回（EOF）≠ 进程已退出，此刻读 ExitCode 抛
+					// InvalidOperationException: Process must exit before requested information
+					// can be determined（首启 SetGlobalUserIdentity 全失败实证）。管道已读完，
+					// WaitForExit 不会死锁。Windows 上同样安全（幂等）。
+					process.WaitForExit();
+					if (process.ExitCode != 0 && !silent)
+					{
+						Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + error);
+					}
+					return new GitRequestResult(process.ExitCode, text.ToString(), error.ToString());
 					}
 					catch (Exception ex)
 					{
@@ -262,13 +267,15 @@ namespace ForkPlus.Git.Interaction
 							error = process.StandardError.ReadToEnd();
 						});
 						string text = process.StandardOutput.ReadToEnd();
-						task.Wait();
-						if (appendOutput)
-						{
-							monitor.AppendOutputLine(text);
-							monitor.AppendOutputLine(error);
-						}
-						if (process.ExitCode != 0 && !silent)
+					task.Wait();
+					if (appendOutput)
+					{
+						monitor.AppendOutputLine(text);
+						monitor.AppendOutputLine(error);
+					}
+					// TODO 迁移：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
+					process.WaitForExit();
+					if (process.ExitCode != 0 && !silent)
 						{
 							Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + error);
 						}
@@ -346,15 +353,17 @@ namespace ForkPlus.Git.Interaction
 							while (text2 != null);
 						}, TaskCreationOptions.LongRunning);
 						task2.Start();
-						task.Wait();
-						task2.Wait();
-						string stdout = outputSb.ToString();
-						string text = errorSb.ToString();
-						if (process.ExitCode != 0)
-						{
-							Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + text);
-						}
-						return new GitRequestResult(process.ExitCode, stdout, text);
+					task.Wait();
+					task2.Wait();
+					string stdout = outputSb.ToString();
+					string text = errorSb.ToString();
+					// TODO 迁移：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
+					process.WaitForExit();
+					if (process.ExitCode != 0)
+					{
+						Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + text);
+					}
+					return new GitRequestResult(process.ExitCode, stdout, text);
 					}
 					catch (Exception ex)
 					{
@@ -423,13 +432,15 @@ namespace ForkPlus.Git.Interaction
 							}
 						}, TaskCreationOptions.LongRunning);
 						task2.Start();
-						task.Wait();
-						task2.Wait();
-						if (process.ExitCode != 0)
-						{
-							Log.Warn("Git request failed '" + _command?.ArgumentsString + "'");
-						}
-						return ExecuteWithCallbackResponse.Create(process.ExitCode);
+					task.Wait();
+					task2.Wait();
+					// TODO 迁移：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
+					process.WaitForExit();
+					if (process.ExitCode != 0)
+					{
+						Log.Warn("Git request failed '" + _command?.ArgumentsString + "'");
+					}
+					return ExecuteWithCallbackResponse.Create(process.ExitCode);
 					}
 					catch (Exception ex)
 					{
@@ -482,12 +493,14 @@ namespace ForkPlus.Git.Interaction
 							process.StandardInput.Close();
 						}
 						process.StandardOutput.BaseStream.CopyTo(memoryStream);
-						task.Wait();
-						if (process.ExitCode != 0 && !silent)
-						{
-							Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + error);
-						}
-						return new ShellRequestBinaryResult(process.ExitCode, memoryStream, error.ToString());
+					task.Wait();
+					// TODO 迁移：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
+					process.WaitForExit();
+					if (process.ExitCode != 0 && !silent)
+					{
+						Log.Warn("Git request failed '" + _command?.ArgumentsString + "':\n" + error);
+					}
+					return new ShellRequestBinaryResult(process.ExitCode, memoryStream, error.ToString());
 					}
 					catch (Exception ex)
 					{

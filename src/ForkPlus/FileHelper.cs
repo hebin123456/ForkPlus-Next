@@ -114,7 +114,24 @@ namespace ForkPlus
 			}
 			try
 			{
-				MoveFileEx(tempFileName, filePath, MoveFileFlags.ReplaceExisting | MoveFileFlags.CopyAllowed | MoveFileFlags.WriteThrough);
+				// TODO 迁移：原子写跨平台。原 Windows 专用 MoveFileEx(ReplaceExisting) P/Invoke
+				// 在 Linux/macOS 抛 DllNotFoundException（Kernel32.dll 不存在），settings.json
+				// 等所有原子写全失败。Unix 用 File.Replace（rename(2) 同语义：原子覆盖）。
+				if (OperatingSystem.IsWindows())
+				{
+					MoveFileEx(tempFileName, filePath, MoveFileFlags.ReplaceExisting | MoveFileFlags.CopyAllowed | MoveFileFlags.WriteThrough);
+				}
+				else
+				{
+					if (File.Exists(filePath))
+					{
+						File.Replace(tempFileName, filePath, null);
+					}
+					else
+					{
+						File.Move(tempFileName, filePath);
+					}
+				}
 			}
 			catch (Exception)
 			{
