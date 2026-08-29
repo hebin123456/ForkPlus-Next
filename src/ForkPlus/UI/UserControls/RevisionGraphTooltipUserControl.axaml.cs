@@ -79,12 +79,12 @@ namespace ForkPlus.UI.UserControls
 		{
 			int num = Math.Min(10, _revisionsDataSource.Count) * 23 + 22 + 16;
 			this.HeightChanged?.Invoke(this, new EventArgs<double>(num));
-			DoubleAnimation doubleAnimation = new DoubleAnimation(base.ActualHeight, num, TimeSpan.FromSeconds(0.05));
+			DoubleAnimation doubleAnimation = new DoubleAnimation(base.Bounds.Height, num, TimeSpan.FromSeconds(0.05));
 			doubleAnimation.EasingFunction = new QuadraticEase
 			{
 				EasingMode = EasingMode.EaseOut
 			};
-			BeginAnimation(global::Avalonia.Controls.Control.HeightProperty, doubleAnimation);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(this,global::Avalonia.Controls.Control.HeightProperty,doubleAnimation);
 		}
 
 		private void RevisionListView_SizeChanged(object sender, SizeChangedEventArgs e)

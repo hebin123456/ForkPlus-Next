@@ -101,7 +101,7 @@ namespace ForkPlus.UI.Controls
 				VerticalAlignment = VerticalAlignment.Center,
 				FontSize = 11,
 				Margin = new Thickness(0, 0, 4, 0),
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = global::ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			legendPanel.Children.Add(lessLabel);
 			for (int k = 0; k < 5; k++)
@@ -123,7 +123,7 @@ namespace ForkPlus.UI.Controls
 				VerticalAlignment = VerticalAlignment.Center,
 				FontSize = 11,
 				Margin = new Thickness(4, 0, 16, 0),
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = global::ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			legendPanel.Children.Add(moreLabel);
 			bottomPanel.Children.Add(legendPanel);
@@ -134,7 +134,7 @@ namespace ForkPlus.UI.Controls
 				VerticalAlignment = VerticalAlignment.Center,
 				FontSize = 11,
 				TextWrapping = TextWrapping.NoWrap,
-				Foreground = Theme.SecondaryLabelBrush
+				Foreground = global::ForkPlus.UI.Theme.SecondaryLabelBrush
 			};
 			bottomPanel.Children.Add(_summaryText);
 
@@ -193,16 +193,10 @@ namespace ForkPlus.UI.Controls
 					DayContributionInfo info = data.TryGetValue(date, out var c) ? c : null;
 					int commits = info?.Commits ?? 0;
 					int level = GetLevel(commits, maxCommits);
-					Border border = new Border
+					Border border = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new Border
 					{
-						Width = CellSize,
-						Height = CellSize,
-						Background = palette[level],
-						CornerRadius = new CornerRadius(2),
-						ToolTip = BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info),
-						HorizontalAlignment = HorizontalAlignment.Left,
-						VerticalAlignment = VerticalAlignment.Top
-					};
+						Width = CellSize,						Height = CellSize,						Background = palette[level],						CornerRadius = new CornerRadius(2),						HorizontalAlignment = HorizontalAlignment.Left,						VerticalAlignment = VerticalAlignment.Top
+					},BuildTooltip(tooltipFormat, authorsFormat, moreFormat, date, commits, info));
 					SetColumn(border, week);
 					SetRow(border, dow);
 					_heatmapGrid.Children.Add(border);

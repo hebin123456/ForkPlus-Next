@@ -36,13 +36,13 @@ namespace ForkPlus.UI.Controls
 			if (Mouse.LeftButton == MouseButtonState.Pressed)
 			{
 				_dragStartPoint = e.GetPosition(null);
-				CaptureMouse();
+				this.CaptureMouse();
 			}
 		}
 
 		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
-			ReleaseMouseCapture();
+			this.ReleaseMouseCapture();
 			if (_wasSelected)
 			{
 				base.OnPointerPressed(e);
@@ -66,7 +66,7 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
-			global::Avalonia.Controls.ListBoxItem[] array2 = array.CompactMap((DecoratedRevision x) => ParentListView.ItemContainerGenerator.ContainerFromItem(x) as global::Avalonia.Controls.ListBoxItem);
+			global::Avalonia.Controls.ListBoxItem[] array2 = array.CompactMap((DecoratedRevision x) => ParentListView.ContainerFromItem(x) as global::Avalonia.Controls.ListBoxItem);
 			ParentListView?.ItemDrag?.Invoke(this, EventArgs.Empty);
 			if (AllowDrag)
 			{
@@ -76,7 +76,7 @@ namespace ForkPlus.UI.Controls
 				if (adornerLayer != null)
 				{
 					adornerLayer.Add(_adorner);
-					DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
+					global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(this, array, DragDropEffects.Move);
 					adornerLayer.Remove(_adorner);
 					ParentListView.StopDragAutoScroll();
 				}
@@ -87,7 +87,7 @@ namespace ForkPlus.UI.Controls
 		{
 			if (base.IsVisible && _adorner != null)
 			{
-				Point position = PointFromScreen(MouseHelper.GetMousePosition());
+				Point position = this.PointFromScreen(MouseHelper.GetMousePosition());
 				_adorner.UpdatePosition(position);
 			}
 		}
@@ -112,7 +112,7 @@ namespace ForkPlus.UI.Controls
 			{
 				item = decoratedRevision2;
 			}
-			if (ParentListView.ItemContainerGenerator.ContainerFromItem(item) is global::Avalonia.Controls.ListBoxItem targetListViewItem)
+			if (ParentListView.ContainerFromItem(item) is global::Avalonia.Controls.ListBoxItem targetListViewItem)
 			{
 				ClearDropAdorner();
 				DropPosition = GetDropPosition(e);
@@ -132,7 +132,7 @@ namespace ForkPlus.UI.Controls
 
 		private DropPosition GetDropPosition(DragEventArgs e)
 		{
-			double actualHeight = base.ActualHeight;
+			double actualHeight = base.Bounds.Height;
 			double y = e.GetPosition(this).Y;
 			double num = 3.0;
 			if (y < num)

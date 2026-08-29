@@ -19,7 +19,7 @@ namespace ForkPlus.UI.Controls
 	{
 		public static void ApplySearchAndButrackerHighlighting(this TextBlock textBlock, [Null] string highlightString, BugtrackerLinkDefinition[] bugtrackers)
 		{
-			Brush matchBrush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			Brush matchBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
 			string text = textBlock.Text;
 			List<(Range, Uri)> issueTrackerLinks = GetIssueTrackerLinks(text, bugtrackers);
 			List<Range> searchRanges = GetSearchRanges(text, highlightString);
@@ -48,10 +48,10 @@ namespace ForkPlus.UI.Controls
 					Uri uri = issueTrackerUrls[issueIndex.Value];
 					global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton(run);
 					hyperlink.NavigateUri = uri;
-					hyperlink.ToolTip = uri;
-					hyperlink.ToolTip = uri;
-					hyperlink.Style = Theme.FindStyle("BugtrackerHyperlinkStyle");
-					hyperlink.ContextMenu = CreateBugtrackerHyperlinkContextMenu(text2, uri.AbsoluteUri);
+					global::Avalonia.Controls.ToolTip.SetTip(hyperlink,uri);
+					global::Avalonia.Controls.ToolTip.SetTip(hyperlink,uri);
+{					hyperlink.Styles.Clear();hyperlink.Styles.Add(global::ForkPlus.UI.Theme.FindStyle("BugtrackerHyperlinkStyle"));
+}					hyperlink.ContextMenu = CreateBugtrackerHyperlinkContextMenu(text2, uri.AbsoluteUri);
 					textBlock.Inlines.Add(hyperlink);
 					if (range.End == text.Length)
 					{
@@ -138,8 +138,8 @@ namespace ForkPlus.UI.Controls
 			}
 			int length = highlightString.Length;
 			int num2 = 0;
-			Brush foreground = Theme.FindBrush("ForegroundBrush");
-			Brush background = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			Brush foreground = global::ForkPlus.UI.Theme.FindBrush("ForegroundBrush");
+			Brush background = global::ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
 			textBlock.Inlines.Clear();
 			while (num != -1)
 			{

@@ -14,7 +14,7 @@ namespace ForkPlus.UI.CircularProgressBar
 			double num3 = values[2].ExtractDouble();
 			if (new double[3] { num, num2, num3 }.AnyNan())
 			{
-				return Binding.DoNothing;
+				return global::ForkPlus.UI.WpfCompat.WpfBinding.DoNothing;
 			}
 			if (values.Length == 4)
 			{

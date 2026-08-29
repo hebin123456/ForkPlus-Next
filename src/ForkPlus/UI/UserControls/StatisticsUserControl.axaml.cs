@@ -333,13 +333,13 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isCalendarUpdatingInProgress;
 
-		private static OxyColor BorderColor => Theme.BorderBrush.ToOxyColor();
+		private static OxyColor BorderColor => global::ForkPlus.UI.Theme.BorderBrush.ToOxyColor();
 
-		private static OxyColor BackgroundColor => Theme.BackgroundBrush.ToOxyColor();
+		private static OxyColor BackgroundColor => global::ForkPlus.UI.Theme.BackgroundBrush.ToOxyColor();
 
-		private static OxyColor SecondaryLabelColor => Theme.SecondaryLabelBrush.ToOxyColor();
+		private static OxyColor SecondaryLabelColor => global::ForkPlus.UI.Theme.SecondaryLabelBrush.ToOxyColor();
 
-		private static OxyColor LabelColor => Theme.LabelBrush.ToOxyColor();
+		private static OxyColor LabelColor => global::ForkPlus.UI.Theme.LabelBrush.ToOxyColor();
 
 		public StatisticsUserControl()
 		{
@@ -476,7 +476,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 							if (_pendingScrollToCodeLines)
 							{
 								_pendingScrollToCodeLines = false;
-								Dispatcher.BeginInvoke(new Action(() => CodeLinesSection.BringIntoView()),
+								Dispatcher.InvokeAsync(new Action(() => CodeLinesSection.BringIntoView()),
 									System.Windows.Threading.DispatcherPriority.Render);
 							}
 						}

@@ -147,17 +147,17 @@ namespace ForkPlus.UI
 			MenuItem menuItem = new MenuItem();
 			menuItem.Header = PreferencesLocalization.MenuHeader("Cut");
 			menuItem.Command = ApplicationCommands.Cut;
-			menuItem.CommandTarget = commandTarget;
+			/* TODO 迁移: CommandTarget 已删除 */;
 			contextMenu.Items.Add(menuItem);
 			MenuItem menuItem2 = new MenuItem();
 			menuItem2.Header = PreferencesLocalization.MenuHeader("Copy");
 			menuItem2.Command = ApplicationCommands.Copy;
-			menuItem2.CommandTarget = commandTarget;
+			/* TODO 迁移: CommandTarget 已删除 */;
 			contextMenu.Items.Add(menuItem2);
 			MenuItem menuItem3 = new MenuItem();
 			menuItem3.Header = PreferencesLocalization.MenuHeader("Paste");
 			menuItem3.Command = PasteCommand.Instance;
-			menuItem3.CommandTarget = commandTarget;
+			/* TODO 迁移: CommandTarget 已删除 */;
 			contextMenu.Items.Add(menuItem3);
 		}
 
@@ -176,7 +176,7 @@ namespace ForkPlus.UI
 				menuItem.FontWeight = FontWeights.Bold;
 				menuItem.Command = EditingCommands.CorrectSpellingError;
 				menuItem.CommandParameter = suggestion;
-				menuItem.CommandTarget = commandTarget;
+				/* TODO 迁移: CommandTarget 已删除 */;
 				contextMenu.Items.Insert(num, menuItem);
 				num++;
 			}
@@ -185,7 +185,7 @@ namespace ForkPlus.UI
 			MenuItem menuItem2 = new MenuItem();
 			menuItem2.Header = PreferencesLocalization.MenuHeader("Ignore All");
 			menuItem2.Command = EditingCommands.IgnoreSpellingError;
-			menuItem2.CommandTarget = commandTarget;
+			/* TODO 迁移: CommandTarget 已删除 */;
 			contextMenu.Items.Insert(num, menuItem2);
 			if (!flag)
 			{

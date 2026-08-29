@@ -63,8 +63,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void RefreshOverlayImageSize()
 		{
-			double num = base.ActualHeight - 35.0 - 9.0 - 9.0 - 40.0;
-			double num2 = base.ActualWidth - 10.0 - 10.0 - 9.0 - 9.0;
+			double num = base.Bounds.Height - 35.0 - 9.0 - 9.0 - 40.0;
+			double num2 = base.Bounds.Width - 10.0 - 10.0 - 9.0 - 9.0;
 			if (num > 0.0 && num2 > 0.0)
 			{
 				OverlayImage.ParentBounds = new Size(num2, num);
@@ -94,7 +94,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			if (imageData.IsTracked && imageData.FileSize > 500000)
 			{
 				notLfsLabel.Show();
-				notLfsLabel.ToolTip = string.Format(PreferencesLocalization.Translate("File is {0} and is not managed by LFS", ForkPlusSettings.Default.UiLanguage), FileHelper.GetReadableFileSize(imageData.FileSize));
+				global::Avalonia.Controls.ToolTip.SetTip(notLfsLabel,string.Format(PreferencesLocalization.Translate("File is {0} and is not managed by LFS", ForkPlusSettings.Default.UiLanguage), FileHelper.GetReadableFileSize(imageData.FileSize)));
 			}
 			else
 			{

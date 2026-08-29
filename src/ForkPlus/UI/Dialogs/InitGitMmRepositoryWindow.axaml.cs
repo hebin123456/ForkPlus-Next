@@ -51,7 +51,7 @@ namespace ForkPlus.UI.Dialogs
 			RefreshCommandPreview();
 			base.Loaded += delegate
 			{
-				Dispatcher.Post(new Action(RefreshCommandPreview), System.Windows.Threading.DispatcherPriority.Loaded);
+				Dispatcher.Post(new Action(RefreshCommandPreview), global::Avalonia.Threading.DispatcherPriority.Loaded);
 				ManifestUrlTextBox.Focus();
 			};
 		}
@@ -170,7 +170,7 @@ namespace ForkPlus.UI.Dialogs
 			string cmd = GitMmCommandPreviewHelper.Format(CreateInitArgs());
 			CommandPreviewTextBlock.Text = cmd;
 			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-			CommandPreviewTextBlock.ToolTip = cmd;
+			global::Avalonia.Controls.ToolTip.SetTip(CommandPreviewTextBlock,cmd);
 		}
 
 		private string[] CreateInitArgs()

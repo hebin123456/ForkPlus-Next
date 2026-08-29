@@ -221,8 +221,8 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			ScrollViewer scrollViewer = ScrollViewer;
-			double num = scrollViewer.VerticalOffset + scrollViewer.ViewportHeight;
-			if ((double)_root.Children.Count <= scrollViewer.ViewportHeight)
+			double num = scrollViewer.VerticalOffset + scrollViewer.Viewport.Height;
+			if ((double)_root.Children.Count <= scrollViewer.Viewport.Height)
 			{
 				Log.Debug("Item list is smaller than the viewport. Loading more to fill empty space");
 				LoadNext();

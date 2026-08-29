@@ -52,7 +52,7 @@ namespace ForkPlus.UI.Controls
 			base.PointerEntered += delegate(object s, global::Avalonia.Input.PointerEventArgs e)
 			{
 				e.Handled = true;
-				base.ToolTip = (TextIsTrimmed() ? GetToolTipText() : null);
+				global::Avalonia.Controls.ToolTip.SetTip(base,(TextIsTrimmed() ? GetToolTipText() : null));
 			};
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 		}
@@ -108,8 +108,8 @@ namespace ForkPlus.UI.Controls
 
 		private void RefreshBrushes()
 		{
-			_labelBrush = Theme.LabelBrush;
-			_secondaryLabelBrush = Theme.SecondaryLabelBrush;
+			_labelBrush = global::ForkPlus.UI.Theme.LabelBrush;
+			_secondaryLabelBrush = global::ForkPlus.UI.Theme.SecondaryLabelBrush;
 		}
 
 		private bool TextIsTrimmed()
@@ -122,7 +122,7 @@ namespace ForkPlus.UI.Controls
 			{
 				if (child != this)
 				{
-					num -= child.ActualWidth + child.Margin.Left + child.Margin.Right;
+					num -= child.Bounds.Width + child.Margin.Left + child.Margin.Right;
 				}
 			}
 			Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));

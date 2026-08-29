@@ -63,8 +63,8 @@ namespace ForkPlus.UI.Controls
 				base.Inlines.Add(new Run(stringValue));
 				return;
 			}
-			Brush matchForegroundBrush = Theme.FindBrush("ForegroundBrush");
-			Brush matchBackgroundBrush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			Brush matchForegroundBrush = global::ForkPlus.UI.Theme.FindBrush("ForegroundBrush");
+			Brush matchBackgroundBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
 			new Range(0, stringValue.Length).Merge(new List<Range>[1] { searchMatchRanges }, delegate(Range range, int? searchIndex, int? _, int? __)
 			{
 				Run run = new Run(stringValue.Substring(range));

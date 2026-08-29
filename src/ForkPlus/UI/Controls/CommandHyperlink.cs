@@ -38,8 +38,8 @@ namespace ForkPlus.UI.Controls
 			_closePopupTimer.Interval = TimeSpan.FromMilliseconds(100.0);
 			_showPopupTimer.Tick += _showPopupTimer_Tick;
 			_closePopupTimer.Tick += _closePopupTimer_Tick;
-			base.Style = Application.Current.TryFindResource("BugtrackerHyperlinkStyle") as Style;
-			base.Click += CommandHyperlink_Click;
+{			base.Styles.Clear();base.Styles.Add(Application.Current.TryFindResource("BugtrackerHyperlinkStyle") as Style);
+}			base.Click += CommandHyperlink_Click;
 			base.PointerEntered += delegate(object s, global::Avalonia.Input.PointerEventArgs e)
 			{
 				e.Handled = true;
@@ -87,7 +87,7 @@ namespace ForkPlus.UI.Controls
 
 		private void ClosePopup(bool hardClose = false)
 		{
-			if (_popup != null && _popup.IsOpen && (!_popup.IsMouseOver || hardClose))
+			if (_popup != null && _popup.IsOpen && (!_popup.IsPointerOver|| hardClose))
 			{
 				_popup.IsOpen = false;
 				VisualTreeAttachmentHelper.TrySetPopupChild(_popup, null, GetType().Name + ".Popup");

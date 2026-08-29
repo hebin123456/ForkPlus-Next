@@ -10,7 +10,7 @@ namespace ForkPlus.UI.Dialogs
 {
 	public class DropPlaceAdorner : Adorner
 	{
-		private static readonly Pen _pen = new Pen(Theme.AccentBrush, 2.0);
+		private static readonly Pen _pen = new Pen(global::ForkPlus.UI.Theme.AccentBrush, 2.0);
 
 		private DropPosition _dropPosition;
 

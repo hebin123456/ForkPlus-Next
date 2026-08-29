@@ -11,7 +11,7 @@ namespace ForkPlus.UI.Helpers
 		{
 			TextView textView = textEditor.TextArea.TextView;
 			double extentHeight = ((IScrollInfo)textView).ExtentHeight;
-			double viewportHeight = ((IScrollInfo)textView).ViewportHeight;
+			double viewportHeight = ((IScrollInfo)textView).Viewport.Height;
 			if (offset + viewportHeight > extentHeight)
 			{
 				return false;
@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Helpers
 		{
 			TextView textView = textEditor.TextArea.TextView;
 			double extentWidth = ((IScrollInfo)textView).ExtentWidth;
-			double viewportWidth = ((IScrollInfo)textView).ViewportWidth;
+			double viewportWidth = ((IScrollInfo)textView).Viewport.Width;
 			if (offset + viewportWidth > extentWidth)
 			{
 				return false;

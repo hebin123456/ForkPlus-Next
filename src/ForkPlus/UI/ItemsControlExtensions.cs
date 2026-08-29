@@ -28,9 +28,9 @@ namespace ForkPlus.UI
 				return null;
 			}
 			global::Avalonia.AvaloniaObject dependencyObject = hitTestResult.VisualHit;
-			while (global::Avalonia.VisualTreeExtensions.GetVisualParent(dependencyObject) != null && !(dependencyObject is ItemContainer))
+			while (global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject) != null && !(dependencyObject is ItemContainer))
 			{
-				dependencyObject = global::Avalonia.VisualTreeExtensions.GetVisualParent(dependencyObject);
+				dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
 			}
 			return dependencyObject as ItemContainer;
 		}

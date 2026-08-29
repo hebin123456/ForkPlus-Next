@@ -42,7 +42,7 @@ namespace ForkPlus.UI
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			e.Effects = DragDropEffects.None;
+			e.DragEffects= DragDropEffects.None;
 			e.Handled = true;
 		}
 	}

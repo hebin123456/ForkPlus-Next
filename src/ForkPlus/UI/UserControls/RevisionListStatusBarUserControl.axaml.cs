@@ -19,7 +19,7 @@ namespace ForkPlus.UI.UserControls
 
 		public RepositoryUserControl RepositoryUserControl { get; set; }
 
-		private double StatusBarTextBlockMaxWidth => Container.ActualWidth - 145.0;
+		private double StatusBarTextBlockMaxWidth => Container.Bounds.Width - 145.0;
 
 		public RevisionListStatusBarUserControl()
 		{
@@ -65,7 +65,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void InvalidateStatusBarTextBlockMeasurement()
 		{
-			if (ReferencesTextBlock.ActualWidth > 0.0 && ReferencesTextBlock.ActualWidth > StatusBarTextBlockMaxWidth)
+			if (ReferencesTextBlock.Bounds.Width > 0.0 && ReferencesTextBlock.Bounds.Width > StatusBarTextBlockMaxWidth)
 			{
 				ReferencesTextBlock.MaxWidth = StatusBarTextBlockMaxWidth;
 				ReferencesTextBlock.InvalidateMeasure();

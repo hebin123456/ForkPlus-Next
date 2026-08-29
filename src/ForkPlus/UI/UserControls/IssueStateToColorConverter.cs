@@ -16,9 +16,9 @@ namespace ForkPlus.UI.UserControls
 				switch (issueState)
 				{
 				case IssueState.Open:
-					return Theme.ApplicationColors.GreenBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 				case IssueState.Closed:
-					return Theme.ApplicationColors.RedBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 				}
 			}
 			return null;

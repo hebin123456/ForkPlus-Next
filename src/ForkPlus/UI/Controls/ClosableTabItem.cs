@@ -69,7 +69,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		private EditableTextBlock TitleTextBlock => GetTemplateChild("PART_Title") as EditableTextBlock;
+		private EditableTextBlock TitleTextBlock => this.GetTemplateChild("PART_Title") as EditableTextBlock;
 
 		public ClosableTabItem()
 		{
@@ -90,14 +90,14 @@ namespace ForkPlus.UI.Controls
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			if (GetTemplateChild("PART_Close") is Button button)
+			if (this.GetTemplateChild("PART_Close") is Button button)
 			{
 				button.Click += delegate
 				{
 					Close();
 				};
 			}
-			if (!(GetTemplateChild("PART_Header") is CenteredDockPanel centeredDockPanel))
+			if (!(this.GetTemplateChild("PART_Header") is CenteredDockPanel centeredDockPanel))
 			{
 				return;
 			}
@@ -108,7 +108,7 @@ namespace ForkPlus.UI.Controls
 					Close();
 				}
 			};
-			centeredDockPanel.ToolTip = GetToolTip();
+			global::Avalonia.Controls.ToolTip.SetTip(centeredDockPanel,GetToolTip());
 			centeredDockPanel.ContextMenu = GetContextMenu();
 		}
 
@@ -179,15 +179,15 @@ namespace ForkPlus.UI.Controls
 
 		private void TabItem_PreviewMouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.OriginalSource is Button) && e.Source is ClosableTabItem closableTabItem)
+			if (Mouse.PrimaryDevice.LeftButton == MouseButtonState.Pressed && CursorReachedDropDistance(e.GetPosition(null)) && !(e.Source is Button) && e.Source is ClosableTabItem closableTabItem)
 			{
-				DragDrop.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), DragDropEffects.All);
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(closableTabItem, new WeakReference<ClosableTabItem>(closableTabItem), DragDropEffects.All);
 			}
 		}
 
 		private void TabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (e.Data.GetData(typeof(WeakReference<ClosableTabItem>)) is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
+			if (e.WpfData().GetData(typeof(WeakReference<ClosableTabItem>)) is WeakReference<ClosableTabItem> weakReference && weakReference.TryGetTarget(out var target) && e.Source is ClosableTabItem closableTabItem)
 			{
 				ClosableTabControl closableTabControl = closableTabItem.Parent as ClosableTabControl;
 				if (closableTabItem != target)
@@ -400,11 +400,10 @@ namespace ForkPlus.UI.Controls
 
 		private static Control CreateRepositoryColorsMenuItem(RepositoryManager.Repository repository)
 		{
-			return new MenuItem
+			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new MenuItem
 			{
-				Header = new RepositoryColorsUserControl(repository),
-				Style = Theme.CustomContentMenuItemStyle
-			};
+				Header = new RepositoryColorsUserControl(repository)			},global::ForkPlus.UI.Theme.CustomContentMenuItemStyle
+);
 		}
 
 		private static RepositoryManager.Repository? EnsureRepositoryManagerEntry(string repositoryPath)

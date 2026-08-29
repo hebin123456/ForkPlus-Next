@@ -63,10 +63,10 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>v3.0.1：应用按钮 ToolTip / Content 的本地化文案。</summary>
 		private void ApplyLocalizationToButtons()
 		{
-			RetryButton.ToolTip = PreferencesLocalization.Current("Retry");
-			StopButton.ToolTip = PreferencesLocalization.Current("Stop the current AI task");
-			CopyButton.ToolTip = PreferencesLocalization.Current("Copy result to clipboard");
-			ModelComboBox.ToolTip = PreferencesLocalization.Current("Select AI model");
+			global::Avalonia.Controls.ToolTip.SetTip(RetryButton,PreferencesLocalization.Current("Retry"));
+			global::Avalonia.Controls.ToolTip.SetTip(StopButton,PreferencesLocalization.Current("Stop the current AI task"));
+			global::Avalonia.Controls.ToolTip.SetTip(CopyButton,PreferencesLocalization.Current("Copy result to clipboard"));
+			global::Avalonia.Controls.ToolTip.SetTip(ModelComboBox,PreferencesLocalization.Current("Select AI model"));
 		}
 
 		/// <summary>启动一次 AI 请求。调用方在 requestAction 内调用 OnChunk(chunk) 把流式数据写回。</summary>
@@ -130,9 +130,9 @@ namespace ForkPlus.UI.Dialogs
 			Dispatcher.Post(delegate
 			{
 				AiStreamingView.RenderFinal(finalMarkdown);
-				StopButton.Visibility = Visibility.Collapsed;
+				StopButton.IsVisible= false;
 				RetryButton.IsEnabled = true;
-				StatusProgressBar.Visibility = Visibility.Collapsed;
+				StatusProgressBar.IsVisible= false;
 				AiStreamingView.HideBusy();
 				StatusTextBlock.Text = PreferencesLocalization.Current("Done");
 			});

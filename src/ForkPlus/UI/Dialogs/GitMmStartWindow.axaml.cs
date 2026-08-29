@@ -55,7 +55,7 @@ namespace ForkPlus.UI.Dialogs
 			RefreshCommandPreview();
 			base.Loaded += delegate
 			{
-				Dispatcher.Post(new System.Action(RefreshCommandPreview), System.Windows.Threading.DispatcherPriority.Loaded);
+				Dispatcher.Post(new System.Action(RefreshCommandPreview), global::Avalonia.Threading.DispatcherPriority.Loaded);
 				BranchNameTextBox.Focus();
 			};
 		}
@@ -170,25 +170,25 @@ namespace ForkPlus.UI.Dialogs
 					IsChecked = _selectedSubrepoPaths.Contains(subrepo.Path),
 					StaysOpenOnClick = true
 				};
-				menuItem.Checked += delegate
+				global::ForkPlus.UI.WpfCompat.Events.AddChecked(menuItem,delegate
 				{
 					_selectedSubrepoPaths.Add(subrepo.Path);
 					RefreshSubreposButton();
 					UpdateSubmitButton();
 					RefreshCommandPreview();
-				};
-				menuItem.Unchecked += delegate
+				});
+				global::ForkPlus.UI.WpfCompat.Events.AddUnchecked(menuItem,delegate
 				{
 					_selectedSubrepoPaths.Remove(subrepo.Path);
 					RefreshSubreposButton();
 					UpdateSubmitButton();
 					RefreshCommandPreview();
-				};
+				});
 				contextMenu.Items.Add(menuItem);
 			}
 			SubreposDropDownButton.ContextMenu = contextMenu;
 			contextMenu.PlacementTarget = SubreposDropDownButton;
-			contextMenu.IsOpen = true;
+			contextMenu.Open();
 		}
 
 		private void AllSubreposCheckBox_Changed(object sender, RoutedEventArgs e)
@@ -227,14 +227,10 @@ namespace ForkPlus.UI.Dialogs
 		{
 			JobsComboBox.SelectionChanged += delegate { RefreshCommandPreview(); };
 			GrepModeComboBox.SelectionChanged += delegate { RefreshCommandPreview(); };
-			AllowTagCheckBox.Checked += delegate { RefreshCommandPreview(); };
-			AllowTagCheckBox.Unchecked += delegate { RefreshCommandPreview(); };
-			AllowCommitCheckBox.Checked += delegate { RefreshCommandPreview(); };
-			AllowCommitCheckBox.Unchecked += delegate { RefreshCommandPreview(); };
-			AllowNoTrackCheckBox.Checked += delegate { RefreshCommandPreview(); };
-			AllowNoTrackCheckBox.Unchecked += delegate { RefreshCommandPreview(); };
-			HeadCheckBox.Checked += delegate { RefreshCommandPreview(); };
-			HeadCheckBox.Unchecked += delegate { RefreshCommandPreview(); };
+			AllowTagCheckBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
+			AllowCommitCheckBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
+			AllowNoTrackCheckBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
+			HeadCheckBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
 		}
 
 		private void RefreshCommandPreview()
@@ -244,7 +240,7 @@ namespace ForkPlus.UI.Dialogs
 				string cmd = GitMmCommandPreviewHelper.Format(CreateArgs());
 				CommandPreviewTextBlock.Text = cmd;
 				// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-				CommandPreviewTextBlock.ToolTip = cmd;
+				global::Avalonia.Controls.ToolTip.SetTip(CommandPreviewTextBlock,cmd);
 			}
 		}
 

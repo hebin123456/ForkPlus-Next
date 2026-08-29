@@ -115,7 +115,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			base.Render(drawingContext);
 			if (_oldImageSource != null && _newImageSource != null)
 			{
-				Rect targetRect = new Rect(0.0, 0.0, base.ActualWidth, base.ActualHeight);
+				Rect targetRect = new Rect(0.0, 0.0, base.Bounds.Width, base.Bounds.Height);
 				Rect imageRect = GetImageRect(_oldImageSize, targetRect);
 				Draw(drawingContext, _oldImageSource, imageRect, HorizontalClip.Old, ClipX);
 				Rect imageRect2 = GetImageRect(_newImageSize, targetRect);
@@ -179,17 +179,17 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private static Size ResizeImageMaintaningAspectRatio(global::Avalonia.Media.Imaging.Bitmap image, Size targetSize)
 		{
-			if ((double)image.PixelWidth < targetSize.Width && (double)image.PixelHeight < targetSize.Height)
+			if ((double)image.PixelSize.Width < targetSize.Width && (double)image.PixelSize.Height < targetSize.Height)
 			{
-				return new Size(image.PixelWidth, image.PixelHeight);
+				return new Size(image.PixelSize.Width, image.PixelSize.Height);
 			}
-			double num = targetSize.Width / (double)image.PixelWidth;
-			double num2 = targetSize.Height / (double)image.PixelHeight;
+			double num = targetSize.Width / (double)image.PixelSize.Width;
+			double num2 = targetSize.Height / (double)image.PixelSize.Height;
 			if (!(num < num2))
 			{
-				return new Size(Math.Floor((double)image.PixelWidth * num2), Math.Floor((double)image.PixelHeight * num2));
+				return new Size(Math.Floor((double)image.PixelSize.Width * num2), Math.Floor((double)image.PixelSize.Height * num2));
 			}
-			return new Size(Math.Floor((double)image.PixelWidth * num), Math.Floor((double)image.PixelHeight * num));
+			return new Size(Math.Floor((double)image.PixelSize.Width * num), Math.Floor((double)image.PixelSize.Height * num));
 		}
 	}
 }

@@ -18,21 +18,21 @@ namespace ForkPlus.UI
 				{
 					if (!flag)
 					{
-						return Theme.BranchIcon;
+						return global::ForkPlus.UI.Theme.BranchIcon;
 					}
-					return Theme.BranchSelectedIcon;
+					return global::ForkPlus.UI.Theme.BranchSelectedIcon;
 				}
 				if (!flag)
 				{
-					return Theme.BranchWarningIcon;
+					return global::ForkPlus.UI.Theme.BranchWarningIcon;
 				}
-				return Theme.BranchWarningSelectedIcon;
+				return global::ForkPlus.UI.Theme.BranchWarningSelectedIcon;
 			}
 			if (!flag)
 			{
-				return Theme.BranchPaleIcon;
+				return global::ForkPlus.UI.Theme.BranchPaleIcon;
 			}
-			return Theme.BranchPaleSelectedIcon;
+			return global::ForkPlus.UI.Theme.BranchPaleSelectedIcon;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

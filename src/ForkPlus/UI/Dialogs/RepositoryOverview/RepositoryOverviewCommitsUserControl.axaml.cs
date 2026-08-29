@@ -39,7 +39,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 		private void RevisionsListBoxItem_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
 			e.Handled = true;
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: RepositoryOverviewCommitViewModel dataContext } && RepositoryUserControl != null)
+			if (ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: RepositoryOverviewCommitViewModel dataContext } && RepositoryUserControl != null)
 			{
 				GitModule gitModule = RepositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -51,7 +51,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 
 		private void RevisionsListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: var dataContext }))
+			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: var dataContext }))
 			{
 				return;
 			}

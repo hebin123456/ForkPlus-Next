@@ -129,12 +129,12 @@ namespace ForkPlus.UI.UserControls
 			SearchTabItem.Initialize(repositoryUserControl);
 			ServiceTabItem.Initialize(repositoryUserControl);
 			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ReferenceSortOrderChanged", ReferenceSortOrderChanged);
-			SidebarTreeView.ContextMenuOpening += SidebarTreeView_ContextMenuOpening;
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(SidebarTreeView,SidebarTreeView_ContextMenuOpening);
 			SidebarTreeView.AddHandler(ButtonBase.ClickEvent, new EventHandler<RoutedEventArgs>(SidebarTreeView_ButtonClick));
 			SidebarTreeView.SelectionChanged += SidebarTreeView_SelectionChanged;
 			SidebarTreeView.PointerPressed += SidebarTreeView_MouseDown;
 			SidebarTreeView.DoubleTapped += SidebarTreeView_MouseDoubleClick;
-			SidebarTreeView.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			SidebarTreeView.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.F && Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.LeftShift))
 				{
@@ -146,7 +146,7 @@ namespace ForkPlus.UI.UserControls
 					FilterTextBox.Clear();
 					e.Handled = true;
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			InitializeKeyBindings();
 			FilterTextBox.FilterRequestChanged += delegate
 			{
@@ -157,7 +157,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void SidebarTreeView_ButtonClick(object sender, RoutedEventArgs e)
 		{
-			if (e.OriginalSource is not Button button)
+			if (e.Source is not Button button)
 			{
 				return;
 			}
@@ -190,29 +190,29 @@ namespace ForkPlus.UI.UserControls
 				if (text2 != null)
 				{
 					RepositoryParentNameTextBlock.Text = parentRepositoryName + ": ";
-					RepositoryParentNameTextBlock.ToolTip = parentRepositoryName + "\n" + text2;
-					RepositoryNameTextBlock.ToolTip = parentRepositoryName + ": " + repositoryName + "\n" + text;
+					global::Avalonia.Controls.ToolTip.SetTip(RepositoryParentNameTextBlock,parentRepositoryName + "\n" + text2);
+					global::Avalonia.Controls.ToolTip.SetTip(RepositoryNameTextBlock,parentRepositoryName + ": " + repositoryName + "\n" + text);
 					return;
 				}
 			}
 			RepositoryParentNameTextBlock.Text = "";
-			RepositoryParentNameTextBlock.ToolTip = "";
-			RepositoryNameTextBlock.ToolTip = repositoryName + "\n" + text;
+			global::Avalonia.Controls.ToolTip.SetTip(RepositoryParentNameTextBlock,"");
+			global::Avalonia.Controls.ToolTip.SetTip(RepositoryNameTextBlock,repositoryName + "\n" + text);
 		}
 
 		public void ApplyLocalization()
 		{
 			string language = ForkPlusSettings.Default.UiLanguage;
-			RepositorySettingsDropdownButton.ToolTip = Preferences.PreferencesLocalization.Translate("Repository Settings", language);
+			global::Avalonia.Controls.ToolTip.SetTip(RepositorySettingsDropdownButton,Preferences.PreferencesLocalization.Translate("Repository Settings", language));
 			FilterTextBox.Placeholder = Preferences.PreferencesLocalization.Translate("Filter", language);
 			AllCommitsTextBlock.Text = Preferences.PreferencesLocalization.Translate("All Commits", language);
 			if (RepositoryUserControl?.RepositoryStatus == null)
 			{
 				ChangesTextBlock.Text = Preferences.PreferencesLocalization.Translate("Changes", language);
 			}
-			BranchesRadioButton.ToolTip = Preferences.PreferencesLocalization.Translate("Branches", language);
-			SearchRadioButton.ToolTip = Preferences.PreferencesLocalization.Translate("Search Commits", language);
-			ServiceRadioButton.ToolTip = Preferences.PreferencesLocalization.Translate("Pull Requests", language);
+			global::Avalonia.Controls.ToolTip.SetTip(BranchesRadioButton,Preferences.PreferencesLocalization.Translate("Branches", language));
+			global::Avalonia.Controls.ToolTip.SetTip(SearchRadioButton,Preferences.PreferencesLocalization.Translate("Search Commits", language));
+			global::Avalonia.Controls.ToolTip.SetTip(ServiceRadioButton,Preferences.PreferencesLocalization.Translate("Pull Requests", language));
 			SearchTabItem.ApplyLocalization();
 			_pinned.RefreshTitle();
 			_branches.RefreshTitle();
@@ -339,7 +339,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (sender is TextBlock { DataContext: TagSidebarItem { Reference: Tag reference } } textBlock)
 			{
-				textBlock.ToolTip = $"Tag '{reference.Name}'\n{reference.CommitterDate}";
+				global::Avalonia.Controls.ToolTip.SetTip(textBlock,$"Tag '{reference.Name}'\n{reference.CommitterDate}");
 			}
 		}
 
@@ -496,15 +496,15 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (target is LocalBranch destinationBranch)
 				{
-					SidebarTreeView.ContextMenu.LayoutTransform = Theme.LayoutScaleTransform;
+					SidebarTreeView.ContextMenu.LayoutTransform = global::ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateLocalBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch, sourceBranch));
-					SidebarTreeView.ContextMenu.IsOpen = true;
+					SidebarTreeView.ContextMenu.Open();
 				}
 				else if (target is RemoteBranch destinationBranch2 && sourceBranch is LocalBranch sourceBranch2)
 				{
-					SidebarTreeView.ContextMenu.LayoutTransform = Theme.LayoutScaleTransform;
+					SidebarTreeView.ContextMenu.LayoutTransform = global::ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateRemoteBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch2, sourceBranch2));
-					SidebarTreeView.ContextMenu.IsOpen = true;
+					SidebarTreeView.ContextMenu.Open();
 				}
 			}
 		}
@@ -524,7 +524,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void InitializeKeyBindings()
 		{
-			SidebarTreeView.CommandBindings.Add(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateShortcutCommandBinding(delegate
+			SidebarTreeView.AddCommandBinding(RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.CreateShortcutCommandBinding(delegate
 			{
 				GitModule gitModule2 = RepositoryUserControl.GitModule;
 				if (gitModule2 != null && SidebarTreeView.SelectedItems.Count == 1 && SidebarTreeView.SelectedItems[0] is LocalBranchSidebarItem { Reference: LocalBranch reference })
@@ -532,7 +532,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.ShowRenameLocalBranchWindow.Execute(RepositoryUserControl, gitModule2, _repositoryData.References, reference);
 				}
 			}));
-			SidebarTreeView.CommandBindings.Add(RepositoryUserControl.Commands.RemoveReferenceCommand.CreateShortcutCommandBinding(delegate
+			SidebarTreeView.AddCommandBinding(RepositoryUserControl.Commands.RemoveReferenceCommand.CreateShortcutCommandBinding(delegate
 			{
 				if (RepositoryUserControl.GitModule != null)
 				{
@@ -566,7 +566,7 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			SidebarTreeView.CommandBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
+			SidebarTreeView.AddCommandBinding(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
 			{
 				SubmoduleSidebarItem[] array2 = SidebarTreeView.SelectedItems.CompactMap((object x) => x as SubmoduleSidebarItem);
 				if (array2.Length != 0)
@@ -574,7 +574,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.CopyFilePaths.Execute(array2.Map((SubmoduleSidebarItem x) => x.Submodule.Path));
 				}
 			}));
-			SidebarTreeView.CommandBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
+			SidebarTreeView.AddCommandBinding(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
 			{
 				GitModule gitModule = RepositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -652,7 +652,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					Log.Warn("Unknown reference type in menu item");
 					e.Handled = true;
-					SidebarTreeView.ContextMenu.IsOpen = false;
+					SidebarTreeView.ContextMenu.Close();
 				}
 			}
 			else if (sidebarItem is StashSidebarItem)
@@ -701,12 +701,12 @@ namespace ForkPlus.UI.UserControls
 				}
 				Log.Warn("Unknown sidebar group type in menu item");
 				e.Handled = true;
-				SidebarTreeView.ContextMenu.IsOpen = false;
+				SidebarTreeView.ContextMenu.Close();
 			}
 			else
 			{
 				e.Handled = true;
-				SidebarTreeView.ContextMenu.IsOpen = false;
+				SidebarTreeView.ContextMenu.Close();
 			}
 		}
 
@@ -1296,8 +1296,8 @@ namespace ForkPlus.UI.UserControls
 			Style searchableStyle = (Style)Application.Current.TryFindResource("SearchableSubmenuMenuItem");
 			if (searchableStyle != null)
 			{
-				groupItem.Style = searchableStyle;
-			}
+{				groupItem.Styles.Clear();groupItem.Styles.Add(searchableStyle);
+}			}
 			foreach (RemoteBranch rb in remoteBranches.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal))
 			{
 				RemoteBranch currentRemoteBranch = rb;
@@ -1388,7 +1388,7 @@ namespace ForkPlus.UI.UserControls
 					// 恢复光标到末尾，避免 Focus 把光标跑到开头影响继续输入
 					searchBox.CaretIndex = searchBox.Text.Length;
 				}
-			}), System.Windows.Threading.DispatcherPriority.Background);
+			}), global::Avalonia.Threading.DispatcherPriority.Background);
 		}
 
 		/// <summary>在 MenuItem 的子菜单 Popup 视觉树里按名字查找模板部件。</summary>
@@ -2641,7 +2641,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			yield return RepositoryUserControl.Commands.ShowMergeBranchWindow.CreateMenuItem("Merge '" + sourceBranch.Name + "' into " + destinationBranch.Name + "...", delegate
 			{
-				SidebarTreeView.ContextMenu.IsOpen = false;
+				SidebarTreeView.ContextMenu.Close();
 				RepositoryUserControl.Commands.ShowMergeBranchWindow.Execute(repositoryUserControl, sourceBranch, destinationBranch);
 			});
 			LocalBranch sourceLocalBranch = sourceBranch as LocalBranch;
@@ -2649,12 +2649,12 @@ namespace ForkPlus.UI.UserControls
 			{
 				yield return RepositoryUserControl.Commands.ShowRebaseBranchWindow.CreateMenuItem("Rebase '" + sourceLocalBranch.Name + "' on '" + destinationBranch.Name + "...", delegate
 				{
-					SidebarTreeView.ContextMenu.IsOpen = false;
+					SidebarTreeView.ContextMenu.Close();
 					RepositoryUserControl.Commands.ShowRebaseBranchWindow.Execute(repositoryUserControl, sourceLocalBranch, destinationBranch);
 				});
 				yield return RepositoryUserControl.Commands.ShowRebaseBranchWindow.CreateMenuItem("Interactively Rebase '" + sourceLocalBranch.Name + "' on '" + destinationBranch.Name + "...", delegate
 				{
-					SidebarTreeView.ContextMenu.IsOpen = false;
+					SidebarTreeView.ContextMenu.Close();
 					RepositoryUserControl.Commands.ShowInteractiveRebaseWindow.Execute(repositoryUserControl, gitModule, sourceLocalBranch, destinationBranch);
 				});
 			}
@@ -2664,12 +2664,12 @@ namespace ForkPlus.UI.UserControls
 		{
 			yield return RepositoryUserControl.Commands.ShowRebaseBranchWindow.CreateMenuItem("Rebase '" + sourceBranch.Name + "' on '" + destinationBranch.Name + "...", delegate
 			{
-				SidebarTreeView.ContextMenu.IsOpen = false;
+				SidebarTreeView.ContextMenu.Close();
 				RepositoryUserControl.Commands.ShowRebaseBranchWindow.Execute(repositoryUserControl, sourceBranch, destinationBranch);
 			});
 			yield return RepositoryUserControl.Commands.ShowRebaseBranchWindow.CreateMenuItem("Interactively Rebase '" + sourceBranch.Name + "' on '" + destinationBranch.Name + "...", delegate
 			{
-				SidebarTreeView.ContextMenu.IsOpen = false;
+				SidebarTreeView.ContextMenu.Close();
 				RepositoryUserControl.Commands.ShowInteractiveRebaseWindow.Execute(repositoryUserControl, gitModule, sourceBranch, destinationBranch);
 			});
 		}

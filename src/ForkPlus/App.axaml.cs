@@ -508,7 +508,7 @@ namespace ForkPlus
 			}
 			if (child is Visual || child is Visual3D)
 			{
-				return global::Avalonia.VisualTreeExtensions.GetVisualParent(child);
+				return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(child);
 			}
 			return null;
 		}
@@ -589,7 +589,7 @@ namespace ForkPlus
 					Application.Current.Resources.MergedDictionaries.Remove(_windowsBorderResourceDictionary);
 				}
 				_windowsBorderResourceDictionary = resourceDictionary;
-				Theme.Refresh();
+				global::ForkPlus.UI.Theme.Refresh();
 			}
 		}
 
@@ -638,7 +638,7 @@ namespace ForkPlus
 			{
 				Application.Current.Resources.MergedDictionaries.Remove(resourceDictionary);
 			}
-			Theme.SubscribeToSystemEvents();
+			global::ForkPlus.UI.Theme.SubscribeToSystemEvents();
 			InitializeTextEditorContextMenuStyle();
 			ApplyCustomColors();
 		}
@@ -714,7 +714,7 @@ namespace ForkPlus
 				_customColorsResourceDictionary = dict;
 			}
 		}
-		Theme.Refresh();
+		global::ForkPlus.UI.Theme.Refresh();
 		// raise 事件让订阅者刷新缓存的颜色/画刷，实现自定义颜色实时生效。
 		NotificationCenter.Current.RaiseApplicationThemeChanged(Application.Current, ForkPlusSettings.Default.Theme);
 	}
@@ -1067,7 +1067,7 @@ namespace ForkPlus
 				}
 				base.Dispatcher.Post(delegate
 				{
-					Window mainWindow = Application.Current.MainWindow;
+					Window mainWindow = global::ForkPlus.UI.WpfCompat.WpfApp.MainWindow;
 					if (mainWindow != null)
 					{
 						mainWindow.Activate();

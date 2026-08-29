@@ -37,7 +37,7 @@ namespace ForkPlus.UI.QuickLaunch
 				base.Title = PreferencesLocalization.Current("Quick Launch");
 				return;
 			}
-			base.Owner = MainWindow.Instance;
+			base.SetOwnerCompat= MainWindow.Instance;
 			_showCheckout = showCheckout;
 			_refreshCommandListAction = new DelayedAction<bool>(RefreshCommandList, 0.1);
 			base.Loaded += delegate

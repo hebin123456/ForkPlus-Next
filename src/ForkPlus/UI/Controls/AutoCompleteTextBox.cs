@@ -42,7 +42,7 @@ namespace ForkPlus.UI.Controls
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			if (GetTemplateChild("Popup") is Popup popup)
+			if (this.GetTemplateChild("Popup") is Popup popup)
 			{
 				_popup = popup;
 				_popup.PlacementTarget = this;
@@ -124,8 +124,8 @@ namespace ForkPlus.UI.Controls
 			if (_listBox == null)
 			{
 				_listBox = new ListBox();
-				_listBox.Style = Application.Current.TryFindResource("AutoCompleteListBoxStyle") as Style;
-				_listBox.ItemTemplate = Application.Current.TryFindResource("AutocompleteListBoxItemTemplate") as DataTemplate;
+{				_listBox.Styles.Clear();_listBox.Styles.Add(Application.Current.TryFindResource("AutoCompleteListBoxStyle") as Style);
+}				_listBox.ItemTemplate = Application.Current.TryFindResource("AutocompleteListBoxItemTemplate") as DataTemplate;
 				_listBox.MinWidth = 216.0;
 				_listBox.PointerReleased += delegate
 				{

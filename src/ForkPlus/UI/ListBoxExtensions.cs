@@ -97,7 +97,7 @@ namespace ForkPlus.UI
 			{
 				ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(listBox, 0), 0);
 				int num = ((row >= 1) ? (row - 1) : row);
-				if (!((double)num > scrollViewer.VerticalOffset) || !((double)num < scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
+				if (!((double)num > scrollViewer.VerticalOffset) || !((double)num < scrollViewer.VerticalOffset + scrollViewer.Viewport.Height))
 				{
 					scrollViewer.ScrollToVerticalOffset(num);
 				}

@@ -63,7 +63,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			base.ShowHeader = false;
 			InitializeComponent();
 			base.SubmitButtonTitle = Translate("Sign In");
-			OpenPersonalAccessTokenConfigurationUrlButton.ToolTip = Translate("Required scopes: read_user, read_api, read_repository, write_repository");
+			global::Avalonia.Controls.ToolTip.SetTip(OpenPersonalAccessTokenConfigurationUrlButton,Translate("Required scopes: read_user, read_api, read_repository, write_repository"));
 			Account = account;
 			if (!server)
 			{

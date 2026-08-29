@@ -184,7 +184,7 @@ namespace ForkPlus.UI.Controls.Editor
 			}
 			Rect valueOrDefault = rectForChunk.GetValueOrDefault();
 			DrawBorder(valueOrDefault, drawingContext);
-			if (_textEditor.ViewportHeight > _textEditor.ExtentHeight)
+			if (_textEditor.Viewport.Height > _textEditor.ExtentHeight)
 			{
 				if (_textEditor.TextArea.TextView.VerticalOffset > 0.0)
 				{
@@ -226,7 +226,7 @@ namespace ForkPlus.UI.Controls.Editor
 			double num = 15.0;
 			double num2 = 20.0;
 			num -= _textEditor.SearchBarHeight;
-			double num3 = _textEditor.TextArea.TextView.ActualWidth - num2;
+			double num3 = _textEditor.TextArea.TextView.Bounds.Width - num2;
 			double top = popupTopPosition + num;
 			if (_adorner == null)
 			{
@@ -263,7 +263,7 @@ namespace ForkPlus.UI.Controls.Editor
 		private void TextEditor_MouseLeave(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
 			ContextMenu contextMenu = _textEditor.ContextMenu;
-			if (contextMenu == null || !contextMenu.IsMouseOver)
+			if (contextMenu == null || !contextMenu.IsPointerOver)
 			{
 				ButtonsAdorner adorner = _adorner;
 				if (adorner == null || VisualTreeHelper.HitTest(adorner, e.GetPosition(_adorner)) == null)
@@ -338,7 +338,7 @@ namespace ForkPlus.UI.Controls.Editor
 				num2 += item.Height;
 				flag = false;
 			}
-			Rect rect = new Rect(0.0, num, _textEditor.ActualWidth, num2);
+			Rect rect = new Rect(0.0, num, _textEditor.Bounds.Width, num2);
 			DrawBorder(rect, drawingContext);
 			ShowChunkAdorner(num + _textEditor.SearchBarHeight);
 		}
@@ -385,7 +385,7 @@ namespace ForkPlus.UI.Controls.Editor
 				double num3 = textView.GetVisualLine(i)?.Height ?? 0.0;
 				num2 += num3;
 			}
-			return new Rect(0.0, num + 1.0, textView.ActualWidth, num2 - 1.0);
+			return new Rect(0.0, num + 1.0, textView.Bounds.Width, num2 - 1.0);
 		}
 
 		[Null]

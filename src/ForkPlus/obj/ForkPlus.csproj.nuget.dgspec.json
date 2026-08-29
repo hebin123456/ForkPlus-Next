@@ -70,10 +70,6 @@
               "target": "Package",
               "version": "[7.1.2, )"
             },
-            "Microsoft.Web.WebView2": {
-              "target": "Package",
-              "version": "[1.0.3967.48, )"
-            },
             "NLog": {
               "target": "Package",
               "version": "[6.1.3, )"

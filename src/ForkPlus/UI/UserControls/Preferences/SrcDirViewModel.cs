@@ -16,12 +16,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 			Path = path;
 			if (SrcFolderIsValid(path))
 			{
-				SrcFolderIcon = Theme.FolderIcon;
+				SrcFolderIcon = global::ForkPlus.UI.Theme.FolderIcon;
 				SrcFolderIconTooltip = null;
 			}
 			else
 			{
-				SrcFolderIcon = Theme.WarningIcon;
+				SrcFolderIcon = global::ForkPlus.UI.Theme.WarningIcon;
 				SrcFolderIconTooltip = "'" + path + "' should not be used as a source directory. Please choose a subfolder instead";
 			}
 		}

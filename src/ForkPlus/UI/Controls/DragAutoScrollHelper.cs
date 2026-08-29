@@ -34,7 +34,7 @@ namespace ForkPlus.UI.Controls
 			{
 				StartAutoScroll(-1);
 			}
-			else if (position.Y > _control.ActualHeight - 25.0)
+			else if (position.Y > _control.Bounds.Height - 25.0)
 			{
 				StartAutoScroll(1);
 			}

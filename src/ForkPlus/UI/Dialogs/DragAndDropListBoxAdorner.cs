@@ -48,7 +48,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					newPosition.Offset(0.0, _visualBrushYOffset);
 				}
-				context.DrawRectangle(brush, null, new Rect(newPosition, base.RenderSize));
+				context.DrawRectangle(brush, null, new Rect(newPosition, base.Bounds.Size));
 			}
 		}
 	}

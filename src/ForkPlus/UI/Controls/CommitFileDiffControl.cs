@@ -93,7 +93,7 @@ namespace ForkPlus.UI.Controls
 						if (base.SubControlMode)
 						{
 							textDiffControl.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
-							textDiffControl.PreviewMouseWheel += base.DiffCodeEditor_PreviewMouseWheel;
+							textDiffControl.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,base.DiffCodeEditor_PreviewMouseWheel,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 						}
 						textDiffControl.PositionCache = _positionCache;
 						return textDiffControl;

@@ -96,7 +96,7 @@ namespace ForkPlus.UI.UserControls
 			RevisionListView.ItemsSource = RevisionsDataSource;
 			DragAndDropListView revisionListView = RevisionListView;
 			revisionListView.ItemDrag = (EventHandler<EventArgs>)Delegate.Combine(revisionListView.ItemDrag, new EventHandler<EventArgs>(ValidateDrag));
-			base.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			base.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if ((e.Key == Key.F3 || (e.Key == Key.F && KeyboardHelper.IsCtrlDown)) && !KeyboardHelper.IsShiftDown)
 				{
@@ -109,7 +109,7 @@ namespace ForkPlus.UI.UserControls
 					FocusSelectedItem();
 					e.Handled = true;
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Left)
@@ -126,13 +126,13 @@ namespace ForkPlus.UI.UserControls
 					e.Handled = true;
 				}
 			};
-			RevisionListView.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			RevisionListView.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.A && KeyboardHelper.IsCtrlDown && !KeyboardHelper.IsShiftDown)
 				{
 					e.Handled = true;
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			this.AddCommandBinding(RepositoryUserControl.Commands.CopyRevisionSha.CreateShortcutCommandBinding(delegate
 			{
 				RepositoryUserControl.Commands.CopyRevisionSha.Execute(SelectedRevisions.Map((DecoratedRevision x) => x.ToRevision()));
@@ -216,7 +216,7 @@ namespace ForkPlus.UI.UserControls
 				return null;
 			}
 			ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(RevisionListView, 0), 0);
-			int num = (int)(scrollViewer.VerticalOffset + scrollViewer.ViewportHeight) - 1;
+			int num = (int)(scrollViewer.VerticalOffset + scrollViewer.Viewport.Height) - 1;
 			if (num < 0 || num >= RevisionsDataSource.Count)
 			{
 				return null;
@@ -386,7 +386,7 @@ namespace ForkPlus.UI.UserControls
 			else if (RevisionListView.SelectedItem is DecoratedRevision decoratedRevision)
 			{
 				bool flag = decoratedRevision.GetParents().Length > 1;
-				if (!(e.OriginalSource is GraphCellView && flag))
+				if (!(e.Source is GraphCellView && flag))
 				{
 					this.RevisionDoubleClick?.Invoke(this, new EventArgs<DecoratedRevision>(decoratedRevision));
 				}
@@ -420,7 +420,7 @@ namespace ForkPlus.UI.UserControls
 							if (commitGraphCache != null)
 							{
 								DecoratedRevision[] array = listBox.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
-								if (e.OriginalSource is GraphCellView { DataContext: DecoratedRevision dataContext } && dataContext.GetParents().Length > 1)
+								if (e.Source is GraphCellView { DataContext: DecoratedRevision dataContext } && dataContext.GetParents().Length > 1)
 								{
 									listBox.ContextMenu.SetItems(CreateCollapseContextMenu(dataContext));
 									return;
@@ -443,7 +443,7 @@ namespace ForkPlus.UI.UserControls
 									return;
 								}
 								e.Handled = true;
-								RevisionListView.ContextMenu.IsOpen = false;
+								RevisionListView.ContextMenu.Close();
 								return;
 							}
 						}
@@ -451,13 +451,13 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			e.Handled = true;
-			RevisionListView.ContextMenu.IsOpen = false;
+			RevisionListView.ContextMenu.Close();
 		}
 
 		[Null]
 		private Branch GetClickedBranch(global::Avalonia.Input.PointerPressedEventArgs args)
 		{
-			global::Avalonia.AvaloniaObject dependencyObject = args.OriginalSource as global::Avalonia.AvaloniaObject;
+			global::Avalonia.AvaloniaObject dependencyObject = args.Source as global::Avalonia.AvaloniaObject;
 			while (dependencyObject != null && !(dependencyObject is global::Avalonia.Controls.ListBoxItem))
 			{
 				if (dependencyObject is Run run)
@@ -468,7 +468,7 @@ namespace ForkPlus.UI.UserControls
 					}
 					return null;
 				}
-				dependencyObject = global::Avalonia.VisualTreeExtensions.GetVisualParent(dependencyObject);
+				dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
 				if (dependencyObject is ContentPresenter { DataContext: BranchViewModel dataContext })
 				{
 					return dataContext.Reference as Branch;
@@ -560,7 +560,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void RevisionListViewItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is DragAndDropListViewItem { DataContext: DecoratedRevision dataContext } dragAndDropListViewItem) || !(e.Data.GetData(typeof(DecoratedRevision[])) is DecoratedRevision[] array) || array.Length == 0 || array.Contains(dataContext))
+			if (!(sender is DragAndDropListViewItem { DataContext: DecoratedRevision dataContext } dragAndDropListViewItem) || !(e.WpfData().GetData(typeof(DecoratedRevision[])) is DecoratedRevision[] array) || array.Length == 0 || array.Contains(dataContext))
 			{
 				e.Handled = true;
 				return;
@@ -1360,7 +1360,7 @@ namespace ForkPlus.UI.UserControls
 			string rangeLabel = name ?? dst.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.Owner = Application.Current?.MainWindow;
+			window.SetOwnerCompat= Application.Current?.MainWindow;
 			string title = PreferencesLocalization.FormatCurrent("AI PR Description: {0}", rangeLabel);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
@@ -1428,7 +1428,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.Owner = Application.Current?.MainWindow;
+			window.SetOwnerCompat= Application.Current?.MainWindow;
 			string title = PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
@@ -1861,14 +1861,10 @@ namespace ForkPlus.UI.UserControls
 
 		private static Control CreateReferenceButtonsMenuItem(RepositoryUserControl repositoryUserControl, GitModule gitModule, RepositoryReferences references, ForkPlus.Git.Reference reference)
 		{
-			ImageToggleButton pinButton = new ImageToggleButton
+			ImageToggleButton pinButton = global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new ImageToggleButton
 			{
-				Style = Theme.BranchOptionButtonStyle,
-				Image = Theme.PinOnIcon,
-				AlternativeImage = Theme.PinOffIcon,
-				State = references.IsPinned(reference),
-				ToolTip = PreferencesLocalization.Current("Pin '" + reference.Name + "'")
-			};
+				Image = global::ForkPlus.UI.Theme.PinOnIcon,				AlternativeImage = global::ForkPlus.UI.Theme.PinOffIcon,				State = references.IsPinned(reference)			},PreferencesLocalization.Current("Pin '" + reference.Name + "'")
+),global::ForkPlus.UI.Theme.BranchOptionButtonStyle);
 			pinButton.Click += delegate
 			{
 				if (!pinButton.State)
@@ -1881,22 +1877,14 @@ namespace ForkPlus.UI.UserControls
 				}
 				pinButton.State = !pinButton.State;
 			};
-			ImageToggleButton filterButton = new ImageToggleButton
+			ImageToggleButton filterButton = global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new ImageToggleButton
 			{
-				Style = Theme.BranchOptionButtonStyle,
-				Image = Theme.BranchFilterOnIcon,
-				AlternativeImage = Theme.BranchFilterOffIcon,
-				State = references.IsFiltered(reference),
-				ToolTip = PreferencesLocalization.Current("Show '" + reference.Name + "' commits only")
-			};
-			ImageToggleButton hideButton = new ImageToggleButton
+				Image = global::ForkPlus.UI.Theme.BranchFilterOnIcon,				AlternativeImage = global::ForkPlus.UI.Theme.BranchFilterOffIcon,				State = references.IsFiltered(reference)			},PreferencesLocalization.Current("Show '" + reference.Name + "' commits only")
+),global::ForkPlus.UI.Theme.BranchOptionButtonStyle);
+			ImageToggleButton hideButton = global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new ImageToggleButton
 			{
-				Style = Theme.BranchOptionButtonStyle,
-				Image = Theme.HideBranchOnIcon,
-				AlternativeImage = Theme.HideBranchOffIcon,
-				State = references.IsHidden(reference),
-				ToolTip = PreferencesLocalization.Current("Hide '" + reference.Name + "' in the commit list")
-			};
+				Image = global::ForkPlus.UI.Theme.HideBranchOnIcon,				AlternativeImage = global::ForkPlus.UI.Theme.HideBranchOffIcon,				State = references.IsHidden(reference)			},PreferencesLocalization.Current("Hide '" + reference.Name + "' in the commit list")
+),global::ForkPlus.UI.Theme.BranchOptionButtonStyle);
 			filterButton.Click += delegate
 			{
 				ReferenceFilterState filterStatus2 = ((!filterButton.State) ? ReferenceFilterState.Filter : ReferenceFilterState.None);
@@ -1924,11 +1912,10 @@ namespace ForkPlus.UI.UserControls
 			stackPanel.Children.Add(pinButton);
 			stackPanel.Children.Add(filterButton);
 			stackPanel.Children.Add(hideButton);
-			return new MenuItem
+			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new MenuItem
 			{
-				Header = stackPanel,
-				Style = Theme.CustomContentMenuItemStyle
-			};
+				Header = stackPanel			},global::ForkPlus.UI.Theme.CustomContentMenuItemStyle
+);
 		}
 
 		private static void HideParentContextMenu(object ctrl)
@@ -1937,7 +1924,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (frameworkElement is ContextMenu contextMenu)
 				{
-					contextMenu.IsOpen = false;
+					contextMenu.Close();
 					break;
 				}
 			}

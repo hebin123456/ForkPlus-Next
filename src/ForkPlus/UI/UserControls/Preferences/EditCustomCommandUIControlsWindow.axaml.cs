@@ -179,7 +179,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				return;
 			}
 			CustomCommandUIControlViewModel targetItem = dataContext as CustomCommandUIControlViewModel;
-			if (targetItem == null || !(e.Data.GetData(typeof(object[])) is object[] array) || array.Length != 1)
+			if (targetItem == null || !(e.WpfData().GetData(typeof(object[])) is object[] array) || array.Length != 1)
 			{
 				return;
 			}

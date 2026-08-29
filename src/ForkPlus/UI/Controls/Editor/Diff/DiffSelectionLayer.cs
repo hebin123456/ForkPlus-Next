@@ -93,7 +93,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			return new Border
 			{
 				Child = stackPanel,
-				Background = Theme.Diff.FloatingButtonContainerBackground,
+				Background = global::ForkPlus.UI.Theme.Diff.FloatingButtonContainerBackground,
 				CornerRadius = new CornerRadius(3.0)
 			};
 		}

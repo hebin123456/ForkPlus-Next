@@ -180,16 +180,16 @@ namespace ForkPlus.UI.UserControls
 			{
 			case FileListMode.List:
 				TreeView.ItemTemplate = (DataTemplate)base.Resources["ListViewTemplate"];
-				TreeView.Style = Theme.FileListMultiselectionTreeView.DefaultStyle;
-				break;
+{				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
+}				break;
 			case FileListMode.Tree:
 				TreeView.ItemTemplate = (DataTemplate)base.Resources["TreeViewTemplate"];
-				TreeView.Style = Theme.FileListMultiselectionTreeView.DefaultStyle;
-				break;
+{				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
+}				break;
 			case FileListMode.CombinedList:
 				TreeView.ItemTemplate = (DataTemplate)base.Resources["ListViewTemplate"];
-				TreeView.Style = Theme.FileListMultiselectionTreeView.GridViewStyle;
-				break;
+{				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.GridViewStyle);
+}				break;
 			}
 		}
 
@@ -810,8 +810,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				int num = 55;
 				GridView gridView = TreeView.View as GridView;
-				double actualWidth = TreeView.ActualWidth;
-				double actualWidth2 = gridView.Columns[0].ActualWidth;
+				double actualWidth = TreeView.Bounds.Width;
+				double actualWidth2 = gridView.Columns[0].Bounds.Width;
 				double num2 = actualWidth - actualWidth2;
 				if (num2 < (double)num)
 				{
@@ -829,7 +829,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			_restoringColumnWidth = true;
 			GridView obj = TreeView.View as GridView;
-			double actualWidth = TreeView.ActualWidth;
+			double actualWidth = TreeView.Bounds.Width;
 			double num = ForkPlusSettings.Default.CommitViewCombinedListLocationColumnWidth;
 			double num2 = actualWidth - num;
 			if (num2 < 120.0)

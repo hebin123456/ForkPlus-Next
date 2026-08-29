@@ -15,13 +15,13 @@ namespace ForkPlus.UI.Dialogs
 				switch ((CheckoutActionType)value)
 				{
 				case CheckoutActionType.None:
-					return Theme.ApplicationColors.GreenBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 				case CheckoutActionType.Rebase:
-					return Theme.ApplicationColors.YellowBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.YellowBrush;
 				case CheckoutActionType.Merge:
-					return Theme.ApplicationColors.YellowBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.YellowBrush;
 				case CheckoutActionType.Reset:
-					return Theme.ApplicationColors.RedBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 				}
 			}
 			return null;

@@ -36,7 +36,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			add
 			{
-				RevisionListView.PreviewMouseWheel += value;
+				RevisionListView.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,value,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			}
 			remove
 			{
@@ -134,7 +134,7 @@ namespace ForkPlus.UI.UserControls
 		  string text2 = string.Join("\n", changedFilePaths);
 		  UncommittedFilesTextBlock.Show();
 		  UncommittedFilesTextBlock.Text = text;
-		  UncommittedFilesTextBlock.ToolTip = text + ":\n" + text2;
+		  global::Avalonia.Controls.ToolTip.SetTip(UncommittedFilesTextBlock,text + ":\n" + text2);
 		 }
 			else
 			{

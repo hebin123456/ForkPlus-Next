@@ -35,7 +35,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (e.OriginalSource is TabControl)
+			if (e.Source is TabControl)
 			{
 				Refresh();
 			}

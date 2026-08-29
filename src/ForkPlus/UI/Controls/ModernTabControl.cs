@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Controls
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_indicatorBorder = GetTemplateChild("PART_IndicatorBorder") as Border;
+			_indicatorBorder = this.GetTemplateChild("PART_IndicatorBorder") as Border;
 		}
 
 		protected override void OnSizeChanged(global::Avalonia.Controls.SizeChangedEventArgs sizeInfo)
@@ -63,7 +63,7 @@ namespace ForkPlus.UI.Controls
 							EasingMode = EasingMode.EaseOut
 						}
 					};
-					translateTransform.BeginAnimation(TranslateTransform.XProperty, animation);
+					global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(translateTransform,TranslateTransform.XProperty,animation);
 				}
 				else
 				{
@@ -79,20 +79,20 @@ namespace ForkPlus.UI.Controls
 			{
 				if (withAnimation)
 				{
-					DoubleAnimation animation = new DoubleAnimation(_indicatorWidth, nextTabItem.ActualWidth, TimeSpan.FromMilliseconds(200.0))
+					DoubleAnimation animation = new DoubleAnimation(_indicatorWidth, nextTabItem.Bounds.Width, TimeSpan.FromMilliseconds(200.0))
 					{
 						EasingFunction = new QuadraticEase
 						{
 							EasingMode = EasingMode.EaseOut
 						}
 					};
-					_indicatorBorder.BeginAnimation(global::Avalonia.Controls.Control.WidthProperty, animation);
+					global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(_indicatorBorder,global::Avalonia.Controls.Control.WidthProperty,animation);
 				}
 				else
 				{
-					_indicatorBorder.Width = nextTabItem.ActualWidth;
+					_indicatorBorder.Width = nextTabItem.Bounds.Width;
 				}
-				_indicatorWidth = nextTabItem.ActualWidth;
+				_indicatorWidth = nextTabItem.Bounds.Width;
 			}
 		}
 
@@ -108,7 +108,7 @@ namespace ForkPlus.UI.Controls
 			{
 				if (base.Items[i] is TabItem tabItem)
 				{
-					num += tabItem.ActualWidth;
+					num += tabItem.Bounds.Width;
 				}
 			}
 			return num;

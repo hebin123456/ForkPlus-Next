@@ -20,6 +20,5 @@
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <PkgAvalonia_BuildServices Condition=" '$(PkgAvalonia_BuildServices)' == '' ">/root/.nuget/packages/avalonia.buildservices/11.3.2</PkgAvalonia_BuildServices>
     <PkgAvalonia Condition=" '$(PkgAvalonia)' == '' ">/root/.nuget/packages/avalonia/12.1.1</PkgAvalonia>
-    <PkgMicrosoft_Web_WebView2 Condition=" '$(PkgMicrosoft_Web_WebView2)' == '' ">/root/.nuget/packages/microsoft.web.webview2/1.0.3967.48</PkgMicrosoft_Web_WebView2>
   </PropertyGroup>
 </Project>

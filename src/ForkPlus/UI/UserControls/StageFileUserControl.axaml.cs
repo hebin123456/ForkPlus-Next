@@ -141,7 +141,7 @@ namespace ForkPlus.UI.UserControls
 			});
 			StageButton.Click += StageButton_Click;
 			UnstageButton.Click += UnstageButton_Click;
-			base.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			base.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.F && Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.LeftShift))
 				{
@@ -152,23 +152,23 @@ namespace ForkPlus.UI.UserControls
 				{
 					FilterTextBox.HideWithAnimation();
 				}
-			};
-			UnstagedFilesFileListUserControl.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+			UnstagedFilesFileListUserControl.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
 				{
 					e.Handled = true;
 					ShowDiffPopup?.Invoke(this, EventArgs.Empty);
 				}
-			};
-			StagedFilesFileListUserControl.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+			StagedFilesFileListUserControl.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
 				{
 					e.Handled = true;
 					ShowDiffPopup?.Invoke(this, EventArgs.Empty);
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			FilterTextBox.FilterRequestChanged += delegate
 			{
 				_refreshFilterAction.InvokeWithDelay(FilterTextBox.FilterRequest);
@@ -219,13 +219,13 @@ namespace ForkPlus.UI.UserControls
 			if (UnstagedFilesFileListUserControl.ContainsVisibleItems)
 			{
 				StageAllButton.IsEnabled = Enabled;
-				StageAllButton.ToolTip = Preferences.PreferencesLocalization.Translate("Stage All", ForkPlusSettings.Default.UiLanguage);
+				global::Avalonia.Controls.ToolTip.SetTip(StageAllButton,Preferences.PreferencesLocalization.Translate("Stage All", ForkPlusSettings.Default.UiLanguage));
 				StageAllButtonIcon.SetResourceReference(Image.SourceProperty, StageAllIconName);
 			}
 			else if (StagedFilesFileListUserControl.ContainsVisibleItems)
 			{
 				StageAllButton.IsEnabled = Enabled;
-				StageAllButton.ToolTip = Preferences.PreferencesLocalization.Translate("Unstage All", ForkPlusSettings.Default.UiLanguage);
+				global::Avalonia.Controls.ToolTip.SetTip(StageAllButton,Preferences.PreferencesLocalization.Translate("Unstage All", ForkPlusSettings.Default.UiLanguage));
 				StageAllButtonIcon.SetResourceReference(Image.SourceProperty, UnstageAllIconName);
 			}
 			else

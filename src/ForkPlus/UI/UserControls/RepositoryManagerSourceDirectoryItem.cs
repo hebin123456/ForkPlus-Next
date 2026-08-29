@@ -24,7 +24,7 @@ namespace ForkPlus.UI.UserControls
 
 		public override DragDropEffects GetDropEffect(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(DataFormats.FileDrop) is string[])
+			if (e.WpfData().GetData(DataFormats.FileDrop) is string[])
 			{
 				return DragDropEffects.Move;
 			}
@@ -33,7 +33,7 @@ namespace ForkPlus.UI.UserControls
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			if (!(e.Data.GetData(DataFormats.FileDrop) is string[] array))
+			if (!(e.WpfData().GetData(DataFormats.FileDrop) is string[] array))
 			{
 				return;
 			}

@@ -172,14 +172,14 @@ namespace ForkPlus.UI.Controls
 				TextContentControl textContentControl2 = new TextContentControl();
 				textContentControl2.PositionCache = _positionCache;
 				textContentControl2.ContextMenu = new ContextMenu();
-				textContentControl2.ContextMenuClosing += delegate
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(textContentControl2,delegate
 				{
 					textContentControl2.ContextMenu.Items.Clear();
-				};
+				});
 				return textContentControl2;
 			}, delegate(TextContentControl c, FileControlHeaderUserControl h)
 			{
-				c.ContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(c,delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
 				{
 					if (e.Source is TextContentControl { ContextMenu: var contextMenu } textContentControl)
 					{
@@ -190,7 +190,7 @@ namespace ForkPlus.UI.Controls
 						contextMenu.Items.Add(new Separator());
 						Commands.Copy.AddMenuItems(textContentControl, contextMenu);
 					}
-				};
+				});
 				c.SetContent(textContent);
 				ShowHeader(h, textContent.Path);
 			});

@@ -56,7 +56,7 @@ namespace ForkPlus.UI
 
 		public override DragDropEffects GetDropEffect(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem && !IsRoot)
+			if (e.WpfData().GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem && !IsRoot)
 			{
 				return DragDropEffects.Move;
 			}
@@ -65,8 +65,8 @@ namespace ForkPlus.UI
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			e.Effects = DragDropEffects.None;
-			if (!(e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source))
+			e.DragEffects= DragDropEffects.None;
+			if (!(e.WpfData().GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source))
 			{
 				return;
 			}
@@ -90,7 +90,7 @@ namespace ForkPlus.UI
 			if (repositoryData != null)
 			{
 				e.Handled = true;
-				e.Effects = DragDropEffects.Move;
+				e.DragEffects= DragDropEffects.Move;
 				string newName = FullName + "/" + localBranchSidebarItem.LocalBranch.LastNameComponent();
 				SidebarUserControl.Dispatcher.Post(delegate
 				{

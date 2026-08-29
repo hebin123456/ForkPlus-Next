@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Controls
 
 		public TextContentControl()
 		{
-			SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
+			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
 			_codeEditorLineNumberMargin = new CodeEditorLineNumberMargin();
 			base.TextArea.LeftMargins.Add(_codeEditorLineNumberMargin);
 			_syntaxHighlighting = new SyntaxHighlighting();

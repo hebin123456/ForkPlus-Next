@@ -89,7 +89,7 @@ namespace ForkPlus.UI.Controls
 			{
 				textBox.Focus();
 			};
-			textBox.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			textBox.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Return)
 				{
@@ -101,7 +101,7 @@ namespace ForkPlus.UI.Controls
 					e.Handled = true;
 					editedCallback(arg1: false, textBox.Text);
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			textBox.LostKeyboardFocus += delegate
 			{
 				if (IsInEditMode)

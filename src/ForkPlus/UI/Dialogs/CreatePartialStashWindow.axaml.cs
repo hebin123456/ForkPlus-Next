@@ -58,7 +58,7 @@ namespace ForkPlus.UI.Dialogs
 				PartialStashListBox.ScrollIntoView(firstSelectedFile);
 			}
 			AiGenerateStashNameButton.RefreshVisibility();
-			AiGenerateStashNameButton.ToolTip = Translate("Use AI to generate a stash message");
+			global::Avalonia.Controls.ToolTip.SetTip(AiGenerateStashNameButton,Translate("Use AI to generate a stash message"));
 			UpdateSubmitButton();
 			base.Dispatcher.Post(delegate
 			{

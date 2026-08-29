@@ -62,7 +62,7 @@ namespace ForkPlus.UI.UserControls
 			_name = repository.Name();
 			Repository = repository;
 			base.Title = Name;
-			RepositoryIcon = Theme.RepositoryIcon;
+			RepositoryIcon = global::ForkPlus.UI.Theme.RepositoryIcon;
 		}
 
 		private string FormatName(string name)

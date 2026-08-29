@@ -66,7 +66,7 @@ namespace ForkPlus.UI.Dialogs
 		private void GenerateNewSSHKeyMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			GenerateNewSshKeyWindow generateNewSshKeyWindow = new GenerateNewSshKeyWindow();
-			generateNewSshKeyWindow.Owner = this;
+			generateNewSshKeyWindow.SetOwnerCompat= this;
 			if (!generateNewSshKeyWindow.ShowDialog().GetValueOrDefault())
 			{
 				return;
@@ -224,7 +224,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			SshKeyViewModel sshKeyViewModel = SshKeyListBox.SelectedItem as SshKeyViewModel;
 			SshKeyPathTextBlock.Text = sshKeyViewModel?.KeyPath ?? "";
-			SshKeyPathTextBlock.ToolTip = sshKeyViewModel?.KeyPath ?? "";
+			global::Avalonia.Controls.ToolTip.SetTip(SshKeyPathTextBlock,sshKeyViewModel?.KeyPath ?? "");
 			SshKeySha256TextBox.Text = sshKeyViewModel?.Sha256 ?? "";
 			SshKeyPublicKeyTextBox.Text = sshKeyViewModel?.PublicKey ?? "";
 		}

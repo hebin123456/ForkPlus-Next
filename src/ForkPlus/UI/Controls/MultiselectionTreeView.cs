@@ -195,7 +195,7 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
-			TreeViewControlItem treeViewControlItem = e.OriginalSource as TreeViewControlItem;
+			TreeViewControlItem treeViewControlItem = e.Source as TreeViewControlItem;
 			switch (e.Key)
 			{
 			case Key.Left:
@@ -337,7 +337,7 @@ namespace ForkPlus.UI.Controls
 
 		private object OnFocusItem(object item)
 		{
-			if (base.ItemContainerGenerator.ContainerFromItem(item) is global::Avalonia.Controls.Control frameworkElement)
+			if (base.ContainerFromItem(item) is global::Avalonia.Controls.Control frameworkElement)
 			{
 				frameworkElement.Focus();
 			}
@@ -395,22 +395,22 @@ namespace ForkPlus.UI.Controls
 
 		protected void OnDragOver(DragEventArgs e)
 		{
-			e.Effects = DragDropEffects.None;
+			e.DragEffects= DragDropEffects.None;
 			if (RootItem != null)
 			{
 				e.Handled = true;
-				e.Effects = RootItem.GetDropEffect(e, RootItem.Children.Count);
+				e.DragEffects= RootItem.GetDropEffect(e, RootItem.Children.Count);
 			}
 		}
 
 		protected void OnDrop(DragEventArgs e)
 		{
-			e.Effects = DragDropEffects.None;
+			e.DragEffects= DragDropEffects.None;
 			if (RootItem != null)
 			{
 				e.Handled = true;
-				e.Effects = RootItem.GetDropEffect(e, RootItem.Children.Count);
-				if (e.Effects != 0)
+				e.DragEffects= RootItem.GetDropEffect(e, RootItem.Children.Count);
+				if (e.DragEffects!= 0)
 				{
 					RootItem.InternalDrop(e, RootItem.Children.Count);
 				}
@@ -425,12 +425,12 @@ namespace ForkPlus.UI.Controls
 		internal void HandleDragOver(TreeViewControlItem item, DragEventArgs e)
 		{
 			HidePreview();
-			e.Effects = DragDropEffects.None;
+			e.DragEffects= DragDropEffects.None;
 			DropTarget dropTarget = GetDropTarget(item, e);
 			if (dropTarget != null)
 			{
 				e.Handled = true;
-				e.Effects = dropTarget.Effect;
+				e.DragEffects= dropTarget.Effect;
 				ShowPreview(dropTarget.Item);
 			}
 		}
@@ -444,7 +444,7 @@ namespace ForkPlus.UI.Controls
 				if (dropTarget != null)
 				{
 					e.Handled = true;
-					e.Effects = dropTarget.Effect;
+					e.DragEffects= dropTarget.Effect;
 					dropTarget.Node.InternalDrop(e, dropTarget.Index);
 				}
 			}
@@ -480,7 +480,7 @@ namespace ForkPlus.UI.Controls
 			List<DropTarget> list = new List<DropTarget>();
 			_ = item.Node;
 			TryAddDropTarget(list, item, e);
-			double actualHeight = item.ActualHeight;
+			double actualHeight = item.Bounds.Height;
 			double num = 0.2 * actualHeight;
 			double y = actualHeight / 2.0;
 			double y2 = actualHeight - num;

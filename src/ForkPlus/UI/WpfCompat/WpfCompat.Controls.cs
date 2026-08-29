@@ -56,7 +56,7 @@ namespace ForkPlus.UI.WpfCompat
         public static bool? ShowDialog(this Window self)
         {
             if (self == null) return null;
-            var owner = WpfApp.ActiveWindow(self);
+            var owner = WindowOwnerCompat.TryGetOwner(self) ?? WpfApp.ActiveWindow(self);
             if (owner == null)
             {
                 // 没有可用 owner（启动早期）：退化为非模态 Show，立即返回 null
@@ -475,6 +475,13 @@ namespace ForkPlus.UI.WpfCompat
             return null;
         }
 
+        /// <summary>WPF Application.Current.TryFindResource(key)（Application 不是 StyledElement，单独适配）。</summary>
+        public static object TryFindResource(this Avalonia.Application app, object key)
+        {
+            if (app == null || key == null) return null;
+            return app.TryGetResource(key, app.ActualThemeVariant ?? ThemeVariant.Default, out var value) ? value : null;
+        }
+
         /// <summary>
         /// WPF FrameworkElement.SetResourceReference(prop, key)。
         /// TODO 迁移：当前为一次性解析赋值，不随主题切换动态更新；
@@ -624,9 +631,12 @@ namespace ForkPlus.UI.WpfCompat
         /// <summary>WPF GetFileDropList：FileDrop 格式 → 文件路径集合。</summary>
         public System.Collections.IEnumerable GetFileDropList()
         {
-            var raw = GetData(FileDropFormat) as IEnumerable<Avalonia.Platform.Storage.IStorageItem>;
-            return raw?.Select(f => f?.Path?.LocalPath).Where(p => p != null).ToList()
-                   ?? (System.Collections.IEnumerable)Array.Empty<string>();
+            var raw = GetData(FileDropFormat);
+            if (raw is IEnumerable<Avalonia.Platform.Storage.IStorageItem> items)
+                return items.Select(f => f?.Path?.LocalPath).Where(p => p != null).ToList();
+            if (raw is IEnumerable<string> paths && raw is not string)
+                return paths.ToList();
+            return Array.Empty<string>();
         }
 
         public IEnumerable<string> GetFileNames()

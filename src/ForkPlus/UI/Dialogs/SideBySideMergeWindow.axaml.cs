@@ -832,10 +832,10 @@ namespace ForkPlus.UI.Dialogs
 			if (revision != null)
 			{
 				avatarImage.UserIdentity = revision.Author;
-				avatarImage.ToolTip = revision.Author.Name;
+				global::Avalonia.Controls.ToolTip.SetTip(avatarImage,revision.Author.Name);
 				revision.MessageParts(out var subject, out var _);
 				subjectTextBlock.Text = subject;
-				subjectTextBlock.ToolTip = revision.Message;
+				global::Avalonia.Controls.ToolTip.SetTip(subjectTextBlock,revision.Message);
 				authorDateTextBlock.Text = revision.AuthorDate.ToString(Consts.NormalDateTimeFormat);
 				avatarImage.Show();
 				subjectTextBlock.Show();
@@ -873,14 +873,14 @@ namespace ForkPlus.UI.Dialogs
 			MergeStatusTextBlock.Text = $"{resolved}/{total}";
 			if (total == resolved)
 			{
-				MergeStatusBorder.Background = Theme.MergeStatusLabelBrushGreen;
-				MergeStatusBorder.ToolTip = PreferencesLocalization.Current("All conflicts resolved");
+				MergeStatusBorder.Background = global::ForkPlus.UI.Theme.MergeStatusLabelBrushGreen;
+				global::Avalonia.Controls.ToolTip.SetTip(MergeStatusBorder,PreferencesLocalization.Current("All conflicts resolved"));
 			}
 			else
 			{
-				MergeStatusBorder.Background = Theme.MergeStatusLabelBrushRed;
+				MergeStatusBorder.Background = global::ForkPlus.UI.Theme.MergeStatusLabelBrushRed;
 				_ = 1;
-				MergeStatusBorder.ToolTip = PreferencesLocalization.FormatCurrent("Resolved {0} conflicts of {1}", resolved, total);
+				global::Avalonia.Controls.ToolTip.SetTip(MergeStatusBorder,PreferencesLocalization.FormatCurrent("Resolved {0} conflicts of {1}", resolved, total));
 			}
 		}
 
@@ -986,7 +986,7 @@ namespace ForkPlus.UI.Dialogs
 		private void LayoutOrientationToggleButton_Changed(object sender, RoutedEventArgs e)
 		{
 			MergerLayoutOrientation mergerLayoutOrientation = (LayoutOrientationToggleButton.IsChecked.GetValueOrDefault() ? MergerLayoutOrientation.Vertical : MergerLayoutOrientation.Horizontal);
-			LayoutOrientationToggleButtonImage.Source = (LayoutOrientationToggleButton.IsChecked.GetValueOrDefault() ? Theme.VerticalMergerIcon : Theme.HorizontalMergerIcon);
+			LayoutOrientationToggleButtonImage.Source = (LayoutOrientationToggleButton.IsChecked.GetValueOrDefault() ? global::ForkPlus.UI.Theme.VerticalMergerIcon : global::ForkPlus.UI.Theme.HorizontalMergerIcon);
 			UpdateLayoutOrientation(mergerLayoutOrientation);
 			ForkPlusSettings.Default.MergerLayoutOrientation = mergerLayoutOrientation;
 		}
@@ -1067,11 +1067,11 @@ namespace ForkPlus.UI.Dialogs
 		private static Range? MiddleLine(CodeEditor editor)
 		{
 			TextView textView = editor.TextArea.TextView;
-			if (editor.Document == null || textView.ActualHeight <= 0.0)
+			if (editor.Document == null || textView.Bounds.Height <= 0.0)
 			{
 				return null;
 			}
-			double middleVisualTop = editor.GetScrollPosition() + textView.ActualHeight / 2.0;
+			double middleVisualTop = editor.GetScrollPosition() + textView.Bounds.Height / 2.0;
 			DocumentLine documentLineByVisualTop = textView.GetDocumentLineByVisualTop(middleVisualTop);
 			if (documentLineByVisualTop == null)
 			{

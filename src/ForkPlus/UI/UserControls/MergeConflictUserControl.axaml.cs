@@ -53,7 +53,7 @@ namespace ForkPlus.UI.UserControls
 			_changedFile = changedFile;
 			FileIcon.Source = IconTools.GetImageSourceForExtension(Path.GetExtension(changedFile.Path));
 			FileNameTextBlock.FilePath = changedFile.Path;
-			FileNameTextBlock.ToolTip = changedFile.Path;
+			global::Avalonia.Controls.ToolTip.SetTip(FileNameTextBlock,changedFile.Path);
 			FileDiffControl.RepositoryUserControl = repositoryUserControl;
 			// AI Resolve 按钮：仅在 AI 配置完毕且未解决时显示
 			if (!resolved && OpenAiService.IsAiReviewConfigured() && IsMergeAllowed(changedFile))
@@ -133,10 +133,10 @@ namespace ForkPlus.UI.UserControls
 		private static void UpdateMergeConflictDetails(StatusType statusType, Image statusImage, TextBlock changeTypeTextBlock, GitPointView gitPointView, IGitPoint gitPoint)
 		{
 			statusImage.Source = statusType.GetConflictImageSource();
-			statusImage.ToolTip = statusType.ToFriendlyName();
+			global::Avalonia.Controls.ToolTip.SetTip(statusImage,statusType.ToFriendlyName());
 			changeTypeTextBlock.Text = statusType.ToFriendlyName();
 			gitPointView.Value = gitPoint;
-			gitPointView.ToolTip = gitPoint?.FriendlyName;
+			global::Avalonia.Controls.ToolTip.SetTip(gitPointView,gitPoint?.FriendlyName);
 		}
 
 		private void StageButton_Click(object sender, RoutedEventArgs e)
@@ -466,13 +466,13 @@ namespace ForkPlus.UI.UserControls
 						ResolveInExternalMergerButton.Content = PreferencesLocalization.FormatCurrent("Merge in {0}", externalTool.Name);
 						if (list.Count > 1)
 						{
-							ResolveInExternalMergerButton.Style = Theme.CommitUserControl.CommitButtonVisibleDropdownStyle;
-							ResolveInExternalMergerDropdownButton.Show();
+{							ResolveInExternalMergerButton.Styles.Clear();ResolveInExternalMergerButton.Styles.Add(global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle);
+}							ResolveInExternalMergerDropdownButton.Show();
 						}
 						else
 						{
-							ResolveInExternalMergerButton.Style = Theme.CommitUserControl.CommitButtonHiddenDropdownStyle;
-							ResolveInExternalMergerDropdownButton.Collapse();
+{							ResolveInExternalMergerButton.Styles.Clear();ResolveInExternalMergerButton.Styles.Add(global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle);
+}							ResolveInExternalMergerDropdownButton.Collapse();
 						}
 					}
 				}

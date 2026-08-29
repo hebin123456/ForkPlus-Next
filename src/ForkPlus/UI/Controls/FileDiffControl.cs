@@ -278,7 +278,7 @@ namespace ForkPlus.UI.Controls
 						if (SubControlMode)
 						{
 							textDiffControl3.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
-							textDiffControl3.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+							textDiffControl3.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,DiffCodeEditor_PreviewMouseWheel,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 						}
 						textDiffControl3.PositionCache = _positionCache;
 						return textDiffControl3;
@@ -419,7 +419,7 @@ namespace ForkPlus.UI.Controls
 						if (SubControlMode)
 						{
 							textDiffControl2.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
-							textDiffControl2.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+							textDiffControl2.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,DiffCodeEditor_PreviewMouseWheel,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 						}
 						textDiffControl2.PositionCache = _positionCache;
 						return textDiffControl2;
@@ -462,7 +462,7 @@ namespace ForkPlus.UI.Controls
 					if (SubControlMode)
 					{
 						textDiffControl.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
-						textDiffControl.PreviewMouseWheel += DiffCodeEditor_PreviewMouseWheel;
+						textDiffControl.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,DiffCodeEditor_PreviewMouseWheel,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 					}
 					textDiffControl.PositionCache = _positionCache;
 					return textDiffControl;
@@ -636,14 +636,14 @@ namespace ForkPlus.UI.Controls
 					TextContentControl textContentControl = new TextContentControl();
 					textContentControl.PositionCache = _positionCache;
 					textContentControl.ContextMenu = new ContextMenu();
-					textContentControl.ContextMenuClosing += delegate
+					global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(textContentControl,delegate
 					{
 						textContentControl.ContextMenu.Items.Clear();
-					};
+					});
 					return textContentControl;
 				}, delegate(TextContentControl c, FileControlHeaderUserControl h)
 				{
-					c.ContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
+					global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(c,delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
 					{
 						if (e.Source is TextContentControl { ContextMenu: var contextMenu } textContentControl)
 						{
@@ -652,7 +652,7 @@ namespace ForkPlus.UI.Controls
 							contextMenu.Items.Add(new Separator());
 							FileContentControl.Commands.Copy.AddMenuItems(textContentControl, contextMenu);
 						}
-					};
+					});
 					c.SetContent(textContent);
 					ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 				});
@@ -1042,8 +1042,8 @@ namespace ForkPlus.UI.Controls
 			if (sender is TextDiffControl && !e.Handled)
 			{
 				e.Handled = true;
-				global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-				mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.MouseWheelEvent;
+				global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.Pointer, e.Timestamp, e.Delta);
+				mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.PointerWheelChangedEvent;
 				mouseWheelEventArgs.Source = sender;
 				(((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control)?.RaiseEvent(mouseWheelEventArgs);
 			}
@@ -1054,8 +1054,8 @@ namespace ForkPlus.UI.Controls
 			if (sender is NoUIAutomationListView && !e.Handled)
 			{
 				e.Handled = true;
-				global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-				mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.MouseWheelEvent;
+				global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.Pointer, e.Timestamp, e.Delta);
+				mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.PointerWheelChangedEvent;
 				mouseWheelEventArgs.Source = sender;
 				(((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control)?.RaiseEvent(mouseWheelEventArgs);
 			}

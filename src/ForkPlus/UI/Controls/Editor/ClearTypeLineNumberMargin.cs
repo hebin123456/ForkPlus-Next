@@ -11,7 +11,7 @@ namespace ForkPlus.UI.Controls.Editor
 	{
 		public override void Render(DrawingContext drawingContext)
 		{
-			drawingContext.DrawRectangle(Theme.CodeEditor.BackgroundBrush, null, new Rect(0.0, 0.0, base.RenderSize.Width, base.RenderSize.Height));
+			drawingContext.DrawRectangle(global::ForkPlus.UI.Theme.CodeEditor.BackgroundBrush, null, new Rect(0.0, 0.0, base.Bounds.Size.Width, base.Bounds.Size.Height));
 		}
 	}
 }

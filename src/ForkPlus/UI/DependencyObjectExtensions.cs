@@ -14,7 +14,7 @@ namespace ForkPlus.UI
 			global::Avalonia.AvaloniaObject dependencyObject = _this;
 			while (dependencyObject != null && !(dependencyObject is T))
 			{
-				dependencyObject = global::Avalonia.VisualTreeExtensions.GetVisualParent(dependencyObject);
+				dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
 			}
 			return dependencyObject as T;
 		}

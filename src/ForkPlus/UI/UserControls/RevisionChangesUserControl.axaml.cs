@@ -112,14 +112,14 @@ namespace ForkPlus.UI.UserControls
 					e.Handled = true;
 				}
 			};
-			FileListUserControl.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			FileListUserControl.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
 				{
 					ShowDiffPopup();
 					e.Handled = true;
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			FileListUserControl.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Return && _target != null && (RevisionDetailsUserControl.Mode == RevisionDetailsUserControlMode.MainWindow || RevisionDetailsUserControl.Mode == RevisionDetailsUserControlMode.InteractiveRebase))

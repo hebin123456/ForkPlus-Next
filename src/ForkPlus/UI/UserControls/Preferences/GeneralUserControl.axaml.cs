@@ -130,7 +130,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void SrcDirsListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: SrcDirViewModel dataContext })
+			if (ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: SrcDirViewModel dataContext })
 			{
 				SrcDirsListBox.ContextMenu.Items.Clear();
 				SrcDirsListBox.ContextMenu.SetItems(CreateSrcDirContextMenu(dataContext));
@@ -138,7 +138,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			else
 			{
 				e.Handled = true;
-				SrcDirsListBox.ContextMenu.IsOpen = false;
+				SrcDirsListBox.ContextMenu.Close();
 			}
 		}
 

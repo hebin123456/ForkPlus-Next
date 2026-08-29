@@ -239,7 +239,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			CustomCommandViewModel customCommandViewModel = CustomCommandsListBox.SelectedItem as CustomCommandViewModel;
 			EditCustomCommandUIControlsWindow editCustomCommandUIControlsWindow = new EditCustomCommandUIControlsWindow(customCommandViewModel.UIViewModel.Controls);
-			editCustomCommandUIControlsWindow.Owner = _parentWindow;
+			editCustomCommandUIControlsWindow.SetOwnerCompat= _parentWindow;
 			if (editCustomCommandUIControlsWindow.ShowDialog().GetValueOrDefault())
 			{
 				customCommandViewModel.UIViewModel.Controls = editCustomCommandUIControlsWindow.OutControls;
@@ -283,7 +283,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private CustomCommandAction EditAction(CustomCommand customCommand, CustomCommandAction action, bool showCancel)
 		{
 			EditCustomActionWindow editCustomActionWindow = new EditCustomActionWindow(customCommand, action, showCancel);
-			editCustomActionWindow.Owner = _parentWindow;
+			editCustomActionWindow.SetOwnerCompat= _parentWindow;
 			if (editCustomActionWindow.ShowDialog().GetValueOrDefault())
 			{
 				return editCustomActionWindow.OutAction;

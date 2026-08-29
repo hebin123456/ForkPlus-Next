@@ -348,7 +348,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			if (element is global::Avalonia.Controls.Control frameworkElement && frameworkElement.ToolTip is string toolTip && !HasBinding(element, global::Avalonia.Controls.Control.ToolTipProperty))
 			{
 				string original = GetOriginal(element, OriginalToolTipProperty, toolTip);
-				frameworkElement.ToolTip = Translate(original, dictionary);
+				global::Avalonia.Controls.ToolTip.SetTip(frameworkElement,Translate(original, dictionary));
 			}
 			if (element is ToolbarButton toolbarButton)
 			{
@@ -364,7 +364,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private static bool HasBinding(global::Avalonia.AvaloniaObject element, global::Avalonia.AvaloniaProperty property)
 		{
-			return BindingOperations.GetBindingExpressionBase(element, property) != null;
+			return global::ForkPlus.UI.WpfCompat.BindingCompat.GetBindingExpressionBase(element, property) != null;
 		}
 
 		private static string GetOriginal(global::Avalonia.AvaloniaObject element, global::Avalonia.AvaloniaProperty property, string current)

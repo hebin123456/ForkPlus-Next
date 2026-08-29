@@ -27,7 +27,7 @@ namespace ForkPlus.UI.Dialogs
 			base.SubmitButtonTitle = Translate("Continue");
 			base.ShowWarningIcon = true;
 			WorkspacePathTextBlock.Text = workspacePath ?? "";
-			WorkspacePathTextBlock.ToolTip = WorkspacePathTextBlock.Text;
+			global::Avalonia.Controls.ToolTip.SetTip(WorkspacePathTextBlock,WorkspacePathTextBlock.Text);
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 		}
 

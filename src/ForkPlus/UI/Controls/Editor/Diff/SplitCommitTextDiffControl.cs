@@ -111,7 +111,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			add
 			{
-				_editor.ContextMenuOpening += value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(_editor,value);
 			}
 			remove
 			{

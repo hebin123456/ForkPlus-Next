@@ -222,7 +222,7 @@ namespace ForkPlus.UI.Dialogs
 				MainWindow instance = MainWindow.Instance;
 				if (instance != null)
 				{
-					base.Owner = instance;
+					base.SetOwnerCompat= instance;
 					if (preventMainWindowRefresh)
 					{
 						instance.PreventRefreshAfterChildDialogClose(GetType().Name);
@@ -234,8 +234,8 @@ namespace ForkPlus.UI.Dialogs
 			base.ResizeMode = ResizeMode.NoResize;
 			base.Initialized += ForkPlusDialogWindow_Initialized;
 			base.Loaded += ForkPlusDialogWindow_Loaded;
-			base.Style = Application.Current?.TryFindResource("ForkPlusDialogWindowStyle") as Style;
-			if (!IsDesignMode)
+{			base.Styles.Clear();base.Styles.Add(Application.Current?.TryFindResource("ForkPlusDialogWindowStyle") as Style);
+}			if (!IsDesignMode)
 			{
 				WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 			}
@@ -251,7 +251,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			string localizedMessage = PreferencesLocalization.Translate(message, ForkPlusSettings.Default.UiLanguage);
 			Footer.StatusMessageTextBlock.Text = localizedMessage;
-			Footer.StatusMessageTextBlock.ToolTip = localizedMessage;
+			global::Avalonia.Controls.ToolTip.SetTip(Footer.StatusMessageTextBlock,localizedMessage);
 			Footer.StatusMessageTextBlock.IsVisible = true;
 			if (status == ForkPlusDialogStatus.InProgress)
 			{
@@ -341,7 +341,7 @@ namespace ForkPlus.UI.Dialogs
 			_dialogChromeInitialized = true;
 			RefreshWindowSize();
 			obj.Margin = new Thickness(20.0, 0.0, 20.0, 20.0);
-			obj.Background = Theme.ForkPlusDialogBackgroundBrush;
+			obj.Background = global::ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
 			RenderOptions.SetClearTypeHint(obj, ClearTypeHint.Enabled);
 			if (ShowHeader)
 			{
@@ -429,7 +429,7 @@ namespace ForkPlus.UI.Dialogs
 			_commandPreviewTextBlock.IsVisible = false;
 			_commandPreviewTextBlock.Text = "";
 			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-			_commandPreviewTextBlock.ToolTip = null;
+			global::Avalonia.Controls.ToolTip.SetTip(_commandPreviewTextBlock,null);
 			if (_commandPreviewScrollViewer != null)
 			{
 				_commandPreviewScrollViewer.IsVisible = false;
@@ -445,7 +445,7 @@ namespace ForkPlus.UI.Dialogs
 			_commandPreviewTextBlock.IsVisible = true;
 			_commandPreviewTextBlock.Text = text;
 			// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-			_commandPreviewTextBlock.ToolTip = text;
+			global::Avalonia.Controls.ToolTip.SetTip(_commandPreviewTextBlock,text);
 			if (_commandPreviewScrollViewer != null)
 			{
 				_commandPreviewScrollViewer.IsVisible = true;
@@ -524,18 +524,10 @@ namespace ForkPlus.UI.Dialogs
 		_commandPreviewScrollViewer = previewScrollViewer;
 		previewGrid.Children.Add(previewScrollViewer);
 		// 复制按钮：点击复制预览命令到剪贴板，ToolTip 国际化
-		_commandPreviewCopyButton = new Button
+		_commandPreviewCopyButton = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new Button
 		{
-			ToolTip = PreferencesLocalization.Current("Copy to clipboard"),
-			VerticalAlignment = VerticalAlignment.Top,
-			HorizontalAlignment = HorizontalAlignment.Left,
-			Margin = new Thickness(4.0, 2.0, 0.0, 0.0),
-			Padding = new Thickness(2.0),
-			Background = Brushes.Transparent,
-			BorderThickness = new Thickness(0.0),
-			Cursor = Cursors.Hand,
-			IsVisible = false
-		};
+			VerticalAlignment = VerticalAlignment.Top,			HorizontalAlignment = HorizontalAlignment.Left,			Margin = new Thickness(4.0, 2.0, 0.0, 0.0),			Padding = new Thickness(2.0),			Background = Brushes.Transparent,			BorderThickness = new Thickness(0.0),			Cursor = Cursors.Hand,			IsVisible = false
+		},PreferencesLocalization.Current("Copy to clipboard"));
 		_commandPreviewCopyButton.SetValue(Grid.ColumnProperty, 2);
 		// 用矢量 Path 绘制复制图标（两个重叠的圆角矩形），无需新增图片资源
 		_commandPreviewCopyButton.Content = new Image
@@ -765,7 +757,7 @@ namespace ForkPlus.UI.Dialogs
 			Grid obj = base.Content as Grid;
 			if (obj != null)
 			{
-				obj.Background = Theme.ForkPlusDialogBackgroundBrush;
+				obj.Background = global::ForkPlus.UI.Theme.ForkPlusDialogBackgroundBrush;
 			}
 		}
 	}

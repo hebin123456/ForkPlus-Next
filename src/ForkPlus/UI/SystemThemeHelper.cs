@@ -23,7 +23,7 @@ namespace ForkPlus.UI
                 }
 
                 [Null]
-                public static Brush GetSystemBrush(Theme.SystemColorType colorType)
+                public static Brush GetSystemBrush(global::ForkPlus.UI.Theme.SystemColorType colorType)
                 {
                         SolidColorBrush solidColorBrush = new SolidColorBrush(GetColor(ToSystemColor(colorType)));
                         return solidColorBrush;
@@ -34,15 +34,15 @@ namespace ForkPlus.UI
                         return global::Avalonia.Media.Color.FromArgb(color.a, color.r, color.g, color.b);
                 }
 
-                private static (byte a, byte r, byte g, byte b) ToSystemColor(Theme.SystemColorType colorType)
+                private static (byte a, byte r, byte g, byte b) ToSystemColor(global::ForkPlus.UI.Theme.SystemColorType colorType)
                 {
                         var accent = ReadAccentColor();
                         bool dark = IsSystemDarkBase();
                         double factor = colorType switch
                         {
-                                Theme.SystemColorType.Accent => 1.0,
-                                Theme.SystemColorType.Accent1 => dark ? 1.35 : 0.75,
-                                Theme.SystemColorType.Accent2 => dark ? 1.6 : 0.55,
+                                global::ForkPlus.UI.Theme.SystemColorType.Accent => 1.0,
+                                global::ForkPlus.UI.Theme.SystemColorType.Accent1 => dark ? 1.35 : 0.75,
+                                global::ForkPlus.UI.Theme.SystemColorType.Accent2 => dark ? 1.6 : 0.55,
                                 _ => 1.0,
                         };
                         return Scale(accent, factor);

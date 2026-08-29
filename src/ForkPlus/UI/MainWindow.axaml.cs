@@ -115,7 +115,7 @@ namespace ForkPlus.UI
 		TabManager?.RefreshTabTitles();
 		if (_templatePartNotificationManagerToggleButton != null)
 		{
-			_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
+			global::Avalonia.Controls.ToolTip.SetTip(_templatePartNotificationManagerToggleButton,PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage));
 		}
 		// 通知按钮弹出面板的 HeaderLabel 也需要随语言切换刷新；本控件实例在 ControlTemplate
 		// 内一次性构造，构造函数里的翻译只生效一次，之前必须重启客户端才更新（Bug v2.1.2）。
@@ -161,7 +161,7 @@ namespace ForkPlus.UI
 				_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
 			};
 			_templatePartNotificationManagerToggleButton.Hide(!NotificationManager.Current.IsActive);
-			_templatePartNotificationManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
+			global::Avalonia.Controls.ToolTip.SetTip(_templatePartNotificationManagerToggleButton,PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage));
 		}
 		// 缓存 ControlTemplate 内的 NotificationManagerUserControl 引用，
 		// ApplyLocalization 时调用其 ApplyLocalization() 刷新 HeaderLabel.Text（Bug v2.1.2）。
@@ -289,7 +289,7 @@ namespace ForkPlus.UI
 		protected void OnDrop(DragEventArgs e)
 		{
 			base.OnDrop(e);
-			if (e.Data.GetData(DataFormats.FileDrop) is string[] array && array.Length != 0)
+			if (e.WpfData().GetData(DataFormats.FileDrop) is string[] array && array.Length != 0)
 			{
 				string[] array2 = array;
 				foreach (string path in array2)

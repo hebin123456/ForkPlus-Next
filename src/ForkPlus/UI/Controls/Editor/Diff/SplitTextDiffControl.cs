@@ -76,7 +76,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			add
 			{
-				_editor.ContextMenuOpening += value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(_editor,value);
 			}
 			remove
 			{
@@ -88,10 +88,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			base.Children.Add(_editor);
 			_editor.ContextMenu = new ContextMenu();
-			_editor.ContextMenuClosing += delegate
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(_editor,delegate
 			{
 				_editor.ContextMenu.Items.Clear();
-			};
+			});
 		}
 
 		public void ScrollToLine(int line)

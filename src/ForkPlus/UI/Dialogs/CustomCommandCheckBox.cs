@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public CustomCommandCheckBox(CustomCommandUI.Control.CheckBox checkBox)
 		{
-			SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CheckBox));
+			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CheckBox));
 			_checkBox = checkBox;
 			base.Content = checkBox.Title;
 			base.IsChecked = checkBox.DefaultValue;

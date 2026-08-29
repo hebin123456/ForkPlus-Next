@@ -85,7 +85,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		public MergeCodeEditor()
 		{
-			SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
+			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
 			Theme = ForkPlusSettings.Default.Theme;
 			_mergeChunkSelectionLayer = new MergeChunkSelectionLayer(this);
 			base.TextArea.TextView.InsertLayer(_mergeChunkSelectionLayer, KnownLayer.Selection, LayerInsertionPosition.Above);
@@ -152,15 +152,15 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			if (_blocks != null && base.VerticalScrollBarVisibility != global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden && base.Template.TryFindName<Path>("SrcBlockPath", this, out var match) && base.Template.TryFindName<Path>("DstBlockPath", this, out var match2))
 			{
 				StreamGeometry streamGeometry = new StreamGeometry();
-				streamGeometry.FillRule = FillRule.Nonzero;
+				streamGeometry.FillRule = FillRule.NonZero;
 				StreamGeometryContext streamGeometryContext = streamGeometry.Open();
 				StreamGeometry streamGeometry2 = new StreamGeometry();
-				streamGeometry2.FillRule = FillRule.Nonzero;
+				streamGeometry2.FillRule = FillRule.NonZero;
 				StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
 				int num = 6;
 				int num2 = 1;
 				double num3 = 12.0;
-				double num4 = base.TextArea.ActualHeight - num3 * 2.0;
+				double num4 = base.TextArea.Bounds.Height - num3 * 2.0;
 				Block[] blocks = _blocks;
 				for (int i = 0; i < blocks.Length; i++)
 				{

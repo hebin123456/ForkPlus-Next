@@ -399,10 +399,10 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RefreshBrushes()
 		{
-			_labelBrush = Theme.LabelBrush;
-			_secondaryLabelBrush = Theme.SecondaryLabelBrush;
-			_borderPen = new Pen(Theme.BorderBrush, 1.0);
-			_selectedBorderPen = new Pen(Theme.AccentBrush, 2.0);
+			_labelBrush = global::ForkPlus.UI.Theme.LabelBrush;
+			_secondaryLabelBrush = global::ForkPlus.UI.Theme.SecondaryLabelBrush;
+			_borderPen = new Pen(global::ForkPlus.UI.Theme.BorderBrush, 1.0);
+			_selectedBorderPen = new Pen(global::ForkPlus.UI.Theme.AccentBrush, 2.0);
 		}
 
 		private static string Translate(string text)

@@ -81,7 +81,7 @@ namespace ForkPlus.UI.Controls
 
 		private void ClosePopup(bool hardClose = false)
 		{
-			if (_popup != null && _popup.IsOpen && (!_popup.IsMouseOver || hardClose))
+			if (_popup != null && _popup.IsOpen && (!_popup.IsPointerOver|| hardClose))
 			{
 				_popup.IsOpen = false;
 				VisualTreeAttachmentHelper.TrySetPopupChild(_popup, null, GetType().Name + ".Popup");

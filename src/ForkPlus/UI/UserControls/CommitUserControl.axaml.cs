@@ -293,7 +293,7 @@ namespace ForkPlus.UI.UserControls
 			stageFileUserControl2.StagedFilesItemSourceChanged = (EventHandler<EventArgs>)Delegate.Combine(stageFileUserControl2.StagedFilesItemSourceChanged, new EventHandler<EventArgs>(StageFileUserControl_StagedFilesItemSourceChanged));
 			StageFileUserControl stageFileUserControl3 = StageFileUserControl;
 			stageFileUserControl3.SelectionChanged = (EventHandler<FileListEventArgs>)Delegate.Combine(stageFileUserControl3.SelectionChanged, new EventHandler<FileListEventArgs>(StageFileUserControl_SelectionChanged));
-			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.AddCommandBinding(RepositoryUserControl.Commands.OpenFileInDefaultEditor.CreateShortcutCommandBinding(delegate
 			{
 				if (StageFileUserControl.IsStagedListSelected)
 				{
@@ -304,7 +304,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.OpenFileInDefaultEditor.Execute(GitModule, StageFileUserControl.SelectedUnstagedFiles.FirstItem()?.Path);
 				}
 			}));
-			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.AddCommandBinding(RepositoryUserControl.Commands.CopyFilePaths.CreateShortcutCommandBinding(delegate
 			{
 				if (StageFileUserControl.IsStagedListSelected)
 				{
@@ -315,7 +315,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.CopyFilePaths.Execute(StageFileUserControl.SelectedUnstagedFiles.Map((ChangedFile x) => x.Path));
 				}
 			}));
-			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.AddCommandBinding(RepositoryUserControl.Commands.CopyAbsoluteFilePaths.CreateShortcutCommandBinding(delegate
 			{
 				if (StageFileUserControl.IsStagedListSelected)
 				{
@@ -326,7 +326,7 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.CopyAbsoluteFilePaths.Execute(GitModule, StageFileUserControl.SelectedUnstagedFiles.Map((ChangedFile x) => x.Path));
 				}
 			}));
-			StageFileUserControl.CommandBindings.Add(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.AddCommandBinding(RepositoryUserControl.Commands.RunExternalDiffTool.CreateShortcutCommandBinding(delegate
 			{
 				ChangedFile changedFile;
 				RunExternalDiffToolCommand.DiffTarget diffTarget;
@@ -363,11 +363,11 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}));
-			StageFileUserControl.CommandBindings.Add(Commands.ToggleFileStage.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.AddCommandBinding(Commands.ToggleFileStage.CreateShortcutCommandBinding(delegate
 			{
 				ToggleStageForSelectedFiles();
 			}));
-			StageFileUserControl.CommandBindings.Add(Commands.DiscardChangedFilesCommand.CreateShortcutCommandBinding(delegate
+			StageFileUserControl.AddCommandBinding(Commands.DiscardChangedFilesCommand.CreateShortcutCommandBinding(delegate
 			{
 				DiscardSelectedFiles();
 			}));
@@ -1920,14 +1920,14 @@ namespace ForkPlus.UI.UserControls
 
 		private void ShowCommitDropdown()
 		{
-			CommitButton.Style = Theme.CommitUserControl.CommitButtonVisibleDropdownStyle;
-			CommitDropdownButton.Show();
+{			CommitButton.Styles.Clear();CommitButton.Styles.Add(global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonVisibleDropdownStyle);
+}			CommitDropdownButton.Show();
 		}
 
 		private void HideCommitButtonDropdown()
 		{
-			CommitButton.Style = Theme.CommitUserControl.CommitButtonHiddenDropdownStyle;
-			CommitDropdownButton.Collapse();
+{			CommitButton.Styles.Clear();CommitButton.Styles.Add(global::ForkPlus.UI.Theme.CommitUserControl.CommitButtonHiddenDropdownStyle);
+}			CommitDropdownButton.Collapse();
 		}
 
 		private void UpdateCommitButtonState()
@@ -1999,14 +1999,14 @@ namespace ForkPlus.UI.UserControls
 			{
 				string truncated = message.Substring(0, maxWarningLength) + "...";
 				WarningTextBlock.Text = truncated;
-				WarningTextBlock.ToolTip = message;
-				WarningMessageContainer.ToolTip = message;
+				global::Avalonia.Controls.ToolTip.SetTip(WarningTextBlock,message);
+				global::Avalonia.Controls.ToolTip.SetTip(WarningMessageContainer,message);
 			}
 			else
 			{
 				WarningTextBlock.Text = message;
-				WarningTextBlock.ToolTip = null;
-				WarningMessageContainer.ToolTip = null;
+				global::Avalonia.Controls.ToolTip.SetTip(WarningTextBlock,null);
+				global::Avalonia.Controls.ToolTip.SetTip(WarningMessageContainer,null);
 			}
 			if (isError)
 			{
@@ -2097,7 +2097,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshSubjectLengthLimitToolTip()
 		{
-			SubjectLengthLimitTextBlock.ToolTip = PreferencesLocalization.FormatCurrent("The recommended subject line should be {0} characters or less", ForkPlusSettings.Default.CommitSubjectLowLimit);
+			global::Avalonia.Controls.ToolTip.SetTip(SubjectLengthLimitTextBlock,PreferencesLocalization.FormatCurrent("The recommended subject line should be {0} characters or less", ForkPlusSettings.Default.CommitSubjectLowLimit));
 		}
 
 		public void LoadCommitMessage()

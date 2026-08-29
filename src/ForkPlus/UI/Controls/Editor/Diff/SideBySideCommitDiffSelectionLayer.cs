@@ -102,7 +102,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			base.Render(drawingContext);
 			TextArea textArea = _textEditor.TextArea;
-			if (textArea.TextView.ActualWidth == 0.0)
+			if (textArea.TextView.Bounds.Width == 0.0)
 			{
 				return;
 			}
@@ -272,7 +272,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			return new Border
 			{
 				Child = stackPanel,
-				Background = Theme.Diff.FloatingButtonContainerBackground,
+				Background = global::ForkPlus.UI.Theme.Diff.FloatingButtonContainerBackground,
 				CornerRadius = new CornerRadius(3.0)
 			};
 		}

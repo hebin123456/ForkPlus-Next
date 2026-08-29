@@ -14,7 +14,7 @@ namespace ForkPlus.Services.Wpf
 
 		public void Post(Action action)
 		{
-			_dispatcher.BeginInvoke(action);
+			_dispatcher.InvokeAsync(action);
 		}
 
 		public void Invoke(Action action)

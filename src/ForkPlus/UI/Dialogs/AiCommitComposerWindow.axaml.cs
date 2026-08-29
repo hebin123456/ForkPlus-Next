@@ -83,9 +83,9 @@ namespace ForkPlus.UI.Dialogs
 			MessageHeaderLabel.Text = PreferencesLocalization.Current("Commit Message");
 			SubjectTextBox.Placeholder = PreferencesLocalization.Current("Subject");
 			BodyTextBox.Placeholder = PreferencesLocalization.Current("Body (optional)");
-			RetryButton.ToolTip = PreferencesLocalization.Current("Retry");
-			StopButton.ToolTip = PreferencesLocalization.Current("Stop the current AI task");
-			ModelComboBox.ToolTip = PreferencesLocalization.Current("Select AI model");
+			global::Avalonia.Controls.ToolTip.SetTip(RetryButton,PreferencesLocalization.Current("Retry"));
+			global::Avalonia.Controls.ToolTip.SetTip(StopButton,PreferencesLocalization.Current("Stop the current AI task"));
+			global::Avalonia.Controls.ToolTip.SetTip(ModelComboBox,PreferencesLocalization.Current("Select AI model"));
 			ApplyAllButton.Content = PreferencesLocalization.Current("Apply All");
 			CancelButton.Content = PreferencesLocalization.Current("Cancel");
 		}
@@ -235,8 +235,8 @@ namespace ForkPlus.UI.Dialogs
 						_aiRunning = false;
 						_currentMonitor = null;
 						RetryButton.IsEnabled = true;
-						StopButton.Visibility = Visibility.Collapsed;
-						StatusProgressBar.Visibility = Visibility.Collapsed;
+						StopButton.IsVisible= false;
+						StatusProgressBar.IsVisible= false;
 					});
 				}
 			}, JobFlags.SaveToLog);
@@ -422,8 +422,8 @@ namespace ForkPlus.UI.Dialogs
 				{
 					_applying = false;
 					_currentMonitor = null;
-					StopButton.Visibility = Visibility.Collapsed;
-					StatusProgressBar.Visibility = Visibility.Collapsed;
+					StopButton.IsVisible= false;
+					StatusProgressBar.IsVisible= false;
 					if (result.Succeeded)
 					{
 						StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Composed {0} commits", result.Result.Length);

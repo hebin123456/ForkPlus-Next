@@ -193,7 +193,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		protected override void OnKeyDown(global::Avalonia.Input.KeyEventArgs e)
 		{
 			// Ctrl+C：默认复制 hex 字符串（去除多余空白）
-			if (e.Key == global::Avalonia.Input.Key.C && (global::Avalonia.Input.Keyboard.Modifiers & global::Avalonia.Input.ModifierKeys.Control) == global::Avalonia.Input.ModifierKeys.Control)
+			if (e.Key == global::Avalonia.Input.Key.C && (global::ForkPlus.UI.WpfCompat.Keyboard.Modifiers & global::ForkPlus.UI.WpfCompat.ModifierKeys.Control) == global::ForkPlus.UI.WpfCompat.ModifierKeys.Control)
 			{
 				string selectedText = base.SelectedText;
 				if (!string.IsNullOrEmpty(selectedText))

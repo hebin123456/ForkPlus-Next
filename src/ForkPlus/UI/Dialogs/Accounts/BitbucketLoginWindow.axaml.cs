@@ -62,7 +62,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			AuthenticationTypeComboBox.ItemsSource = _authenticationItems;
 			SelectAuthenticationType(AuthenticationType.AccessToken);
 			EmailTextBox.Text = account?.Email;
-			OpenApiTokensConfigurationUrlButton.ToolTip = Translate("Required scopes:\n read:user:bitbucket\n read:repository:bitbucket\n read:workspace:bitbucket\n write:repository:bitbucket\n read:pullrequest:bitbucket");
+			global::Avalonia.Controls.ToolTip.SetTip(OpenApiTokensConfigurationUrlButton,Translate("Required scopes:\n read:user:bitbucket\n read:repository:bitbucket\n read:workspace:bitbucket\n write:repository:bitbucket\n read:pullrequest:bitbucket"));
 			EmailTextBox.TextChanged += delegate
 			{
 				UpdateSubmitButton();

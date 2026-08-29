@@ -84,7 +84,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				MaxWidth = 2000
 			};
 			_skillInputTextBox.TextChanged += CustomSkillInputBox_TextChanged;
-			_skillInputTextBox.PreviewKeyDown += CustomSkillInputBox_PreviewKeyDown;
+			_skillInputTextBox.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,CustomSkillInputBox_PreviewKeyDown,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 
 			scrollViewer.Content = _skillInputTextBox;
 			Grid.SetColumn(scrollViewer, 1);
@@ -113,7 +113,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void CustomSkillInputBox_PreviewKeyDown(object sender, global::Avalonia.Input.KeyEventArgs e)
 		{
-			if (e.Key == global::Avalonia.Input.Key.Enter && (global::Avalonia.Input.Keyboard.Modifiers & global::Avalonia.Input.ModifierKeys.Control) == global::Avalonia.Input.ModifierKeys.Control)
+			if (e.Key == global::Avalonia.Input.Key.Enter && (global::ForkPlus.UI.WpfCompat.Keyboard.Modifiers & global::ForkPlus.UI.WpfCompat.ModifierKeys.Control) == global::ForkPlus.UI.WpfCompat.ModifierKeys.Control)
 			{
 				e.Handled = true;
 				AddSkillButton_Click(sender, null);
@@ -224,17 +224,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 			{
 				var panel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(2) };
 
-				var removeButton = new Button
+				var removeButton = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new Button
 				{
-					Content = "×",
-					Width = 20,
-					Height = 20,
-					FontSize = 12,
-					Padding = new Thickness(0),
-					Margin = new Thickness(0, 0, 4, 0),
-					Tag = skill,
-					ToolTip = PreferencesLocalization.Current("Remove this skill")
-				};
+					Content = "×",					Width = 20,					Height = 20,					FontSize = 12,					Padding = new Thickness(0),					Margin = new Thickness(0, 0, 4, 0),					Tag = skill				},PreferencesLocalization.Current("Remove this skill")
+);
 				removeButton.Click += RemoveSkillButton_Click;
 				panel.Children.Add(removeButton);
 

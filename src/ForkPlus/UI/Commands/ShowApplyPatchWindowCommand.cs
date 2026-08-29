@@ -16,13 +16,13 @@ namespace ForkPlus.UI.Commands
 		public void Execute(RepositoryUserControl repositoryUserControl, string patchPath)
 		{
 			ApplyPatchWindow applyPatchDialog = new ApplyPatchWindow(repositoryUserControl, patchPath);
-			ShowDialog(repositoryUserControl, applyPatchDialog);
+			this.ShowDialog(repositoryUserControl, applyPatchDialog);
 		}
 
 		public void Execute(RepositoryUserControl repositoryUserControl, byte[] patchData)
 		{
 			ApplyPatchWindow applyPatchDialog = new ApplyPatchWindow(repositoryUserControl, patchData);
-			ShowDialog(repositoryUserControl, applyPatchDialog);
+			this.ShowDialog(repositoryUserControl, applyPatchDialog);
 		}
 
 		private static void ShowDialog(RepositoryUserControl repositoryUserControl, ApplyPatchWindow applyPatchDialog)

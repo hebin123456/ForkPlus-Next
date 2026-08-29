@@ -219,27 +219,27 @@ namespace ForkPlus.UI
 
 		public static global::Avalonia.Media.IImage FindImage(string resourceKey)
 		{
-			return (this.TryGetResource(resourceKey, ActualThemeVariant, out var __res0) ? __res0 as ImageSource : null);
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res0) ? __res0 as ImageSource : null);
 		}
 
 		public static Geometry FindGeometry(string resourceKey)
 		{
-			return (this.TryGetResource(resourceKey, ActualThemeVariant, out var __res1) ? __res1 as Geometry : null);
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res1) ? __res1 as Geometry : null);
 		}
 
 		public static Brush FindBrush(string resourceKey)
 		{
-			return (this.TryGetResource(resourceKey, ActualThemeVariant, out var __res2) ? __res2 as Brush : null);
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res2) ? __res2 as Brush : null);
 		}
 
 		public static Style FindStyle(string resourceKey)
 		{
-			return (this.TryGetResource(resourceKey, ActualThemeVariant, out var __res3) ? __res3 as Style : null);
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res3) ? __res3 as Style : null);
 		}
 
 		public static ScaleTransform FindTransform(string resourceKey)
 		{
-			return (this.TryGetResource(resourceKey, ActualThemeVariant, out var __res4) ? __res4 as ScaleTransform : null);
+			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res4) ? __res4 as ScaleTransform : null);
 		}
 
 		public static object FindResource(string resourceKey)

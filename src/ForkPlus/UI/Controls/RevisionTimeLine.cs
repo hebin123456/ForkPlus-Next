@@ -91,8 +91,8 @@ namespace ForkPlus.UI.Controls
 		public override void Render(DrawingContext drawingContext)
 		{
 			base.Render(drawingContext);
-			Size renderSize = base.RenderSize;
-			drawingContext.DrawRectangle(Theme.RevisionTimeLine.BackgroundBrush, null, new Rect(new Point(0.0, 0.0), new Size(renderSize.Width, renderSize.Height - 30.0)));
+			Size renderSize = base.Bounds.Size;
+			drawingContext.DrawRectangle(global::ForkPlus.UI.Theme.RevisionTimeLine.BackgroundBrush, null, new Rect(new Point(0.0, 0.0), new Size(renderSize.Width, renderSize.Height - 30.0)));
 			RevisionWithFiles[] revisions = Revisions;
 			if (revisions == null || revisions.Length < 2)
 			{
@@ -250,11 +250,11 @@ namespace ForkPlus.UI.Controls
 
 		private void RefreshBrushes()
 		{
-			_labelBrush = Theme.LabelBrush;
-			_alternationBrush = Theme.RevisionTimeLine.AlternationBrush;
-			_tickPen = new Pen(Theme.RevisionTimeLine.TickBrush, 1.0);
-			_revisionPen = new Pen(Theme.RevisionTimeLine.RevisionBrush, 1.0);
-			_activeRevisionBrush = Theme.SystemAccentBrush;
+			_labelBrush = global::ForkPlus.UI.Theme.LabelBrush;
+			_alternationBrush = global::ForkPlus.UI.Theme.RevisionTimeLine.AlternationBrush;
+			_tickPen = new Pen(global::ForkPlus.UI.Theme.RevisionTimeLine.TickBrush, 1.0);
+			_revisionPen = new Pen(global::ForkPlus.UI.Theme.RevisionTimeLine.RevisionBrush, 1.0);
+			_activeRevisionBrush = global::ForkPlus.UI.Theme.SystemAccentBrush;
 			_activeRevisionPen = new Pen(_activeRevisionBrush, 1.0);
 		}
 	}

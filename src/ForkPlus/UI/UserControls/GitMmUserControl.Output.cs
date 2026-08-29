@@ -396,21 +396,15 @@ namespace ForkPlus.UI.UserControls
 		UploadLinksContainer.Show();
 			foreach (string link in _latestUploadLinks.Subsequence(0, 5))
 			{
-				Button button = new Button
+				Button button = global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new Button
 				{
 					Content = new TextBlock
 					{
 						Text = UploadLinkTitle(link),
 						TextTrimming = TextTrimming.CharacterEllipsis,
 						MaxWidth = 260.0
-					},
-					Style = Theme.TransparentButtonStyle,
-					Foreground = Application.Current.TryFindResource("AccentBrush") as global::Avalonia.Media.IBrush,
-					ToolTip = link,
-					FontSize = 12.0,
-					Padding = new Thickness(6.0, 1.0, 6.0, 1.0),
-					Margin = new Thickness(0.0, 0.0, 8.0, 0.0)
-				};
+					},					Foreground = Application.Current.TryFindResource("AccentBrush") as global::Avalonia.Media.IBrush,					FontSize = 12.0,					Padding = new Thickness(6.0, 1.0, 6.0, 1.0),					Margin = new Thickness(0.0, 0.0, 8.0, 0.0)
+				},link),global::ForkPlus.UI.Theme.TransparentButtonStyle);
 				button.Click += delegate
 				{
 					OpenUrl(link);

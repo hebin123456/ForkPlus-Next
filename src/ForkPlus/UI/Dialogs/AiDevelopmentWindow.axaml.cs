@@ -85,7 +85,7 @@ namespace ForkPlus.UI.Dialogs
 			base.Title = PreferencesLocalization.Current("AI-Assisted Development");
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			InputTextBox.TextChanged += InputTextBox_TextChanged;
-			InputTextBox.PreviewKeyDown += InputTextBox_PreviewKeyDown;
+			InputTextBox.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,InputTextBox_PreviewKeyDown,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			Loaded += AiDevelopmentWindow_Loaded;
 			// AI 气泡宽度随消息面板自适应（窗口缩放时同步更新）
 			MessagePanel.SizeChanged += MessagePanel_SizeChanged;
@@ -294,8 +294,8 @@ namespace ForkPlus.UI.Dialogs
 		{
 			bool sendOnEnter = ForkPlusSettings.Default.AiDevSendMode == "Enter";
 			bool enterPressed = e.Key == global::Avalonia.Input.Key.Enter;
-			bool shiftPressed = global::Avalonia.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) || global::Avalonia.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightShift);
-			bool ctrlPressed = global::Avalonia.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) || global::Avalonia.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.RightCtrl);
+			bool shiftPressed = global::ForkPlus.UI.WpfCompat.Keyboard.IsKeyDown(global::Avalonia.Input.Key.LeftShift) || global::ForkPlus.UI.WpfCompat.Keyboard.IsKeyDown(global::Avalonia.Input.Key.RightShift);
+			bool ctrlPressed = global::ForkPlus.UI.WpfCompat.Keyboard.IsKeyDown(global::Avalonia.Input.Key.LeftCtrl) || global::ForkPlus.UI.WpfCompat.Keyboard.IsKeyDown(global::Avalonia.Input.Key.RightCtrl);
 
 			if (sendOnEnter)
 			{
@@ -1239,7 +1239,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void UpdateAiBubbleWidth(Border aiBorder)
 		{
-			double panelWidth = MessagePanel.ActualWidth;
+			double panelWidth = MessagePanel.Bounds.Width;
 			if (double.IsNaN(panelWidth) || panelWidth <= 0.0)
 			{
 				// 面板尚未布局（如窗口未显示），首次布局触发 SizeChanged 时会补上

@@ -35,13 +35,13 @@ namespace ForkPlus.UI.UserControls.Preferences
 			if (Mouse.LeftButton == MouseButtonState.Pressed)
 			{
 				_dragStartPoint = e.GetPosition(null);
-				CaptureMouse();
+				this.CaptureMouse();
 			}
 		}
 
 		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
-			ReleaseMouseCapture();
+			this.ReleaseMouseCapture();
 			if (_wasSelected)
 			{
 				base.OnPointerPressed(e);
@@ -70,7 +70,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			{
 				return;
 			}
-			ListBoxItem[] listBoxItems = array.CompactMap((object x) => ParentListBox.ItemContainerGenerator.ContainerFromItem(x) as ListBoxItem);
+			ListBoxItem[] listBoxItems = array.CompactMap((object x) => ParentListBox.ContainerFromItem(x) as ListBoxItem);
 			_adorner = new DragAndDropListBoxAdorner(this, listBoxItems, e.GetPosition(this));
 			if (_adorner != null)
 			{
@@ -78,7 +78,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				if (adornerLayer != null)
 				{
 					adornerLayer.Add(_adorner);
-					DragDrop.DoDragDrop(this, array, DragDropEffects.Move);
+					global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(this, array, DragDropEffects.Move);
 					adornerLayer.Remove(_adorner);
 				}
 			}
@@ -88,7 +88,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			if (base.IsVisible && _adorner != null)
 			{
-				Point position = PointFromScreen(MouseHelper.GetMousePosition());
+				Point position = this.PointFromScreen(MouseHelper.GetMousePosition());
 				_adorner.UpdatePosition(position);
 			}
 		}
@@ -122,7 +122,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private DropPosition GetDropPositoion(DragEventArgs e)
 		{
 			double y = e.GetPosition(this).Y;
-			double actualHeight = base.ActualHeight;
+			double actualHeight = base.Bounds.Height;
 			if (!(y < actualHeight / 2.0))
 			{
 				return DropPosition.Bottom;

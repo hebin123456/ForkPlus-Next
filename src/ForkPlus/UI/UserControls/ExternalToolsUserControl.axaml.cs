@@ -135,7 +135,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void ToolsListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: ExternalToolViewModel dataContext })
+			if (ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: ExternalToolViewModel dataContext })
 			{
 				ToolsListBox.ContextMenu.Items.Clear();
 				ToolsListBox.ContextMenu.SetItems(GetContextMenu(dataContext, _toolViewModels, _toolDefinitions));
@@ -143,7 +143,7 @@ namespace ForkPlus.UI.UserControls
 			else
 			{
 				e.Handled = true;
-				ToolsListBox.ContextMenu.IsOpen = false;
+				ToolsListBox.ContextMenu.Close();
 			}
 		}
 

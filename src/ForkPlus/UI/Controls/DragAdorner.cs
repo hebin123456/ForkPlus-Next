@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Controls
 		{
 			Point newPosition = NewPosition;
 			newPosition.Offset(0.0 - _initialPosition.X, 0.0 - _initialPosition.Y);
-			context.DrawRectangle(_visualBrush, null, new Rect(newPosition, base.RenderSize));
+			context.DrawRectangle(_visualBrush, null, new Rect(newPosition, base.Bounds.Size));
 		}
 	}
 }

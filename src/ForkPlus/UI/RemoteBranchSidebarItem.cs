@@ -27,7 +27,7 @@ namespace ForkPlus.UI
 
 		public override void StartDrag(global::Avalonia.AvaloniaObject dragSource, MultiselectionTreeViewItem[] nodes)
 		{
-			DragDrop.DoDragDrop(dragSource, GetDataObject(nodes), DragDropEffects.All);
+			global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(dragSource, GetDataObject(nodes), DragDropEffects.All);
 		}
 
 		protected override global::Avalonia.Input.IDataTransfer GetDataObject(MultiselectionTreeViewItem[] nodes)
@@ -39,7 +39,7 @@ namespace ForkPlus.UI
 
 		public override DragDropEffects GetDropEffect(DragEventArgs e, int index)
 		{
-			if (e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem)
+			if (e.WpfData().GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem)
 			{
 				return DragDropEffects.Move;
 			}
@@ -48,11 +48,11 @@ namespace ForkPlus.UI
 
 		public override void Drop(DragEventArgs e, int index)
 		{
-			e.Effects = DragDropEffects.None;
-			if (e.Data.GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem localBranchSidebarItem)
+			e.DragEffects= DragDropEffects.None;
+			if (e.WpfData().GetData(SidebarItem.DragItemsFormat) is MultiselectionTreeViewItem[] source && source.SingleItem() is LocalBranchSidebarItem localBranchSidebarItem)
 			{
 				e.Handled = true;
-				e.Effects = DragDropEffects.Move;
+				e.DragEffects= DragDropEffects.Move;
 				SidebarUserControl.ShowDropContextMenu(RemoteBranch, localBranchSidebarItem.LocalBranch);
 			}
 		}

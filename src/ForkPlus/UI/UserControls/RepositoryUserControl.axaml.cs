@@ -126,7 +126,7 @@ namespace ForkPlus.UI.UserControls
 
 		protected void OnDrop(DragEventArgs e)
 		{
-			if (e.Data.GetData(DataFormats.FileDrop) is string[] source)
+			if (e.WpfData().GetData(DataFormats.FileDrop) is string[] source)
 			{
 				string text = source.FirstItem();
 				if (text != null && text.EndsWith(Consts.Git.PatchFileExtension, StringComparison.CurrentCultureIgnoreCase))

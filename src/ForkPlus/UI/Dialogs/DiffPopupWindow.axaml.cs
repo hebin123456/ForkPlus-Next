@@ -65,7 +65,7 @@ namespace ForkPlus.UI.Dialogs
 					Close();
 				}
 			};
-			base.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			base.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Escape)
 				{
@@ -82,7 +82,7 @@ namespace ForkPlus.UI.Dialogs
 					e.Handled = true;
 					SelectNext?.Invoke(this, EventArgs.Empty);
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			base.Deactivated += delegate
 			{
 				CloseWindow();

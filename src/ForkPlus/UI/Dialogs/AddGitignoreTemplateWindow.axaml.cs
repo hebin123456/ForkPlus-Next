@@ -142,8 +142,8 @@ namespace ForkPlus.UI.Dialogs
 			base.DescriptionTextBlock.Inlines.Add(new Run("Choose "));
 			global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton(new Run(".gitignore"));
 			hyperlink.NavigateUri = new Uri("https://git-scm.com/docs/gitignore");
-			hyperlink.Style = (Style)TryFindResource("BlueUnderlineHyperlinkStyle");
-			base.DescriptionTextBlock.Inlines.Add(hyperlink);
+{			hyperlink.Styles.Clear();hyperlink.Styles.Add((Style)TryFindResource("BlueUnderlineHyperlinkStyle"));
+}			base.DescriptionTextBlock.Inlines.Add(hyperlink);
 			base.DescriptionTextBlock.Inlines.Add(new Run(" template for your project"));
 			LoadTemplates();
 			BuildTemplateList();
@@ -257,8 +257,7 @@ namespace ForkPlus.UI.Dialogs
 						Margin = new Thickness(4.0, 2.0, 0.0, 2.0),
 						Tag = item3
 					};
-					checkBox.Checked += Checkbox_Toggled;
-					checkBox.Unchecked += Checkbox_Toggled;
+					checkBox.IsCheckedChanged+=Checkbox_Toggled;
 					_checkboxes[item] = checkBox;
 					TemplateListPanel.Children.Add(checkBox);
 				}

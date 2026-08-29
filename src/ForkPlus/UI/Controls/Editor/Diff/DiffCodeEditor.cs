@@ -74,7 +74,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public DiffCodeEditor(DiffViewMode diffViewMode)
 		{
-			SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
+			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CodeEditor));
 			DiffViewMode = diffViewMode;
 			_backgroundColorizer = new DiffBackgroundColorizer();
 			base.TextArea.TextView.BackgroundRenderers.Add(_backgroundColorizer);
@@ -101,9 +101,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				return;
 			}
 			double defaultLineHeight = base.TextArea.TextView.DefaultLineHeight;
-			if (defaultLineHeight > 0.0 && base.TextArea.ActualHeight > 0.0)
+			if (defaultLineHeight > 0.0 && base.TextArea.Bounds.Height > 0.0)
 			{
-				double num = base.TextArea.ActualHeight / defaultLineHeight;
+				double num = base.TextArea.Bounds.Height / defaultLineHeight;
 				if ((double)base.Document.LineCount <= num)
 				{
 					match.Data = null;
@@ -112,10 +112,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				}
 			}
 			StreamGeometry streamGeometry = new StreamGeometry();
-			streamGeometry.FillRule = FillRule.Nonzero;
+			streamGeometry.FillRule = FillRule.NonZero;
 			StreamGeometryContext streamGeometryContext = streamGeometry.Open();
 			StreamGeometry streamGeometry2 = new StreamGeometry();
-			streamGeometry2.FillRule = FillRule.Nonzero;
+			streamGeometry2.FillRule = FillRule.NonZero;
 			StreamGeometryContext streamGeometryContext2 = streamGeometry2.Open();
 			int width = ((DiffViewMode == DiffViewMode.Split) ? 6 : 4);
 			int x = ((DiffViewMode == DiffViewMode.Split) ? 1 : 0);
@@ -162,7 +162,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		private void AddLine(StreamGeometryContext ctx, int startLine, int blockLength, int totalLines, int x, int width)
 		{
 			double num = 12.0;
-			double num2 = base.TextArea.ActualHeight - num * 2.0;
+			double num2 = base.TextArea.Bounds.Height - num * 2.0;
 			double num3 = num + num2 * ((double)startLine / (double)totalLines);
 			double num4 = Math.Max(2.0, num2 * ((double)blockLength / (double)totalLines));
 			ctx.BeginFigure(new Point(x, num3), isFilled: true, isClosed: true);

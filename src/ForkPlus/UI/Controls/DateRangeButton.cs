@@ -32,10 +32,10 @@ namespace ForkPlus.UI.Controls
 
 		public DateRangeButton()
 		{
-			base.Checked += delegate
+			global::ForkPlus.UI.WpfCompat.Events.AddChecked(base,delegate
 			{
 				CreateCalendarPopup(this);
-			};
+			});
 		}
 
 		private void CreateCalendarPopup(ToggleButton parentButton)
@@ -43,9 +43,9 @@ namespace ForkPlus.UI.Controls
 			Popup popup = new Popup();
 			popup.HorizontalOffset = -100.0;
 			popup.VerticalOffset = 0.0;
-			popup.StaysOpen = false;
-			popup.AllowsTransparency = true;
-			popup.PopupAnimation = PopupAnimation.Fade;
+			popup.IsLightDismissEnabled= (!false);
+			/* TODO 迁移: AllowsTransparency 已删除 */;
+			/* TODO 迁移: PopupAnimation 已删除 */;
 			popup.PlacementTarget = this;
 			popup.Opened += delegate
 			{
@@ -53,10 +53,10 @@ namespace ForkPlus.UI.Controls
 			};
 			popup.Closed += delegate
 			{
-				BindingOperations.ClearBinding(popup, Popup.IsOpenProperty);
+				global::ForkPlus.UI.WpfCompat.BindingCompat.ClearBinding(popup, Popup.IsOpenProperty);
 				parentButton.Enable();
 			};
-			BindingOperations.SetBinding(popup, Popup.IsOpenProperty, new Binding("IsChecked")
+			global::ForkPlus.UI.WpfCompat.BindingCompat.SetBinding(popup, Popup.IsOpenProperty, new Binding("IsChecked")
 			{
 				Source = parentButton
 			});

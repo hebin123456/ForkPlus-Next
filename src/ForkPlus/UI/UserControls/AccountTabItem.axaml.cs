@@ -30,8 +30,7 @@ namespace ForkPlus.UI.UserControls
 		public AccountTabItem()
 		{
 			InitializeComponent();
-			NotificationsCheckBox.Checked += NotificationsCheckBox_Checked;
-			NotificationsCheckBox.Unchecked += NotificationsCheckBox_Checked;
+			NotificationsCheckBox.IsCheckedChanged+=NotificationsCheckBox_Checked;
 		}
 
 		public void Refresh(Account account)
@@ -64,9 +63,9 @@ namespace ForkPlus.UI.UserControls
 					{
 						StatusBusyIndicator.Hide();
 						StatusEllipse.Show();
-						StatusEllipse.Fill = Theme.ApplicationColors.RedBrush;
+						StatusEllipse.Fill = global::ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 						StatusTextBlock.Text = userResponse.Error.FriendlyMessage;
-						StatusTextBlock.ToolTip = userResponse.Error.FriendlyMessage;
+						global::Avalonia.Controls.ToolTip.SetTip(StatusTextBlock,userResponse.Error.FriendlyMessage);
 					});
 				}
 				else
@@ -75,9 +74,9 @@ namespace ForkPlus.UI.UserControls
 					{
 						StatusBusyIndicator.Hide();
 						StatusEllipse.Show();
-						StatusEllipse.Fill = Theme.ApplicationColors.GreenBrush;
+						StatusEllipse.Fill = global::ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 						StatusTextBlock.Text = Translate("Online");
-						StatusTextBlock.ToolTip = null;
+						global::Avalonia.Controls.ToolTip.SetTip(StatusTextBlock,null);
 					});
 				}
 			});

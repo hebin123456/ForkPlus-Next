@@ -46,14 +46,14 @@ namespace ForkPlus.UI.UserControls
 			_refreshTimer.Start();
 			ActivityManagerPopup.Opened += delegate
 			{
-				ActivityManagerPopup.PopupAnimation = PopupAnimation.Fade;
+				/* TODO 迁移: PopupAnimation 已删除 */;
 				ShowActivityManagerToggleButton.Disable();
 				ActivityManagerUserControl.Start();
 				_isJobManagerPopopOpen = true;
 			};
 			ActivityManagerPopup.Closed += delegate
 			{
-				ActivityManagerPopup.PopupAnimation = PopupAnimation.Slide;
+				/* TODO 迁移: PopupAnimation 已删除 */;
 				ShowActivityManagerToggleButton.Enable();
 				ActivityManagerUserControl.Stop();
 				_isJobManagerPopopOpen = false;
@@ -185,13 +185,13 @@ namespace ForkPlus.UI.UserControls
 			if (repositoryData.References.FilterReferences.Length != 0)
 			{
 				FilterButton.Show();
-				FilterButton.ToolTip = Translate("Clear Branch Filter");
+				global::Avalonia.Controls.ToolTip.SetTip(FilterButton,Translate("Clear Branch Filter"));
 				FilterButtonImage.SetResourceReference(Image.SourceProperty, BranchFilterOnIconName);
 			}
 			else if (_hovered && repositoryData.References.ActiveBranch != null)
 			{
 				FilterButton.Show();
-				FilterButton.ToolTip = Translate("Filter by Active Branch");
+				global::Avalonia.Controls.ToolTip.SetTip(FilterButton,Translate("Filter by Active Branch"));
 				FilterButtonImage.SetResourceReference(Image.SourceProperty, BranchFilterOffIconName);
 			}
 			else
@@ -213,9 +213,9 @@ namespace ForkPlus.UI.UserControls
 
 		public void ApplyLocalization()
 	{
-		ShowActivityManagerToggleButton.ToolTip = PreferencesLocalization.Translate("Activity Manager", ForkPlusSettings.Default.UiLanguage);
-		GitMmHistoryButton.ToolTip = PreferencesLocalization.Translate("Command History", ForkPlusSettings.Default.UiLanguage);
-		GitMmOutputButton.ToolTip = PreferencesLocalization.Translate("Command Output", ForkPlusSettings.Default.UiLanguage);
+		global::Avalonia.Controls.ToolTip.SetTip(ShowActivityManagerToggleButton,PreferencesLocalization.Translate("Activity Manager", ForkPlusSettings.Default.UiLanguage));
+		global::Avalonia.Controls.ToolTip.SetTip(GitMmHistoryButton,PreferencesLocalization.Translate("Command History", ForkPlusSettings.Default.UiLanguage));
+		global::Avalonia.Controls.ToolTip.SetTip(GitMmOutputButton,PreferencesLocalization.Translate("Command Output", ForkPlusSettings.Default.UiLanguage));
 		ActivityManagerUserControl.ApplyLocalization();
 	}
 
@@ -331,7 +331,7 @@ namespace ForkPlus.UI.UserControls
 				Grid.SetRow(TitleGrid, titleRow);
 				Grid.SetRow(SecondaryTitleGrid, secondaryTitleRow);
 			};
-			transform.BeginAnimation(TranslateTransform.YProperty, doubleAnimation);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(transform,TranslateTransform.YProperty,doubleAnimation);
 			return true;
 		}
 

@@ -165,7 +165,7 @@ namespace ForkPlus.UI.UserControls
 			contextMenu.Items.Add(item);
 		}
 		contextMenu.PlacementTarget = placementTarget;
-		contextMenu.IsOpen = true;
+		contextMenu.Open();
 	}
 
 	/// <summary>v3.11.0：显示上传链接面板（供主 StatusUserControl Uploads 按钮调用）。</summary>
@@ -445,9 +445,9 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshCommandButtonTooltips()
 		{
-			StartButton.ToolTip = Translate("Start") + Environment.NewLine + Translate("Hold Ctrl for Quick Start");
-			SyncButton.ToolTip = Translate("Sync") + Environment.NewLine + Translate("Hold Ctrl for Quick Sync");
-			UploadButton.ToolTip = Translate("Upload") + Environment.NewLine + Translate("Hold Ctrl for Quick Upload");
+			global::Avalonia.Controls.ToolTip.SetTip(StartButton,Translate("Start") + Environment.NewLine + Translate("Hold Ctrl for Quick Start"));
+			global::Avalonia.Controls.ToolTip.SetTip(SyncButton,Translate("Sync") + Environment.NewLine + Translate("Hold Ctrl for Quick Sync"));
+			global::Avalonia.Controls.ToolTip.SetTip(UploadButton,Translate("Upload") + Environment.NewLine + Translate("Hold Ctrl for Quick Upload"));
 		}
 
 		private static string[] CreateQuickStartArgs()
@@ -502,7 +502,7 @@ namespace ForkPlus.UI.UserControls
 		private void RefreshSubreposTitle()
 		{
 			SubreposTitleTextBlock.Text = PreferencesLocalization.FormatCurrent("{0} repositories", _workspace.Subrepos.Count);
-			GitMmHelpButton.ToolTip = Translate("Show git mm reference");
+			global::Avalonia.Controls.ToolTip.SetTip(GitMmHelpButton,Translate("Show git mm reference"));
 			RefreshSubrepoSummary();
 			RefreshSubrepoFilterButton();
 		}
@@ -578,7 +578,7 @@ namespace ForkPlus.UI.UserControls
 			button.Content = PreferencesLocalization.Current("Show all");
 			button.Foreground = Application.Current.TryFindResource("AccentBrush") as Brush;
 			button.Margin = new Thickness(0.0, 0.0, 8.0, 0.0);
-			button.ToolTip = Translate("Clear repository filter");
+			global::Avalonia.Controls.ToolTip.SetTip(button,Translate("Clear repository filter"));
 		}
 
 		private void AddSummaryButton(string format, int value, string filterMode, HashSet<string> visibleButtonKeys)
@@ -593,7 +593,7 @@ namespace ForkPlus.UI.UserControls
 			button.Content = PreferencesLocalization.FormatCurrent(format, value);
 			button.Foreground = Application.Current.TryFindResource("SecondaryLabelBrush") as Brush;
 			button.Margin = new Thickness(0.0, 0.0, 6.0, 0.0);
-			button.ToolTip = Translate("Click to show matching repositories");
+			global::Avalonia.Controls.ToolTip.SetTip(button,Translate("Click to show matching repositories"));
 		}
 
 		private Button GetOrCreateSummaryButton(string key)
@@ -602,12 +602,10 @@ namespace ForkPlus.UI.UserControls
 			{
 				return button;
 			}
-			button = new Button
+			button = global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new Button
 			{
-				Style = Theme.TransparentButtonStyle,
-				FontSize = 12.0,
-				Padding = new Thickness(3.0, 0.0, 3.0, 0.0)
-			};
+				FontSize = 12.0,				Padding = new Thickness(3.0, 0.0, 3.0, 0.0)
+			},global::ForkPlus.UI.Theme.TransparentButtonStyle);
 			button.Click += SummaryButton_Click;
 			_summaryButtons[key] = button;
 			SubrepoSummaryPanel.Children.Add(button);
@@ -1206,17 +1204,10 @@ namespace ForkPlus.UI.UserControls
 			string preferredSubrepoPath = GetPreferredSubrepoPath();
 			foreach (GitMmSubrepoItem subrepo in _workspace.Subrepos.Where(IsSubrepoVisible))
 			{
-				TabItem tabItem = new TabItem
+				TabItem tabItem = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new TabItem
 				{
-					Header = CreateSubrepoTabHeader(subrepo),
-					Content = CreateSubrepoPlaceholder(subrepo),
-					Tag = subrepo,
-					ToolTip = subrepo.Path,
-					ContextMenu = CreateSubrepoTabContextMenu(subrepo),
-					AllowDrop = true,
-					HorizontalContentAlignment = HorizontalAlignment.Stretch,
-					VerticalContentAlignment = VerticalAlignment.Stretch
-				};
+					Header = CreateSubrepoTabHeader(subrepo),					Content = CreateSubrepoPlaceholder(subrepo),					Tag = subrepo,					ContextMenu = CreateSubrepoTabContextMenu(subrepo),					AllowDrop = true,					HorizontalContentAlignment = HorizontalAlignment.Stretch,					VerticalContentAlignment = VerticalAlignment.Stretch
+				},subrepo.Path);
 				tabItem.PointerPressed += SubrepoTabItem_PreviewMouseDown;
 				tabItem.PointerMoved += SubrepoTabItem_PreviewMouseMove;
 				tabItem.PointerReleased += SubrepoTabItem_PreviewMouseUp;
@@ -1253,7 +1244,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			double availableWidth = SubreposTabControl.ActualWidth;
+			double availableWidth = SubreposTabControl.Bounds.Width;
 			if (availableWidth <= 0.0)
 			{
 				return;
@@ -1328,14 +1319,10 @@ namespace ForkPlus.UI.UserControls
 				AllowsTransparency = true
 			};
 			StackPanel itemsPanel = new StackPanel();
-			TextBox searchTextBox = new TextBox
+			TextBox searchTextBox = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new TextBox
 			{
-				Width = 210.0,
-				Height = 30.0,
-				Margin = new Thickness(8.0),
-				Padding = new Thickness(6.0, 4.0, 6.0, 4.0),
-				ToolTip = Translate("Search repositories")
-			};
+				Width = 210.0,				Height = 30.0,				Margin = new Thickness(8.0),				Padding = new Thickness(6.0, 4.0, 6.0, 4.0)			},Translate("Search repositories")
+);
 			CheckBox nonDefaultBranchCheckBox = CreateSubrepoQuickFilterCheckBox(Translate("Non-default branch"), _filterNonDefaultBranchOnly);
 			CheckBox failedOnlyCheckBox = CreateSubrepoQuickFilterCheckBox(Translate("Failed repositories"), _filterFailedOnly);
 			Button showAllButton = CreateSubrepoFilterIconButton("StageAllIcon", Translate("Show all repositories"), new Thickness(0.0, 8.0, 8.0, 8.0));
@@ -1378,14 +1365,14 @@ namespace ForkPlus.UI.UserControls
 			};
 			quickFiltersPanel.Children.Add(nonDefaultBranchCheckBox);
 			quickFiltersPanel.Children.Add(failedOnlyCheckBox);
-			nonDefaultBranchCheckBox.Checked += delegate
+			global::ForkPlus.UI.WpfCompat.Events.AddChecked(nonDefaultBranchCheckBox,delegate
 			{
 				_filterNonDefaultBranchOnly = true;
 				_activeSummaryFilterMode = "nonDefault";
 				TryApplySummaryFilterMode("nonDefault", save: true);
 				RefreshSubrepoFilterMenuItems(itemsPanel, searchTextBox.Text);
-			};
-			nonDefaultBranchCheckBox.Unchecked += delegate
+			});
+			global::ForkPlus.UI.WpfCompat.Events.AddUnchecked(nonDefaultBranchCheckBox,delegate
 			{
 				_filterNonDefaultBranchOnly = false;
 				if (_activeSummaryFilterMode == "nonDefault")
@@ -1394,9 +1381,9 @@ namespace ForkPlus.UI.UserControls
 				}
 				RefreshSubrepoFilterMenuItems(itemsPanel, searchTextBox.Text);
 				SaveSettings();
-			};
-			failedOnlyCheckBox.Checked += delegate { _filterFailedOnly = true; RefreshSubrepoFilterMenuItems(itemsPanel, searchTextBox.Text); };
-			failedOnlyCheckBox.Unchecked += delegate { _filterFailedOnly = false; RefreshSubrepoFilterMenuItems(itemsPanel, searchTextBox.Text); };
+			});
+			global::ForkPlus.UI.WpfCompat.Events.AddChecked(failedOnlyCheckBox,delegate { _filterFailedOnly = true; RefreshSubrepoFilterMenuItems(itemsPanel, searchTextBox.Text); });
+			global::ForkPlus.UI.WpfCompat.Events.AddUnchecked(failedOnlyCheckBox,delegate { _filterFailedOnly = false; RefreshSubrepoFilterMenuItems(itemsPanel, searchTextBox.Text); });
 			Border popupContent = new Border
 			{
 				Child = new StackPanel
@@ -1451,16 +1438,10 @@ namespace ForkPlus.UI.UserControls
 				VerticalAlignment = VerticalAlignment.Center
 			};
 			image.SetResourceReference(Image.SourceProperty, iconResourceKey);
-			return new Button
+			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new Button
 			{
-				Content = image,
-				Width = 28.0,
-				Height = 30.0,
-				Margin = margin,
-				Padding = new Thickness(4.0),
-				ToolTip = tooltip,
-				Style = Theme.TransparentButtonStyle
-			};
+				Content = image,				Width = 28.0,				Height = 30.0,				Margin = margin,				Padding = new Thickness(4.0)			},tooltip),global::ForkPlus.UI.Theme.TransparentButtonStyle
+);
 		}
 
 		private void RefreshSubrepoFilterMenuItems(StackPanel itemsPanel, string filterText)
@@ -1468,32 +1449,29 @@ namespace ForkPlus.UI.UserControls
 			itemsPanel.Children.Clear();
 			foreach (GitMmSubrepoItem subrepo in FilterSubrepos(filterText))
 			{
-				CheckBox checkBox = new CheckBox
+				CheckBox checkBox = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new CheckBox
 				{
 					Content = new TextBlock
 					{
 						Text = subrepo.DisplayName
-					},
-					IsChecked = IsSubrepoVisible(subrepo),
-					ToolTip = subrepo.Path,
-					Margin = new Thickness(8.0, 3.0, 8.0, 3.0)
-				};
-				checkBox.Checked += delegate
+					},					IsChecked = IsSubrepoVisible(subrepo),					Margin = new Thickness(8.0, 3.0, 8.0, 3.0)
+				},subrepo.Path);
+				global::ForkPlus.UI.WpfCompat.Events.AddChecked(checkBox,delegate
 				{
 					_activeSummaryFilterMode = null;
 					SetSubrepoVisible(subrepo, isVisible: true);
 					RebuildSubrepoTabs();
 					RefreshSubreposTitle();
 					SaveSettings();
-				};
-				checkBox.Unchecked += delegate
+				});
+				global::ForkPlus.UI.WpfCompat.Events.AddUnchecked(checkBox,delegate
 				{
 					_activeSummaryFilterMode = null;
 					SetSubrepoVisible(subrepo, isVisible: false);
 					RebuildSubrepoTabs();
 					RefreshSubreposTitle();
 					SaveSettings();
-				};
+				});
 				itemsPanel.Children.Add(checkBox);
 			}
 		}
@@ -1596,7 +1574,7 @@ namespace ForkPlus.UI.UserControls
 		private void SubrepoTabItem_PreviewMouseDown(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			_subrepoTabDragItem = null;
-			if (e.LeftButton == MouseButtonState.Pressed && sender is TabItem tabItem && IsFromSubrepoTabHeader(tabItem, e.OriginalSource as global::Avalonia.AvaloniaObject))
+			if (e.LeftButton == MouseButtonState.Pressed && sender is TabItem tabItem && IsFromSubrepoTabHeader(tabItem, e.Source as global::Avalonia.AvaloniaObject))
 			{
 				_tabDragStartPoint = e.GetPosition(null);
 				_subrepoTabDragItem = tabItem;
@@ -1621,7 +1599,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			try
 			{
-				DragDrop.DoDragDrop(tabItem, new WeakReference<TabItem>(tabItem), DragDropEffects.Move);
+				global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(tabItem, new WeakReference<TabItem>(tabItem), DragDropEffects.Move);
 			}
 			finally
 			{
@@ -1636,11 +1614,11 @@ namespace ForkPlus.UI.UserControls
 
 		private void SubrepoTabItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is TabItem targetTabItem) || !(e.Data.GetData(typeof(WeakReference<TabItem>)) is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
+			if (!(sender is TabItem targetTabItem) || !(e.WpfData().GetData(typeof(WeakReference<TabItem>)) is WeakReference<TabItem> weakReference) || !weakReference.TryGetTarget(out var draggedTabItem))
 			{
 				return;
 			}
-			if (!IsFromSubrepoTabHeader(targetTabItem, e.OriginalSource as global::Avalonia.AvaloniaObject) && e.GetPosition(targetTabItem).Y > targetTabItem.ActualHeight)
+			if (!IsFromSubrepoTabHeader(targetTabItem, e.Source as global::Avalonia.AvaloniaObject) && e.GetPosition(targetTabItem).Y > targetTabItem.Bounds.Height)
 			{
 				return;
 			}
@@ -1654,7 +1632,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			if (e.GetPosition(targetTabItem).X > targetTabItem.ActualWidth / 2.0)
+			if (e.GetPosition(targetTabItem).X > targetTabItem.Bounds.Width / 2.0)
 			{
 				newIndex++;
 			}
@@ -1707,7 +1685,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (source is Visual || source is Visual3D)
 			{
-				return global::Avalonia.VisualTreeExtensions.GetVisualParent(source);
+				return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(source);
 			}
 			return null;
 		}
@@ -1816,11 +1794,10 @@ namespace ForkPlus.UI.UserControls
 		private static Control CreateSubrepoColorsMenuItem(GitMmSubrepoItem subrepo)
 		{
 			RepositoryManager.Repository repository = EnsureRepositoryManagerEntry(subrepo.Path);
-			return new MenuItem
+			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new MenuItem
 			{
-				Header = new RepositoryColorsUserControl(repository),
-				Style = Theme.CustomContentMenuItemStyle
-			};
+				Header = new RepositoryColorsUserControl(repository)			},global::ForkPlus.UI.Theme.CustomContentMenuItemStyle
+);
 		}
 
 		private void RenameSubrepo(GitMmSubrepoItem subrepo, string newName)
@@ -1868,7 +1845,7 @@ namespace ForkPlus.UI.UserControls
 				colorEllipse.StrokeThickness = subrepo.IsRootRepository ? 1.0 : 2.0;
 				colorEllipse.Stroke = brush;
 				colorEllipse.Fill = brush;
-				colorEllipse.ToolTip = subrepo.IsRootRepository ? Translate("Main repository") : null;
+				global::Avalonia.Controls.ToolTip.SetTip(colorEllipse,subrepo.IsRootRepository ? Translate("Main repository") : null);
 			}
 			StackPanel statusPanel = panel.Children.OfType<StackPanel>().FirstOrDefault((StackPanel stackPanel) => (stackPanel.Tag as string) == "StatusIcons");
 			if (statusPanel != null)
@@ -2233,7 +2210,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				AddSubrepoStatusIcon(statusPanel, "BranchIcon", BuildSubrepoStatusToolTip(subrepo));
 			}
-			statusPanel.ToolTip = statusPanel.Children.Count == 0 ? null : BuildSubrepoStatusToolTip(subrepo);
+			global::Avalonia.Controls.ToolTip.SetTip(statusPanel,statusPanel.Children.Count == 0 ? null : BuildSubrepoStatusToolTip(subrepo));
 			statusPanel.IsVisible = statusPanel.Children.Count == 0 ? false : true;
 		}
 
@@ -2276,14 +2253,10 @@ namespace ForkPlus.UI.UserControls
 
 		private static void AddSubrepoStatusIcon(StackPanel statusPanel, string iconResourceKey, string tooltip)
 		{
-			Image image = new Image
+			Image image = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new Image
 			{
-				Width = 13.0,
-				Height = 13.0,
-				Margin = new Thickness(2.0, 0.0, 0.0, 0.0),
-				VerticalAlignment = VerticalAlignment.Center,
-				ToolTip = tooltip
-			};
+				Width = 13.0,				Height = 13.0,				Margin = new Thickness(2.0, 0.0, 0.0, 0.0),				VerticalAlignment = VerticalAlignment.Center			},tooltip
+);
 			image.SetResourceReference(Image.SourceProperty, iconResourceKey);
 			statusPanel.Children.Add(image);
 		}

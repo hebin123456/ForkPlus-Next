@@ -92,7 +92,7 @@ namespace ForkPlus.UI.UserControls
 			CommitRadioButton.Content = PreferencesLocalization.Translate("Commit", ForkPlusSettings.Default.UiLanguage);
 			ChangesRadioButton.Content = PreferencesLocalization.Translate("Changes", ForkPlusSettings.Default.UiLanguage);
 			FileTreeRadioButton.Content = PreferencesLocalization.Translate("File Tree", ForkPlusSettings.Default.UiLanguage);
-			ShowRevisionInSeparateWindowButton.ToolTip = PreferencesLocalization.Translate("Open in separate window", ForkPlusSettings.Default.UiLanguage);
+			global::Avalonia.Controls.ToolTip.SetTip(ShowRevisionInSeparateWindowButton,PreferencesLocalization.Translate("Open in separate window", ForkPlusSettings.Default.UiLanguage));
 			SummaryUserControl.ApplyLocalization();
 			ChangesUserControl.ApplyLocalization();
 		}
@@ -458,12 +458,12 @@ namespace ForkPlus.UI.UserControls
 
 		private void CollapseRevisionDetailsHeader()
 		{
-			DoubleAnimation doubleAnimation = new DoubleAnimation(RevisionDetailsHeaderUserControl.ActualHeight, 0.0, TimeSpan.FromSeconds(0.18));
+			DoubleAnimation doubleAnimation = new DoubleAnimation(RevisionDetailsHeaderUserControl.Bounds.Height, 0.0, TimeSpan.FromSeconds(0.18));
 			doubleAnimation.EasingFunction = new QuadraticEase
 			{
 				EasingMode = EasingMode.EaseOut
 			};
-			RevisionDetailsHeaderUserControl.BeginAnimation(global::Avalonia.Controls.Control.HeightProperty, doubleAnimation);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(RevisionDetailsHeaderUserControl,global::Avalonia.Controls.Control.HeightProperty,doubleAnimation);
 			RevisionDetailsHeaderUserControl.SwapRevisionsButton.Hide();
 		}
 
@@ -472,12 +472,12 @@ namespace ForkPlus.UI.UserControls
 			double num = (isDoubleHeight ? RevisionDetailsHeaderDoubleHeight : RevisionDetailsHeaderNormalHeight);
 			if (animate)
 			{
-				DoubleAnimation doubleAnimation = new DoubleAnimation(RevisionDetailsHeaderUserControl.ActualHeight, num, TimeSpan.FromSeconds(0.18));
+				DoubleAnimation doubleAnimation = new DoubleAnimation(RevisionDetailsHeaderUserControl.Bounds.Height, num, TimeSpan.FromSeconds(0.18));
 				doubleAnimation.EasingFunction = new QuadraticEase
 				{
 					EasingMode = EasingMode.EaseOut
 				};
-				RevisionDetailsHeaderUserControl.BeginAnimation(global::Avalonia.Controls.Control.HeightProperty, doubleAnimation);
+				global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(RevisionDetailsHeaderUserControl,global::Avalonia.Controls.Control.HeightProperty,doubleAnimation);
 			}
 			else
 			{
@@ -506,7 +506,7 @@ namespace ForkPlus.UI.UserControls
 					EasingMode = EasingMode.EaseOut
 				}
 			};
-			translateTransform.BeginAnimation(TranslateTransform.XProperty, animation);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(translateTransform,TranslateTransform.XProperty,animation);
 			double tabWidth = GetTabWidth(nextTab);
 			DoubleAnimation animation2 = new DoubleAnimation(_indicatorWidth, tabWidth, TimeSpan.FromSeconds(0.2))
 			{
@@ -517,7 +517,7 @@ namespace ForkPlus.UI.UserControls
 			};
 			if (_isTabIndicatorInitialized)
 			{
-				IndicatorBorder.BeginAnimation(global::Avalonia.Controls.Control.WidthProperty, animation2);
+				global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(IndicatorBorder,global::Avalonia.Controls.Control.WidthProperty,animation2);
 			}
 			_indicatorWidth = tabWidth;
 		}
@@ -529,9 +529,9 @@ namespace ForkPlus.UI.UserControls
 			case RevisionDetailsTab.Commit:
 				return 0.0;
 			case RevisionDetailsTab.Changes:
-				return CommitRadioButton.ActualWidth;
+				return CommitRadioButton.Bounds.Width;
 			case RevisionDetailsTab.FileTree:
-				return CommitRadioButton.ActualWidth + ChangesRadioButton.ActualWidth;
+				return CommitRadioButton.Bounds.Width + ChangesRadioButton.Bounds.Width;
 			default:
 				return 0.0;
 			}
@@ -542,11 +542,11 @@ namespace ForkPlus.UI.UserControls
 			switch (tab)
 			{
 			case RevisionDetailsTab.Commit:
-				return CommitRadioButton.ActualWidth;
+				return CommitRadioButton.Bounds.Width;
 			case RevisionDetailsTab.Changes:
-				return ChangesRadioButton.ActualWidth;
+				return ChangesRadioButton.Bounds.Width;
 			case RevisionDetailsTab.FileTree:
-				return FileTreeRadioButton.ActualWidth;
+				return FileTreeRadioButton.Bounds.Width;
 			default:
 				return 0.0;
 			}
@@ -572,7 +572,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void SyncTabIndicator()
 		{
-			IndicatorBorder.BeginAnimation(global::Avalonia.Controls.Control.WidthProperty, null);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(IndicatorBorder,global::Avalonia.Controls.Control.WidthProperty,null);
 			TranslateTransform translateTransform = IndicatorBorder.RenderTransform as TranslateTransform;
 			if (translateTransform == null)
 			{

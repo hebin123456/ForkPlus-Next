@@ -67,11 +67,11 @@ namespace ForkPlus.UI.UserControls
 				string fullReference = reference.FullReference;
 				if (fullReference.StartsWith("refs/heads/"))
 				{
-					icon = Theme.BranchIcon;
+					icon = global::ForkPlus.UI.Theme.BranchIcon;
 				}
 				else if (fullReference.StartsWith("refs/tags/"))
 				{
-					icon = Theme.TagIcon;
+					icon = global::ForkPlus.UI.Theme.TagIcon;
 				}
 				else if (fullReference.StartsWith("refs/remotes/"))
 				{
@@ -90,7 +90,7 @@ namespace ForkPlus.UI.UserControls
 
 		private global::Avalonia.Media.IImage GetRemoteIcon(string remoteName)
 		{
-			return IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == remoteName)?.Icon ?? Theme.RemoteIcon;
+			return IReadOnlyListExtensions.FirstItem(_remotes, (Remote x) => x.Name == remoteName)?.Icon ?? global::ForkPlus.UI.Theme.RemoteIcon;
 		}
 
 	}

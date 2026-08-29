@@ -351,12 +351,12 @@ namespace ForkPlus.UI.UserControls
 			if (DiffLayoutMode == DiffLayoutMode.SideBySide)
 			{
 				DiffLayoutModeToggleButton.IsChecked = true;
-				DiffLayoutModeToggleButton.ToolTip = Translate("Split diff");
+				global::Avalonia.Controls.ToolTip.SetTip(DiffLayoutModeToggleButton,Translate("Split diff"));
 			}
 			else
 			{
 				DiffLayoutModeToggleButton.IsChecked = false;
-				DiffLayoutModeToggleButton.ToolTip = Translate("Side by side diff");
+				global::Avalonia.Controls.ToolTip.SetTip(DiffLayoutModeToggleButton,Translate("Side by side diff"));
 			}
 		}
 

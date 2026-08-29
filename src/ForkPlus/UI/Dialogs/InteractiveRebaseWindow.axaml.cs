@@ -297,11 +297,11 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.OnKeyDown(e);
 			RevisionEntry[] array = null;
-			if (e.OriginalSource is global::Avalonia.Controls.ListBoxItem || e.OriginalSource is global::Avalonia.Controls.ListBox)
+			if (e.Source is global::Avalonia.Controls.ListBoxItem || e.Source is global::Avalonia.Controls.ListBox)
 			{
 				array = RevisionListView.SelectedItems.CompactMap((object x) => x as RevisionEntry);
 			}
-			else if (e.OriginalSource is ComboBoxItem container && ItemsControl.ItemsControlFromItemContainer(container)?.DataContext is RevisionEntry revisionEntry)
+			else if (e.Source is ComboBoxItem container && ItemsControl.ItemsControlFromItemContainer(container)?.DataContext is RevisionEntry revisionEntry)
 			{
 				array = new RevisionEntry[1] { revisionEntry };
 			}
@@ -395,10 +395,10 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (i != 2)
 				{
-					num += gridView.Columns[i].ActualWidth;
+					num += gridView.Columns[i].Bounds.Width;
 				}
 			}
-			double num2 = RevisionListView.ActualWidth - SystemParameters.VerticalScrollBarWidth - 5.0 - num;
+			double num2 = RevisionListView.Bounds.Width - SystemParameters.VerticalScrollBarWidth - 5.0 - num;
 			gridView.Columns[2].Width = ((num2 > 0.0) ? num2 : 0.0);
 		}
 
@@ -715,7 +715,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					rewordUserControl.Refresh(revision.Subject, revision.Description);
 				}
-				if (RevisionListView.ItemContainerGenerator.ContainerFromItem(revision) is global::Avalonia.Controls.ListBoxItem listViewItem)
+				if (RevisionListView.ContainerFromItem(revision) is global::Avalonia.Controls.ListBoxItem listViewItem)
 				{
 					UpdateAdornerMargin(listViewItem);
 					return;
@@ -881,7 +881,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RevisionListViewItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is MultiselectionListViewItem { DataContext: RevisionEntry dataContext } multiselectionListViewItem) || !(e.Data.GetData(typeof(RevisionEntry[])) is RevisionEntry[] array) || array.Length == 0 || array.Contains(dataContext))
+			if (!(sender is MultiselectionListViewItem { DataContext: RevisionEntry dataContext } multiselectionListViewItem) || !(e.WpfData().GetData(typeof(RevisionEntry[])) is RevisionEntry[] array) || array.Length == 0 || array.Contains(dataContext))
 			{
 				return;
 			}

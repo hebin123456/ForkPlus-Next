@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ForkPlus.AskPass")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+efcef8408c60f9c1917ea75c2f333be1fa6a3cc6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0bfec0ea78cbf5a7e82a71dbb735c3107540da6c")]
 [assembly: System.Reflection.AssemblyProductAttribute("ForkPlus.AskPass")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ForkPlus.AskPass")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

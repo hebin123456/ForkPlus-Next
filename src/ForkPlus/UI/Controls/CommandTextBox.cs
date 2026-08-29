@@ -61,16 +61,16 @@ namespace ForkPlus.UI.Controls
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_labelsStackPanel = GetTemplateChild("PART_LabelsStackPanel") as StackPanel;
-			_textBox = GetTemplateChild("PART_PlaceholderTextBox") as PlaceholderTextBox;
+			_labelsStackPanel = this.GetTemplateChild("PART_LabelsStackPanel") as StackPanel;
+			_textBox = this.GetTemplateChild("PART_PlaceholderTextBox") as PlaceholderTextBox;
 			Placeholder = Translate("Command");
-			_textBox.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			_textBox.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Back && _textBox.CaretIndex == 0)
 				{
 					RemoveArgument();
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			_textBox.Focus();
 		}
 
@@ -143,12 +143,12 @@ namespace ForkPlus.UI.Controls
 			border.Padding = new Thickness(6.0, 0.0, 6.0, 2.0);
 			border.Margin = new Thickness(2.0, 0.0, 0.0, 0.0);
 			border.CornerRadius = new CornerRadius(3.0, 3.0, 3.0, 3.0);
-			border.Background = Theme.CommandTextBox.LabelBackgroundBrush;
+			border.Background = global::ForkPlus.UI.Theme.CommandTextBox.LabelBackgroundBrush;
 			TextBlock child = new TextBlock
 			{
 				VerticalAlignment = VerticalAlignment.Center,
 				Text = text,
-				Foreground = Theme.CommandTextBox.LabelForegroundBrush
+				Foreground = global::ForkPlus.UI.Theme.CommandTextBox.LabelForegroundBrush
 			};
 			border.Child = child;
 			_labelsStackPanel.Children.Add(border);

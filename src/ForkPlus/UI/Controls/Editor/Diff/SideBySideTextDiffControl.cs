@@ -46,8 +46,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			add
 			{
-				_leftDiffCodeEditor.ContextMenuOpening += value;
-				_rightDiffCodeEditor.ContextMenuOpening += value;
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(_leftDiffCodeEditor,value);
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(_rightDiffCodeEditor,value);
 			}
 			remove
 			{
@@ -62,14 +62,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_rightDiffCodeEditor = new DiffCodeEditor(DiffViewMode.SideBySideNew);
 			_leftDiffCodeEditor.ContextMenu = new ContextMenu();
 			_rightDiffCodeEditor.ContextMenu = new ContextMenu();
-			_leftDiffCodeEditor.ContextMenuClosing += delegate
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(_leftDiffCodeEditor,delegate
 			{
 				_leftDiffCodeEditor.ContextMenu.Items.Clear();
-			};
-			_rightDiffCodeEditor.ContextMenuClosing += delegate
+			});
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(_rightDiffCodeEditor,delegate
 			{
 				_rightDiffCodeEditor.ContextMenu.Items.Clear();
-			};
+			});
 			base.ColumnDefinitions.Add(new ColumnDefinition());
 			base.ColumnDefinitions.Add(new ColumnDefinition());
 			base.Children.Add(_leftDiffCodeEditor);

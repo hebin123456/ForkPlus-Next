@@ -87,7 +87,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void Calendar_GotMouseCapture(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
-			global::Avalonia.Input.InputElement uIElement = e.OriginalSource as global::Avalonia.Input.InputElement;
+			global::Avalonia.Input.InputElement uIElement = e.Source as global::Avalonia.Input.InputElement;
 			if (uIElement is CalendarDayButton || uIElement is CalendarItem)
 			{
 				uIElement.ReleaseMouseCapture();

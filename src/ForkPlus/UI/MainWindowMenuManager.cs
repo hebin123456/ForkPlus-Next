@@ -288,7 +288,7 @@ namespace ForkPlus.UI
 					commands.SwitchApplicationTheme.Execute(themeCopy);
 				});
 				item.IsChecked = !useCustom && currentTheme == theme;
-				item.IsCheckable = true;
+				item.ToggleType= global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 				themeParent.Items.Add(item);
 			}
 			// "Solid Colors"三级菜单：纯色主题按 SolidColorThemes 顺序（彩虹色）排列
@@ -305,7 +305,7 @@ namespace ForkPlus.UI
 					commands.SwitchApplicationTheme.Execute(solidCopy);
 				});
 				subItem.IsChecked = !useCustom && currentTheme == solidTheme;
-				subItem.IsCheckable = true;
+				subItem.ToggleType= global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 				solidColorsParent.Items.Add(subItem);
 			}
 			themeParent.Items.Add(solidColorsParent);

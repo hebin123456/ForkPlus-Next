@@ -114,7 +114,7 @@ namespace ForkPlus.UI.Controls
 
 		public GraphCellView()
 		{
-			base.SnapsToDevicePixels = true;
+			base.UseLayoutRounding= true;
 			if (ShowGraphToolTip)
 			{
 				_showPopupTimer.Interval = TimeSpan.FromMilliseconds(600.0);
@@ -289,7 +289,7 @@ namespace ForkPlus.UI.Controls
 				return;
 			}
 			Pen pen2 = (IsMouseOver ? _mouseOverPen : pen);
-			drawingContext.DrawEllipse(Theme.RevisionList.ItemBackgroundBrush, pen2, center, _commitMergePointRadius, _commitMergePointRadius);
+			drawingContext.DrawEllipse(global::ForkPlus.UI.Theme.RevisionList.ItemBackgroundBrush, pen2, center, _commitMergePointRadius, _commitMergePointRadius);
 			StreamGeometry streamGeometry = new StreamGeometry();
 			using (StreamGeometryContext streamGeometryContext = streamGeometry.Open())
 			{
@@ -327,7 +327,7 @@ namespace ForkPlus.UI.Controls
 
 		private void ClosePopup(bool hardClose = false)
 		{
-			if (_popup != null && _popup.IsOpen && (!_popup.IsMouseOver || hardClose))
+			if (_popup != null && _popup.IsOpen && (!_popup.IsPointerOver|| hardClose))
 			{
 				_popup.IsOpen = false;
 				VisualTreeAttachmentHelper.TrySetPopupChild(_popup, null, GetType().Name + ".Popup");
@@ -340,9 +340,9 @@ namespace ForkPlus.UI.Controls
 			Popup popup = new Popup();
 			popup.HorizontalOffset = horizontalOffset;
 			popup.VerticalOffset = -50.0;
-			popup.StaysOpen = true;
-			popup.AllowsTransparency = true;
-			popup.PopupAnimation = PopupAnimation.Fade;
+			popup.IsLightDismissEnabled= (!true);
+			/* TODO 迁移: AllowsTransparency 已删除 */;
+			/* TODO 迁移: PopupAnimation 已删除 */;
 			popup.PlacementTarget = this;
 			RevisionGraphTooltipUserControl revisionGraphTooltipUserControl = new RevisionGraphTooltipUserControl(repositoryUserControl, sha);
 			revisionGraphTooltipUserControl.HeightChanged += delegate(object s, EventArgs<double> e)

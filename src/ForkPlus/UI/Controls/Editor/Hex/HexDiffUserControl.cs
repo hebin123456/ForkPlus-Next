@@ -119,8 +119,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				VerticalAlignment = VerticalAlignment.Center,
 				Margin = new Thickness(0, 0, 8, 0)
 			};
-			_showAsciiCheckBox.Checked += ShowAsciiCheckBox_Changed;
-			_showAsciiCheckBox.Unchecked += ShowAsciiCheckBox_Changed;
+			_showAsciiCheckBox.IsCheckedChanged+=ShowAsciiCheckBox_Changed;
 			DockPanel.SetDock(_showAsciiCheckBox, Dock.Left);
 			toolbar.Children.Add(_showAsciiCheckBox);
 
@@ -131,8 +130,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			VerticalAlignment = VerticalAlignment.Center,
 			Margin = new Thickness(0, 0, 8, 0)
 		};
-		_showOffsetCheckBox.Checked += ShowOffsetCheckBox_Changed;
-		_showOffsetCheckBox.Unchecked += ShowOffsetCheckBox_Changed;
+		_showOffsetCheckBox.IsCheckedChanged+=ShowOffsetCheckBox_Changed;
 		DockPanel.SetDock(_showOffsetCheckBox, Dock.Left);
 		toolbar.Children.Add(_showOffsetCheckBox);
 

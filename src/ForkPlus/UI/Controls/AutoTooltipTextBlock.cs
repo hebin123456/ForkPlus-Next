@@ -26,16 +26,16 @@ namespace ForkPlus.UI.Controls
 		public AutoTooltipTextBlock()
 		{
 			base.TextTrimming = TextTrimming.CharacterEllipsis;
-			base.ToolTip = "";
+			global::Avalonia.Controls.ToolTip.SetTip(base,"");
 			base.ToolTipOpening += delegate(object s, ToolTipEventArgs e)
 			{
 				if (CustomToolTip != null)
 				{
-					base.ToolTip = CustomToolTip;
+					global::Avalonia.Controls.ToolTip.SetTip(base,CustomToolTip);
 				}
 				else if (TextIsTrimmed())
 				{
-					base.ToolTip = base.Text;
+					global::Avalonia.Controls.ToolTip.SetTip(base,base.Text);
 				}
 				else
 				{
@@ -47,7 +47,7 @@ namespace ForkPlus.UI.Controls
 		private bool TextIsTrimmed()
 		{
 			Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-			return base.ActualWidth < base.DesiredSize.Width;
+			return base.Bounds.Width < base.DesiredSize.Width;
 		}
 	}
 }

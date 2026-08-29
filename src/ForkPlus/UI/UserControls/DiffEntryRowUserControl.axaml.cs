@@ -102,7 +102,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			if ((e.OriginalSource as global::Avalonia.AvaloniaObject)?.GetParent<Border>() == DiffContentHost)
+			if ((e.Source as global::Avalonia.AvaloniaObject)?.GetParent<Border>() == DiffContentHost)
 			{
 				return;
 			}

@@ -36,7 +36,7 @@ namespace ForkPlus.UI.Controls.Editor
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_templatePartSearchPanel = GetTemplateChild("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
+			_templatePartSearchPanel = this.GetTemplateChild("PART_SearchPanelUserControl") as CodeEditorSearchPanelUserControl;
 			_templatePartSearchPanel?.Attach(base.TextArea);
 		}
 

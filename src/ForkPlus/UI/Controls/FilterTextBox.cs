@@ -111,13 +111,13 @@ namespace ForkPlus.UI.Controls
 
 		public FilterTextBox()
 		{
-			base.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			base.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Down)
 				{
 					_dropdownButton.IsChecked = true;
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Escape && !string.IsNullOrEmpty(base.Text))
@@ -139,18 +139,18 @@ namespace ForkPlus.UI.Controls
 			{
 				base.Placeholder = PreferencesLocalization.Translate("Filter", ForkPlusSettings.Default.UiLanguage);
 			}
-			_iconImage = GetTemplateChild("PART_Icon") as Image;
-			_dropdownButton = GetTemplateChild("PART_DropDownButton") as DropDownButton;
+			_iconImage = this.GetTemplateChild("PART_Icon") as Image;
+			_dropdownButton = this.GetTemplateChild("PART_DropDownButton") as DropDownButton;
 			_dropdownButton.ContextMenu.Opened += delegate(object s, RoutedEventArgs e)
 			{
 				this.DropdownContextMenuOpened?.Invoke(s, e);
 			};
-			_clearButton = GetTemplateChild("PART_ClearButton") as Button;
+			_clearButton = this.GetTemplateChild("PART_ClearButton") as Button;
 			if (_clearButton != null)
 			{
 				_clearButton.Click += ClearButton_Click;
 			}
-			_translateTransform = GetTemplateChild("PART_TranslateTransform") as TranslateTransform;
+			_translateTransform = this.GetTemplateChild("PART_TranslateTransform") as TranslateTransform;
 			if (AnimationPlaceholder != null && _translateTransform != null && !IsAnimationPlaceholderVisible)
 			{
 				_translateTransform.Y = 0.0 - FilterTextBoxAnimationHeight;
@@ -159,8 +159,8 @@ namespace ForkPlus.UI.Controls
 			}
 			if (UseSecondaryTextBoxBackground)
 			{
-				base.Background = Theme.FilterPanelSecondaryBackground;
-				base.BorderBrush = Theme.FilterPanelSecondaryBorder;
+				base.Background = global::ForkPlus.UI.Theme.FilterPanelSecondaryBackground;
+				base.BorderBrush = global::ForkPlus.UI.Theme.FilterPanelSecondaryBorder;
 			}
 			if (ShowDropdown)
 			{
@@ -222,7 +222,7 @@ namespace ForkPlus.UI.Controls
 		private void UpdateOpacity(double from, double to, TimeSpan duration)
 		{
 			DoubleAnimation animation = new DoubleAnimation(from, to, duration);
-			BeginAnimation(global::Avalonia.Input.InputElement.OpacityProperty, animation);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(this,global::Avalonia.Input.InputElement.OpacityProperty,animation);
 		}
 	}
 }

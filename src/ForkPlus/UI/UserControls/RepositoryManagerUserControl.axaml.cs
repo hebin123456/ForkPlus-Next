@@ -89,25 +89,25 @@ namespace ForkPlus.UI.UserControls
 			{
 				SaveTreeViewColumnWidth();
 			};
-			RepositoriesTreeView.CommandBindings.Add(Commands.OpenRepository.CreateShortcutCommandBinding(delegate
+			RepositoriesTreeView.AddCommandBinding(Commands.OpenRepository.CreateShortcutCommandBinding(delegate
 			{
 				Commands.OpenRepository.Execute(SelectedRepository?.Repository);
 			}));
-			RepositoriesTreeView.CommandBindings.Add(Commands.RenameRepository.CreateShortcutCommandBinding(delegate
+			RepositoriesTreeView.AddCommandBinding(Commands.RenameRepository.CreateShortcutCommandBinding(delegate
 			{
 				if (SelectedItems.Length == 1 && SelectedItems[0] is RepositoryManagerRepositoryItem itemToRename)
 				{
 					Commands.RenameRepository.Execute(itemToRename);
 				}
 			}));
-			RepositoriesTreeView.CommandBindings.Add(Commands.RemoveRepository.CreateShortcutCommandBinding(delegate
+			RepositoriesTreeView.AddCommandBinding(Commands.RemoveRepository.CreateShortcutCommandBinding(delegate
 			{
 				if (SelectedItems.Length != 0 && SameType(SelectedItems) && SameParent(SelectedItems))
 				{
 					Commands.RemoveRepository.Execute(this, SelectedItems);
 				}
 			}));
-			RepositoriesTreeView.ContextMenuOpening += RepositoriesListBox_ContextMenuOpening;
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(RepositoriesTreeView,RepositoriesListBox_ContextMenuOpening);
 			WeakEventManager<NotificationCenter, EventArgs<string>>.AddHandler(NotificationCenter.Current, "RepositoryNameChanged", RepositoryNameChanged);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryManager.Repository>>.AddHandler(NotificationCenter.Current, "RepositoryColorChanged", RepositoryColorChanged);
 			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "RepositoryManagerRepositoriesUpdated", RepositoriesChanged);
@@ -196,7 +196,7 @@ namespace ForkPlus.UI.UserControls
 					bool isInvalid = !IsRepositoryManagerPathValid(repository.Path);
 					base.Dispatcher.Post(delegate
 					{
-						repositoryItem.RepositoryIcon = (isInvalid ? Theme.RepositoryWarningIcon : Theme.RepositoryIcon);
+						repositoryItem.RepositoryIcon = (isInvalid ? global::ForkPlus.UI.Theme.RepositoryWarningIcon : global::ForkPlus.UI.Theme.RepositoryIcon);
 					});
 				}, JobFlags.Hidden);
 			}
@@ -263,7 +263,7 @@ namespace ForkPlus.UI.UserControls
 					bool isInvalid = !IsRepositoryManagerPathValid(repository.Path);
 					base.Dispatcher.Post(delegate
 					{
-						newItem.RepositoryIcon = (isInvalid ? Theme.RepositoryWarningIcon : Theme.RepositoryIcon);
+						newItem.RepositoryIcon = (isInvalid ? global::ForkPlus.UI.Theme.RepositoryWarningIcon : global::ForkPlus.UI.Theme.RepositoryIcon);
 					});
 				}, JobFlags.Hidden);
 			}
@@ -280,7 +280,7 @@ namespace ForkPlus.UI.UserControls
 		protected void OnDrop(DragEventArgs e)
 		{
 			e.Handled = true;
-			if (e.Data.GetData(DataFormats.FileDrop) is string[] source)
+			if (e.WpfData().GetData(DataFormats.FileDrop) is string[] source)
 			{
 				string[] paths = source.CompactMap((string path) => (GitMmUserControl.IsGitMmWorkspace(path) || new ValidateRepositoryPathGitCommand().Execute(path) == RepositoryValidState.ValidRepository) ? path : null);
 				RepositoryManager.Instance.AddRepositories(paths);
@@ -332,7 +332,7 @@ namespace ForkPlus.UI.UserControls
 			if (array.ContainsItem((RepositoryManagerTreeViewItem x) => x is RepositoryManagerSectionItem repositoryManagerSectionItem && repositoryManagerSectionItem == _recent))
 			{
 				e.Handled = true;
-				RepositoriesTreeView.ContextMenu.IsOpen = false;
+				RepositoriesTreeView.ContextMenu.Close();
 			}
 			else
 			{
@@ -509,11 +509,10 @@ namespace ForkPlus.UI.UserControls
 
 		private static Control CreateRepositoryColorsMenuItem(RepositoryManager.Repository repository)
 		{
-			return new MenuItem
+			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new MenuItem
 			{
-				Header = new RepositoryColorsUserControl(repository),
-				Style = Theme.CustomContentMenuItemStyle
-			};
+				Header = new RepositoryColorsUserControl(repository)			},global::ForkPlus.UI.Theme.CustomContentMenuItemStyle
+);
 		}
 
 		private static bool SameType(RepositoryManagerTreeViewItem[] items)

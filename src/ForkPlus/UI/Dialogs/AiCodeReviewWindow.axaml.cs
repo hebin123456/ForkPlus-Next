@@ -169,9 +169,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			RetryButton.Content = PreferencesLocalization.Current("Retry");
-			RetryButton.ToolTip = PreferencesLocalization.Current("Retry AI Review");
+			global::Avalonia.Controls.ToolTip.SetTip(RetryButton,PreferencesLocalization.Current("Retry AI Review"));
 			StopButton.Content = PreferencesLocalization.Current("Stop");
-			StopButton.ToolTip = PreferencesLocalization.Current("Stop the current AI task and abort its request");
+			global::Avalonia.Controls.ToolTip.SetTip(StopButton,PreferencesLocalization.Current("Stop the current AI task and abort its request"));
 			ApplyTargetTitleLocalization();
 			RevisionDetails.ApplyLocalization();
 			if (FileReviewDiffControl is ILocalizableControl localizableDiffControl)
@@ -318,7 +318,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void FileReviewGrid_SizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			double maxFileTreeWidth = Math.Max(160, FileReviewGrid.ActualWidth - 205);
+			double maxFileTreeWidth = Math.Max(160, FileReviewGrid.Bounds.Width - 205);
 			FileReviewGrid.ColumnDefinitions[0].MaxWidth = maxFileTreeWidth;
 		}
 
@@ -463,8 +463,8 @@ namespace ForkPlus.UI.Dialogs
 						}
 						AiStreamingView.StopStreaming();
 						AiStreamingView.HideBusy();
-						StatusProgressBar.Visibility = Visibility.Collapsed;
-						StopButton.Visibility = Visibility.Collapsed;
+						StatusProgressBar.IsVisible= false;
+						StopButton.IsVisible= false;
 						StatusTextBlock.Text = "";
 						RetryButton.IsEnabled = true;
 						AiStreamingView.ShowFallback(
@@ -1079,9 +1079,9 @@ namespace ForkPlus.UI.Dialogs
 					return;
 				}
 				StatusTextBlock.Text = message ?? "";
-				StatusProgressBar.Visibility = Visibility.Visible;
+				StatusProgressBar.IsVisible= true;
 				AiStreamingView.ShowBusy();
-				StopButton.Visibility = Visibility.Visible;
+				StopButton.IsVisible= true;
 			});
 		}
 
@@ -1096,9 +1096,9 @@ namespace ForkPlus.UI.Dialogs
 					return;
 				}
 				StatusTextBlock.Text = "";
-				StatusProgressBar.Visibility = Visibility.Collapsed;
+				StatusProgressBar.IsVisible= false;
 				AiStreamingView.HideBusy();
-				StopButton.Visibility = Visibility.Collapsed;
+				StopButton.IsVisible= false;
 			});
 		}
 
@@ -1131,7 +1131,7 @@ namespace ForkPlus.UI.Dialogs
 					return;
 				}
 				StatusTextBlock.Text = PreferencesLocalization.FormatCurrent("Generating... ({0} chars)", lengthSoFar);
-				StatusProgressBar.Visibility = Visibility.Visible;
+				StatusProgressBar.IsVisible= true;
 			});
 		}
 

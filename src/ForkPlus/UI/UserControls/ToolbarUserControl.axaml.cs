@@ -32,9 +32,9 @@ namespace ForkPlus.UI.UserControls
 		public ToolbarUserControl()
 		{
 			InitializeComponent();
-			FetchToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("Fetch") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Fetch");
-			PullToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("Pull") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Pull");
-			PushToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("Push") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Push");
+			global::Avalonia.Controls.ToolTip.SetTip(FetchToolbarButton,Preferences.PreferencesLocalization.Current("Fetch") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Fetch"));
+			global::Avalonia.Controls.ToolTip.SetTip(PullToolbarButton,Preferences.PreferencesLocalization.Current("Pull") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Pull"));
+			global::Avalonia.Controls.ToolTip.SetTip(PushToolbarButton,Preferences.PreferencesLocalization.Current("Push") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Push"));
 			WeakEventManager<NotificationCenter, EventArgs<ClosableTabItem>>.AddHandler(NotificationCenter.Current, "ActiveTabChanged", ActiveTabChanged);
 		WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ShellChanged", ShellChanged);
 		// 主题切换或自定义颜色变化时重建外观菜单，同步各 MenuItem 的 IsChecked 状态。
@@ -169,7 +169,7 @@ namespace ForkPlus.UI.UserControls
 				if (KeyboardHelper.IsCtrlDown)
 				{
 					MainWindow.Commands.SwitchApplicationTheme.Execute();
-					AppearanceToolbarDropdownButton.ContextMenu.IsOpen = false;
+					AppearanceToolbarDropdownButton.ContextMenu.Close();
 				}
 				else
 				{
@@ -181,7 +181,7 @@ namespace ForkPlus.UI.UserControls
 			if (KeyboardHelper.IsCtrlDown)
 			{
 				MainWindow.Commands.SwitchWorkspace.Execute();
-				WorkspacesToolbarDropdownButton.ContextMenu.IsOpen = false;
+				WorkspacesToolbarDropdownButton.ContextMenu.Close();
 			}
 			else
 			{
@@ -236,9 +236,9 @@ namespace ForkPlus.UI.UserControls
 			OpenInDropDownButton.Title = Preferences.PreferencesLocalization.Translate("Open in", language);
 			OpenInConsoleToolbarButton.Title = Preferences.PreferencesLocalization.Translate("Console", language);
 			AiDevelopmentToolbarButton.Title = Preferences.PreferencesLocalization.Translate("AI-Assisted Development", language);
-			FetchToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language);
-			PullToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Pull", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Pull", language);
-			PushToolbarButton.ToolTip = Preferences.PreferencesLocalization.Translate("Push", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Push", language);
+			global::Avalonia.Controls.ToolTip.SetTip(FetchToolbarButton,Preferences.PreferencesLocalization.Translate("Fetch", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Fetch", language));
+			global::Avalonia.Controls.ToolTip.SetTip(PullToolbarButton,Preferences.PreferencesLocalization.Translate("Pull", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Pull", language));
+			global::Avalonia.Controls.ToolTip.SetTip(PushToolbarButton,Preferences.PreferencesLocalization.Translate("Push", language) + Environment.NewLine + Preferences.PreferencesLocalization.Translate("Hold Ctrl for Quick Push", language));
 			RefreshWorkspacesButton();
 			StatusUserControl.ApplyLocalization();
 		}
@@ -276,7 +276,7 @@ namespace ForkPlus.UI.UserControls
 		private void RefreshBadgePosition(global::Avalonia.Controls.Control badge, global::Avalonia.Controls.Control button)
 		{
 			Point point = button.TranslatePoint(new Point(0.0, 0.0), BadgesCanvas);
-			Canvas.SetLeft(badge, point.X + button.ActualWidth - 10.0);
+			Canvas.SetLeft(badge, point.X + button.Bounds.Width - 10.0);
 			Canvas.SetTop(badge, point.Y - 2.0);
 		}
 
@@ -380,13 +380,13 @@ namespace ForkPlus.UI.UserControls
 		ReflogToolbarButton.IsEnabled = repo != null;
 		string undoLabel = Preferences.PreferencesLocalization.Current("Undo");
 		string redoLabel = Preferences.PreferencesLocalization.Current("Redo");
-		UndoToolbarButton.ToolTip = canUndo
+		global::Avalonia.Controls.ToolTip.SetTip(UndoToolbarButton,canUndo
 			? undoLabel + ": " + repo.UndoRedoStack.LastUndoOperationName
-			: undoLabel;
-		RedoToolbarButton.ToolTip = canRedo
+			: undoLabel);
+		global::Avalonia.Controls.ToolTip.SetTip(RedoToolbarButton,canRedo
 			? redoLabel + ": " + repo.UndoRedoStack.LastRedoOperationName
-			: redoLabel;
-		ReflogToolbarButton.ToolTip = Preferences.PreferencesLocalization.Current("View Reflog...");
+			: redoLabel);
+		global::Avalonia.Controls.ToolTip.SetTip(ReflogToolbarButton,Preferences.PreferencesLocalization.Current("View Reflog..."));
 	}
 
 	/// <summary>v3.0.4：供设置变更后调用，刷新 Undo/Redo 按钮可见性。</summary>
@@ -454,7 +454,7 @@ namespace ForkPlus.UI.UserControls
 			return;
 		}
 		ForkPlus.UI.Dialogs.ReflogWindow window = new ForkPlus.UI.Dialogs.ReflogWindow(repo);
-		window.Owner = _mainWindow;
+		window.SetOwnerCompat= _mainWindow;
 		window.Show();
 	}
 
@@ -552,7 +552,7 @@ namespace ForkPlus.UI.UserControls
 				MainWindow.Commands.SwitchApplicationTheme.Execute(themeCopy);
 			});
 			themeMenuItem.IsChecked = !useCustom && currentTheme == theme;
-			themeMenuItem.IsCheckable = true;
+			themeMenuItem.ToggleType= global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 			contextMenu.Items.Add(themeMenuItem);
 		}
 		// v3.1.1："纯色"二级菜单：父项作为子菜单容器（不设 IsCheckable，否则 WPF 会把 Click 当作
@@ -572,7 +572,7 @@ namespace ForkPlus.UI.UserControls
 				MainWindow.Commands.SwitchApplicationTheme.Execute(solidCopy);
 			});
 			subItem.IsChecked = !useCustom && currentTheme == solidTheme;
-			subItem.IsCheckable = true;
+			subItem.ToggleType= global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 			solidColorsParent.Items.Add(subItem);
 		}
 		contextMenu.Items.Add(solidColorsParent);
@@ -811,7 +811,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			global::Avalonia.Media.IImage consoleIcon = Theme.ConsoleIcon;
+			global::Avalonia.Media.IImage consoleIcon = global::ForkPlus.UI.Theme.ConsoleIcon;
 			if (!(ForkPlusSettings.Default.ShellTool is ShellTool.Default))
 			{
 				contextMenu.Items.Add(MainWindow.Commands.OpenRepositoryInDefaultShellTool.CreateMenuItem(new Image
@@ -831,7 +831,7 @@ namespace ForkPlus.UI.UserControls
 			}));
 			Image icon = new Image
 			{
-				Source = Theme.OpenInIcon
+				Source = global::ForkPlus.UI.Theme.OpenInIcon
 			};
 			contextMenu.Items.Add(MainWindow.Commands.OpenRepositoryInFileExplorer.CreateMenuItem(icon, delegate
 			{

@@ -16,8 +16,8 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Upload git mm changes for review");
 			base.SubmitButtonTitle = Translate("Upload");
 			WorkspacePathTextBlock.Text = workspacePath ?? "";
-			WorkspacePathTextBlock.ToolTip = WorkspacePathTextBlock.Text;
-			ForceUploadWarningImage.ToolTip = Translate("Force upload even if git mm reports safety checks.");
+			global::Avalonia.Controls.ToolTip.SetTip(WorkspacePathTextBlock,WorkspacePathTextBlock.Text);
+			global::Avalonia.Controls.ToolTip.SetTip(ForceUploadWarningImage,Translate("Force upload even if git mm reports safety checks."));
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			RestoreDialogOptions();
 			InitializeCommandPreviewHandlers();
@@ -25,7 +25,7 @@ namespace ForkPlus.UI.Dialogs
 			RefreshCommandPreview();
 			base.Loaded += delegate
 			{
-				Dispatcher.Post(new System.Action(RefreshCommandPreview), System.Windows.Threading.DispatcherPriority.Loaded);
+				Dispatcher.Post(new System.Action(RefreshCommandPreview), global::Avalonia.Threading.DispatcherPriority.Loaded);
 			};
 		}
 
@@ -120,8 +120,7 @@ namespace ForkPlus.UI.Dialogs
 				NoUpdateManifestCheckBox
 			})
 			{
-				checkBox.Checked += delegate { RefreshCommandPreview(); };
-				checkBox.Unchecked += delegate { RefreshCommandPreview(); };
+				checkBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
 			}
 		}
 
@@ -132,7 +131,7 @@ namespace ForkPlus.UI.Dialogs
 				string cmd = GitMmCommandPreviewHelper.Format(CreateArgs());
 				CommandPreviewTextBlock.Text = cmd;
 				// 鼠标悬停显示完整命令文本（预览区可能因 MaxHeight 截断）
-				CommandPreviewTextBlock.ToolTip = cmd;
+				global::Avalonia.Controls.ToolTip.SetTip(CommandPreviewTextBlock,cmd);
 			}
 		}
 

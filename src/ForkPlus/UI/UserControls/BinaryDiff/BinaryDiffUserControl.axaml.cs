@@ -421,7 +421,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				SrcFileContentUserControl.Margin = new Thickness(10.0, 0.0, 10.0, 0.0);
 				string statusLabel = (showTitle ? "removed" : null);
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-				SrcFileContentUserControl.SetContent(srcContent, statusLabel, Theme.Diff.RemovedForegroundBrush);
+				SrcFileContentUserControl.SetContent(srcContent, statusLabel, global::ForkPlus.UI.Theme.Diff.RemovedForegroundBrush);
 				SrcFileContentUserControl.Show();
 				DstFileContentUserControl.Collapse();
 			}
@@ -432,7 +432,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				DstFileContentUserControl.Margin = new Thickness(10.0, 0.0, 10.0, 0.0);
 				string statusLabel2 = (showTitle ? "created" : null);
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-				DstFileContentUserControl.SetContent(dstContent, statusLabel2, Theme.Diff.AddedForegroundBrush, DiffImageSource);
+				DstFileContentUserControl.SetContent(dstContent, statusLabel2, global::ForkPlus.UI.Theme.Diff.AddedForegroundBrush, DiffImageSource);
 				DstFileContentUserControl.Show();
 				SrcFileContentUserControl.Collapse();
 			}
@@ -446,12 +446,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				Grid.SetColumnSpan(SrcFileContentUserControl, 1);
 				SrcFileContentUserControl.Margin = new Thickness(10.0, 0.0, 5.0, 0.0);
 				string statusLabel3 = (showTitle ? "old" : null);
-				SrcFileContentUserControl.SetContent(_srcBinaryContent, statusLabel3, Theme.Diff.RemovedForegroundBrush);
+				SrcFileContentUserControl.SetContent(_srcBinaryContent, statusLabel3, global::ForkPlus.UI.Theme.Diff.RemovedForegroundBrush);
 				Grid.SetColumn(DstFileContentUserControl, 1);
 				Grid.SetColumnSpan(DstFileContentUserControl, 1);
 				DstFileContentUserControl.Margin = new Thickness(5.0, 0.0, 10.0, 0.0);
 				string statusLabel4 = (showTitle ? "new" : null);
-				DstFileContentUserControl.SetContent(_dstBinaryContent, statusLabel4, Theme.Diff.AddedForegroundBrush, DiffImageSource);
+				DstFileContentUserControl.SetContent(_dstBinaryContent, statusLabel4, global::ForkPlus.UI.Theme.Diff.AddedForegroundBrush, DiffImageSource);
 				SrcFileContentUserControl.Show();
 				DstFileContentUserControl.Show();
 			}
@@ -679,7 +679,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			if (bitmapSource != null)
 			{
 				global::Avalonia.Media.Imaging.Bitmap bitmapSource2 = rhsImageData?.ImageSource;
-				if (bitmapSource2 != null && bitmapSource.PixelWidth == bitmapSource2.PixelWidth && bitmapSource.PixelHeight == bitmapSource2.PixelHeight)
+				if (bitmapSource2 != null && bitmapSource.PixelSize.Width == bitmapSource2.PixelSize.Width && bitmapSource.PixelSize.Height == bitmapSource2.PixelSize.Height)
 				{
 					if (bitmapSource.Format != PixelFormats.Bgra32)
 					{
@@ -690,14 +690,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 						bitmapSource2 = new FormatConvertedBitmap(bitmapSource2, PixelFormats.Bgra32, bitmapSource2.Palette, 0.0);
 					}
 					int num = bitmapSource.Format.BitsPerPixel / 8;
-					int num2 = bitmapSource.PixelWidth * num;
-					byte[] array = new byte[bitmapSource.PixelHeight * num2];
+					int num2 = bitmapSource.PixelSize.Width * num;
+					byte[] array = new byte[bitmapSource.PixelSize.Height * num2];
 					bitmapSource.CopyPixels(array, num2, 0);
-					byte[] array2 = new byte[bitmapSource2.PixelHeight * num2];
+					byte[] array2 = new byte[bitmapSource2.PixelSize.Height * num2];
 					bitmapSource2.CopyPixels(array2, num2, 0);
-					byte[] array3 = new byte[bitmapSource2.PixelHeight * num2];
-					int pixelWidth = bitmapSource.PixelWidth;
-					int pixelHeight = bitmapSource.PixelHeight;
+					byte[] array3 = new byte[bitmapSource2.PixelSize.Height * num2];
+					int pixelWidth = bitmapSource.PixelSize.Width;
+					int pixelHeight = bitmapSource.PixelSize.Height;
 					for (int i = 0; i < pixelHeight; i++)
 					{
 						for (int j = 0; j < pixelWidth; j++)

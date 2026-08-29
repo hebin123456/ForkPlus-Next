@@ -57,10 +57,10 @@ namespace ForkPlus.UI.Controls
 				base.Inlines.Add(new Run(stringValue));
 				return;
 			}
-			Brush matchForegroundBrush = Theme.FindBrush("ForegroundBrush");
-			Brush matchBackgroundBrush = Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
-			Brush codeSolidBackgroundBrush = Theme.FindBrush("RevisionList.Code.BackgroundBrush");
-			Brush codeTransparentBackgroundBrush = Theme.FindBrush("RevisionList.Code.Selected.BackgroundBrush");
+			Brush matchForegroundBrush = global::ForkPlus.UI.Theme.FindBrush("ForegroundBrush");
+			Brush matchBackgroundBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.SearchMatch.ForegroundBrush");
+			Brush codeSolidBackgroundBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.Code.BackgroundBrush");
+			Brush codeTransparentBackgroundBrush = global::ForkPlus.UI.Theme.FindBrush("RevisionList.Code.Selected.BackgroundBrush");
 			new Range(0, stringValue.Length).Merge(new List<Range>[3] { prefixHighlighting, codeHighlighting, searchMatchRanges }, delegate(Range range, int? prefixIndex, int? codeIndex, int? searchIndex)
 			{
 				Run run2 = new Run(stringValue.Substring(range));
@@ -85,7 +85,7 @@ namespace ForkPlus.UI.Controls
 			{
 				Run run = new Run(" ↩");
 				run.FontSize = 10.0;
-				run.Foreground = (IsParentSelected ? Theme.FindBrush("RevisionList.BodyIndicator.Selected.ForegroundBrush") : Theme.FindBrush("RevisionList.BodyIndicator.ForegroundBrush"));
+				run.Foreground = (IsParentSelected ? global::ForkPlus.UI.Theme.FindBrush("RevisionList.BodyIndicator.Selected.ForegroundBrush") : global::ForkPlus.UI.Theme.FindBrush("RevisionList.BodyIndicator.ForegroundBrush"));
 				base.Inlines.Add(run);
 			}
 		}

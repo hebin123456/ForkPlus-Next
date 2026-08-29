@@ -69,7 +69,7 @@ namespace ForkPlus.UI.UserControls
 				TranslateTransform.Y = 0.0 - SearchPanelHeight;
 				SearchPanelPlaceholder.Height = 0.0;
 			};
-			SearchTextBox.PreviewKeyDown += delegate(object s, KeyEventArgs e)
+			SearchTextBox.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Return || e.Key == Key.F3)
 				{
@@ -83,7 +83,7 @@ namespace ForkPlus.UI.UserControls
 					}
 					e.Handled = true;
 				}
-			};
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 		}
 
 		public void ShowSearchBar()

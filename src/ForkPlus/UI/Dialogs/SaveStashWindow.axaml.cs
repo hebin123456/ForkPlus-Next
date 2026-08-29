@@ -52,7 +52,7 @@ namespace ForkPlus.UI.Dialogs
 			StashMessageTextBox.Placeholder = Translate("Stash message (optional)");
 			StageNewFilesCheckBox.IsChecked = ForkPlusSettings.Default.SaveStash_StageNewFiles;
 			AiGenerateStashNameButton.RefreshVisibility();
-			AiGenerateStashNameButton.ToolTip = Translate("Use AI to generate a stash message");
+			global::Avalonia.Controls.ToolTip.SetTip(AiGenerateStashNameButton,Translate("Use AI to generate a stash message"));
 		}
 
 		/// <summary>AI 生成 stash message：读取工作区 diff，发送给 AI，流式写入 StashMessageTextBox。</summary>

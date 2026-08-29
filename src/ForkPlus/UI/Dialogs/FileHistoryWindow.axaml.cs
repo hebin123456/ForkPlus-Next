@@ -80,7 +80,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			FileIcon.Source = IconTools.GetImageSourceForExtension(Path.GetExtension(mode.Path));
 			FileNameTextBlock.FilePath = mode.Path;
-			FileNameTextBlock.ToolTip = mode.Path;
+			global::Avalonia.Controls.ToolTip.SetTip(FileNameTextBlock,mode.Path);
 			if (targetReference != null)
 			{
 				TargetReferenceGitPointView.Value = targetReference;

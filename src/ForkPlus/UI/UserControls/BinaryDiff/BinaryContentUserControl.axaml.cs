@@ -68,7 +68,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			TitleTextBlock.Text = string.IsNullOrEmpty(statusLabel) ? "" : PreferencesLocalization.Translate(statusLabel, ForkPlusSettings.Default.UiLanguage);
 			long valueOrDefault = (content?.Size).GetValueOrDefault();
 			DescriprionTextBlock.Text = FileHelper.GetReadableFileSize(valueOrDefault);
-			DescriprionTextBlock.ToolTip = FileHelper.GetReadableFileSizeInBytes(valueOrDefault);
+			global::Avalonia.Controls.ToolTip.SetTip(DescriprionTextBlock,FileHelper.GetReadableFileSizeInBytes(valueOrDefault));
 			ImageContainer.Collapse();
 			FileContainer.Collapse();
 			FileIcon.Collapse();
@@ -225,7 +225,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			if (isTracked && fileSize > 500000)
 			{
 				NotLfsLabel.Show();
-				NotLfsLabel.ToolTip = string.Format(PreferencesLocalization.Translate("File is {0} and is not managed by LFS", ForkPlusSettings.Default.UiLanguage), FileHelper.GetReadableFileSize(fileSize));
+				global::Avalonia.Controls.ToolTip.SetTip(NotLfsLabel,string.Format(PreferencesLocalization.Translate("File is {0} and is not managed by LFS", ForkPlusSettings.Default.UiLanguage), FileHelper.GetReadableFileSize(fileSize)));
 			}
 			else
 			{
@@ -240,7 +240,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				return "";
 			}
 			string arg = FileSizeFormatter.Format(fileSize);
-			return $"W: {imageSource.PixelWidth}px | H: {imageSource.PixelHeight}px ({arg})";
+			return $"W: {imageSource.PixelSize.Width}px | H: {imageSource.PixelSize.Height}px ({arg})";
 		}
 
 	}

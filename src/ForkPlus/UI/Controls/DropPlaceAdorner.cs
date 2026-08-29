@@ -10,7 +10,7 @@ namespace ForkPlus.UI.Controls
 {
 	public class DropPlaceAdorner : Adorner
 	{
-		private static readonly Pen _pen = new Pen(Theme.AccentBrush, 2.0);
+		private static readonly Pen _pen = new Pen(global::ForkPlus.UI.Theme.AccentBrush, 2.0);
 
 		private readonly DropPosition _dropPosition;
 
@@ -37,15 +37,15 @@ namespace ForkPlus.UI.Controls
 			}
 			else if (_dropPosition == DropPosition.Over)
 			{
-				_listViewItem.Background = Theme.RevisionList.ItemSelectedInactiveBackgroundBrush;
+				_listViewItem.Background = global::ForkPlus.UI.Theme.RevisionList.ItemSelectedInactiveBackgroundBrush;
 			}
 		}
 
 		internal void ClearBackground()
 		{
-			if (_listViewItem.Background != Theme.RevisionList.ItemBackgroundBrush)
+			if (_listViewItem.Background != global::ForkPlus.UI.Theme.RevisionList.ItemBackgroundBrush)
 			{
-				_listViewItem.Background = Theme.RevisionList.ItemBackgroundBrush;
+				_listViewItem.Background = global::ForkPlus.UI.Theme.RevisionList.ItemBackgroundBrush;
 			}
 		}
 	}

@@ -9,10 +9,10 @@ namespace ForkPlus.Git
 	{
 		/// <summary>
 		/// 远程�?WPF ImageSource 图标�?		/// 数据绑定友好（XAML �?<see cref="Binding.Path"/>="Remote.Icon" 仍可工作）�?		/// </summary>
-		public global::Avalonia.Media.IImage Icon => Theme.FindImage(IconKey) ?? Theme.RemoteIcon;
+		public global::Avalonia.Media.IImage Icon => global::ForkPlus.UI.Theme.FindImage(IconKey) ?? global::ForkPlus.UI.Theme.RemoteIcon;
 
 		/// <summary>
 		/// 远程�?WPF Geometry 图标（用�?Path/Content 绑定）�?		/// </summary>
-		public Geometry IconGeometry => Theme.FindGeometry(IconGeometryKey) ?? Theme.RemoteGeometry;
+		public Geometry IconGeometry => global::ForkPlus.UI.Theme.FindGeometry(IconGeometryKey) ?? global::ForkPlus.UI.Theme.RemoteGeometry;
 	}
 }

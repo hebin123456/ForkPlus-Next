@@ -14,7 +14,7 @@ namespace ForkPlus.UI.CircularProgressBar
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return Binding.DoNothing;
+			return global::ForkPlus.UI.WpfCompat.WpfBinding.DoNothing;
 		}
 	}
 }

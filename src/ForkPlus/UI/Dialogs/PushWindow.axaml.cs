@@ -223,7 +223,7 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Push your local changes to remote repository");
 			base.SubmitButtonTitle = Translate("Push");
 			AllTagsCheckBox.IsChecked = ForkPlusSettings.Default.Push_PushAllTags;
-			ForcePushWarningImage.ToolTip = Translate("Overwrite the remote branch even if it's not an ancestor of the local branch.\n- Force push is required for rebase of already published branch.\n- Blindly using force push can be dangerous as you can overwrite other users' commits.\n- Fork always uses --force-with-lease which protects from race conditions.");
+			global::Avalonia.Controls.ToolTip.SetTip(ForcePushWarningImage,Translate("Overwrite the remote branch even if it's not an ancestor of the local branch.\n- Force push is required for rebase of already published branch.\n- Blindly using force push can be dangerous as you can overwrite other users' commits.\n- Fork always uses --force-with-lease which protects from race conditions."));
 			Refresh();
 		RefreshUnpushedCommits();
 		CheckSubmodules();
@@ -509,7 +509,7 @@ namespace ForkPlus.UI.Dialogs
 		if (remoteItem.ItemType == RemoteItemType.AddExistingRemote)
 		{
 			EditRemoteWindow editRemoteWindow = new EditRemoteWindow(_repositoryUserControl, gitModule);
-			editRemoteWindow.Owner = this;
+			editRemoteWindow.SetOwnerCompat= this;
 			if (editRemoteWindow.ShowDialog().GetValueOrDefault())
 			{
 				if (!editRemoteWindow.GitResult.Succeeded)
@@ -565,7 +565,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			string localBranchName = gitModule.Settings.PushLastCustomRefspec ?? localBranch.Name;
 			AddCustomRefspecWindow addCustomRefspecWindow = new AddCustomRefspecWindow(selectedRemote.Name, localBranchName);
-			addCustomRefspecWindow.Owner = this;
+			addCustomRefspecWindow.SetOwnerCompat= this;
 			if (addCustomRefspecWindow.ShowDialog().GetValueOrDefault())
 			{
 				_customRefspec = addCustomRefspecWindow.OutRefspec;

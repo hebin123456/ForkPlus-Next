@@ -99,7 +99,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		{
 			StreamGeometry streamGeometry = new StreamGeometry();
 			using StreamGeometryContext streamGeometryContext = streamGeometry.Open();
-			double num = base.RenderSize.Width - 3.0;
+			double num = base.Bounds.Size.Width - 3.0;
 			double num2 = 16.0;
 			streamGeometryContext.BeginFigure(origin, isFilled: true, isClosed: false);
 			streamGeometryContext.LineTo(Offset(origin, num - 5.0, 0.0), isStroked: true, isSmoothJoin: false);
@@ -133,10 +133,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 				}
 				if (_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out var value))
 				{
-					drawingContext.DrawText(CreateFormattedText(value.ToString(), brush), new Point(base.RenderSize.Width - HorizontalMargin, visualLine.VisualTop - base.TextView.VerticalOffset + 1.0));
+					drawingContext.DrawText(CreateFormattedText(value.ToString(), brush), new Point(base.Bounds.Size.Width - HorizontalMargin, visualLine.VisualTop - base.TextView.VerticalOffset + 1.0));
 				}
 			}
-			drawingContext.DrawLine(_separatorPen, new Point(base.RenderSize.Width - 2.0, 0.0), new Point(base.RenderSize.Width - 2.0, base.RenderSize.Height));
+			drawingContext.DrawLine(_separatorPen, new Point(base.Bounds.Size.Width - 2.0, 0.0), new Point(base.Bounds.Size.Width - 2.0, base.Bounds.Size.Height));
 		}
 
 		protected override void OnPointerExited(global::Avalonia.Input.PointerEventArgs e)

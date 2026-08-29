@@ -82,7 +82,7 @@ namespace ForkPlus.UI.Controls
 			if (ParentTreeView.AllowDragDrop && Mouse.LeftButton == MouseButtonState.Pressed)
 			{
 				_startPoint = e.GetPosition(null);
-				CaptureMouse();
+				this.CaptureMouse();
 			}
 		}
 
@@ -115,14 +115,14 @@ namespace ForkPlus.UI.Controls
 		{
 			if (base.IsVisible && _adorner != null)
 			{
-				Point position = PointFromScreen(MouseHelper.GetMousePosition());
+				Point position = this.PointFromScreen(MouseHelper.GetMousePosition());
 				_adorner.UpdatePosition(position);
 			}
 		}
 
 		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
-			ReleaseMouseCapture();
+			this.ReleaseMouseCapture();
 			if (_wasSelected)
 			{
 				base.OnPointerPressed(e);

@@ -20,8 +20,8 @@ namespace ForkPlus.UI.Controls.Editor
 		protected override void OnPointerWheelChanged(global::Avalonia.Input.PointerWheelEventArgs e)
 		{
 			e.Handled = true;
-			global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-			mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.MouseWheelEvent;
+			global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.Pointer, e.Timestamp, e.Delta);
+			mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.PointerWheelChangedEvent;
 			mouseWheelEventArgs.Source = this;
 			if (_weakEditor.TryGetTarget(out var target))
 			{

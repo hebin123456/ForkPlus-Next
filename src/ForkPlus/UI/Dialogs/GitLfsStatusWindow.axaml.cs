@@ -188,12 +188,12 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (dictionary.TryGetValue(list[i].Path, out var value))
 				{
-					list[i].Owner = value;
+					list[i].SetOwnerCompat= value;
 					dictionary2.Remove(list[i].Path);
 				}
 				else
 				{
-					list[i].Owner = null;
+					list[i].SetOwnerCompat= null;
 				}
 			}
 			foreach (KeyValuePair<string, string> item in dictionary2)

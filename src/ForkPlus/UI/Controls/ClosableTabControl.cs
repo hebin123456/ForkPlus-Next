@@ -80,7 +80,7 @@ namespace ForkPlus.UI.Controls
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			if (GetTemplateChild("PART_Add") is Button button)
+			if (this.GetTemplateChild("PART_Add") is Button button)
 			{
 				button.Click += AddButton_Clicked;
 			}

@@ -16,11 +16,11 @@ namespace ForkPlus.UI.UserControls
 				switch ((PullRequestState)value)
 				{
 				case PullRequestState.Open:
-					return Theme.ApplicationColors.GreenBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GreenBrush;
 				case PullRequestState.Closed:
-					return Theme.ApplicationColors.GrayBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.GrayBrush;
 				case PullRequestState.Merged:
-					return Theme.ApplicationColors.RedBrush;
+					return global::ForkPlus.UI.Theme.ApplicationColors.RedBrush;
 				}
 			}
 			return null;

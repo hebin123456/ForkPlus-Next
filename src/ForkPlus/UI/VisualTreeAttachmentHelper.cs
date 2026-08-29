@@ -124,7 +124,7 @@ namespace ForkPlus.UI
 			}
 			if (child is Visual || child is Visual3D)
 			{
-				return global::Avalonia.VisualTreeExtensions.GetVisualParent(child);
+				return global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(child);
 			}
 			return null;
 		}

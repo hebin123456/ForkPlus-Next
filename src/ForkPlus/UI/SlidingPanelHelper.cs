@@ -23,13 +23,13 @@ namespace ForkPlus.UI
 			{
 				EasingMode = EasingMode.EaseOut
 			};
-			transform.BeginAnimation(TranslateTransform.YProperty, doubleAnimation);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(transform,TranslateTransform.YProperty,doubleAnimation);
 			DoubleAnimation doubleAnimation2 = new DoubleAnimation(0.0, height, AnimationDuration);
 			doubleAnimation2.EasingFunction = new QuadraticEase
 			{
 				EasingMode = EasingMode.EaseOut
 			};
-			placeholder.BeginAnimation(global::Avalonia.Controls.Control.HeightProperty, doubleAnimation2);
+			global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(placeholder,global::Avalonia.Controls.Control.HeightProperty,doubleAnimation2);
 			return true;
 		}
 
@@ -42,13 +42,13 @@ namespace ForkPlus.UI
 				{
 					EasingMode = EasingMode.EaseOut
 				};
-				transform.BeginAnimation(TranslateTransform.YProperty, doubleAnimation);
+				global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(transform,TranslateTransform.YProperty,doubleAnimation);
 				DoubleAnimation doubleAnimation2 = new DoubleAnimation(height, 0.0, AnimationDuration);
 				doubleAnimation2.EasingFunction = new QuadraticEase
 				{
 					EasingMode = EasingMode.EaseOut
 				};
-				placeholder.BeginAnimation(global::Avalonia.Controls.Control.HeightProperty, doubleAnimation2);
+				global::ForkPlus.UI.WpfCompat.WpfAnimation.BeginAnimation(placeholder,global::Avalonia.Controls.Control.HeightProperty,doubleAnimation2);
 			}
 		}
 	}

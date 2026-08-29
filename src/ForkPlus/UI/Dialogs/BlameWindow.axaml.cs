@@ -128,8 +128,8 @@ namespace ForkPlus.UI.Dialogs
 			base.ResizeMode = ResizeMode.CanResizeWithGrip;
 			InitializeComponent();
 			BlameTitleTextBlock.Text = Translate("Blame");
-			UndoButton.ToolTip = Translate("Go Back");
-			RedoButton.ToolTip = Translate("Go Forward");
+			global::Avalonia.Controls.ToolTip.SetTip(UndoButton,Translate("Go Back"));
+			global::Avalonia.Controls.ToolTip.SetTip(RedoButton,Translate("Go Forward"));
 			TextDiffControl.FontSize = 14.0;
 			TextDiffControl.ScrollOffsetChanged += SplitTextDiffControl_ScrollOffsetChanged;
 			TextDiffControl.HorizontalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Visible;
@@ -141,7 +141,7 @@ namespace ForkPlus.UI.Dialogs
 			TextDiffControl.Hide();
 			FileIcon.Source = IconTools.GetImageSourceForExtension(Path.GetExtension(filePath));
 			FileNameTextBlock.FilePath = filePath;
-			FileNameTextBlock.ToolTip = filePath;
+			global::Avalonia.Controls.ToolTip.SetTip(FileNameTextBlock,filePath);
 			RefreshUndoControls();
 			Initialize(filePath, shaToSelect, targetReference);
 			base.SizeChanged += BlameWindow_SizeChanged;
@@ -247,7 +247,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			BusyIndicator.Show();
 			FileNameTextBlock.FilePath = args.Filepath;
-			FileNameTextBlock.ToolTip = args.Filepath;
+			global::Avalonia.Controls.ToolTip.SetTip(FileNameTextBlock,args.Filepath);
 			int tabWidth = gitModule.Settings.TabWidth;
 			new Task(delegate
 			{
@@ -475,7 +475,7 @@ namespace ForkPlus.UI.Dialogs
 		private void RevisionsListBoxItem_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
 			e.Handled = true;
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: BlameItemViewModel dataContext })
+			if (ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: BlameItemViewModel dataContext })
 			{
 				GitModule gitModule = _repositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -487,7 +487,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void BlameListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: var dataContext }))
+			if (!(ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: var dataContext }))
 			{
 				return;
 			}
@@ -620,7 +620,7 @@ namespace ForkPlus.UI.Dialogs
 		private void ShowGoToLineWindow()
 		{
 			GoToLineWindow goToLineWindow = new GoToLineWindow();
-			goToLineWindow.Owner = this;
+			goToLineWindow.SetOwnerCompat= this;
 			if (goToLineWindow.ShowDialog().GetValueOrDefault() && goToLineWindow.LineNumber.HasValue)
 			{
 				TextDiffControl.ScrollToLine(goToLineWindow.LineNumber.Value);

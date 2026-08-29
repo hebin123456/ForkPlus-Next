@@ -55,7 +55,7 @@ namespace ForkPlus.UI.UserControls
 			_userColors = userColors;
 			// AI Explain 按钮：仅在 AI 配置完毕时显示（v3.9.0：统一用 AiActionButton.RefreshVisibility）
 		AiExplainCommitButton.RefreshVisibility();
-		AiExplainCommitButton.ToolTip = Preferences.PreferencesLocalization.Translate("Use AI to explain this commit", ForkPlusSettings.Default.UiLanguage);
+		global::Avalonia.Controls.ToolTip.SetTip(AiExplainCommitButton,Preferences.PreferencesLocalization.Translate("Use AI to explain this commit", ForkPlusSettings.Default.UiLanguage));
 			FullRevisionDetails fullRevisionDetails = RevisionDetailsUserControl.FullRevisionDetails;
 			RevisionDetails revisionDetails = fullRevisionDetails.RevisionDetails;
 			AuthorAvatarImage.UserIdentity = revisionDetails.Author;
@@ -229,8 +229,8 @@ namespace ForkPlus.UI.UserControls
 			button.Padding = new Thickness(0.0);
 			button.IsTabStop = false;
 			button.BorderThickness = new Thickness(0.0);
-			button.Style = Theme.TransparentButtonStyle;
-			button.ToolTip = Preferences.PreferencesLocalization.FormatCurrent("Open '{0}' on {1} ({2})", sha.ToAbbreviatedString(), remote.Name, remote.RemoteType.FriendlyName());
+{			button.Styles.Clear();button.Styles.Add(global::ForkPlus.UI.Theme.TransparentButtonStyle);
+}			global::Avalonia.Controls.ToolTip.SetTip(button,Preferences.PreferencesLocalization.FormatCurrent("Open '{0}' on {1} ({2})", sha.ToAbbreviatedString(), remote.Name, remote.RemoteType.FriendlyName()));
 			button.Content = content;
 			button.Click += delegate
 			{
@@ -246,9 +246,9 @@ namespace ForkPlus.UI.UserControls
 			{
 				Popup popup = new Popup();
 				popup.HorizontalOffset = -270.0;
-				popup.StaysOpen = false;
-				popup.AllowsTransparency = true;
-				popup.PopupAnimation = PopupAnimation.None;
+				popup.IsLightDismissEnabled= (!false);
+				/* TODO 迁移: AllowsTransparency 已删除 */;
+				/* TODO 迁移: PopupAnimation 已删除 */;
 				popup.PlacementTarget = parentButton;
 				popup.Opened += delegate
 				{
@@ -256,10 +256,10 @@ namespace ForkPlus.UI.UserControls
 				};
 				popup.Closed += delegate
 				{
-					BindingOperations.ClearBinding(popup, Popup.IsOpenProperty);
+					global::ForkPlus.UI.WpfCompat.BindingCompat.ClearBinding(popup, Popup.IsOpenProperty);
 					parentButton.Enable();
 				};
-				BindingOperations.SetBinding(popup, Popup.IsOpenProperty, new Binding("IsChecked")
+				global::ForkPlus.UI.WpfCompat.BindingCompat.SetBinding(popup, Popup.IsOpenProperty, new Binding("IsChecked")
 				{
 					Source = parentButton
 				});
@@ -275,14 +275,10 @@ namespace ForkPlus.UI.UserControls
 
 		private global::Avalonia.Input.InputElement CreateParentButton(RepositoryUserControl repositoryUserControl, Sha parent, Action action)
 		{
-			return new AdvancedTooltipButton(repositoryUserControl, parent, action)
+			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new AdvancedTooltipButton(repositoryUserControl, parent, action)
 			{
-				Content = parent.ToAbbreviatedString(),
-				Margin = new Thickness(0.0, 0.0, 3.0, 0.0),
-				Padding = new Thickness(0.0),
-				FontSize = 12.0,
-				Style = ParentButtonStyle
-			};
+				Content = parent.ToAbbreviatedString(),				Margin = new Thickness(0.0, 0.0, 3.0, 0.0),				Padding = new Thickness(0.0),				FontSize = 12.0			},ParentButtonStyle
+);
 		}
 
 		private void ApplySearch()
@@ -397,7 +393,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.Owner = global::Avalonia.Controls.TopLevel.GetTopLevel(this);
+			window.SetOwnerCompat= global::Avalonia.Controls.TopLevel.GetTopLevel(this);
 			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)

@@ -16,7 +16,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return Brushes.DarkGray;
 			}
-			return Theme.AccentBrush;
+			return global::ForkPlus.UI.Theme.AccentBrush;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -21,11 +21,11 @@ namespace ForkPlus.UI.UserControls
 			Sha sha3 = (Sha)values[2];
 			if (sha == sha3)
 			{
-				return Theme.Diff.AddedBrush;
+				return global::ForkPlus.UI.Theme.Diff.AddedBrush;
 			}
 			if (sha == sha2)
 			{
-				return Theme.Diff.RemovedBrush;
+				return global::ForkPlus.UI.Theme.Diff.RemovedBrush;
 			}
 			return Brushes.Transparent;
 		}

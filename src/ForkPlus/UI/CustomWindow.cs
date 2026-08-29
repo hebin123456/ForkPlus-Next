@@ -181,7 +181,7 @@ namespace ForkPlus.UI
 
 		public CustomWindow()
 		{
-			SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CustomWindow));
+			this.SetResourceReference(global::Avalonia.Controls.Control.StyleProperty, typeof(CustomWindow));
 			if (IsDesignMode)
 			{
 				_tempWindowResizeBorderThickness = new Thickness(6.0);
@@ -198,7 +198,7 @@ namespace ForkPlus.UI
 			{
 				Source = this
 			};
-			BindingOperations.SetBinding(windowChrome, WindowChrome.CaptionHeightProperty, binding);
+			global::ForkPlus.UI.WpfCompat.BindingCompat.SetBinding(windowChrome, WindowChrome.CaptionHeightProperty, binding);
 			WindowChrome.SetWindowChrome(this, windowChrome);
 			_tempWindowResizeBorderThickness = WindowResizeBorderThickness;
 			base.Loaded += Window_Loaded;
@@ -234,11 +234,11 @@ namespace ForkPlus.UI
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
-			_templatePartWindowHeader = GetTemplateChild("PART_WindowHeader") as global::Avalonia.Controls.Control;
-			_closeButton = GetTemplateChild("PART_CloseButton") as Button;
-			_minimizeButton = GetTemplateChild("PART_MinimizeButton") as Button;
-			_maximizeButton = GetTemplateChild("PART_MaximizeButton") as Button;
-			_restoreButton = GetTemplateChild("PART_RestoreButton") as Button;
+			_templatePartWindowHeader = this.GetTemplateChild("PART_WindowHeader") as global::Avalonia.Controls.Control;
+			_closeButton = this.GetTemplateChild("PART_CloseButton") as Button;
+			_minimizeButton = this.GetTemplateChild("PART_MinimizeButton") as Button;
+			_maximizeButton = this.GetTemplateChild("PART_MaximizeButton") as Button;
+			_restoreButton = this.GetTemplateChild("PART_RestoreButton") as Button;
 			AdjustButtonsVisibilityToWindowState();
 		}
 

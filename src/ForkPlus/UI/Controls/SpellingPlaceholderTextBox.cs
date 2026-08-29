@@ -13,12 +13,12 @@ namespace ForkPlus.UI.Controls
 	{
 		public SpellingPlaceholderTextBox()
 		{
-			base.ContextMenuOpening += delegate
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(base,delegate
 			{
 				base.ContextMenu = GetContextMenu();
 				SpellingError spellingError = GetSpellingError(base.CaretIndex);
 				base.ContextMenu.AddSpellingMenuItems(spellingError, this);
-			};
+			});
 			if (!global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{
 				WeakEventManager<NotificationCenter, EventArgs<CommitSpellCheckingMode>>.AddHandler(NotificationCenter.Current, "CommitSpellCheckingModeChanged", delegate

@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute()
 		{
-			Application.Current.Shutdown(0);
+			global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown(0);
 		}
 	}
 }
