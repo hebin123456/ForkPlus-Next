@@ -529,8 +529,21 @@
           </Setter>
         </Style>
     -->
-  <ControlTheme x:Key="ReferencePanelStyle" TargetType="controls:ReferencePanel" BasedOn="{StaticResource {x:Type controls:ReferencePanel}}">
-    
+  <!-- TODO 迁移：WPF 原版此 Style 无 BasedOn（迁移误加 BasedOn="{StaticResource {x:Type controls:ReferencePanel}}"，
+       Avalonia 无对应隐式 ControlTheme → KeyNotFoundException 崩溃，已按原版移除）。 -->
+  <ControlTheme x:Key="ReferencePanelStyle" TargetType="controls:ReferencePanel">
+
+    <!-- TODO 迁移：WPF 原版此 Style 无 Template（依赖 WPF 内置 ItemsControl 默认模板）；
+         Avalonia ControlTheme 无模板则不渲染条目，补 ItemsPresenter 模板等价复刻。
+         ItemTemplate 里的 4 个 ReferencePanel*ViewModel DataTemplate 已随
+         DataTemplate 迁移搬入 App.axaml Application.DataTemplates（按类型命中）。 -->
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:ReferencePanel">
+          <ItemsPresenter />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
     <Setter Property="ItemTemplate">
       <Setter.Value>
         <DataTemplate>

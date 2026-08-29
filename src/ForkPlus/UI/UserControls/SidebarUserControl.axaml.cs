@@ -2055,6 +2055,12 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 
 		private void UpdateVisibleTabs(RepositoryData repositoryData)
 		{
+			// TODO 迁移：防御 null（WPF 原版在此依赖初始化时序保证非空；Avalonia XAML populate
+			// 期间事件可能早于数据就绪触发，见 TabControl_SelectionChanged 处注释）。
+			if (repositoryData == null)
+			{
+				return;
+			}
 			Remote[] array = repositoryData.Remotes.Items.Filter((Remote x) => x.Account != null).ToArray();
 			if (array.Length != 0)
 			{
@@ -2705,6 +2711,16 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 
 		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			// TODO 迁移：WPF 下 TabControl 首次选卡发生在 Load 之后（命名字段已全部赋值）；
+			// Avalonia 的 SelectingItemsControl 在 EndInit（XamlIlPopulate 过程中，axaml:100）就
+			// 初始化选区并触发 SelectionChanged——此时 ServiceTabItem/ServiceRadioButton 等
+			// x:Name 字段尚未赋值 → UpdateVisibleTabs 内 NRE 崩掉整个开仓链路。
+			// 此早期触发无业务意义（_repositoryData 还是 Empty，无远端），直接跳过；
+			// 真实数据到达后 UpdateRepositoryData 会再调 UpdateVisibleTabs。
+			if (ServiceTabItem == null || ServiceRadioButton == null || BranchesTabItem == null || _repositoryData == null)
+			{
+				return;
+			}
 			SearchTabItem searchTabItem = e.AddedItems.FirstItem<SearchTabItem>();
 			if (searchTabItem != null)
 			{
