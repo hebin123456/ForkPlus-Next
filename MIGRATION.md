@@ -18,7 +18,7 @@
 export PATH="/opt/dotnet:$PATH"
 export DOTNET_ROOT="/opt/dotnet"
 
-# 编译主工程（在 /data/user/work/ForkPlus-Next/src/ForkPlus 下）
+# 编译主工程（在 /data/user/work/migration/ForkPlus-Next/src/ForkPlus 下）
 dotnet build --no-restore -v q -nologo 2>&1 | grep -E "error CS" | sed -E 's/ \[.*//' | sort -u
 
 # 查看源生成器产物（调试 x:Name 字段问题时极其有用）
@@ -29,12 +29,13 @@ dotnet build --no-restore -v q -nologo -p:EmitCompilerGeneratedFiles=true
 git push origin HEAD
 ```
 
-- 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）、`/data/user/work/WpfToAvalonia`（转换工具）、`/data/user/work/fixer`（Roslyn 机械重写工具）
-- 错误清单快照：`/data/user/work/errors.txt`（最近一次构建的 238 个唯一错误）
+- 工作目录：`/data/user/work/migration/ForkPlus-Next`（主仓库）、`/data/user/work/migration/WpfToAvalonia`（转换工具）、`/data/user/work/migration/ForkPlus`（WPF 源仓库，对照用）
+- API 查证工具：`/data/user/work/apicheck`（`dotnet run --no-build -- "类型名" [成员过滤]` 可列出 Avalonia 12 类型和成员，避免瞎猜 API）
+- 错误清单快照：`/data/user/work/errors.txt`（历史）；最新口径用上面构建命令实时生成
 
 ## 当前状态
 
-**阶段 1（C# 编译清零）进行中：唯一错误数 238**（起始 186 是初次构建口径；按唯一错误去重统计后的轨迹如下）
+**阶段 1（C# 编译清零）进行中：唯一错误数 57**（按唯一错误去重统计后的轨迹如下）
 
 | 提交 | 唯一错误数 | 内容 |
 |---|---:|---|
@@ -44,15 +45,48 @@ git push origin HEAD
 | `4db2c98` | 644 | 事件适配与绘制簇修复 |
 | （未提交） | 526 | XAML 编译恢复（OxyPlot xmlns 修复） |
 | `39077cc` | 252 | 恢复 PlotView 元素，字段生成恢复 |
-| **本次** | **238** | 非 StyledElement 的 x:Name 字段手动补声明 |
+| `0036598` | 320→242 | Owner/WindowStartupLocation 对象初始化器簇 + DoubleAnimation 构造器/Completed 事件 |
+| `f61cf65` | 242→154 | 文件对话框 shim + ContainerFromElement/ContentPresenter/DataTemplate/StartDrag 簇 + Button.ClickEvent + OverrideMetadata 移除 |
+| `fccada2` | 154→57 | Visual 可视树遍历 + GetParent/HitTest/Run 模式簇 + SshPassphrase/GitMmStart/Clipboard/Dispatcher.Post 修复 |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
-| 1 C# 编译清零 | 🔄 进行中 | 唯一错误 238 个，见下方分组 |
+| 1 C# 编译清零 | 🔄 进行中 | 唯一错误 57 个，集中在编辑器渲染层 |
 | 2 XAML (AVLN) 清零 | ⛔ 未开始 | 大部分 XAML 已能编译（PlotView 恢复后）；剩余 AVLN 警告待量化 |
 | 3 附属工程收尾 | ⛔ 未开始 | AskPass / RI / 测试工程 |
 | 4 运行时验证 | ⛔ 未开始 | 启动、渲染、交互冒烟 |
+
+## 本轮已验证的修复模式（后续 agent 直接套用）
+
+1. **WPF `new Window { Owner = x, WindowStartupLocation = CenterOwner }.ShowDialog()`** → 
+   `new Window(...).SetOwnerAndCenter(x).ShowDialog().GetValueOrDefault()`（链式扩展，`WindowOwnerCompat` in `WpfCompat.Batch2.cs`）。
+   注意 LFS 场景的 `list[i].Owner = value` 是 ViewModel 字符串属性，不是 Window Owner，直接赋值即可。
+2. **`global::Avalonia.Controls.WindowState = ...`（CS0118）** → 自动转换把属性名写成了全限定类型名，恢复为 `WindowState = ...`。
+3. **WPF `FileDialog`** → `Microsoft.Win32` 命名空间 shim（`WpfCompat.FileDialogs.cs`，基于 StorageProvider 阻塞等待）。`OverwritePrompt` 已知无对应（Avalonia 12 无 `ShowOverwriteConfirmation`）。
+4. **`ItemsControl.ContainerFromElement(itemsControl, element)`（静态双参）** → 扩展方法实例调用 `(sender as ListBox)?.ContainerFromElement(e.Source as Visual)`。
+5. **可视树遍历（最常见）**：`GetVisualParent` 需要 `Visual` 接收者。WPF `DependencyObject` 循环改写为：
+   ```csharp
+   global::Avalonia.Visual dependencyObject = args.Source as global::Avalonia.Visual;
+   while (dependencyObject != null && !(dependencyObject is ListBoxItem))
+       dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
+   ```
+   注意 `Run`（Documents.Inline）的 `Parent` 返回 `Inline`，需 `as Visual` 中转。
+6. **`ButtonBase`** → Avalonia 12 里用 `global::Avalonia.Controls.Button.ClickEvent`（不在 Primitives）。
+7. **`OverrideMetadata`（CS0122/私有）** → 移除静态构造器中的调用，改构造函数里设属性（如 `Focusable = true`）或附加属性。
+8. **`Keyboard.Focus(ctrl)`** → `ctrl.Focus()`（已有的 Focus 调用保留一个即可，勿重复）。
+9. **`Clipboard.SetText(s)`** → `Clipboard.SetTextAsync(s).GetAwaiter().GetResult()`（IClipboard 无 SetText）。
+10. **`Dispatcher.BeginInvoke(priority, action)`** → `Dispatcher.Post(action, priority)`（参数顺序相反）。
+11. **`MenuItem.IsCheckable = true`** → `ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox`。
+12. **`ContentPresenter`** → `global::Avalonia.Controls.Presenters.ContentPresenter`（Presenters 命名空间）。
+13. **`(DataTemplate)Resources["Key"]`** → `Resources["Key"] as global::Avalonia.Controls.Templates.IDataTemplate`。
+14. **WPF 密码框方法被误转成静态**：`global::Avalonia.Controls.TextBox.Focus()` → `PasswordBox.Focus()`（实例方法）。
+15. **`TranslatePoint` 返回 `Point?`** → `?? new Point(0.0, 0.0)` 兜底。
+16. **`Formatt`edText 7 参构造不存在** → Avalonia 用 `FormattedText(text, fontFamily, fontSize, textStyle, foreground)`（5 参），pixelsPerDip 已并入。
+17. **双击/单击事件 `MouseButtonEventArgs`** → `TappedEventArgs`；对应 helper 需要 `TappedEventArgs` 重载。
+18. **WPF Label XAML 已改 TextBlock**：C# 里签名 `Label` → `global::Avalonia.Controls.Control` 放宽。
+19. **`StartDrag(DependencyObject, ...)`** → `StartDrag(global::Avalonia.Input.InputElement, ...)`（DoDragDrop 需要 InputElement）。
+20. **`BringIntoView()`** → Avalonia 原生 `ControlExtensions.BringIntoView(control)`（`Avalonia.Controls`），无需 shim；扩展方法裸调用报 CS7036 时加 `this.` 接收者。
 
 ## 重大发现（必读，避免重复排查）
 
@@ -75,52 +109,57 @@ git push origin HEAD
    - `Typeface` 构造：3 参（family, style, weight）；`FormattedText` 构造：无 pixelsPerDip。
    - `ListCollectionView`：用 `WpfCompat.ListCollectionView`（支持 Filter + Reset 通知）。
 
-## 剩余 238 错误分组与策略（按修复优先级）
+## 剩余 57 错误分组与策略（按修复优先级）
 
-### A. 高频机械簇（约 100+ 处，性价比最高）
-
-| 簇 | 数量 | 修复方式 |
-|---|---:|---|
-| `IBrush → Brush` | 7 | shim `BrushProxy` 或逐处加 `((Brush)x)` 包装；更简单：WpfCompat 加隐式转换扩展 |
-| `InputElement → Control` / `AvaloniaObject → Visual/InputElement` | 9 | 逐处 cast（大部分是 sender 类型） |
-| `PointerReleasedEventArgs → PointerPressedEventArgs` | 4+ | WPF 的 PreviewMouseLeftButtonDown 迁移后处理器签名错误，改绑 Avalonia 对应事件 |
-| `TextBlock/ContentControl → Label` | 8 | 迁移工具把 Label 换成了别的控件，改回或加 cast |
-| `DispatcherPriority ↔ Action` 参数顺序 | 4 | `Dispatcher.Invoke(priority, action)` 与 `(action, priority)` 参数顺序差异 |
-| `Rect.X/Y/Width/Height` 只读赋值（CS0200） | 12 | Avalonia Rect 是不可变结构，改 `new Rect(x, y, w, h)` 重建 |
-| `CS0118: X is a type but used like a variable` | 12 | 多为 `SomeType.SomeStaticMember` 迁移后错位，逐处看 |
-| `StyledPropertyMetadata` 泛型参数（CS0305） | 12 | `new StyledPropertyMetadata<T>(...)` 需补泛型参数 |
-
-### B. 缺失成员/属性 shim（约 40 处，往 WpfCompat 加扩展方法）
-
-| 缺失 | 处数 | 建议 |
-|---|---:|---|
-| `ListBoxItem.IsPointerCaptured` | 4 | WpfCompat 扩展属性 |
-| `SetOwnerCompat`（CustomWindow/LfsFileViewModel 上） | 4 | WpfCompat 里加 `WindowOwnerCompat.SetOwner(window, owner)`，Avalonia 用 `window.Owner = ownerWindow`（Show(owner) 已是主流） |
-| `Popup.PopupAnimation/StaysOpen/AllowsTransparency/PlacementRectangle` | 4 | Popup shim 扩展（存值 + no-op） |
-| `CommitDescriptionTextBox.SelectionLength` 等 TextBox 扩展 | 3 | `TextBoxCompat` 扩展（SelectionStart/SelectionEnd 计算） |
-| `ItemsControl.DragOver/DragLeave/Drop` 事件 | 3 | `DragDropCompat.AddDragOverHandler(...)` 等 |
-| `Control.FocusVisualStyleProperty` / `DefaultStyleKeyProperty` | 2 | no-op 附加属性 |
-| `TappedEventArgs.IsClickedOnScrollbar` / `PointerEventArgs.LeftButton` / `ChangedButton` | 3 | shim 扩展方法 |
-| 其余单发成员（OnTextChanged 虚方法、ToolTipOpening、IsVisibleChanged、Viewport、SnapsToDevicePixels 等） | ~15 | 逐处：事件用 Avalonia 等价事件或 WpfCompat 转发 |
-
-### C. 集中在少数文件的深水区（先读文件再动手）
+### A. 编辑器渲染层（约 25 处，最大簇）
 
 | 文件 | 错数 | 问题性质 |
 |---|---:|---|
-| `CenteredDockPanel.cs` | 12 | 自定义布局：ArrangeOverride/MeasureOverride 的 WPF 子元素遍历 API |
-| `CustomWindow.cs` | 9 | 窗口 chrome 自绘 + StyledProperty 注册（CS0305） |
-| `ForkPlusDialogWindow.cs` | 7 | 对话框基类：Owner/启动位置/OnActivated |
-| `MergeCodeEditorBackgroundColorizer.cs` / `DiffBackgroundColorizer.cs` / `DiffLineNumberMargin.cs` | 15 | AvalonEdit 渲染层：DrawingContext/FormattedText/Typeface |
-| `AutoCompleteTextBox.cs` | 5 | 自定义文本框（Popup + 键盘导航） |
-| `ConfigureWorkspacesWindow.axaml.cs` | 5 | Window Owner + DataGrid |
-| `CommitUserControl.axaml.cs` | 5 | 拖放 + 文本框 |
-| `RevisionListViewUserControl.axaml.cs` / `SidebarUserControl.axaml.cs` | 10 | 列表控件事件 |
+| `UI/Controls/Editor/Merge/MergeCodeEditorBackgroundColorizer.cs` | 6 | DrawingContext 绘制 + FormattedText 构造 |
+| `UI/Controls/Editor/Diff/DiffBackgroundColorizer.cs` | 5 | 同上 |
+| `UI/Controls/Editor/Diff/DiffLineNumberMargin.cs` | 4 | 行号渲染：FormattedText/Typeface |
+| `UI/Controls/Editor/ChunkSelectionLayer.cs` | 3 | 自绘层 |
+| `UI/Controls/FileDiffControl.cs` | 4 | ContextMenuEventArgs 事件签名 + PointerWheelEventArgs 构造 |
+| `UI/Controls/FileContentControl.cs` | 2 | ContextMenuEventArgs 事件签名 |
 
-### D. 二义性/访问性（少量）
+**策略**：`FormattedText` 7 参构造（CS1729）需改 5 参签名；`ContextMenuEventArgs` 兼容层事件与 Avalonia `ContextRequestedEventArgs` 的 lambda 参数类型对不上（CS1661/CS1678），统一改用 Avalonia 原生事件签名；`PointerWheelEventArgs` 构造需要 `rootVisualPosition` 参数（CS7036）。
 
-- `CS0104` 二义性引用 3 处（WpfCompat 类型与 Avalonia 内置重名，用全限定名或调整 using）
-- `CS1540` protected 成员跨继承链访问 6 处（多在渲染基类，加 protected 转发或改调用）
-- `CS0747` 初始化器成员错误 6 处（集合初始化器语法差异）
+### B. 图片/二进制 diff（约 8 处）
+
+| 文件 | 错数 | 问题性质 |
+|---|---:|---|
+| `UI/UserControls/BinaryDiff/OverlayImageControl.cs` | 3 | `Control.Background`（CS0117）+ `DrawingContext.PushedState` 条件表达式 + `RectangleGeometry → RoundedRect` |
+| `UI/UserControls/BinaryDiff/BinaryContentUserControl.axaml.cs` | 3 | `Bitmap.PixelHeight`（CS1061，用 `Size`/`PixelSize`）+ `bool != int`（CS0019，WPF int 语义） |
+| `UI/UserControls/BinaryDiff/ImageData.cs` | 1 | `IImage` 当变量用（CS0118） |
+
+### C. 自定义控件（约 12 处）
+
+| 文件 | 错数 | 问题性质 |
+|---|---:|---|
+| `UI/Controls/EditableTextBlock.cs` | 3 | 编辑态切换的成员缺失 |
+| `UI/Controls/RevisionTimeLine.cs` | 2 | `PointCollection` 找不到（CS0246，Avalonia 用 `List<Point>`/`PolylineGeometry`）+ FormattedText |
+| `UI/Controls/DragAndDropListViewItem.cs` | 2 | 拖放事件签名 |
+| `UI/Controls/TreeViewControlItem.cs` | 1 | `OnPointerPressed(PointerReleasedEventArgs)` 签名错 |
+| `UI/Controls/Editor/Hex/HexEditor.cs` | 2 | 自绘 |
+| `UI/Controls/Editor/Merge/MergeLineNumberMargin.cs` | 1 | `IBrush → Brush` cast |
+| `UI/Controls/Editor/FloatingButton.cs` | 1 | 单发 |
+| `UI/Controls/Editor/Diff/CommitCodeEditor.cs` | 1 | 单发 |
+
+### D. 对话框与散点（约 12 处）
+
+| 文件 | 错数 | 问题性质 |
+|---|---:|---|
+| `UI/Dialogs/RepositoryOverviewWindow.axaml.cs` | 2 | `DrawImage(rectangle:)` 命名参数（CS1739）+ `DrawRoundedRectangle` 不存在（改 `DrawRectangle` + `PathGeometry` 或 `RoundedRect`） |
+| `UI/Dialogs/EditRemoteWindow.axaml.cs` | 2 | `BitmapImage` 找不到（CS0246，Avalonia 用 `Bitmap` + `IStorageProvider` 加载） |
+| `UI/Dialogs/InteractiveRebaseWindow.axaml.cs` | 1 | `TransformToAncestor`（CS1061，用 `TranslatePoint` 或 `TransformToVisual`） |
+| `UI/Dialogs/ConfigureGitInstanceWindow.axaml.cs` | 1 | `ShowDialog(1)` 无重载（CS1501，Avalonia ShowDialog 需要 Task result 类型参数） |
+| `UI/Dialogs/BlameWindow.axaml.cs` | 1 | `ScrollToVerticalOffsetCompat` 接收者类型不符（CS1929） |
+| `UI/Dialogs/AiTextResultWindow.axaml.cs` | 1 | 已知修复模式 9（Clipboard.SetTextAsync） |
+| `UI/Theme.cs` | 1 | `ImageSource` 找不到（CS0246） |
+| `UI/Helpers/TextGuidelineHelper.cs` | 1 | FormattedText 7 参构造 |
+| `UI/Helpers/ListViewScrollbarDoubleClickHelper.cs` | 1 | `Visual → Run` cast（CS0039，先 `is Run` 判断再转换） |
+| `UI/Extensions/BridgeExtensions.cs` | 1 | `IImage.CanFreeze`（CS1061，Avalonia 无冻结概念，删掉该分支） |
+| `UI/UserControls/RevisionListViewUserControl.axaml.cs` | 1 | `Visual` 模式匹配 `Run`（CS8121，先 `is Run` 判断） |
 
 ## 修复方法论（已验证有效）
 
