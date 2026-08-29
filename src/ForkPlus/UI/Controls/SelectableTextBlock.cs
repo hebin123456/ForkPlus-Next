@@ -57,13 +57,15 @@ namespace ForkPlus.UI.Controls
 
 		static SelectableTextBlock()
 		{
-			global::Avalonia.Input.InputElement.FocusableProperty.OverrideMetadata(typeof(SelectableTextBlock), new global::Avalonia.StyledPropertyMetadata(true));
-			global::Avalonia.Controls.Control.FocusVisualStyleProperty.OverrideMetadata(typeof(SelectableTextBlock), new global::Avalonia.StyledPropertyMetadata((object)null));
+			// TODO 迁移：WPF FocusableProperty.OverrideMetadata(default true) → 构造函数 Focusable = true；
+			// FocusVisualStyle 在 Avalonia 无对应（焦点视觉由主题伪类承担），移除。
 			TextEditorWrapper.RegisterCommandHandlers(typeof(SelectableTextBlock), acceptsRichContent: true, readOnly: true, registerEventListeners: true);
 		}
 
 		public SelectableTextBlock()
 		{
+			// TODO 迁移：WPF 属性元数据默认值迁移至此（Avalonia OverrideMetadata 为私有 API）。
+			Focusable = true;
 			_editor = TextEditorWrapper.CreateFor(this);
 		}
 	}

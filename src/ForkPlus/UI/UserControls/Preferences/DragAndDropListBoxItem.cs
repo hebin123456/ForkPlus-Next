@@ -44,7 +44,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 			this.ReleaseMouseCapture();
 			if (_wasSelected)
 			{
-				base.OnPointerPressed(e);
+				// TODO 迁移：WPF 抬起时补调 base.OnMouseLeftButtonDown(e) 维持已选中项的选中状态；
+				// Avalonia 选择逻辑在 OnPointerPressed 内部、无法从抬起侧重放，显式保持选中。
+				IsSelected = true;
 			}
 		}
 

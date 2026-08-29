@@ -130,7 +130,7 @@ namespace ForkPlus.UI.UserControls
 			ServiceTabItem.Initialize(repositoryUserControl);
 			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ReferenceSortOrderChanged", ReferenceSortOrderChanged);
 			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(SidebarTreeView,SidebarTreeView_ContextMenuOpening);
-			SidebarTreeView.AddHandler(ButtonBase.ClickEvent, new EventHandler<RoutedEventArgs>(SidebarTreeView_ButtonClick));
+			SidebarTreeView.AddHandler(global::Avalonia.Controls.Button.ClickEvent, new EventHandler<RoutedEventArgs>(SidebarTreeView_ButtonClick)); // TODO 迁移：ButtonBase 在 Primitives 命名空间。
 			SidebarTreeView.SelectionChanged += SidebarTreeView_SelectionChanged;
 			SidebarTreeView.PointerPressed += SidebarTreeView_MouseDown;
 			SidebarTreeView.DoubleTapped += SidebarTreeView_MouseDoubleClick;
@@ -345,7 +345,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void TruncateSidebarItem_RequestNavigate(object sender, RequestNavigateEventArgs e)
 		{
-			if ((sender as FrameworkContentElement)?.DataContext is TruncateSidebarItem { Parent: FolderSidebarItem parent })
+			// TODO 迁移：WPF FrameworkContentElement → Avalonia Control（HyperlinkButton 承载内联超链接）。
+			if ((sender as global::Avalonia.Controls.Control)?.DataContext is TruncateSidebarItem { Parent: FolderSidebarItem parent })
 			{
 				ToggleTruncate(parent);
 			}
@@ -1384,12 +1385,12 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 			groupItem.Dispatcher.Post(new Action(delegate
 			{
 				if (searchBox.IsVisible && !searchBox.IsKeyboardFocused)
-				{
-					Keyboard.Focus(searchBox);
-					searchBox.Focus();
-					// 恢复光标到末尾，避免 Focus 把光标跑到开头影响继续输入
-					searchBox.CaretIndex = searchBox.Text.Length;
-				}
+			{
+				// TODO 迁移：WPF Keyboard.Focus(...) → Avalonia Control.Focus()（下一行已调用，移除重复）。
+				searchBox.Focus();
+				// 恢复光标到末尾，避免 Focus 把光标跑到开头影响继续输入
+				searchBox.CaretIndex = searchBox.Text.Length;
+			}
 			}), global::Avalonia.Threading.DispatcherPriority.Background);
 		}
 

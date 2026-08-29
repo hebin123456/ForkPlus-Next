@@ -68,6 +68,10 @@ namespace ForkPlus.UI.WpfCompat
         }
     }
 
+    // ===== WPF UIElement.BringIntoView() =====
+    // Avalonia 原生已提供 ControlExtensions.BringIntoView(Control)（Avalonia.Controls），
+    // 无需兼容层，调用点直接使用原生扩展。
+
     // ===== WPF DragDrop.DoDragDrop（阻塞式）→ Avalonia 12 DoDragDropAsync =====
     // 注意：与 WpfCompat.Controls.cs 的 DragDropCompat（读取侧）区分，本类只负责"发起拖放"。
 

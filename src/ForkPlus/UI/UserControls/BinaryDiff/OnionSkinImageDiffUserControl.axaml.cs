@@ -82,7 +82,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			OverlayImage.NewOpacity = Slider.Value;
 		}
 
-		private void RefreshLfsLabel(Label lfsLabel, Label notLfsLabel, ImageData imageData)
+		private void RefreshLfsLabel(global::Avalonia.Controls.Control lfsLabel, global::Avalonia.Controls.Control notLfsLabel, ImageData imageData) // TODO 迁移：WPF Label → XAML 已改 TextBlock/ContentControl，签名放宽为 Control。
 		{
 			if (imageData.IsLfs)
 			{

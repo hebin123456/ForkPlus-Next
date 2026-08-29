@@ -245,7 +245,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			PrepareCommitMsgHook = "prepare-commit-msg";
 			Commands = new CommitUserControlCommands();
-			KeyboardNavigation.TabNavigationProperty.OverrideMetadata(typeof(CommitUserControl), new global::Avalonia.StyledPropertyMetadata(KeyboardNavigationMode.Local));
+			// TODO 迁移：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
 		}
 
 		public CommitUserControl()

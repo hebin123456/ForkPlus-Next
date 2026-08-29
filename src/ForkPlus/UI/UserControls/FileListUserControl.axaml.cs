@@ -179,15 +179,15 @@ namespace ForkPlus.UI.UserControls
 			switch (Mode)
 			{
 			case FileListMode.List:
-				TreeView.ItemTemplate = (DataTemplate)base.Resources["ListViewTemplate"];
+				TreeView.ItemTemplate = base.Resources["ListViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
 {				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
 }				break;
 			case FileListMode.Tree:
-				TreeView.ItemTemplate = (DataTemplate)base.Resources["TreeViewTemplate"];
+				TreeView.ItemTemplate = base.Resources["TreeViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
 {				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
 }				break;
 			case FileListMode.CombinedList:
-				TreeView.ItemTemplate = (DataTemplate)base.Resources["ListViewTemplate"];
+				TreeView.ItemTemplate = base.Resources["ListViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
 {				TreeView.Styles.Clear();TreeView.Styles.Add(global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.GridViewStyle);
 }				break;
 			}

@@ -171,7 +171,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 					showCancelButton: false).ShowDialog();
 
 				// 重启应用以加载新配置
-				System.Diagnostics.Process.Start(global::Avalonia.Application.ResourceAssembly.Location);
+				// TODO 迁移：WPF Application.ResourceAssembly.Location → 当前进程可执行路径。
+				System.Diagnostics.Process.Start(System.Environment.ProcessPath ?? global::Avalonia.Application.Current?.GetType().Assembly.Location ?? "");
 				global::ForkPlus.UI.WpfCompat.WpfApp.Shutdown();
 			}
 			catch (Exception ex)

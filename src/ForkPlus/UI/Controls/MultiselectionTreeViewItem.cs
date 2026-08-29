@@ -166,7 +166,7 @@ namespace ForkPlus.UI.Controls
 			this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		public virtual void StartDrag(global::Avalonia.AvaloniaObject dragSource, MultiselectionTreeViewItem[] nodes)
+		public virtual void StartDrag(global::Avalonia.Input.InputElement dragSource, MultiselectionTreeViewItem[] nodes) // TODO 迁移：WPF DependencyObject → InputElement（DoDragDrop 需要）。
 		{
 		}
 

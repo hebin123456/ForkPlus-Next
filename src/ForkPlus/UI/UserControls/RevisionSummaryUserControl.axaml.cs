@@ -273,7 +273,8 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private global::Avalonia.Input.InputElement CreateParentButton(RepositoryUserControl repositoryUserControl, Sha parent, Action action)
+		// TODO 迁移：WPF UIElement 返回类型 → Avalonia Control（Children.Add 需要 Control）。
+		private global::Avalonia.Controls.Control CreateParentButton(RepositoryUserControl repositoryUserControl, Sha parent, Action action)
 		{
 			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new AdvancedTooltipButton(repositoryUserControl, parent, action)
 			{
@@ -393,7 +394,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.SetOwnerCompat(global::Avalonia.Controls.TopLevel.GetTopLevel(this));
+                        window.SetOwnerCompat(global::Avalonia.Controls.TopLevel.GetTopLevel(this) as global::Avalonia.Controls.Window); // TODO 迁移：TopLevel → Window（SetOwnerCompat 需要）。
 			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)

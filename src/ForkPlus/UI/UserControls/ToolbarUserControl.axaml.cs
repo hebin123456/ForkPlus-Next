@@ -275,7 +275,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshBadgePosition(global::Avalonia.Controls.Control badge, global::Avalonia.Controls.Control button)
 		{
-			Point point = button.TranslatePoint(new Point(0.0, 0.0), BadgesCanvas);
+			Point point = button.TranslatePoint(new Point(0.0, 0.0), BadgesCanvas) ?? new Point(0.0, 0.0); // TODO 迁移：Avalonia TranslatePoint 返回 Point?。
 			Canvas.SetLeft(badge, point.X + button.Bounds.Width - 10.0);
 			Canvas.SetTop(badge, point.Y - 2.0);
 		}

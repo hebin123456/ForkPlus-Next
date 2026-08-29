@@ -12,7 +12,7 @@ namespace ForkPlus.UI.UserControls
 	{
 		public object Convert(global::System.Collections.Generic.IList<object> values, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (values.Length < 3)
+			if (values.Count < 3) // TODO 迁移：WPF 数组 → Avalonia IList<object>。
 			{
 				return Brushes.Transparent;
 			}

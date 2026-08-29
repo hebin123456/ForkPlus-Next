@@ -111,7 +111,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			StageAllIconName = "StageAllIcon";
 			UnstageAllIconName = "UnstageAllIcon";
-			KeyboardNavigation.TabNavigationProperty.OverrideMetadata(typeof(StageFileUserControl), new global::Avalonia.StyledPropertyMetadata(KeyboardNavigationMode.Local));
+			// TODO 迁移：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
 		}
 
 		public StageFileUserControl()

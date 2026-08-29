@@ -37,6 +37,8 @@ namespace ForkPlus.UI.WpfCompat
     {
         public object ContainerStyle { get; set; }
         public object Content { get; set; }
+        /// <summary>TODO 迁移：WPF GridViewColumnHeader.Column（所属列）。迁移期记账占位。</summary>
+        public GridViewColumn Column { get; set; }
     }
 
     /// <summary>WPF ListView.View / AvailableWidth 的附加扩展。</summary>

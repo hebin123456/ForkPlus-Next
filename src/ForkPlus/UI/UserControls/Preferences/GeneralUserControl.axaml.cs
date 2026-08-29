@@ -130,7 +130,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void SrcDirsListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: SrcDirViewModel dataContext })
+			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: SrcDirViewModel dataContext })
 			{
 				SrcDirsListBox.ContextMenu.Items.Clear();
 				SrcDirsListBox.ContextMenu.SetItems(CreateSrcDirContextMenu(dataContext));

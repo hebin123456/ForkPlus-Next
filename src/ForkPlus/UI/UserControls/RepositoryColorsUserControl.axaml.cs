@@ -15,7 +15,7 @@ namespace ForkPlus.UI.UserControls
 	{
 		private static readonly SolidColorBrush[] _repositoryBrushes = new SolidColorBrush[7]
 		{
-			Brushes.Transparent,
+			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00000000")), // TODO 迁移：Avalonia Brushes.Transparent 是不可变接口类型。
 			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF3B30")),
 			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF9502")),
 			new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFCC00")),

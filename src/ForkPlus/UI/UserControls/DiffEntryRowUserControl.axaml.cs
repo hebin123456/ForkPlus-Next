@@ -77,11 +77,11 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (DiffContentHost.IsVisible == true)
 			{
-				DiffContentHost.BringIntoView();
+				DiffContentHost.BringIntoView(); // TODO 迁移：WPF BringIntoView → BringIntoViewCompat 扩展。
 			}
 			else
 			{
-				BringIntoView();
+				this.BringIntoView(); // TODO 迁移：扩展方法不可裸调用，需显式 this 接收者。
 			}
 		}
 

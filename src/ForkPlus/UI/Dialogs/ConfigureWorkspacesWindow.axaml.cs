@@ -52,7 +52,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void WorkspacesListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
+			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
 			{
 				WorkspacesListBox.ContextMenu.Items.Clear();
 				WorkspacesListBox.ContextMenu.SetItems(GetContextMenu(dataContext));
@@ -66,7 +66,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void WorkspacesListBox_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.F2 && ItemsControl.ContainerFromElement(sender as ListBox, e.Source as global::Avalonia.AvaloniaObject) is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
+			if (e.Key == Key.F2 && (sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
 			{
 				dataContext.IsInEditMode = true;
 			}

@@ -76,7 +76,7 @@ namespace ForkPlus.UI.UserControls
 
 		static RevisionListViewUserControl()
 		{
-			KeyboardNavigation.TabNavigationProperty.OverrideMetadata(typeof(RevisionListViewUserControl), new global::Avalonia.StyledPropertyMetadata(KeyboardNavigationMode.Local));
+			// TODO 迁移：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
 		}
 
 		public RevisionListViewUserControl()
@@ -469,7 +469,7 @@ namespace ForkPlus.UI.UserControls
 					return null;
 				}
 				dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
-				if (dependencyObject is ContentPresenter { DataContext: BranchViewModel dataContext })
+				if (dependencyObject is global::Avalonia.Controls.Presenters.ContentPresenter { DataContext: BranchViewModel dataContext }) // TODO 迁移：ContentPresenter 在 Presenters 命名空间。
 				{
 					return dataContext.Reference as Branch;
 				}
