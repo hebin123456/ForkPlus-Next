@@ -20,6 +20,13 @@ namespace ForkPlus.UI.Controls
 		private string _savedToolTip;
 		private bool _isBusy;
 
+		/// <summary>TODO 迁移：WPF Control.ToolTip 属性 → Avalonia ToolTip.SetTip/GetTip 附加属性转发。</summary>
+		private object ToolTip
+		{
+			get => global::Avalonia.Controls.ToolTip.GetTip(this);
+			set => global::Avalonia.Controls.ToolTip.SetTip(this, value);
+		}
+
 		/// <summary>动作动词，显示为 "🤖 AI {verb}"。为空时显示 "🤖 AI"。</summary>
 		public string ActionVerb
 		{
