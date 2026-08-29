@@ -16,12 +16,20 @@ namespace ForkPlus.UI.Dialogs
 		public MessageBoxWindow(string title, string description, string submitTitle, string cancelTitle = "Cancel", bool showCancelButton = true, double width = 600.0, bool showWarningIcon = false)
 		{
 			InitializeComponent();
-			base.TitleTextBlock.TextTrimming = TextTrimming.CharacterEllipsis;
-			base.TitleTextBlock.TextWrapping = TextWrapping.Wrap;
-			base.TitleTextBlock.MaxHeight = 80.0;
-			base.DescriptionTextBlock.TextTrimming = TextTrimming.CharacterEllipsis;
-			base.DescriptionTextBlock.TextWrapping = TextWrapping.Wrap;
-			base.DescriptionTextBlock.MaxHeight = 80.0;
+			// TODO 迁移：WPF 构造期 chrome 已就绪；Avalonia 12 延迟初始化，
+			// 经 Customize* pending 机制在 chrome 就绪后应用（构造期安全）。
+			CustomizeTitleTextBlock(delegate(TextBlock t)
+			{
+				t.TextTrimming = TextTrimming.CharacterEllipsis;
+				t.TextWrapping = TextWrapping.Wrap;
+				t.MaxHeight = 80.0;
+			});
+			CustomizeDescriptionTextBlock(delegate(TextBlock t)
+			{
+				t.TextTrimming = TextTrimming.CharacterEllipsis;
+				t.TextWrapping = TextWrapping.Wrap;
+				t.MaxHeight = 80.0;
+			});
 			base.DialogTitle = Translate(title);
 			base.DialogDescription = Translate(description);
 			base.SubmitButtonTitle = Translate(submitTitle);

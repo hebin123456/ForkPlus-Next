@@ -50,8 +50,13 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.ShowLogo = false;
 			InitializeComponent();
-			base.TitleTextBlock.FontSize = 18.0;
-			base.TitleTextBlock.Foreground = Application.Current.TryFindResource("ForegroundBrush.WindowsInfo") as Brush;
+			// TODO 迁移：WPF 构造期 TitleTextBlock 已就绪可直接改属性；Avalonia 12 的 chrome
+			// 延迟初始化，改走 CustomizeTitleTextBlock pending 机制（构造期安全）。
+			CustomizeTitleTextBlock(delegate(TextBlock t)
+			{
+				t.FontSize = 18.0;
+				t.Foreground = Application.Current.TryFindResource("ForegroundBrush.WindowsInfo") as Brush;
+			});
 			base.DialogTitle = Translate("User information");
 			base.DialogDescription = Translate("Set up your user name and email address. This information will be associated with your Git commits.");
 			base.SubmitButtonTitle = Translate("Finish");

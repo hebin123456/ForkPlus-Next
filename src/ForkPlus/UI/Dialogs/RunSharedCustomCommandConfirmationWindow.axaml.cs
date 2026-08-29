@@ -17,12 +17,20 @@ namespace ForkPlus.UI.Dialogs
 		public RunSharedCustomCommandConfirmationWindow(string repositoryName)
 		{
 			InitializeComponent();
-			base.TitleTextBlock.TextTrimming = TextTrimming.CharacterEllipsis;
-			base.TitleTextBlock.TextWrapping = TextWrapping.Wrap;
-			base.TitleTextBlock.MaxHeight = 80.0;
-			base.DescriptionTextBlock.TextTrimming = TextTrimming.CharacterEllipsis;
-			base.DescriptionTextBlock.TextWrapping = TextWrapping.Wrap;
-			base.DescriptionTextBlock.MaxHeight = 80.0;
+			// TODO 迁移：WPF 构造期 chrome 已就绪；Avalonia 12 延迟初始化，
+			// 经 Customize* pending 机制在 chrome 就绪后应用（构造期安全）。
+			CustomizeTitleTextBlock(delegate(TextBlock t)
+			{
+				t.TextTrimming = TextTrimming.CharacterEllipsis;
+				t.TextWrapping = TextWrapping.Wrap;
+				t.MaxHeight = 80.0;
+			});
+			CustomizeDescriptionTextBlock(delegate(TextBlock t)
+			{
+				t.TextTrimming = TextTrimming.CharacterEllipsis;
+				t.TextWrapping = TextWrapping.Wrap;
+				t.MaxHeight = 80.0;
+			});
 			base.DialogTitle = PreferencesLocalization.FormatCurrent("The custom command has come from the '{0}' repository", repositoryName);
 			base.DialogDescription = PreferencesLocalization.Current("You should only run custom commands from trustworthy repositories. Do you really want to run it?");
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Run");

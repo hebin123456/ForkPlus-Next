@@ -95,7 +95,44 @@ namespace ForkPlus.UI.Dialogs
 
 		protected TextBlock TitleTextBlock { get; private set; }
 
-		protected TextBlock DescriptionTextBlock { get; private set; }
+	protected TextBlock DescriptionTextBlock { get; private set; }
+
+	// TODO 迁移：WPF 中 chrome（TitleTextBlock/DescriptionTextBlock）在构造期已同步初始化，
+	// 子类构造函数可直接访问其属性；Avalonia 12 的 InitializeDialogChrome 延迟到
+	// Initialized/UIThread.Post 才执行，构造期访问为 null（WelcomeWindow 构造 NRE 实证）。
+	// 定制经 pending 机制在 AddDialogHeader 创建控件后应用。
+	private Action<TextBlock> _pendingTitleCustomization;
+
+	private Action<TextBlock> _pendingDescriptionCustomization;
+
+	/// <summary>
+	/// 定制标题 TextBlock（FontSize/Foreground/TextWrapping 等）。chrome 未初始化时
+	/// 挂起待 AddDialogHeader 执行；已初始化则立即应用。构造期安全的等价写法。
+	/// </summary>
+	protected void CustomizeTitleTextBlock(Action<TextBlock> customization)
+	{
+		if (TitleTextBlock != null)
+		{
+			customization(TitleTextBlock);
+		}
+		else
+		{
+			_pendingTitleCustomization += customization;
+		}
+	}
+
+	/// <summary>定制描述 TextBlock，语义同 CustomizeTitleTextBlock。</summary>
+	protected void CustomizeDescriptionTextBlock(Action<TextBlock> customization)
+	{
+		if (DescriptionTextBlock != null)
+		{
+			customization(DescriptionTextBlock);
+		}
+		else
+		{
+			_pendingDescriptionCustomization += customization;
+		}
+	}
 
 		public GitCommandResult GitResult { get; protected set; }
 
@@ -428,7 +465,11 @@ namespace ForkPlus.UI.Dialogs
 			stackPanel.Children.Add(textBlock2);
 			obj.Children.Add(stackPanel);
 			TitleTextBlock = textBlock;
-			DescriptionTextBlock = textBlock2;
+		DescriptionTextBlock = textBlock2;
+		_pendingTitleCustomization?.Invoke(textBlock);
+		_pendingTitleCustomization = null;
+		_pendingDescriptionCustomization?.Invoke(textBlock2);
+		_pendingDescriptionCustomization = null;
 			if (_pendingDialogTitle != null)
 			{
 				DialogTitle = _pendingDialogTitle;
