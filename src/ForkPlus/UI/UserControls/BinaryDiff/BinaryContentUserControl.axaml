@@ -12,11 +12,10 @@
           <ColumnDefinition Width="42" />
         </Grid.ColumnDefinitions>
         <Grid.Children>
-          <ContentControl Grid.Column="0" x:Name="LfsLabel">
+          <ContentControl Grid.Column="0" x:Name="LfsLabel" HorizontalAlignment="Left">
             <Label.Theme>
               <DynamicResource ResourceKey="LfsLabel" />
             </Label.Theme>
-            <Label.HorizontalAlignment>Left</Label.HorizontalAlignment>
           </ContentControl>
           <ContentControl Grid.Column="0" x:Name="NotLfsLabel">
             <Label.Theme>

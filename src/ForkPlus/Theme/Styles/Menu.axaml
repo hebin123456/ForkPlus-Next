@@ -16,7 +16,7 @@
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontFamily" Value="Segoe UI" />
-    <Setter Property="LayoutTransform" Value="{DynamicResource LayoutScaleTransform}" />
+<!-- TODO 迁移：WPF Setter Property=LayoutTransform 已删（Avalonia 该类型无此属性） -->
     <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
     <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -106,77 +106,15 @@
               <ScrollContentPresenter CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" Margin="{TemplateBinding Padding}" />
             </Border>
             <RepeatButton Grid.Column="0" Focusable="False" Grid.Row="0" Theme="{DynamicResource MenuRepeatButtonStyle}">
-              <RepeatButton.CommandTarget>
-                <Binding>
-                  <Binding.RelativeSource>
-                    <RelativeSource Mode="TemplatedParent" />
-                  </Binding.RelativeSource>
-                </Binding>
-              </RepeatButton.CommandTarget>
-              <RepeatButton.IsVisible>
-                <MultiBinding ConverterParameter="0" FallbackValue="Visibility.Collapsed">
-                  <MultiBinding.Converter>
-                    <MenuScrollingVisibilityConverter />
-                  </MultiBinding.Converter>
-                  <Binding Path="ComputedVerticalScrollBarVisibility">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="TemplatedParent" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                  <Binding Path="VerticalOffset">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="TemplatedParent" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                  <Binding Path="ExtentHeight">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="TemplatedParent" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                  <Binding Path="ViewportHeight">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="TemplatedParent" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                </MultiBinding>
-              </RepeatButton.IsVisible>
+<!-- TODO 迁移：WPF RepeatButton.CommandTarget 块已删（Avalonia 无 CommandTarget） -->
+
+              <RepeatButton.IsVisible>False</RepeatButton.IsVisible>
               <Path Data="M0,4L3.5,0 7,4z" Fill="{DynamicResource ForegroundBrush}" />
             </RepeatButton>
             <RepeatButton Grid.Column="0" Focusable="False" Grid.Row="2" Theme="{DynamicResource MenuRepeatButtonStyle}">
-              <RepeatButton.CommandTarget>
-                <Binding>
-                  <Binding.RelativeSource>
-                    <RelativeSource Mode="TemplatedParent" />
-                  </Binding.RelativeSource>
-                </Binding>
-              </RepeatButton.CommandTarget>
-              <RepeatButton.IsVisible>
-                <MultiBinding ConverterParameter="100" FallbackValue="Visibility.Collapsed">
-                  <MultiBinding.Converter>
-                    <MenuScrollingVisibilityConverter />
-                  </MultiBinding.Converter>
-                  <Binding Path="ComputedVerticalScrollBarVisibility">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="TemplatedParent" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                  <Binding Path="VerticalOffset">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="TemplatedParent" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                  <Binding Path="ExtentHeight">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="TemplatedParent" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                  <Binding Path="ViewportHeight">
-                    <Binding.RelativeSource>
-                      <RelativeSource Mode="TemplatedParent" />
-                    </Binding.RelativeSource>
-                  </Binding>
-                </MultiBinding>
-              </RepeatButton.IsVisible>
+<!-- TODO 迁移：WPF RepeatButton.CommandTarget 块已删（Avalonia 无 CommandTarget） -->
+
+              <RepeatButton.IsVisible>False</RepeatButton.IsVisible>
               <Path Data="M0,0L3.5,4 7,0z" Fill="{DynamicResource ForegroundBrush}" />
             </RepeatButton>
           </Grid>
@@ -593,7 +531,7 @@
     -->
   </ControlTemplate>
   <ControlTheme x:Key="SearchableSubmenuMenuItem" TargetType="MenuItem">
-    <Setter Property="Template" Value="{DynamicResource {SearchableSubmenuHeaderTemplateKey}}" />
+    <Setter Property="Template" Value="{DynamicResource SearchableSubmenuHeaderTemplateKey}" />
   </ControlTheme>
   <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem">
     <Setter Property="Background" Value="#00FFFFFF" />
@@ -603,27 +541,33 @@
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
 <!-- TODO 迁移：WPF Setter Property=HorizontalContentAlignment 已删（Avalonia 该类型无此属性） -->
 <!-- TODO 迁移：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
-    <Setter Property="Template" Value="{DynamicResource {SubmenuItemTemplateKey}}" />
+    <Setter Property="Template" Value="{DynamicResource SubmenuItemTemplateKey}" />
     
   
+<!-- TODO 迁移：WPF 选择器 ^[Role=TopLevelHeader] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[Role=TopLevelHeader]">
         <Setter Property="Height" Value="26" />
         <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="BorderBrush" Value="#00FFFFFF" />
         <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
-        <Setter Property="Template" Value="{DynamicResource {TopLevelHeaderTemplateKey}}" />
+        <Setter Property="Template" Value="{DynamicResource TopLevelHeaderTemplateKey}" />
         <Setter Property="Padding" Value="5,0" />
-    </Style>
+    </Style>-->
+
+<!-- TODO 迁移：WPF 选择器 ^[Role=TopLevelItem] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[Role=TopLevelItem]">
         <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
         <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
-        <Setter Property="Template" Value="{DynamicResource {TopLevelItemTemplateKey}}" />
+        <Setter Property="Template" Value="{DynamicResource TopLevelItemTemplateKey}" />
         <Setter Property="Padding" Value="6,0" />
-    </Style>
+    </Style>-->
+
+<!-- TODO 迁移：WPF 选择器 ^[Role=SubmenuHeader] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[Role=SubmenuHeader]">
-        <Setter Property="Template" Value="{DynamicResource {SubmenuHeaderTemplateKey}}" />
-    </Style></ControlTheme>
+        <Setter Property="Template" Value="{DynamicResource SubmenuHeaderTemplateKey}" />
+    </Style>-->
+</ControlTheme>
   <ControlTheme x:Key="{x:Type Menu}" TargetType="Menu">
     <Setter Property="Background" Value="{DynamicResource Menu.Static.Background}" />
     <Setter Property="Foreground" Value="{DynamicResource Menu.Static.Foreground}" />

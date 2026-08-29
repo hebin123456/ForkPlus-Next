@@ -42,9 +42,11 @@
       </Setter.Value>
     </Setter>
   
+<!-- TODO 迁移：WPF 选择器 ^[HasContent=true] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[HasContent=true]">
         <Setter Property="Padding" Value="6,-1,0,0" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:disabled /template/ Border#CheckBoxBorder">
         <Setter Value="{DynamicResource OptionMark.Disabled.Border}" Property="BorderBrush" />
     </Style>

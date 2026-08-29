@@ -67,7 +67,7 @@
 <!-- TODO 迁移：WPF dialogs:MultiselectionListView.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
           <dialogs:MultiselectionListView.ItemContainerTheme>
-            <ControlTheme TargetType="dialogs:MultiselectionListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}" x:Key="{x:Type dialogs:MultiselectionListViewItem}">
+            <ControlTheme TargetType="dialogs:MultiselectionListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
               
               <Setter Property="Height" Value="22" />
               <Setter Property="HorizontalContentAlignment" Value="Stretch" />

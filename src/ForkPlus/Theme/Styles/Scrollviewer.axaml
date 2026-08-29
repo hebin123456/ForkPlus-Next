@@ -127,7 +127,7 @@
     
   
     <Style Selector="^:horizontal">
-        <Setter Property="Width" Value="Auto" />
+<!-- TODO 迁移：WPF Setter Property=Width Value=Auto 已删（Avalonia double 不接受 Auto） -->
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Height" Value="13" />
         <Setter Property="MinHeight" Value="13" />
@@ -142,10 +142,10 @@
                   <ColumnDefinition Width="10" />
                 </Grid.ColumnDefinitions>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
-                <RepeatButton IsEnabled="{TemplateBinding IsMouseOver}" x:Name="PART_LineLeftButton" Theme="{DynamicResource ScrollBarButton}">
+                <RepeatButton x:Name="PART_LineLeftButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
                 </RepeatButton>
-                <Track Grid.Column="1" IsEnabled="{TemplateBinding IsMouseOver}" Margin="0,0,0,0" x:Name="PART_Track">
+                <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
                   <Track.DecreaseButton>
                     <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
                   </Track.DecreaseButton>
@@ -156,7 +156,7 @@
                     <Thumb Theme="{DynamicResource ScrollBarThumbHorizontal}" />
                   </Track.Thumb>
                 </Track>
-                <RepeatButton Grid.Column="2" IsEnabled="{TemplateBinding IsMouseOver}" x:Name="PART_LineRightButton" Theme="{DynamicResource ScrollBarButton}">
+                <RepeatButton Grid.Column="2" x:Name="PART_LineRightButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
                 </RepeatButton>
               </Grid>
@@ -206,10 +206,10 @@
     <Style Selector="^:pointerover:pressed /template/ Path#ArrowTop">
         <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
     </Style>
-    <Style Selector="^:pointerover[IsPressed=false] /template/ Path#ArrowBottom">
+    <Style Selector="^:pointerover /template/ Path#ArrowBottom">
         <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
     </Style>
-    <Style Selector="^:pointerover[IsPressed=false] /template/ Path#ArrowTop">
+    <Style Selector="^:pointerover /template/ Path#ArrowTop">
         <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
     </Style>
     <Style Selector="^:disabled /template/ Path#ArrowTop">
@@ -261,7 +261,7 @@
     
   
     <Style Selector="^:horizontal">
-        <Setter Property="Width" Value="Auto" />
+<!-- TODO 迁移：WPF Setter Property=Width Value=Auto 已删（Avalonia double 不接受 Auto） -->
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Height" Value="13" />
         <Setter Property="MinHeight" Value="13" />
@@ -276,10 +276,10 @@
                   <ColumnDefinition Width="10" />
                 </Grid.ColumnDefinitions>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
-                <RepeatButton IsEnabled="{TemplateBinding IsMouseOver}" x:Name="PART_LineLeftButton" Theme="{DynamicResource ScrollBarButton}">
+                <RepeatButton x:Name="PART_LineLeftButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
                 </RepeatButton>
-                <Track Grid.Column="1" IsEnabled="{TemplateBinding IsMouseOver}" Margin="0,0,0,0" x:Name="PART_Track">
+                <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
                   <Track.DecreaseButton>
                     <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
                   </Track.DecreaseButton>
@@ -290,7 +290,7 @@
                     <Thumb Theme="{DynamicResource ScrollBarThumbHorizontal}" />
                   </Track.Thumb>
                 </Track>
-                <RepeatButton Grid.Column="2" IsEnabled="{TemplateBinding IsMouseOver}" x:Name="PART_LineRightButton" Theme="{DynamicResource ScrollBarButton}">
+                <RepeatButton Grid.Column="2" x:Name="PART_LineRightButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
                 </RepeatButton>
               </Grid>
@@ -340,10 +340,10 @@
     <Style Selector="^:pointerover:pressed /template/ Path#ArrowTop">
         <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
     </Style>
-    <Style Selector="^:pointerover[IsPressed=false] /template/ Path#ArrowBottom">
+    <Style Selector="^:pointerover /template/ Path#ArrowBottom">
         <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
     </Style>
-    <Style Selector="^:pointerover[IsPressed=false] /template/ Path#ArrowTop">
+    <Style Selector="^:pointerover /template/ Path#ArrowTop">
         <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
     </Style>
     <Style Selector="^:disabled /template/ Path#ArrowTop">

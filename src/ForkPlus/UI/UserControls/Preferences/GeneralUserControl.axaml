@@ -43,7 +43,7 @@
           <RowDefinition Height="17" />
         </Grid.RowDefinitions>
         <Grid.Children>
-          <ListBox VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" x:Name="SrcDirsListBox">
+          <ListBox VerticalAlignment="Stretch" x:Name="SrcDirsListBox">
             <ListBox.BorderBrush>
               <DynamicResource ResourceKey="BorderBrush" />
             </ListBox.BorderBrush>

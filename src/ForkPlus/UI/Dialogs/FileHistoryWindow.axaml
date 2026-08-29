@@ -206,7 +206,7 @@
         <ColumnDefinition Width="1" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" Grid.Column="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" x:Name="TreeView" DoubleTapped="TreeView_MouseDoubleClick" Theme="{DynamicResource FileHistoryMultiselectionTreeViewStyle}">
+      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" Grid.Column="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="TreeView" DoubleTapped="TreeView_MouseDoubleClick" Theme="{DynamicResource FileHistoryMultiselectionTreeViewStyle}">
         <controls:MultiselectionTreeView.ContextMenu>
           <ContextMenu />
         </controls:MultiselectionTreeView.ContextMenu>

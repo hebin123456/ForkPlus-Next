@@ -102,7 +102,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		// TODO 迁移：WPF Slider.ValueChanged 是 RoutedPropertyChangedEventHandler<double>，
+		// Avalonia RangeBase.ValueChanged 是 EventHandler<RangeBaseValueChangedEventArgs>。
+		private void Slider_ValueChanged(object sender, global::Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
 		{
 			RefreshOverlayImageOpacity();
 		}

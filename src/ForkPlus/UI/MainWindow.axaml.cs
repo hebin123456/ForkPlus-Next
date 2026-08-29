@@ -498,7 +498,9 @@ namespace ForkPlus.UI
 			}));
 		}
 
-		private void Window_Closing(object sender, CancelEventArgs e)
+		// TODO 迁移：WPF Closing 事件是 CancelEventHandler(CancelEventArgs)，
+		// Avalonia Window.Closing 是 EventHandler<WindowClosingEventArgs>。
+		private void Window_Closing(object sender, global::Avalonia.Controls.WindowClosingEventArgs e)
 		{
 			ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationStateX();
 			TabManager.SaveSession();

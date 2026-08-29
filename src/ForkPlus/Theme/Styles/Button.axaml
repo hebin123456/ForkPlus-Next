@@ -116,9 +116,11 @@
       </Setter.Value>
     </Setter>
   
+<!-- TODO 迁移：WPF 选择器 ^[IsDefaulted=true] /template/ Border#Border 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsDefaulted=true] /template/ Border#Border">
         <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:pressed /template/ Border#Border">
         <Setter Value="{DynamicResource Button.Pressed.Background}" Property="Background" />
         <Setter Value="{DynamicResource Button.Pressed.Border}" Property="BorderBrush" />
@@ -443,9 +445,11 @@
       </Setter.Value>
     </Setter>
   
+<!-- TODO 迁移：WPF 选择器 ^[HasContent=true] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[HasContent=true]">
         <Setter Property="Padding" Value="6,-1,0,0" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:disabled /template/ Border#RadioButtonBorder">
         <Setter Value="{DynamicResource OptionMark.Disabled.Background}" Property="Background" />
         <Setter Value="{DynamicResource OptionMark.Disabled.Border}" Property="BorderBrush" />
@@ -559,9 +563,11 @@
       </Setter.Value>
     </Setter>
   
+<!-- TODO 迁移：WPF 选择器 ^[IsDefaulted=true] /template/ Border#border 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsDefaulted=true] /template/ Border#border">
         <Setter Value="{DynamicResource AccentBrush}" Property="BorderBrush" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:pointerover /template/ Border#border">
         <Setter Value="{DynamicResource Button.MouseOver.Background}" Property="Background" />
         <Setter Value="{DynamicResource Button.MouseOver.Border}" Property="BorderBrush" />
@@ -630,7 +636,7 @@
   
     <Style Selector="^:pointerover /template/ TextBlock#textBlock">
         <Setter Value="{DynamicResource AccentBrush}" Property="Foreground" />
-        <Setter Property="TextDecorations" Value="Underline" />
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style>
     <Style Selector="^:pointerover">
         <Setter Property="Cursor" Value="Hand" />
@@ -653,7 +659,7 @@
   
     <Style Selector="^:pointerover /template/ TextBlock#textBlock">
         <Setter Value="{DynamicResource AccentBrush}" Property="Foreground" />
-        <Setter Property="TextDecorations" Value="Underline" />
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style>
     <Style Selector="^:pointerover">
         <Setter Property="Cursor" Value="Hand" />
@@ -663,7 +669,7 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="LfsTextButtonStyle" TargetType="Button" BasedOn="{StaticResource TextButtonStyle}">
     
-    <Setter Property="Height" Value="Auto" />
+<!-- TODO 迁移：WPF Setter Property=Height Value=Auto 已删（Avalonia double 不接受 Auto） -->
     <Setter Property="FontSize" Value="13" />
   </ControlTheme>
   <ControlTheme x:Key="LfsImageButtonStyle" TargetType="Button" BasedOn="{StaticResource TransparentButtonStyle}">

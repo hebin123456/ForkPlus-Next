@@ -34,9 +34,11 @@
     </Setter>
     
   
+<!-- TODO 迁移：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
         <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
         <Setter Property="IsVisible" Value="True" />
     </Style>
@@ -92,9 +94,11 @@
     </Setter>
     
   
+<!-- TODO 迁移：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
         <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:empty /template/ TextBlock#PlaceholderElement">
         <Setter Property="IsVisible" Value="True" />
     </Style>

@@ -74,7 +74,7 @@
           </Setter>
         </Style>
     -->
-  <ControlTheme TargetType="GridSplitter">
+  <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter">
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
   </ControlTheme>
   <ControlTheme x:Key="HorizontalGridSplitter" TargetType="GridSplitter">
@@ -152,6 +152,9 @@
         <ControlTemplate TargetType="controls:CommandTextBox">
           <DockPanel>
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" x:Name="PART_LabelsStackPanel" />
+            <!-- TODO 迁移：TextBox 子类必须有 PART_TextPresenter 模板部件（AVLN2205），
+                 CommandTextBox 的文本显示实际由内嵌 PlaceholderTextBox 承担，此处放隐藏占位部件。 -->
+            <TextPresenter x:Name="PART_TextPresenter" IsVisible="False" />
             <controls:PlaceholderTextBox Margin="2,0,0,0" BorderThickness="{TemplateBinding BorderThickness}" FontSize="{TemplateBinding FontSize}" Placeholder="Command" x:Name="PART_PlaceholderTextBox">
               <controls:PlaceholderTextBox.Text>
                 <Binding Path="Text">
@@ -171,7 +174,7 @@
   </ControlTheme>
   <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
     
-    <Setter Property="HasDropShadow" Value="True" />
+<!-- TODO 迁移：WPF Setter Property=HasDropShadow 已删（Avalonia 该类型无此属性） -->
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
@@ -189,16 +192,20 @@
       </Setter.Value>
     </Setter>
   
+<!-- TODO 迁移：WPF 选择器 ^[HasDropShadow=True] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[HasDropShadow=True]">
         <Setter Property="Margin" Value="10" />
-    </Style>
+    </Style>-->
+
+<!-- TODO 迁移：WPF 选择器 ^[HasDropShadow=True] /template/ Border#Border 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[HasDropShadow=True] /template/ Border#Border">
         <Setter Property="Effect">
                 <Setter.Value>
                   <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.2" OffsetY="1" />
                 </Setter.Value>
               </Setter>
-    </Style></ControlTheme>
+    </Style>-->
+</ControlTheme>
   <ControlTheme x:Key="{x:Type ContentControl}" TargetType="ContentControl">
     
   </ControlTheme>

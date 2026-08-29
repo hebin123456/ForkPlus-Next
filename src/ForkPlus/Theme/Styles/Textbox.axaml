@@ -24,9 +24,11 @@
     </Setter>
     
   
+<!-- TODO 迁移：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
         <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:disabled /template/ Border#Border">
         <Setter Property="Opacity" Value="0.56" />
     </Style>
@@ -49,7 +51,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="PasswordBox">
+        <ControlTemplate TargetType="TextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" />
           </Border>
@@ -59,9 +61,11 @@
     </Setter>
     
   
+<!-- TODO 迁移：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
         <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:disabled /template/ Border#Border">
         <Setter Property="Opacity" Value="0.56" />
     </Style>

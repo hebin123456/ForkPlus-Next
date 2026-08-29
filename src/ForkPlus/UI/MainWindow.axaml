@@ -42,7 +42,7 @@
                               <ColumnDefinition Width="Auto" />
                               <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Menu Grid.Column="0" HorizontalAlignment="Left" IsMainMenu="True" Background="{DynamicResource Window.TitleBar.Background}" x:Name="PART_MainMenu" />
+                            <Menu Grid.Column="0" HorizontalAlignment="Left" Background="{DynamicResource Window.TitleBar.Background}" x:Name="PART_MainMenu" />
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,90,0">
                               <Image Source="{TemplateBinding Icon}" />
                               <ContentControl Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}">

@@ -46,7 +46,7 @@
     <Style Selector="^:selected /template/ Border#SelectionIndicator">
         <Setter Property="IsVisible" Value="True" />
     </Style>
-    <Style Selector="^[IsSelected=False]:pointerover[IsKeyboardFocused=False] /template/ Border#Bd">
+    <Style Selector="^[IsSelected=False]:pointerover /template/ Border#Bd">
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewHover.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewHover.Border}" Property="BorderBrush" />
     </Style>
@@ -58,7 +58,7 @@
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelectedHover.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelectedHover.Border}" Property="BorderBrush" />
     </Style>
-    <Style Selector="^:selected[IsKeyboardFocused=False] /template/ Border#Bd">
+    <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelectedNoFocus.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBoxItem.ItemsviewSelectedNoFocus.Border}" Property="BorderBrush" />
     </Style>
@@ -102,10 +102,12 @@
       </Setter.Value>
     </Setter>
   
+<!-- TODO 迁移：WPF 选择器 ^[IsEditable=true] /template/ Border#splitBorder 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsEditable=true] /template/ Border#splitBorder">
         <Setter Value="{DynamicResource ComboBox.Static.Editable.Button.Background}" Property="Background" />
         <Setter Value="{DynamicResource ComboBox.Static.Editable.Button.Border}" Property="BorderBrush" />
-    </Style>
+    </Style>-->
+
     <Style Selector="^:pressed /template/ Path#arrow">
         <Setter Value="{DynamicResource ComboBox.Pressed.Glyph}" Property="Fill" />
     </Style>
@@ -414,11 +416,13 @@
     <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}" />
     
   
+<!-- TODO 迁移：WPF 选择器 ^[IsEditable=true] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsEditable=true]">
         <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
         <Setter Property="Padding" Value="2" />
         <Setter Property="Template" Value="{StaticResource ComboBoxEditableTemplate}" />
-    </Style></ControlTheme>
+    </Style>-->
+</ControlTheme>
   <ControlTheme x:Key="InteractiveRebaseToggleButton" TargetType="ToggleButton">
     
     <Setter Property="Margin" Value="0,2,0,2" />

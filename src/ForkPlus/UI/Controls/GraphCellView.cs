@@ -41,9 +41,10 @@ namespace ForkPlus.UI.Controls
 
 		private Sha? _activeMergePointSha;
 
-		public static readonly global::Avalonia.AvaloniaProperty CellHeightProperty;
+		// TODO 迁移：字段类型收紧为 StyledProperty<T>（XAML 编译器要求 typed property）。
+                public static readonly global::Avalonia.StyledProperty<double> CellHeightProperty;
 
-		public static readonly global::Avalonia.AvaloniaProperty ShowGraphToolTipProperty;
+                public static readonly global::Avalonia.StyledProperty<bool> ShowGraphToolTipProperty;
 
 		private bool _isMouseOver;
 

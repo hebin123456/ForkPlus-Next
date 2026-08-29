@@ -29,15 +29,17 @@ namespace ForkPlus.UI
 
 		protected const string PartNameMaximizeButton = "PART_MaximizeButton";
 
-		public static readonly global::Avalonia.AvaloniaProperty HeaderHeightProperty;
+		// TODO 迁移：字段类型从 AvaloniaProperty 收紧为 StyledProperty<T>（XAML 编译器要求 typed property，
+		// 否则 TemplateBinding ui:CustomWindow.Xxx 报 "doesn't inherit from AvaloniaProperty<T>"）。
+		public static readonly global::Avalonia.StyledProperty<double> HeaderHeightProperty;
 
-		public static readonly global::Avalonia.AvaloniaProperty ShowHeaderProperty;
+		public static readonly global::Avalonia.StyledProperty<bool> ShowHeaderProperty;
 
-		public static readonly global::Avalonia.AvaloniaProperty HideMinimizeMaximizeButtonsProperty;
+		public static readonly global::Avalonia.StyledProperty<bool> HideMinimizeMaximizeButtonsProperty;
 
-		public static readonly global::Avalonia.AvaloniaProperty IsTitleVisibleProperty;
+		public static readonly global::Avalonia.StyledProperty<bool> IsTitleVisibleProperty;
 
-		public static readonly global::Avalonia.AvaloniaProperty WindowResizeBorderThicknessProperty;
+		public static readonly global::Avalonia.StyledProperty<global::Avalonia.Thickness> WindowResizeBorderThicknessProperty;
 
 		private global::Avalonia.Controls.Control _templatePartWindowHeader;
 

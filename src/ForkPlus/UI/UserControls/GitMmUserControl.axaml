@@ -51,7 +51,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
               </Grid.RowDefinitions>
-              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly" PointerWheelChanged="SubreposTabControl_PreviewMouseWheel">
+              <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Disabled" PointerWheelChanged="SubreposTabControl_PreviewMouseWheel">
                 <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
                   <ItemsPresenter Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
                   <Canvas>

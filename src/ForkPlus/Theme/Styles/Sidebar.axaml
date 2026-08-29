@@ -1,17 +1,19 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ControlTheme x:Key="RepositoryTitleHyperlinkStyle" TargetType="HyperlinkButton">
     
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
-    </Setter>
+    </Setter>-->
+
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     
   
     <Style Selector="^:pointerover">
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="TextDecorations" Value="Underline" />
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="SidebarButton" TargetType="RadioButton">
     

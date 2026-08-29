@@ -26,15 +26,8 @@
     <Setter Property="Background" Value="{DynamicResource AccentSecondaryBrush}" />
     <Setter Property="FontSize" Value="11" />
     <Setter Property="Foreground" Value="#FFFFFFFF" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="Label">
-          <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
-            <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
+<!-- TODO 迁移：WPF Setter Property=Template 块已删（Avalonia TextBlock 无 Template，LfsLabel 需改用 ContentControl） -->
+
   </ControlTheme>
   <ControlTheme x:Key="NotLfsLabel" TargetType="TextBlock">
     <Setter Property="Height" Value="16" />
@@ -44,29 +37,24 @@
     <Setter Property="Background" Value="#FFFF6663" />
     <Setter Property="FontSize" Value="11" />
     <Setter Property="Foreground" Value="#FFFFFFFF" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="Label">
-          <Border Width="{TemplateBinding Width}" Background="{TemplateBinding Background}" CornerRadius="4">
-            <TextBlock Margin="0,0,0,1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="not LFS" FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" x:Name="ContentTextBlock" />
-          </Border>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
+<!-- TODO 迁移：WPF Setter Property=Template 块已删（Avalonia TextBlock 无 Template，LfsLabel 需改用 ContentControl） -->
+
   </ControlTheme>
   <ControlTheme x:Key="BugtrackerHyperlinkStyle" TargetType="HyperlinkButton">
     
     <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
-    </Setter>
+    </Setter>-->
+
     
   
     <Style Selector="^:pointerover">
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="TextDecorations" Value="Underline" />
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="BlueHyperlinkStyle" TargetType="HyperlinkButton">
     
@@ -79,16 +67,18 @@
   <ControlTheme x:Key="BlueUnderlineHyperlinkStyle" TargetType="HyperlinkButton">
     
     <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
-    </Setter>
+    </Setter>-->
+
     
   
     <Style Selector="^:pointerover">
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="TextDecorations" Value="Underline" />
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="GrayHyperlinkStyle" TargetType="HyperlinkButton">
     
@@ -99,16 +89,18 @@
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
     </Style></ControlTheme>
   <ControlTheme x:Key="GrayUnderlineHyperlinkStyle" TargetType="HyperlinkButton" BasedOn="{StaticResource GrayHyperlinkStyle}">
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
       </Setter.Value>
-    </Setter>
+    </Setter>-->
+
     
   
     <Style Selector="^:pointerover">
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-        <Setter Property="TextDecorations" Value="Underline" />
+<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="HintTextBlock" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
     <Setter Property="Text" Value="?" />

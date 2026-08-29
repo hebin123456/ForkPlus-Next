@@ -26,7 +26,7 @@
       </Setter.Value>
     </Setter>
   </ControlTheme>
-  <ControlTheme TargetType="TabControl">
+  <ControlTheme x:Key="{x:Type TabControl}" TargetType="TabControl">
 <!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
     <Style.Resources>
       <ResourceDictionary>

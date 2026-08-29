@@ -236,8 +236,8 @@
     <Setter Property="BorderBrush" Value="{DynamicResource Calendar.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CalendarDayButtonStyle" Value="{DynamicResource CalendarDayButtonStyle}" />
-    <Setter Property="CalendarButtonStyle" Value="{DynamicResource CalendarButtonStyle}" />
+<!-- TODO 迁移：WPF Setter Property=CalendarDayButtonStyle 已删（Avalonia 该类型无此属性） -->
+<!-- TODO 迁移：WPF Setter Property=CalendarButtonStyle 已删（Avalonia 该类型无此属性） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Calendar">

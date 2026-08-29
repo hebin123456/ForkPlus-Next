@@ -39,7 +39,7 @@
     
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ListViewItem">
+        <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -119,12 +119,12 @@
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Padding" Value="2" />
     <Setter Property="Margin" Value="2,0" />
-    <Setter Property="Height" Value="Auto" />
+<!-- TODO 迁移：WPF Setter Property=Height Value=Auto 已删（Avalonia double 不接受 Auto） -->
     
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ListViewItem">
+        <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -197,7 +197,7 @@
     <Setter Property="Height" Value="50" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Margin" Value="0" />
-    <Setter Property="Height" Value="Auto" />
+<!-- TODO 迁移：WPF Setter Property=Height Value=Auto 已删（Avalonia double 不接受 Auto） -->
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="Background" Value="{DynamicResource Sidebar.Static.Background}" />
     
@@ -235,7 +235,7 @@
     
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ListViewItem">
+        <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>

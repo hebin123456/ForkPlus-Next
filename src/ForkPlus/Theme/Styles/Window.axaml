@@ -14,7 +14,7 @@
     <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
     
   
-    <Style Selector="^:pointerover[IsPressed=false]">
+    <Style Selector="^:pointerover">
         <Setter Property="Fill" Value="{DynamicResource Window.Button.MouseOver.Foreground}" />
     </Style></ControlTheme>
   <ControlTheme x:Key="WindowCloseButtonPathStyle" TargetType="Path" BasedOn="{StaticResource {x:Type Path}}">
@@ -26,7 +26,7 @@
     <Setter Property="Fill" Value="{DynamicResource Window.Button.Static.Foreground}" />
     
   
-    <Style Selector="^:pointerover[IsPressed=false]">
+    <Style Selector="^:pointerover">
         <Setter Property="Fill" Value="#FFFFFFFF" />
     </Style></ControlTheme>
   <ControlTheme x:Key="WindowButton" TargetType="Button">
@@ -205,9 +205,11 @@
       </Setter.Value>
     </Setter>
   
+<!-- TODO 迁移：WPF 选择器 ^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip">
         <Setter Property="IsVisible" Value="True" />
-    </Style></ControlTheme>
+    </Style>-->
+</ControlTheme>
   <ControlTheme x:Key="ForkPlusDialogWindowStyle" TargetType="dialogs:ForkPlusDialogWindow" BasedOn="{StaticResource {x:Type ui:CustomWindow}}">
     <Setter Property="ui:CustomWindow.HideMinimizeMaximizeButtons" Value="True" />
     <Setter Property="Background" Value="{DynamicResource Window.Dialog.Background}" />
@@ -259,7 +261,9 @@
       </Setter.Value>
     </Setter>
   
+<!-- TODO 迁移：WPF 选择器 ^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip">
         <Setter Property="IsVisible" Value="True" />
-    </Style></ControlTheme>
+    </Style>-->
+</ControlTheme>
 </ResourceDictionary>

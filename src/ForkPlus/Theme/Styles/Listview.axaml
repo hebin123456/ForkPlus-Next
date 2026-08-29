@@ -50,7 +50,7 @@
     
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ListViewItem">
+        <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd" Theme="{DynamicResource ListItemRoundedBorderStyle}">
             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
@@ -88,7 +88,7 @@
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ListView">
+        <ControlTemplate TargetType="ListBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" x:Name="Bd">
             <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}">
               <ItemsPresenter />
@@ -169,7 +169,7 @@
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ListViewItem">
+        <ControlTemplate TargetType="ListBoxItem">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Margin="4,0,4,0" x:Name="Bd">
             <Border.CornerRadius>
               <Binding Path="SelectionType"><Binding.Converter><ui:SelectionToCornerRadiusConverter /></Binding.Converter></Binding>
@@ -193,7 +193,7 @@
     <Style Selector="^:selected">
         <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
     </Style></ControlTheme>
-  <ControlTheme x:Key="ListViewWithGridViewStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListView}}">
+  <ControlTheme x:Key="ListViewWithGridViewStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
 <!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
     <Style.Resources>
       <ResourceDictionary>
@@ -203,7 +203,7 @@
 
     <Setter Property="Template">
       <Setter.Value>
-        <ControlTemplate TargetType="ListView">
+        <ControlTemplate TargetType="ListBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Theme="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
               <ItemsPresenter />
@@ -363,9 +363,8 @@
     </Setter>
     
   
-    <Style Selector="^[SelectionMode=Extended]">
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-    </Style></ControlTheme>
+<!-- TODO 迁移：WPF 选择器 ^[SelectionMode=Extended] 无对应 Avalonia 属性，样式块已删（原始内容见 git 历史） -->
+</ControlTheme>
   <ControlTheme x:Key="NoSelectionListBoxStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
     
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->

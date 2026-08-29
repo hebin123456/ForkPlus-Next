@@ -13,11 +13,14 @@ namespace ForkPlus.UI.Controls
 	{
 		protected static readonly List<Range> Empty = new List<Range>();
 
+		// TODO 迁移：WPF DependencyProperty → Avalonia StyledProperty。
+		// 原转换用 RegisterAttached<..., AvaloniaObject, ...>（附加属性形式），XAML 属性元素语法
+		// <controls:TextField.StringValue><Binding/></...> 无法解析，改为普通 Register。
 		public static readonly global::Avalonia.StyledProperty<string> StringValueProperty =
-    global::Avalonia.AvaloniaProperty.RegisterAttached<TextField, global::Avalonia.AvaloniaObject, string>("StringValue");
+    global::Avalonia.AvaloniaProperty.Register<TextField, string>("StringValue");
 
-		public static readonly global::Avalonia.StyledProperty<string> HighlightPatternProperty =
-    global::Avalonia.AvaloniaProperty.RegisterAttached<TextField, global::Avalonia.AvaloniaObject, string>("HighlightString");
+		public static readonly global::Avalonia.StyledProperty<string> HighlightStringProperty =
+    global::Avalonia.AvaloniaProperty.Register<TextField, string>("HighlightString");
 
 		public string StringValue
 		{
@@ -35,11 +38,11 @@ namespace ForkPlus.UI.Controls
 		{
 			get
 			{
-				return (string)GetValue(HighlightPatternProperty);
+				return GetValue(HighlightStringProperty);
 			}
 			set
 			{
-				SetValue(HighlightPatternProperty, value);
+				SetValue(HighlightStringProperty, value);
 			}
 		}
 
