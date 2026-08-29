@@ -218,9 +218,10 @@ namespace ForkPlus.UI
 		public static ScaleTransform LayoutScaleTransform => FindTransform("LayoutScaleTransform");
 
 		public static global::Avalonia.Media.IImage FindImage(string resourceKey)
-		{
-			return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res0) ? __res0 as ImageSource : null);
-		}
+                {
+                        // TODO 迁移：WPF ImageSource → Avalonia IImage（资源里的位图对象）。
+                        return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res0) ? __res0 as global::Avalonia.Media.IImage : null);
+                }
 
 		public static Geometry FindGeometry(string resourceKey)
 		{

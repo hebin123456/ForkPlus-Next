@@ -53,7 +53,8 @@ namespace ForkPlus.UI.Controls
 			{
 				HideEditor();
 			}
-			AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
+			// TODO 迁移：AdornerLayer 与 Avalonia.Controls.Primitives.AdornerLayer 二义性，显式用 WpfCompat 版本。
+			global::ForkPlus.UI.WpfCompat.AdornerLayer adornerLayer = global::ForkPlus.UI.WpfCompat.AdornerLayer.GetAdornerLayer(this);
 			if (adornerLayer == null)
 			{
 				return;
@@ -71,7 +72,7 @@ namespace ForkPlus.UI.Controls
 			if (_adorner != null)
 			{
 				_adorner.Child = null;
-				AdornerLayer.GetAdornerLayer(this)?.Remove(_adorner);
+				global::ForkPlus.UI.WpfCompat.AdornerLayer.GetAdornerLayer(this)?.Remove(_adorner);
 				_adorner = null;
 				IsInEditMode = false;
 			}

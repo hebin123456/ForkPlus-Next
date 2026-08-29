@@ -17,7 +17,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		public ImageData([Null] global::Avalonia.Media.Imaging.Bitmap imageSource, long fileSize, bool isLfs, bool isTracked)
 		{
-			global::Avalonia.Media.IImage = imageSource;
+			ImageSource = imageSource; // TODO 迁移：转换器误把属性名 ImageSource 写成类型全限定名。
 			FileSize = fileSize;
 			IsLfs = isLfs;
 			IsTracked = isTracked;

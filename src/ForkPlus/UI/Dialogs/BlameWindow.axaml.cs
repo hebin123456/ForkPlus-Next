@@ -446,7 +446,8 @@ namespace ForkPlus.UI.Dialogs
 			double verticalOffset = e.OffsetDelta.Y;
 			// TODO 迁移：SplitTextDiffControl.VerticalOffset 在 Avalonia 版为只读，
 			// 改调其 ScrollToVerticalOffset（行为与原赋值一致）。
-			TextDiffControl.ScrollToVerticalOffsetCompat(verticalOffset);
+			// TODO 迁移：SplitTextDiffControl 自带 ScrollToVerticalOffset，无需 ScrollViewer 扩展。
+                        TextDiffControl.ScrollToVerticalOffset(verticalOffset);
 		}
 
 		private void SplitTextDiffControl_ScrollOffsetChanged(object sender, EventArgs e)

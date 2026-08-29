@@ -643,7 +643,7 @@ namespace ForkPlus.UI.Controls
 					return textContentControl;
 				}, delegate(TextContentControl c, FileControlHeaderUserControl h)
 				{
-					global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(c,delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
+					global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(c,delegate(object s, global::ForkPlus.UI.WpfCompat.ContextMenuEventArgs e)
 					{
 						if (e.Source is TextContentControl { ContextMenu: var contextMenu } textContentControl)
 						{
@@ -1042,10 +1042,14 @@ namespace ForkPlus.UI.Controls
 			if (sender is TextDiffControl && !e.Handled)
 			{
 				e.Handled = true;
-				global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.Pointer, e.Timestamp, e.Delta);
-				mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.PointerWheelChangedEvent;
-				mouseWheelEventArgs.Source = sender;
-				(((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control)?.RaiseEvent(mouseWheelEventArgs);
+				// TODO 迁移：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器参数复杂，复用原事件参数转发到父级。
+				global::Avalonia.Controls.Control parent = ((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control;
+				if (parent != null)
+				{
+					e.Handled = false;
+					parent.RaiseEvent(e);
+					e.Handled = true;
+				}
 			}
 		}
 
@@ -1054,10 +1058,14 @@ namespace ForkPlus.UI.Controls
 			if (sender is NoUIAutomationListView && !e.Handled)
 			{
 				e.Handled = true;
-				global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.Pointer, e.Timestamp, e.Delta);
-				mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.PointerWheelChangedEvent;
-				mouseWheelEventArgs.Source = sender;
-				(((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control)?.RaiseEvent(mouseWheelEventArgs);
+				// TODO 迁移：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器参数复杂，复用原事件参数转发到父级。
+				global::Avalonia.Controls.Control parent = ((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control;
+				if (parent != null)
+				{
+					e.Handled = false;
+					parent.RaiseEvent(e);
+					e.Handled = true;
+				}
 			}
 		}
 

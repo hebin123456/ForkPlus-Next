@@ -91,7 +91,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		{
 			if (_searchPanel == null)
 			{
-				_searchPanel = global::AvaloniaEdit.Search.SearchPanel.Install(base.TextArea);
+				_searchPanel = global::AvaloniaEdit.Search.SearchPanel.Install(this); // TODO 迁移：Install 接收 TextEditor（this），不是 TextArea。
 			}
 		}
 
@@ -200,7 +200,7 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 				{
 					try
 					{
-						global::Avalonia.Clipboard.SetText(selectedText);
+						global::ForkPlus.UI.WpfCompat.Clipboard.SetText(selectedText); // TODO 迁移：WPF Clipboard.SetText 静态 → WpfCompat 兼容层。
 						e.Handled = true;
 					}
 					catch { }

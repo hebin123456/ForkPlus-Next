@@ -148,10 +148,18 @@ namespace ForkPlus.UI.Controls.Editor
 			_textEditor.PointerMoved += TextEditor_MouseMove;
 			_textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
 			_textEditor.TextChanged += TextEditor_TextChanged;
-			_textEditor.IsVisibleChanged += TextEditor_IsVisibleChanged;
+			// TODO 迁移：WPF IsVisibleChanged 事件 → Avalonia 用 Visual.IsVisibleProperty 属性变更可观察流。
+			_textEditor.GetPropertyChangedObservable(global::Avalonia.Visual.IsVisibleProperty).Subscribe(delegate(global::Avalonia.AvaloniaPropertyChangedEventArgs e) { TextEditor_IsVisibleChanged(_textEditor, e); });
 			RefreshBrush();
-			WeakEventManagerBase<TextViewWeakEventManager.ScrollOffsetChanged, TextView>.AddListener(_textEditor.TextArea.TextView, this);
+			// TODO 迁移：WPF WeakEventManagerBase<TMgr,TSrc>.AddListener → AvaloniaEdit 12 的 4 泛型 AddHandler(source, handler)。
+			AvaloniaEdit.Rendering.TextViewWeakEventManager.ScrollOffsetChanged.AddHandler(_textEditor.TextArea.TextView, TextView_ScrollOffsetChanged);
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+		}
+
+		private void TextView_ScrollOffsetChanged(object sender, EventArgs e)
+		{
+			RefreshActiveChunk();
+			InvalidateVisual();
 		}
 
 		bool IWeakEventListener.ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
@@ -184,7 +192,8 @@ namespace ForkPlus.UI.Controls.Editor
 			}
 			Rect valueOrDefault = rectForChunk.GetValueOrDefault();
 			DrawBorder(valueOrDefault, drawingContext);
-			if (_textEditor.Viewport.Height > _textEditor.ExtentHeight)
+			// TODO 迁移：WPF Viewport.Height → AvaloniaEdit TextEditor.ViewportHeight（double 属性）。
+			if (_textEditor.ViewportHeight > _textEditor.ExtentHeight)
 			{
 				if (_textEditor.TextArea.TextView.ScrollOffset.Y > 0.0)
 				{

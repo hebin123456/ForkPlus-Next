@@ -20,12 +20,13 @@ namespace ForkPlus.UI.Controls.Editor
 		protected override void OnPointerWheelChanged(global::Avalonia.Input.PointerWheelEventArgs e)
 		{
 			e.Handled = true;
-			global::Avalonia.Input.PointerWheelEventArgs mouseWheelEventArgs = new global::Avalonia.Input.PointerWheelEventArgs(e.Pointer, e.Timestamp, e.Delta);
-			mouseWheelEventArgs.RoutedEvent = global::Avalonia.Input.InputElement.PointerWheelChangedEvent;
-			mouseWheelEventArgs.Source = this;
 			if (_weakEditor.TryGetTarget(out var target))
 			{
-				target.TextArea.TextView.RaiseEvent(mouseWheelEventArgs);
+				// TODO 迁移：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器需 rootVisual 等复杂参数，
+				// 直接复用原事件参数（先复位 Handled 再转发，保持“子级已处理、编辑器继续滚动”的语义）。
+				e.Handled = false;
+				target.TextArea.TextView.RaiseEvent(e);
+				e.Handled = true;
 			}
 		}
 	}

@@ -10,6 +10,7 @@ using ForkPlus.Utils.Http;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using Avalonia.Input.Platform; // TODO 迁移：Avalonia 12 的 SetTextAsync 移到了 ClipboardExtensions 扩展方法。
 using Avalonia.Threading;
 
 namespace ForkPlus.UI.Dialogs

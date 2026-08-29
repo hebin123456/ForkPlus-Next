@@ -82,7 +82,7 @@ namespace ForkPlus.UI.Dialogs
 					CheckFileExists = true,
 					Multiselect = false
 				};
-				bool? result = dialog.ShowDialog(this);
+				bool? result = dialog.ShowDialog(); // TODO 迁移：shim 的 ShowDialog() 无参，自动取活动窗口作 owner。
 				if (result.GetValueOrDefault())
 				{
 					GitPathTextBox.Text = dialog.FileName;

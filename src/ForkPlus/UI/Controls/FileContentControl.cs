@@ -179,7 +179,7 @@ namespace ForkPlus.UI.Controls
 				return textContentControl2;
 			}, delegate(TextContentControl c, FileControlHeaderUserControl h)
 			{
-				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(c,delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
+				global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(c,delegate(object s, global::ForkPlus.UI.WpfCompat.ContextMenuEventArgs e)
 				{
 					if (e.Source is TextContentControl { ContextMenu: var contextMenu } textContentControl)
 					{

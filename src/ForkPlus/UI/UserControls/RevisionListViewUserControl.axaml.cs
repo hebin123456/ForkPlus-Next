@@ -455,28 +455,26 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		[Null]
-		private Branch GetClickedBranch(global::Avalonia.Input.TappedEventArgs args) // TODO 迁移：双击事件改为 TappedEventArgs。
-		{
-			// TODO 迁移：WPF DependencyObject 可视树遍历 → Avalonia Visual（GetVisualParent 需要 Visual）。
-			global::Avalonia.Visual dependencyObject = args.Source as global::Avalonia.Visual;
-			while (dependencyObject != null && !(dependencyObject is global::Avalonia.Controls.ListBoxItem))
+			private Branch GetClickedBranch(global::Avalonia.Input.TappedEventArgs args) // TODO 迁移：双击事件改为 TappedEventArgs。
 			{
-				if (dependencyObject is Run run)
+				// TODO 迁移：WPF DependencyObject 可视树遍历 → Avalonia Visual。
+				// WPF 中分支名是 Run 元素（Run.DataContext = BranchViewModel）；Avalonia 的 Run 不是 Visual，
+				// 命中源是包含它的 TextBlock，改为检查遍历元素的 DataContext 是否为 BranchViewModel。
+				global::Avalonia.Visual dependencyObject = args.Source as global::Avalonia.Visual;
+				while (dependencyObject != null && !(dependencyObject is global::Avalonia.Controls.ListBoxItem))
 				{
-					if (run.DataContext is BranchViewModel branchViewModel)
+					if (dependencyObject is global::Avalonia.Controls.Control { DataContext: BranchViewModel branchViewModel })
 					{
 						return branchViewModel.Reference as Branch;
 					}
-					return null;
+					dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
+					if (dependencyObject is global::Avalonia.Controls.Presenters.ContentPresenter { DataContext: BranchViewModel dataContext }) // TODO 迁移：ContentPresenter 在 Presenters 命名空间。
+					{
+						return dataContext.Reference as Branch;
+					}
 				}
-				dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
-				if (dependencyObject is global::Avalonia.Controls.Presenters.ContentPresenter { DataContext: BranchViewModel dataContext }) // TODO 迁移：ContentPresenter 在 Presenters 命名空间。
-				{
-					return dataContext.Reference as Branch;
-				}
+				return null;
 			}
-			return null;
-		}
 
 		private IEnumerable<Control> CreateCollapseContextMenu(DecoratedRevision decoratedRevision)
 		{

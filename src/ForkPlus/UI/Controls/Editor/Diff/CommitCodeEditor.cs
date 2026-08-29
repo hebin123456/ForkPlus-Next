@@ -43,7 +43,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				_diffSelectionLayer = new SideBySideCommitDiffSelectionLayer(this);
 			}
-			base.TextArea.TextView.InsertLayer(_diffSelectionLayer as global::Avalonia.Input.InputElement, KnownLayer.Selection, LayerInsertionPosition.Above);
+			// TODO 迁移：InsertLayer 参数是 Control（不是 InputElement），_diffSelectionLayer 是 Control 子类。
+			base.TextArea.TextView.InsertLayer(_diffSelectionLayer as global::Avalonia.Controls.Control, KnownLayer.Selection, LayerInsertionPosition.Above);
 			_diffSelectionLayer.Stage += delegate
 			{
 				this.Stage?.Invoke(this, this);

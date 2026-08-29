@@ -729,7 +729,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			int num = 130;
 			int num2 = 22;
-			Point point = listViewItem.TransformToAncestor(RevisionListView).Transform(new Point(num, 0.0));
+			// TODO 迁移：WPF TransformToAncestor → Avalonia TransformToVisual（返回 Matrix?，需判空）。
+			global::Avalonia.Matrix? matrix = listViewItem.TransformToVisual(RevisionListView);
+			Point point = (matrix.HasValue ? matrix.Value.Transform(new Point(num, 0.0)) : default(Point));
 			_adorner.Margin = new Thickness(num, point.Y + (double)num2, 0.0, 0.0);
 		}
 

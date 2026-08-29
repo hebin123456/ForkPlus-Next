@@ -143,14 +143,15 @@ namespace ForkPlus.UI.Controls
 				IsClosed = true
 			};
 			pathFigure.Segments.Add(new PolyLineSegment
+		{
+			// TODO 迁移：WPF PointCollection → Avalonia 用 List<Point>（Points 是 IList<Point>）。
+			Points = new System.Collections.Generic.List<global::Avalonia.Point>
 			{
-				Points = new PointCollection
-				{
-					new Point(x + 4.0, 0.0),
-					new Point(x, 5.0)
-				},
-				IsStroked = false
-			});
+				new Point(x + 4.0, 0.0),
+				new Point(x, 5.0)
+			},
+			IsStroked = false
+		});
 			PathGeometry pathGeometry = new PathGeometry();
 			pathGeometry.Figures.Add(pathFigure);
 			ctx.DrawGeometry(_activeRevisionBrush, null, pathGeometry);
@@ -222,7 +223,8 @@ namespace ForkPlus.UI.Controls
 
 		private FormattedText CreateFormattedText(string text, TextAlignment alignment = TextAlignment.Center)
 		{
-			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, 9.0, _labelBrush, VisualTreeHelper.GetDpi(this).PixelsPerDip)
+			// TODO 迁移：WPF FormattedText 第 7 参 PixelsPerDip 在 Avalonia 不存在，直接省略。
+			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, 9.0, _labelBrush)
 			{
 				TextAlignment = alignment
 			};

@@ -315,7 +315,8 @@ namespace ForkPlus.UI.Dialogs
 			{
 				pen = _hoverBorderPen;
 			}
-			ctx.DrawRoundedRectangle(_itemBackgroundBrush, pen, rectangle, _borderRadius, _borderRadius);
+			// TODO 迁移：WPF DrawRoundedRectangle → Avalonia DrawRectangle 带 radiusX/radiusY 参数。
+			ctx.DrawRectangle(_itemBackgroundBrush, pen, rectangle, _borderRadius, _borderRadius);
 			rect.DivideFromTop(_headerHeight).Deconstruct(out var item, out var item2);
 			Rect rect2 = item;
 			bool hasValue = _dataSource.GetItemChildrenCount(items, index).HasValue;
@@ -327,7 +328,8 @@ namespace ForkPlus.UI.Dialogs
 				{
 					return;
 				}
-				ctx.DrawImage(rectangle: new Rect(new Point(rect2.X + 6.0, rect2.Y + 6.0), new Size(12.0, 12.0)), imageSource: FolderIcon);
+				// TODO 迁移：WPF DrawImage(source, rect) → Avalonia 同名 2 参重载，位置参数传递。
+						ctx.DrawImage(FolderIcon, new Rect(new Point(rect2.X + 6.0, rect2.Y + 6.0), new Size(12.0, 12.0)));
 				if (!(rect2.Width < 30.0))
 				{
 					Rect rect3 = new Rect(rect2.X + 20.0, rect2.Y + 4.0, rect2.Width - 24.0, rect2.Height - 6.0);

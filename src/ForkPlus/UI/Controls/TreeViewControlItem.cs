@@ -125,7 +125,14 @@ namespace ForkPlus.UI.Controls
 			this.ReleaseMouseCapture();
 			if (_wasSelected)
 			{
-				base.OnPointerPressed(e);
+				// TODO 迁移：WPF 原码在 OnMouseLeftButtonUp 里调 base.OnMouseLeftButtonDown(e)（点击已选项时补触发选择）。
+				// Avalonia 12 需合成 PointerPressedEventArgs 才能复用 base.OnPointerPressed 的选择逻辑。
+				global::Avalonia.Visual root = global::Avalonia.Controls.TopLevel.GetTopLevel(this);
+				if (root != null)
+				{
+					global::Avalonia.Input.PointerPressedEventArgs pressed = new global::Avalonia.Input.PointerPressedEventArgs(this, e.Pointer, root, e.GetPosition(root), e.Timestamp, e.Properties, e.KeyModifiers, 1);
+					base.OnPointerPressed(pressed);
+				}
 			}
 		}
 

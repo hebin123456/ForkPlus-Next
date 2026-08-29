@@ -296,7 +296,8 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		return c.HasValue ? new SolidColorBrush(c.Value) : null;
 	}
 
-		private FormattedText CreateFormattedText(string text, Brush brush)
+		// TODO 迁移：WPF Brush → Avalonia IBrush（FormattedText.Foreground 接受 IBrush）。
+                private FormattedText CreateFormattedText(string text, IBrush brush)
 		{
 			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, brush);
 		}

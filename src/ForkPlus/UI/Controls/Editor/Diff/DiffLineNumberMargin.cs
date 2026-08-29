@@ -21,13 +21,6 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 			public int? To;
 
-			// TODO 迁移：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段补声明
-
-			private Typeface typeface = _typeface;
-
-			private double emSize = 11.0;
-
-
 			public LineNumber(int? from, int? to)
 			{
 				From = from;
@@ -36,6 +29,11 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		}
 
 		private static readonly Typeface _typeface;
+
+		// TODO 迁移：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段在此补声明
+		private Typeface typeface = _typeface;
+
+		private double emSize = 11.0;
 
 		private static readonly Brush _lightBrush;
 
