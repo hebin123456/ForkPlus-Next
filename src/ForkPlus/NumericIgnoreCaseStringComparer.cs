@@ -12,7 +12,65 @@ namespace ForkPlus
 
 		public override int Compare(string x, string y)
 		{
+			// TODO 迁移：StrCmpLogicalW（shlwapi.dll）是 Windows 专属"逻辑排序"
+			// （数字段按数值比较："2" < "10"）。Linux/macOS 无该库，P/Invoke 直接抛
+			// DllNotFoundException（主窗口 RepositoryManager 排序崩溃实证）。
+			// Unix 用纯托管等价实现，Windows 保持原生调用（行为一致）。
+			if (!OperatingSystem.IsWindows())
+			{
+				return CompareLogicalOrdinalIgnoreCase(x, y);
+			}
 			return StrCmpLogicalW(x, y);
+		}
+
+		/// <summary>
+		/// TODO 迁移：StrCmpLogicalW 的托管等价实现：大小写不敏感 + 数字段按数值比较。
+		/// 语义对齐 Windows 行为：逐段比较，数字段按 ulong 数值（前导零不参与大小，
+		/// 数值相等时短段在前），文本段 OrdinalIgnoreCase。
+		/// </summary>
+		private static int CompareLogicalOrdinalIgnoreCase(string x, string y)
+		{
+			if (ReferenceEquals(x, y)) return 0;
+			if (x == null) return -1;
+			if (y == null) return 1;
+			int ix = 0, iy = 0;
+			while (ix < x.Length && iy < y.Length)
+			{
+				char cx = x[ix];
+				char cy = y[iy];
+				bool dx = char.IsDigit(cx);
+				bool dy = char.IsDigit(cy);
+				if (dx && dy)
+				{
+					// 提取数字段（跳过前导零）
+					int sx = ix, sy = iy;
+					while (ix < x.Length && x[ix] == '0') ix++;
+					while (iy < y.Length && y[iy] == '0') iy++;
+					int ex = ix, ey = iy;
+					while (ex < x.Length && char.IsDigit(x[ex])) ex++;
+					while (ey < y.Length && char.IsDigit(y[ey])) ey++;
+					int lenX = ex - ix;
+					int lenY = ey - iy;
+					if (lenX != lenY) return lenX < lenY ? -1 : 1;
+					int cmp = string.Compare(x, ix, y, iy, lenX, StringComparison.OrdinalIgnoreCase);
+					if (cmp != 0) return cmp;
+					// 数值相等：前导零多者（更长原始段）在后，与 Explorer 行为一致
+					int rawX = ex - sx, rawY = ey - sy;
+					if (rawX != rawY) return rawX < rawY ? -1 : 1;
+					ix = ex;
+					iy = ey;
+				}
+				else
+				{
+					int c = char.ToUpperInvariant(cx).CompareTo(char.ToUpperInvariant(cy));
+					if (c != 0) return c;
+					ix++;
+					iy++;
+				}
+			}
+			if (ix < x.Length) return 1;
+			if (iy < y.Length) return -1;
+			return 0;
 		}
 
 		public override bool Equals(string x, string y)

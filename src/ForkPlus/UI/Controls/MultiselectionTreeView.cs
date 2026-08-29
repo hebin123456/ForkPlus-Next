@@ -184,14 +184,16 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		protected global::Avalonia.AvaloniaObject GetContainerForItemOverride()
+		// TODO 迁移：WPF ItemsControl.GetContainerForItemOverride()（返回 ItemContainer）在
+		// Avalonia 12 无此虚方法；对应机制是 CreateContainerForItemOverride(item, index, recycleKey)。
+		// 原非 override 的 GetContainerForItemOverride 永远不会被框架调用 → 实际容器是 ListBox
+		// 默认 ListBoxItem（非 TreeViewControlItem），PrepareContainerForItemOverride 里
+		// (element as TreeViewControlItem) 为 null → NRE（主窗口仓库列表渲染崩溃实证）。
+		// 注：WPF IsItemItsOwnContainerOverride 在 Avalonia 12 无对应虚方法（数据项均为
+		// MultiselectionTreeViewItem，本身不是容器，无需该判断）。
+		protected override global::Avalonia.Controls.Control CreateContainerForItemOverride(object item, int index, object recycleKey)
 		{
 			return new TreeViewControlItem();
-		}
-
-		protected bool IsItemItsOwnContainerOverride(object item)
-		{
-			return item is TreeViewControlItem;
 		}
 
 		protected override void PrepareContainerForItemOverride(global::Avalonia.Controls.Control element, object item, int index)

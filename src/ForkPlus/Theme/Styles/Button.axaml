@@ -340,7 +340,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <!-- TODO 迁移：原重复 VerticalContentAlignment setter 已删（Avalonia 12 重复 setter 抛异常） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="RadioButton">
