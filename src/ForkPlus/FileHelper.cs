@@ -85,23 +85,36 @@ namespace ForkPlus
 
 		public static void OpenInWindowsExplorer(string absolutePath)
 		{
+			// TODO 迁移：跨平台文件管理器定位。原 Windows 专用 explorer.exe /select 在
+			// Unix 上静默失败（Process.Start 抛 Win32Exception 被下方 catch 吞掉）。
+			// - macOS: open -R（Reveal in Finder，等价 /select 选中文件）
+			// - Linux: xdg-open 父目录（org.freedesktop.FileManager1.ShowItems 依赖桌面环境，
+			//   无通用"选中"机制，打开所在目录是稳妥等价物）
 			try
 			{
-				if (File.Exists(absolutePath))
-			{
-				// explorer /select 语法要求逗号后紧跟路径，中间不能有空格，否则新版 Windows
-				// 会忽略 /select 直接打开"文档"库而非选中目标文件。
-				string arguments = "/select,\"" + absolutePath + "\"";
-				Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true });
-			}
-			else if (Directory.Exists(absolutePath))
-			{
-				Process.Start(new ProcessStartInfo("explorer.exe", absolutePath) { UseShellExecute = true });
-			}
+				if (File.Exists(absolutePath) || Directory.Exists(absolutePath))
+				{
+					if (OperatingSystem.IsWindows())
+					{
+						// explorer /select 语法要求逗号后紧跟路径，中间不能有空格，否则新版 Windows
+						// 会忽略 /select 直接打开"文档"库而非选中目标文件。
+						string arguments = File.Exists(absolutePath) ? "/select,\"" + absolutePath + "\"" : absolutePath;
+						Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true });
+					}
+					else if (OperatingSystem.IsMacOS())
+					{
+						Process.Start(new ProcessStartInfo("open", "-R \"" + absolutePath + "\""));
+					}
+					else
+					{
+						string target = Directory.Exists(absolutePath) ? absolutePath : Path.GetDirectoryName(absolutePath);
+						Process.Start(new ProcessStartInfo("xdg-open", "\"" + target + "\""));
+					}
+				}
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Failed to show file in Explorer", ex);
+				Log.Error("Failed to show file in file manager", ex);
 			}
 		}
 

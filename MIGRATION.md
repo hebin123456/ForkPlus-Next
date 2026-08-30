@@ -127,9 +127,17 @@ git push origin HEAD
    - 修复：新建 `UI/Controls/KeyGestureTextConverter.cs`（IValueConverter，KeyGesture → `ToFriendlyString()`，已有扩展含 OemComma→","、OemPeriod→"."、Return→Enter、OemPlus→"=" 映射）；`Menu.axaml` 本地注册（`MenuKeyGestureTextConverter`，ControlTheme 模板内 StaticResource 只查本地链，与 BooleanToVisibilityConverter 同教训）+ 3 处 MenuItem 模板的快捷键 TextBlock 从 `Text="{TemplateBinding InputGesture}"` 改为 `Text="{Binding InputGesture, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource MenuKeyGestureTextConverter}}"`。
    - 验证：`verification/26-menu-shortcut-localized.png`——偏好设置项显示 `Ctrl+,`，其余 Ctrl+Shift+N/Ctrl+N/Ctrl+G/Ctrl+T/Ctrl+O/Ctrl+P/Ctrl+W 全部正常。
 
+## 运行时修复链 11（2026-08-30 本轮11：文件管理器定位跨平台化）
+
+1. **【已修】"在文件管理器中显示"Windows 硬编码簇（explorer.exe / 反斜杠路径）**：
+   - `FileHelper.OpenInWindowsExplorer`：原硬编码 `explorer.exe /select`（Unix 上 Process.Start 抛异常被 catch 静默吞掉）。改为三分支：Windows 保留 `/select` 选中语法；macOS `open -R`（Reveal in Finder）；Linux `xdg-open` 父目录（org.freedesktop.FileManager1.ShowItems 依赖桌面环境无通用"选中"机制，打开所在目录是稳妥等价物）。
+   - `ShowFileInFileExplorerCommand.Execute`：原 `Path.Combine(...).Replace("/", "\\")` 反斜杠硬编码——Unix 上把 git 内部路径改成反斜杠分隔导致 `File.Exists` 恒 false。改为纯拼接（git 路径恒正斜杠，Unix 原生兼容）。
+   - 两个命令 Title 平台化：macOS "Show in Finder"/"Open in Finder"、Linux "Show in File Manager"/"Open in File Manager"、Windows 保留原文。
+   - **教训：`grep -rn '\.Replace("/", "\\\\")' 与 `explorer.exe`/`cmd.exe`/`notepad.exe` 等进程名硬编码是跨平台迁移的系统性坑，涉及路径/进程的调用需逐一过 OperatingSystem 分支。**
+
 ## 运行时修复链 10（2026-08-30 本轮10：提交列表虚拟化）
 
-1. **【已修+实证】提交列表/树形列表非虚拟化 StackPanel → VirtualizingStackPanel**：
+ 1. **【已修+实证】提交列表/树形列表非虚拟化 StackPanel → VirtualizingStackPanel**：
    - 根因：`MultiselectionTreeView : ListBox`（Avalonia ListBox 静态构造默认 ItemsPanel 就是 `VirtualizingStackPanel`），但其 ControlTheme 模板里 `<ItemsPresenter />` **未绑定 ItemsPanel** → 落到非虚拟化垂直 StackPanel，大仓库提交列表全量实化（每行一个 TreeViewControlItem + 图形绘制），性能崩塌。与链 6（Menu）、链 7（TabControl）是**同一个坑的第三处**。
    - 修复：`Multiselectiontreeview.axaml` 主模板 `<ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />`。
    - **附注**：该控件同时被侧栏分支树、文件历史、Issue/PR 列表、RevisionFileTree 复用（5+ 处），一处修复全部受益；TreeViewControlItem 默认样式有固定 `Height=20`，与虚拟化行高估算契合。
