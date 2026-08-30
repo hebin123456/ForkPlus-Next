@@ -419,6 +419,14 @@
     </Style.Resources>-->
 
     <Setter Property="BorderThickness" Value="0,1,0,0" />
+    <!-- TODO 迁移：WPF ModernTabControl.Style.Resources 里的隐式 TabItem 样式（BasedOn
+         ModernTabControlTabItemStyle）使所有子 TabItem 自动获得 Height=30/Padding=16,2/
+         FontSize=13/选中强调色；Avalonia Style 无 Resources 属性，等价机制是 ItemsControl.
+         ItemContainerTheme（同 Menu 修复链的 TopLevelMenuItemTheme 模式）。不挂的话子
+         TabItem 回落到隐式 {x:Type TabItem} 主题（Padding=0）→ 标签挤在一起。
+         注：曾怀疑本 Setter 导致偏好设置窗口"内容区透明"——实测为误诊：
+         真因是无 WM 沙盒里对话框 Z 序被主窗口压住（详见 MIGRATION.md 验证经验）。 -->
+    <Setter Property="ItemContainerTheme" Value="{StaticResource ModernTabControlTabItemStyle}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TabControl">
@@ -448,6 +456,11 @@
     </Setter>
   
 <!-- TODO 迁移：WPF 在 Grid#templateRoot 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） --></ControlTheme>
+  <!-- TODO 迁移：WPF RepositoryManagerTabControl.Style.Resources 里 TabItem FontSize=14；
+       Avalonia 等价物 = 派生 ControlTheme + ItemContainerTheme 覆盖基类值 -->
+  <ControlTheme x:Key="RepositoryManagerTabItemTheme" TargetType="TabItem" BasedOn="{StaticResource ModernTabControlTabItemStyle}">
+    <Setter Property="FontSize" Value="14" />
+  </ControlTheme>
   <ControlTheme x:Key="RepositoryManagerTabControl" TargetType="controls:ModernTabControl" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
 <!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
     <Style.Resources>
@@ -461,5 +474,6 @@
       </ResourceDictionary>
     </Style.Resources>-->
 
+    <Setter Property="ItemContainerTheme" Value="{StaticResource RepositoryManagerTabItemTheme}" />
   </ControlTheme>
 </ResourceDictionary>

@@ -79,16 +79,44 @@ git push origin HEAD
 | （本轮4） | 运行时：**提交列表自动渲染根因修复** | RevisionsDataSource 枚举器/Count 契约违背（WPF 索引器生成 vs Avalonia foreach 枚举生成）+ GridView→ItemTemplate 行模板 + CreateContainerForItemOverride 容器链 + TextField Inlines 触发链 + ContentPresenter ContentTemplate 补绑（详见「运行时修复链 4」） |
 | （本轮5） | 运行时：**跨平台 P/Invoke 崩溃簇清零** | shlwapi/shell32/user32 五处 DllNotFoundException 修复（托管等价实现/占位图标/X11 XQueryPointer），会话恢复 + 提交选中详情联动 1920×1280 完整冒烟实证（详见「运行时修复链 5」） |
 | （本轮6） | 运行时：**主菜单系统完全复活** | 菜单横排 + 下拉展开 + 命令执行三连修复（ItemsPanel TemplateBinding / IsSubMenuOpen 大小写 / ItemContainerTheme 顶层项主题），文件菜单 11 项全渲染（详见「运行时修复链 6」） |
+| （本轮8） | 运行时：**偏好设置 TabControl 完全复活 + 对话框 SetStatus 崩溃修复** | Tab 标签横排 + 间距样式（ItemContainerTheme）+ Tab 内容切换实证（通用/Git/集成三页）；`ForkPlusDialogWindow.SetStatus` 构造期 NRE（Footer 延迟创建）pending 缓冲修复（详见「运行时修复链 8」） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中（**约 90%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口打开（7 Tab 全构造）**；待验证：偏好设置 Tab 横排/内容切换、次级窗口（FileHistory/Blame/Merge）、DataTrigger 视觉状态、大仓库性能（虚拟化） |
+| 3 运行时验证 | 🔄 进行中（**约 92%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**；待验证：次级窗口（FileHistory/Blame/Merge）、DataTrigger 视觉状态、大仓库性能（虚拟化） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 90%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置窗口）已通，剩余为偏好设置 Tab 布局修复、次级窗口冒烟、视觉状态补齐与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、性能虚拟化）。
+**整体进度估算：约 92%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置窗口含 Tab 切换）已通，剩余为次级窗口冒烟、偏好设置打开时的 Git 错误空弹窗排查、视觉状态补齐与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、性能虚拟化）。
+
+## 运行时修复链 8（2026-08-30 本轮8：偏好设置 TabControl 复活 + 对话框 SetStatus 崩溃）
+
+1. **【已修+实证】偏好设置 Tab 标签间距/样式（ItemContainerTheme）**：
+   - 现象：Tab 标签横排恢复后挤在一起（高 17px、无 Padding），选中态无强调。
+   - 根因：WPF `ModernTabControl.Style.Resources` 里的隐式 TabItem 样式（BasedOn ModernTabControlTabItemStyle）使子 TabItem 自动获得 Height=30/Padding=16,2 样式；Avalonia Style 无 Resources 属性，等价机制是 `ItemsControl.ItemContainerTheme`。
+   - 修复：`Tabcontrol.axaml` 恢复 `<Setter Property="ItemContainerTheme" Value="{StaticResource ModernTabControlTabItemStyle}" />`；另补 `RepositoryManagerTabItemTheme`（FontSize=14 派生主题）+ `RepositoryManagerTabControl.ItemContainerTheme`（对应 WPF 该样式的 TabItem FontSize=14）。
+   - **注意**：曾误诊本 Setter 导致偏好设置"内容区透明"——实测为误诊（真因见下）。
+2. **【已定位】偏好设置"内容区透明"实为 Xvfb Z 序问题（非 bug）**：
+   - 现象：偏好设置窗口打开后截屏看到"内容透明"。
+   - 定位过程：加 TEMP-DEBUG 可视化树转储（已删）→ Window/ContentGrid/TabControl 的 Opacity=1、Clip=null、Background 正常、Bounds 正常，子树 220 节点全部 Vis=True/True → 排除渲染问题；`xdotool windowraise <PW>` 置顶后截屏内容完整。
+   - 结论：**无 WM 沙盒（Xvfb）里 ShowDialog 弹出的对话框可能被主窗口盖住 Z 序**，截屏看到的是主窗口。真机上窗口管理器会正确管理模态置顶，无需修复。
+   - **验证经验（重要）**：Xvfb 下验证弹窗内容必须先 `xdotool search --name "窗口名"` 拿 ID + `xdotool windowraise $ID` 置顶再截屏，否则截到的是底层窗口。
+3. **【已修】`ForkPlusDialogWindow.SetStatus` 构造期 NRE 崩溃（ConfigureSshKeysWindow）**：
+   - 现象：文件菜单点"配置 SSH 密钥"→ 进程直接 Unhandled NRE 崩溃：`ForkPlusDialogWindow.ClearStatus() → SetStatus() → ConfigureSshKeysWindow.RefreshStatus() → Refresh() → ctor`。
+   - 根因：Avalonia 下 Footer 经 `Dispatcher.Post` 延迟到 chrome 初始化才创建（`OnContentChanged` 里推迟，防 XAML populate 中途 x:Name 未赋值），而 WPF 里 Style 触发器在 ctor 内即生效——子类构造函数里同步调 `SetStatus`（如 `ConfigureSshKeysWindow.Refresh()`）时 `Footer` 还是 null。
+   - 修复：`SetStatus`/`ClearStatus` 加 Footer==null 防护 + `_pendingStatus`/`_pendingStatusMessage` 缓冲（沿用类内既有 `_pending*` 模式），`AddFooter()` 末尾回放。
+   - **教训：所有"子类 ctor 里调 SetStatus/依赖 chrome 部件"的对话框都可能踩此坑，pending 缓冲是通用解法。**
+4. **【实证】偏好设置 Tab 内容切换**（1920×1280）：
+   - `verification/22-preferences-tabs-horizontal.png`：7 Tab 横排、间距正常、通用页内容实色渲染。
+   - `verification/23-preferences-git-tab.png`：Git 页选中（蓝色下划线），Git 实例探测 `2.34.1 - /usr/bin/git`、全局用户信息表单正常。
+   - `verification/24-preferences-integration-tab.png`：集成页选中，外部合并/差异工具配置、Shell 配置完整渲染。
+   - 操作路径：`xdotool key ctrl+comma` 直接发快捷键打开偏好设置（比菜单点击坐标稳定，菜单项坐标每次读图偏差大）。
+5. **【排查中】偏好设置打开时弹"Git 错误"空弹窗**：
+   - 现象：Ctrl+, 打开偏好设置的同时弹出一个 `Git 错误` 对话框（740×330），内容区为空（无 git stderr 文本）。
+   - 已排除：`GitUserControl` 6 处 ErrorWindow 调用点已过目，`SetGlobalUserIdentity` 走 LostFocus 不会在构造期触发；`ConfigureSshKeysWindow` 与本链路无关。
+   - 待查：空内容说明 `gitCommandResult.Error` 为 null 或空——需要定位是哪个构造期 git 命令失败（候选：`GetGlobalUserIdentityGitCommand` 构造期探测、AI 增强/集成页的 git 探测命令）。
 
 ## 运行时修复链 6（2026-08-30 本轮6：主菜单系统复活）
 

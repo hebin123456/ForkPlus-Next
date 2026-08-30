@@ -46,6 +46,14 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool? _pendingShowCancelButton;
 
+		// TODO 迁移：构造期 SetStatus/ClearStatus 的 pending 缓冲。Avalonia 下 Footer 经
+		// Dispatcher.Post 延迟到 chrome 初始化才创建（见 OnContentChanged），而 WPF 里
+		// Style 触发器在 ctor 内即生效——子类构造函数里的 SetStatus（如
+		// ConfigureSshKeysWindow.Refresh()）直接 NRE。Footer 就绪后回放。
+		private ForkPlusDialogStatus? _pendingStatus;
+
+		private string _pendingStatusMessage;
+
 		private TextBlock _commandPreviewLabel;
 
 	private TextBlock _commandPreviewTextBlock;
@@ -305,6 +313,13 @@ namespace ForkPlus.UI.Dialogs
 		public void SetStatus(ForkPlusDialogStatus status, string message)
 		{
 			IsOperationInProgress = status == ForkPlusDialogStatus.InProgress;
+			// TODO 迁移：Footer 未创建（chrome 延迟初始化）时先缓存，AddFooter 完成后回放（WPF ctor 期 Style 即生效）。
+			if (Footer == null)
+			{
+				_pendingStatus = status;
+				_pendingStatusMessage = message;
+				return;
+			}
 			if (status == ForkPlusDialogStatus.None)
 			{
 				ClearStatus();
@@ -338,6 +353,13 @@ namespace ForkPlus.UI.Dialogs
 
 		public void ClearStatus()
 		{
+			// TODO 迁移：Footer 未创建时清掉 pending 即可（None 状态无需回放）。
+			if (Footer == null)
+			{
+				_pendingStatus = null;
+				_pendingStatusMessage = null;
+				return;
+			}
 			Footer.StatusImage.IsVisible = false;
 			Footer.StatusMessageTextBlock.IsVisible = false;
 			Footer.BusyIndicator.IsVisible = false;
@@ -685,6 +707,15 @@ namespace ForkPlus.UI.Dialogs
 			if (_pendingShowCancelButton.HasValue)
 			{
 				ShowCancelButton = _pendingShowCancelButton.Value;
+			}
+			// TODO 迁移：回放构造期缓存的 SetStatus（如 ConfigureSshKeysWindow ctor 里的 Refresh）。
+			if (_pendingStatus.HasValue)
+			{
+				ForkPlusDialogStatus pendingStatus = _pendingStatus.Value;
+				string pendingMessage = _pendingStatusMessage;
+				_pendingStatus = null;
+				_pendingStatusMessage = null;
+				SetStatus(pendingStatus, pendingMessage);
 			}
 		}
 
