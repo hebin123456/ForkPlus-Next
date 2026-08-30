@@ -142,7 +142,10 @@
                   <ColumnDefinition Width="10" />
                 </Grid.ColumnDefinitions>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
-                <RepeatButton x:Name="PART_LineLeftButton" Theme="{DynamicResource ScrollBarButton}">
+                <!-- TODO 迁移（根因）：WPF 水平滚动条用 PART_LineLeftButton/PART_LineRightButton；
+                     Avalonia ScrollBar 不分方向，一律查找 PART_LineUpButton(=左)/PART_LineDownButton(=右)
+                     并挂 SmallDecrement/SmallIncrement。原名找不到部件 → 箭头按钮不可点击。 -->
+                <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
                 </RepeatButton>
                 <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
@@ -156,7 +159,7 @@
                     <Thumb Theme="{DynamicResource ScrollBarThumbHorizontal}" />
                   </Track.Thumb>
                 </Track>
-                <RepeatButton Grid.Column="2" x:Name="PART_LineRightButton" Theme="{DynamicResource ScrollBarButton}">
+                <RepeatButton Grid.Column="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
                 </RepeatButton>
               </Grid>
@@ -206,16 +209,35 @@
     <Style Selector="^:pointerover:pressed /template/ Path#ArrowTop">
         <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
     </Style>
+    <!-- TODO 迁移（根因）：水平模板箭头 Path 名为 ArrowLeft/ArrowRight（原迁移漏了对应视觉状态样式） -->
+    <Style Selector="^:pointerover:pressed /template/ Path#ArrowLeft">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover:pressed /template/ Path#ArrowRight">
+        <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
+    </Style>
     <Style Selector="^:pointerover /template/ Path#ArrowBottom">
         <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
     </Style>
     <Style Selector="^:pointerover /template/ Path#ArrowTop">
         <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
     </Style>
+    <Style Selector="^:pointerover /template/ Path#ArrowLeft">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:pointerover /template/ Path#ArrowRight">
+        <Setter Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
+    </Style>
     <Style Selector="^:disabled /template/ Path#ArrowTop">
         <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
     </Style>
     <Style Selector="^:disabled /template/ Path#ArrowBottom">
+        <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#ArrowLeft">
+        <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#ArrowRight">
         <Setter Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
     </Style></ControlTheme>
   <ControlTheme x:Key="HorizontalScrollBarStyle" TargetType="ScrollBar">
@@ -276,7 +298,8 @@
                   <ColumnDefinition Width="10" />
                 </Grid.ColumnDefinitions>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
-                <RepeatButton x:Name="PART_LineLeftButton" Theme="{DynamicResource ScrollBarButton}">
+                <!-- TODO 迁移（根因）：同上，Avalonia 水平滚动条箭头部件名必须是 PART_LineUp/DownButton。 -->
+                <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
                 </RepeatButton>
                 <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
@@ -290,7 +313,7 @@
                     <Thumb Theme="{DynamicResource ScrollBarThumbHorizontal}" />
                   </Track.Thumb>
                 </Track>
-                <RepeatButton Grid.Column="2" x:Name="PART_LineRightButton" Theme="{DynamicResource ScrollBarButton}">
+                <RepeatButton Grid.Column="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
                 </RepeatButton>
               </Grid>

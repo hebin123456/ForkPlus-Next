@@ -9,6 +9,7 @@ using ForkPlus.UI.Helpers;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI
 {
@@ -193,6 +194,13 @@ namespace ForkPlus.UI
 
 		public CustomWindow()
 		{
+			// TODO 迁移（根因）：WPF WindowChrome 借 WM_NCCALCSIZE 自绘标题栏；Avalonia 12 对应
+			// ExtendClientAreaToDecorationsHint——客户区延伸进装饰区，系统标题栏不再渲染
+			// （Win32 走 DwmExtendFrameIntoClientArea + NCRP_ENABLED，原生边框/阴影/缩放保留）。
+			// 修复"皮肤外还有系统原生窗口（含最小化/最大化/关闭）"。
+			// TitleBarHeightHint=-1：按 OS 默认标题栏高度扩展（完全覆盖原生标题栏区域）。
+			ExtendClientAreaToDecorationsHint = true;
+			ExtendClientAreaTitleBarHeightHint = -1;
 			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			if (IsDesignMode)
 			{
@@ -259,12 +267,149 @@ namespace ForkPlus.UI
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{
 			base.OnApplyTemplate(e);
+			UnwireChromeEvents();
 			_templatePartWindowHeader = this.GetTemplateChild("PART_WindowHeader") as global::Avalonia.Controls.Control;
 			_closeButton = this.GetTemplateChild("PART_CloseButton") as Button;
 			_minimizeButton = this.GetTemplateChild("PART_MinimizeButton") as Button;
 			_maximizeButton = this.GetTemplateChild("PART_MaximizeButton") as Button;
 			_restoreButton = this.GetTemplateChild("PART_RestoreButton") as Button;
+			WireChromeEvents();
 			AdjustButtonsVisibilityToWindowState();
+		}
+
+		// TODO 迁移（根因）：WPF 模板按钮用 Command="{x:Static SystemCommands.XxxWindowCommand}" +
+		// Window.CommandBindings 路由；Avalonia 无 CommandBindings 路由（CommandRouter 只管键盘手势），
+		// 模板按钮又不携带 Command → 最小化/最大化/还原/关闭全部失灵。改为代码后置直接挂 Click。
+		private void WireChromeEvents()
+		{
+			if (_minimizeButton != null)
+			{
+				_minimizeButton.Click += MinimizeButton_Click;
+			}
+			if (_maximizeButton != null)
+			{
+				_maximizeButton.Click += MaximizeButton_Click;
+			}
+			if (_restoreButton != null)
+			{
+				_restoreButton.Click += RestoreButton_Click;
+			}
+			if (_closeButton != null)
+			{
+				_closeButton.Click += CloseButton_Click;
+			}
+			if (_templatePartWindowHeader != null)
+			{
+				_templatePartWindowHeader.PointerPressed += WindowHeader_PointerPressed;
+				_templatePartWindowHeader.DoubleTapped += WindowHeader_DoubleTapped;
+			}
+		}
+
+		/// <summary>模板可能重复应用（主题切换等），重挂前先解绑旧实例，防止重复触发。</summary>
+		private void UnwireChromeEvents()
+		{
+			if (_minimizeButton != null)
+			{
+				_minimizeButton.Click -= MinimizeButton_Click;
+			}
+			if (_maximizeButton != null)
+			{
+				_maximizeButton.Click -= MaximizeButton_Click;
+			}
+			if (_restoreButton != null)
+			{
+				_restoreButton.Click -= RestoreButton_Click;
+			}
+			if (_closeButton != null)
+			{
+				_closeButton.Click -= CloseButton_Click;
+			}
+			if (_templatePartWindowHeader != null)
+			{
+				_templatePartWindowHeader.PointerPressed -= WindowHeader_PointerPressed;
+				_templatePartWindowHeader.DoubleTapped -= WindowHeader_DoubleTapped;
+			}
+		}
+
+		private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+		{
+			base.WindowState = global::Avalonia.Controls.WindowState.Minimized;
+		}
+
+		private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+		{
+			base.WindowState = global::Avalonia.Controls.WindowState.Maximized;
+		}
+
+		private void RestoreButton_Click(object sender, RoutedEventArgs e)
+		{
+			base.WindowState = global::Avalonia.Controls.WindowState.Normal;
+		}
+
+		private void CloseButton_Click(object sender, RoutedEventArgs e)
+		{
+			Close();
+		}
+
+		// TODO 迁移（根因）：WPF WindowChrome.CaptionHeight 区域原生支持拖动/双击最大化；
+		// Avalonia ExtendClientArea 后整个窗口都是客户区，需自实现标题栏交互。
+		// Button/Menu 等控件会吃掉 PointerPressed（Handled），事件不再冒泡到标题栏，
+		// 因此点按钮/菜单不会误触发拖动。
+		private void WindowHeader_PointerPressed(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			if (IsDesignMode)
+			{
+				return;
+			}
+			if (!CanResize)
+			{
+				return;
+			}
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+			{
+				try
+				{
+					BeginMoveDrag(e);
+				}
+				catch (global::System.InvalidOperationException)
+				{
+					// 窗口尚未显示等边缘状态：忽略，避免拖动破坏显示。
+				}
+			}
+		}
+
+		private void WindowHeader_DoubleTapped(object sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+		{
+			if (IsDesignMode || !CanResize)
+			{
+				return;
+			}
+			// 双击按钮/菜单等交互元素时不切换最大化，仅双击空白标题栏生效。
+			if (e.Source is global::Avalonia.Visual source && IsInteractiveChromeElement(source))
+			{
+				return;
+			}
+			if (base.WindowState == global::Avalonia.Controls.WindowState.Maximized)
+			{
+				base.WindowState = global::Avalonia.Controls.WindowState.Normal;
+			}
+			else
+			{
+				base.WindowState = global::Avalonia.Controls.WindowState.Maximized;
+			}
+		}
+
+		/// <summary>判断可视元素（或其祖先）是否为交互控件（按钮/菜单/输入框），用于排除双击误判。</summary>
+		private static bool IsInteractiveChromeElement(global::Avalonia.Visual visual)
+		{
+			for (global::Avalonia.Visual current = visual; current != null; current = current.GetVisualParent())
+			{
+				if (current is Button || current is global::Avalonia.Controls.MenuItem || current is global::Avalonia.Controls.Menu || current is global::Avalonia.Controls.TextBox)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		protected void OnSourceInitialized(EventArgs e)
@@ -283,22 +428,9 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			this.AddCommandBinding(new CommandBinding(SystemCommands.MinimizeWindowCommand, delegate
-			{
-				base.WindowState = global::Avalonia.Controls.WindowState.Minimized;
-			}));
-			this.AddCommandBinding(new CommandBinding(SystemCommands.MaximizeWindowCommand, delegate
-			{
-				base.WindowState = global::Avalonia.Controls.WindowState.Maximized;
-			}));
-			this.AddCommandBinding(new CommandBinding(SystemCommands.RestoreWindowCommand, delegate
-			{
-				base.WindowState = global::Avalonia.Controls.WindowState.Normal;
-			}));
-			this.AddCommandBinding(new CommandBinding(SystemCommands.CloseWindowCommand, delegate
-			{
-				Close();
-			}));
+			// TODO 迁移（根因）：原 WPF SystemCommands 的 CommandBinding 路由在 Avalonia 无对应
+			// （CommandRouter 只派发键盘手势，SystemCommands shim 不带手势，绑定永不触发），
+			// 窗口按钮改为 OnApplyTemplate 里直接挂 Click（见 WireChromeEvents），此处删除死代码。
 			_tempWindowState = base.WindowState;
 			_tempBorderThickness = base.BorderThickness;
 			if (base.WindowState == global::Avalonia.Controls.WindowState.Maximized)
