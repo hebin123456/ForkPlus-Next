@@ -12,7 +12,7 @@
                       <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
                         <DockPanel Margin="{TemplateBinding Padding}">
                           <TextBlock Text="&gt;" Width="12" VerticalAlignment="Center" x:Name="ArrowText" />
-                          <ContentPresenter Content="{TemplateBinding Content}" Margin="4,0,0,0" VerticalAlignment="Center" />
+                          <ContentPresenter Content="{TemplateBinding Content}" Margin="4,0,0,0" VerticalAlignment="Center"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
                         </DockPanel>
                       </Border>
                       <!--
@@ -27,7 +27,7 @@
                     </ControlTemplate>
                   </ToggleButton.Template>
                 </ToggleButton>
-                <ContentPresenter Content="{TemplateBinding Content}" DockPanel.Dock="Bottom" x:Name="ExpandSite" IsVisible="False" />
+                <ContentPresenter Content="{TemplateBinding Content}" DockPanel.Dock="Bottom" x:Name="ExpandSite" IsVisible="False"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
               </DockPanel>
               
             </ControlTemplate>

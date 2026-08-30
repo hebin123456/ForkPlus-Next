@@ -42,11 +42,11 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：仓库打开链路全通——点击"打开"后 .nvm 仓库完整加载（2026-08-29 本轮3）。**
+**🎉 里程碑：提交列表首次完整渲染（2026-08-30 本轮4 初）→ 回归空白根因排查中。**
 - `dotnet build` 0 错误；AVLN XAML 错误 0。
-- 首启全流程冒烟（Xvfb 截图驱动，verification/15-*.png）：配置 Git 对话框（检测到 2 个 git）→ Git 版本警告 → 用户信息表单 → **主窗口（仓库管理器列表 .nvm/.oh-my-zsh + 仓库详情摘要/统计）** → 点击"打开" → **仓库视图加载完成**（状态栏 ".nvm 分离 HEAD"，侧栏 本地变更/所有提交/搜索/PR/Issues，主区 提交/变更/文件树 页签 + 作者/提交者/引用/SHA/父提交 列头）。全程零未处理异常。
-- 上一轮终点是"打开仓库后永远停在『正在加载...』"（verification/14-repo-opened-sidebar.png），本轮三根因修复后彻底打通（见「运行时修复链 3」）。
-- 本轮三大突破：① ClosableTabControl 选卡事件断链（SelectionChanged 虚方法降级死代码 → 订阅路由事件转发）；② XAML EndInit 期早期 SelectionChanged 的 NRE 防御；③ **DataTemplateKey → Application.DataTemplates 全局类型模板迁移（57 个模板，侧栏树/引用徽章/ReferencePanel）**。
+- 提交列表曾在诊断代码（含 ManualRefresh 兜底）加持下完整渲染：verification/16-commitlist-rendered.png + 16a-commitlist-zoom.png（.nvm 唯一提交：图形列、v0.40.2 标签徽章[引用模板生效]、主题"v0.40.2"、JH 头像、Jordan Harband、ffec9fe、11 Mar 2025 20:30）。诊断日志实证数据链路全通：`StringValue='v0.40.2'`、行容器量测 513×23、引用徽章 ItemsControl 81×22。
+- 但移除诊断代码后重启回归空白：诊断块里的 `ItemsPresenter.Refresh()` 反射调用一直在兜底容器生成 → **自动容器生成链断点仍在**（详见「下一步行动」第 1 条，[probe] 探针已就位）。
+- 上一轮里程碑：仓库打开链路全通（2026-08-29 本轮3，verification/15-*.png）：配置 Git 对话框 → Git 版本警告 → 用户信息表单 → 主窗口（仓库管理器列表 .nvm/.oh-my-zsh + 仓库详情摘要/统计）→ 点击"打开" → 仓库视图加载完成，全程零未处理异常。
 
 错误数轨迹（按唯一错误去重统计）：
 
@@ -77,7 +77,7 @@ git push origin HEAD
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中 | **首启全流程 + 仓库打开已通、零崩溃**；待验证：提交列表数据填充（.nvm 单提交未显示）、侧栏分支/标签树数据、次级窗口、菜单交互 |
+| 3 运行时验证 | 🔄 进行中 | **首启全流程 + 仓库打开 + 提交列表一次性完整渲染已通、零崩溃**；待修复：自动容器生成链断点（提交列表回归空白，[probe] 排查中）；待验证：侧栏分支/标签树数据、次级窗口、菜单交互 |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
 ## 运行时阻塞：Textblock.axaml StaticResource（✅ 已解决，存档备考）
@@ -247,9 +247,9 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 1. **IPC 命名管道消息模式（PlatformNotSupportedException）**：`IpcServer.cs:26` 的 `PipeTransmissionMode.Message` 仅 Windows 支持。协议本身用 4 字节长度前缀分帧（`PipeStreamExtensions.ReadString`），不依赖消息边界，已改为 `OperatingSystem.IsWindows() ? Message : Byte`。
 2. **沙盒无显示服务器**：`apt-get install -y xvfb` 后 `Xvfb :99 -screen 0 1920x1080x24` + `export DISPLAY=:99` 即可跑 GUI 冒烟。
 
-## 下一步行动（按优先级，2026-08-29 本轮3 更新）
+## 下一步行动（按优先级，2026-08-30 本轮4 更新）
 
-1. **【最高优先级】提交列表数据填充**：仓库已打开（状态栏显示仓库状态），但提交列表为空（.nvm 实际有 1 个提交 ffec9fe/v0.40.2，detached HEAD）。排查 RevisionGrid/RevisionStorage 数据链路：`git log` 解析 → RevisionStorage → 列表 ItemsSource 绑定。可能是 NoUIAutomationListView/虚拟化列表的 ItemsSource 或绑定路径问题。同时排查侧栏"分支/标签"树是否填充（.nvm 有 v0.40.2 tag，侧栏树应显示）。
+1. **【进行中·最高优先级】提交列表"渲染成功后回归空白"根因**：本轮3 末尾提交列表曾完整渲染（verification/16-commitlist-rendered.png：图形列 + v0.40.2 标签徽章 + 主题 + JH 头像 + 作者 + SHA + 日期，零异常）。但清理诊断代码后重启应用回归空白——当时诊断块里的 ManualRefresh（反射调 ItemsPresenter.Refresh）实际在兜底容器生成，**说明自动容器生成链本身仍是断的**，此前渲染成功是兜底代码的功劳。已加 [probe] 探针（RevisionListViewUserControl.axaml.cs）定位断链层：源集合 Reset → CollectionChangedEventManager 弱事件 → ItemsSourceView → ItemCollection → PanelContainerGenerator.OnItemsChanged → 容器生成。静态源码分析已完成（decomp/ 下 Avalonia 12.1.1 反编译），待跑探针读 [probe] 日志定位。
 2. **引用徽章渲染验证**：提交列表填充后确认"引用"列的 ReferenceViewModel 徽章用上新迁移的模板（标签蓝框 + 图标，而非 ToString 类型名）。ReferencePanel（提交详情面板的 refs 行）同理。
 3. **DataTrigger 视觉状态补齐**：IsActive 加粗 / IsWorktree 图标 / BisectGood 换色（原片段已注释保留在 App.axaml 模板旁），用 VM 计算属性 + Classes 选择器实现。
 4. **交互冒烟**：File 菜单展开/命令执行、TabControl 切换（提交/变更/文件树）、Preferences 等次级对话框。

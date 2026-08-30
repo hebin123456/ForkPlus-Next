@@ -39,7 +39,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
           </Border>
           
         </ControlTemplate>
@@ -59,7 +59,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
-            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
           </Border>
           
         </ControlTemplate>
@@ -82,7 +82,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
           <Border Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
           </Border>
           
         </ControlTemplate>
@@ -106,7 +106,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
           <Border Background="{TemplateBinding Background}" CornerRadius="3" x:Name="border">
-            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
           </Border>
           
         </ControlTemplate>
@@ -133,7 +133,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border Background="{TemplateBinding Background}" x:Name="border">
-            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
           </Border>
           
         </ControlTemplate>
@@ -195,7 +195,7 @@
                     </Border>
                   </DockPanel>
                 </Border>
-                <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1" />
+                <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
     <!-- TODO 迁移：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
             </Border>
@@ -251,7 +251,7 @@
                     </Border>
                   </DockPanel>
                 </Border>
-                <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1" />
+                <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
     <!-- TODO 迁移：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
             </Border>

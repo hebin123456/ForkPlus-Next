@@ -35,7 +35,7 @@
                 <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
               </Grid>
             </Border>
-            <ContentPresenter Grid.Column="1" Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
+            <ContentPresenter Grid.Column="1" Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
           </Grid>
           
         </ControlTemplate>
@@ -107,7 +107,7 @@
                     <Rectangle Fill="{DynamicResource OptionMark.Static.Glyph}" Margin="2" Opacity="0" RadiusX="3" RadiusY="3" x:Name="IndeterminateMark" />
                   </Grid>
                 </Border>
-                <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}"/>
+                <ContentPresenter Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
               </DockPanel>
             </Border>
           </Grid>

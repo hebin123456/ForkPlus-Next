@@ -22,20 +22,22 @@ namespace ForkPlus.UI.Controls
 			_dragAutoScroll.StopAutoScroll();
 		}
 
-		protected global::Avalonia.AvaloniaObject GetContainerForItemOverride()
+		// TODO 迁移：WPF ItemsControl.GetContainerForItemOverride()（返回 ItemContainer）在
+		// Avalonia 12 无此虚方法；对应机制是 CreateContainerForItemOverride(item, index, recycleKey)。
+		// 原非 override 的 GetContainerForItemOverride 永远不会被框架调用 → 实际容器是 ListBox
+		// 默认 ListBoxItem（非 DragAndDropListViewItem），PrepareContainerForItemOverride 里
+		// (element as DragAndDropListViewItem) 为 null → NRE 被集合事件链吞掉 → 容器永不生成
+		// （提交列表空白实证，见 MIGRATION.md 运行时修复链 4）。
+		// 注：WPF IsItemItsOwnContainerOverride 在 Avalonia 12 由 NeedsContainerOverride 取代。
+		protected override global::Avalonia.Controls.Control CreateContainerForItemOverride(object item, int index, object recycleKey)
 		{
 			return new DragAndDropListViewItem();
-		}
-
-		protected bool IsItemItsOwnContainerOverride(object item)
-		{
-			return item is DragAndDropListViewItem;
 		}
 
 		protected override void PrepareContainerForItemOverride(global::Avalonia.Controls.Control element, object item, int index)
 		{
 			base.PrepareContainerForItemOverride(element, item, index);
-			(element as DragAndDropListViewItem).ParentListView = this;
+			(element as DragAndDropListViewItem)?.ParentListView = this;
 		}
 	}
 }

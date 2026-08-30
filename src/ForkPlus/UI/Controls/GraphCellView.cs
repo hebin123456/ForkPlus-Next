@@ -182,11 +182,32 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
+		// TODO 迁移：WPF 版在 OnRender 里直接设 this.Width = cellWidth * lines.Length（WPF 允许渲染后
+		// 触发下一轮流排；Avalonia 渲染期使布局失效直接抛 InvalidOperationException
+		// "Visual was invalidated during the render pass"，实证见 MIGRATION.md 运行时修复链 4）。
+		// 正确做法：MeasureOverride 按数据源返回期望尺寸（Auto 列/StackPanel 布局取该值），
+		// Render 只绘制；DataContext 变化（容器回收复用换绑）时手动失效量测。
+		protected override global::Avalonia.Size MeasureOverride(global::Avalonia.Size availableSize)
+		{
+			double num = _defaultCellWidth;
+			if (base.DataContext is DecoratedRevision decoratedRevision)
+			{
+				num = _defaultCellWidth * (double)decoratedRevision.GraphInfo.Lines.Length;
+			}
+			return new global::Avalonia.Size(num, CellHeight);
+		}
+
+		protected override void OnDataContextChanged(EventArgs e)
+		{
+			base.OnDataContextChanged(e);
+			InvalidateMeasure();
+			InvalidateVisual();
+		}
+
 		public override void Render(DrawingContext drawingContext)
 		{
 			if (base.DataContext is DecoratedRevision decoratedRevision)
 			{
-				base.Width = _defaultCellWidth * (double)decoratedRevision.GraphInfo.Lines.Length;
 				// WPF 版在此构造 GuidelineSet 并 PushGuidelineSet 做像素对齐（列坐标均为
 				// cellWidth 整数倍，1px 线条需对齐到设备像素中点）。Avalonia 无 GuidelineSet，
 				// TODO 迁移：如需恢复像素级锐利，可在 DrawLine/DrawCommitPoint 内对坐标做

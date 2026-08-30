@@ -50,15 +50,6 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.ShowLogo = false;
 			InitializeComponent();
-			// [diag] 输入诊断：窗口级指针事件（临时，验证后移除）
-			this.PointerPressed += delegate(object s, Avalonia.Input.PointerPressedEventArgs e)
-			{
-				Log.Warn("[diag] WelcomeWindow PointerPressed at " + e.GetPosition(this));
-			};
-			this.PointerMoved += delegate(object s, Avalonia.Input.PointerEventArgs e)
-			{
-				Log.Warn("[diag] WelcomeWindow PointerMoved at " + e.GetPosition(this));
-			};
 			// TODO 迁移：WPF 构造期 TitleTextBlock 已就绪可直接改属性；Avalonia 12 的 chrome
 			// 延迟初始化，改走 CustomizeTitleTextBlock pending 机制（构造期安全）。
 			CustomizeTitleTextBlock(delegate(TextBlock t)

@@ -199,7 +199,7 @@ namespace ForkPlus.UI.Controls
 		protected override void PrepareContainerForItemOverride(global::Avalonia.Controls.Control element, object item, int index)
 		{
 			base.PrepareContainerForItemOverride(element, item, index);
-			(element as TreeViewControlItem).ParentTreeView = this;
+			(element as TreeViewControlItem)?.ParentTreeView = this;
 		}
 
 		protected void OnSelectionChanged(SelectionChangedEventArgs e)

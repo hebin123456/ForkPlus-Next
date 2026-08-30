@@ -185,7 +185,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="ToolTip">
           <Border Padding="{TemplateBinding Padding}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
-            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" Content="{TemplateBinding Content}"/>
+            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
           </Border>
           
         </ControlTemplate>

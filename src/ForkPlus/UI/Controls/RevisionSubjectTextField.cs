@@ -40,6 +40,20 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
+		public RevisionSubjectTextField()
+		{
+			// TODO 迁移：WPF 属性变更回调驱动 RefreshInlines（选中态换画刷/正文 ↩ 指示符），
+			// 迁移丢回调后这些状态变化不再重排 Inlines，这里补回（StringValue/HighlightString 在基类）。
+			this.GetObservable(IsParentSelectedProperty).Subscribe(new global::Avalonia.Reactive.AnonymousObserver<bool>(delegate
+			{
+				RefreshInlines();
+			}));
+			this.GetObservable(HasBodyProperty).Subscribe(new global::Avalonia.Reactive.AnonymousObserver<bool>(delegate
+			{
+				RefreshInlines();
+			}));
+		}
+
 		protected override void RefreshInlines()
 		{
 			string stringValue = base.StringValue;

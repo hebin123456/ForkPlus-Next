@@ -71,7 +71,32 @@ namespace ForkPlus.UI.UserControls
 		public void UpdateRepositoryData(RepositoryData repositoryData)
 		{
 			RevisionListView.SelectedIndex = -1;
+			// [probe] 事件链定位：ItemCollection（ItemsSourceView 包装层）是否收到源集合的 Reset
+			RevisionListView.Items.CollectionChanged += Probe_ItemsChanged;
 			RevisionsDataSource.Reload(RepositoryUserControl.JobQueue, repositoryData.RevisionStorage, repositoryData.Stashes, repositoryData.References, repositoryData.Remotes, repositoryData.Worktrees, repositoryData.ShowStashesInRevisionList, repositoryData.Reflog, repositoryData.CollapseState, repositoryData.UserColors, RepositoryUserControl.GitModule);
+			// [probe] Reload 后同步快照
+			Log.Warn($"[probe] afterReload: sourceCount={RevisionsDataSource.Count} viewCount={RevisionListView.Items.Count} containers={Probe_ContainerCount()}");
+			Dispatcher.UIThread.Post(delegate
+			{
+				Log.Warn($"[probe] deferred(Background): sourceCount={RevisionsDataSource.Count} viewCount={RevisionListView.Items.Count} containers={Probe_ContainerCount()}");
+			}, DispatcherPriority.Background);
+		}
+
+		private void Probe_ItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			Log.Warn($"[probe] ItemCollection.CollectionChanged: action={e.Action} threadUI={Dispatcher.UIThread.CheckAccess()}");
+		}
+
+		private int Probe_ContainerCount()
+		{
+			try
+			{
+				return RevisionListView.GetRealizedContainers()?.Count() ?? -1;
+			}
+			catch
+			{
+				return -1;
+			}
 		}
 
 		static RevisionListViewUserControl()
@@ -533,7 +558,10 @@ namespace ForkPlus.UI.UserControls
 		// 改为切换 ListBox.ItemTemplate（模板在 axaml Resources 重建，见 SingleRowRevisionTemplate/DoubleRowRevisionTemplate）。
 		bool useSingleRow = ForkPlusSettings.Default.RevisionListOrientation == RevisionListOrientation.Horizontal || RevisionListView.GetAvailableWidth() > num;
 		string resourceKey = useSingleRow ? "SingleRowRevisionTemplate" : "DoubleRowRevisionTemplate";
-		if (base.Resources is global::Avalonia.Controls.IResourceDictionary resourceDictionary && resourceDictionary.TryGetResource(resourceKey, null, out object value) && value is global::Avalonia.Controls.Templates.IDataTemplate dataTemplate && !ReferenceEquals(RevisionListView.ItemTemplate, dataTemplate))
+		object value = null;
+		global::Avalonia.Controls.Templates.IDataTemplate dataTemplate = null;
+		bool found = base.Resources is global::Avalonia.Controls.IResourceDictionary resourceDictionary && resourceDictionary.TryGetResource(resourceKey, null, out value) && (dataTemplate = (value as global::Avalonia.Controls.Templates.IDataTemplate)) != null;
+		if (found && !ReferenceEquals(RevisionListView.ItemTemplate, dataTemplate))
 		{
 			RevisionListView.ItemTemplate = dataTemplate;
 		}
