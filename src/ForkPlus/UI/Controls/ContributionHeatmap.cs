@@ -22,8 +22,12 @@ namespace ForkPlus.UI.Controls
 	// (total contributions / longest streak / most active day).
 	public class ContributionHeatmap : Grid
 	{
+		// TODO 迁移修复：原 Register 未挂 changed 回调（wpf2avalonia 丢失 PropertyMetadata 的
+		// PropertyChangedCallback），OnCommitsByDateChanged 成死代码 → CommitsByDate 赋值后
+		// RebuildCells 永不执行 → 统计页热力图只有 Less/More 图例、53x7 网格全空（实测）。
+		// 改走 WpfPropertyCompat.Register 挂回调。
 		public static readonly global::Avalonia.StyledProperty<Dictionary<DateTime, DayContributionInfo>> CommitsByDateProperty =
-    global::Avalonia.AvaloniaProperty.Register<ContributionHeatmap, Dictionary<DateTime, DayContributionInfo>>("CommitsByDate");
+    global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<ContributionHeatmap, Dictionary<DateTime, DayContributionInfo>>("CommitsByDate", null, (owner, e) => owner.RebuildCells());
 
 		public Dictionary<DateTime, DayContributionInfo> CommitsByDate
 		{
@@ -149,11 +153,6 @@ namespace ForkPlus.UI.Controls
 		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
 		{
 			RebuildCells();
-		}
-
-		private static void OnCommitsByDateChanged(global::Avalonia.AvaloniaObject d, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
-		{
-			((ContributionHeatmap)d).RebuildCells();
 		}
 
 		private void RebuildCells()

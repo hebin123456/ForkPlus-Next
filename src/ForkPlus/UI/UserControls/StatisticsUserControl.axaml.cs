@@ -23,6 +23,7 @@ using OxyPlot.Series;
 using OxyPlot.Avalonia;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using PieSeries = global::OxyPlot.Series.PieSeries;
@@ -445,8 +446,8 @@ namespace ForkPlus.UI.UserControls
 		}
 
 private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.CalendarDateRange? dateRange)
-		{
-			StatsContainer.Collapse();
+                {
+                        StatsContainer.Collapse();
 			FallbackUserControl.FallbackTitle = Translate("Generating statistics...");
 			FallbackUserControl.Show();
 			if (_gitModule != gitModule)
@@ -508,12 +509,12 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 				(_piePlotModel.Series[0] as PieSeries).Slices.Add(CreatePieSlice(authorStat2, i));
 			}
 			AuthorStatListBox.ItemsSource = authorStat.Map((AuthorStats x) => new AuthorStatViewModel(x.Name, x.TotalCommits));
-			LinePlot.InvalidatePlot();
-			PiePlot.InvalidatePlot();
-			UpdateCommitsPerWeekDayPlot(stat.CommitsByDayOfWeek);
-			UpdateCommitsPerDayHourPlot(stat.CommitsByHourOfDay);
-			Heatmap.CommitsByDate = stat.CommitsByDate;
-		}
+		LinePlot.InvalidatePlot();
+		PiePlot.InvalidatePlot();
+		UpdateCommitsPerWeekDayPlot(stat.CommitsByDayOfWeek);
+		UpdateCommitsPerDayHourPlot(stat.CommitsByHourOfDay);
+		Heatmap.CommitsByDate = stat.CommitsByDate;
+	}
 
 		private void UpdateCommitsPerWeekDayPlot(Dictionary<DayOfWeek, int> commitsPerWeekDay)
 		{

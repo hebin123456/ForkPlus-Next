@@ -95,7 +95,11 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
-    <PackageReference Include="Oxyplot.Avalonia" Version="2.1.0-avalonia11" />
+    <!-- OxyPlot.Avalonia：NuGet 包 2.1.0-avalonia11 针对 Avalonia 11 编译，AV12 运行时
+         TemplateBinding.ProvideValue() 与 StreamGeometryContext.LineTo(Point) 两处
+         MissingMethodException（主题应用/渲染刻度线时炸，统计页图表空白）。
+         已内置源码到 src/ThirdParty/OxyPlot.Avalonia.AV12 以 AV12 重编，程序集名不变。 -->
+    <ProjectReference Include="..\ThirdParty\OxyPlot.Avalonia.AV12\OxyPlot.Avalonia.csproj" />
     <!-- <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />  已隔离：WPF 绘图控件库（PlotView 继承 WPF Control，引发 PresentationFramework 级联错误）；替代方案：ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia / 手工自绘 -->
     <!-- System.Drawing.Common 通过 OxyPlot.Wpf 等包传递引入，不再显式引用（NU1510）。
          IconTools.cs / AiDevelopmentWindow.xaml.cs 使用 System.Drawing.Color 等仍可用。-->

@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- OxyPlot.Avalonia 源码内置（MIT, https://github.com/oxyplot/oxyplot-avalonia @ 9913a97）
+       TODO 迁移：NuGet 上 OxyPlot.Avalonia 仅 2.1.0-avalonia11 一个版本，针对 Avalonia 11 编译，
+       在本项目 Avalonia 12.1.1 运行时存在两处二进制不兼容（均实测复现）：
+         1) 包内 Themes/Default.axaml 编译产物调用 TemplateBinding.ProvideValue() 返回 IBinding，
+            AV12 该方法返回类型已改为 BindingBase → MissingMethodException（主题应用即炸）
+         2) CanvasRenderContext 编译产物绑定 StreamGeometryContext.LineTo(Point) 单参签名，
+            AV12 已加 isStroked 参数 → MissingMethodException（渲染坐标轴刻度线时炸）
+       两处源码级均兼容（默认参数展开 + 返回类型协变），故取上游源码以 AV12 编译器重编。
+       程序集名保持 OxyPlot.Avalonia：avares://OxyPlot.Avalonia/Themes/Default.axaml 资源路径、
+       xmlns"http://oxyplot.org/avalonia" 映射（OxyPlotModule.cs 的 XmlnsDefinition）均不变，
+       ForkPlus 的 XAML / using 无需改动。上游若发布 AV12 版可切回 NuGet 包。-->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>OxyPlot.Avalonia</AssemblyName>
+    <TargetName>OxyPlot.Avalonia</TargetName>
+    <RootNamespace>OxyPlot.Avalonia</RootNamespace>
+    <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <LangVersion>latest</LangVersion>
+    <!-- 与主工程一致：关闭默认编译绑定（上游 XAML 未按 CompiledBindings 编写） -->
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0618;CS0619;CS8632;CA1416</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="OxyPlot.Core" Version="2.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 只保留 AvaloniaResource 编译（上游 csproj 同时还 EmbeddedResource 了同一批 xaml，重复） -->
+    <AvaloniaResource Include="**\*.axaml" Exclude="bin\**;obj\**" />
+  </ItemGroup>
+</Project>

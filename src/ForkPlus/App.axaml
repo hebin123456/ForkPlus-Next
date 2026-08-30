@@ -11,7 +11,12 @@
   </Application.Resources>
 
     <Application.Styles>
-    <FluentTheme /></Application.Styles>  <!-- TODO 迁移：原 WPF Theme/Styles/Sidebar.axaml 13 个 DataTemplateKey 类型模板。
+    <FluentTheme />
+    <!-- TODO 迁移：OxyPlot.Avalonia 2.1.0-avalonia11 无 buildTransitive 自动注入，
+         必须手动 Include 主题——缺了它 PlotBase(TemplatedControl) 无 ControlTemplate，
+         OnApplyTemplate 找不到 PART_Panel → canvas 永不创建 → 统计页图表空白
+         （StatisticsUserControl.LinePlot 实测）。 -->
+    <StyleInclude Source="avares://OxyPlot.Avalonia/Themes/Default.axaml" /></Application.Styles>  <!-- TODO 迁移：原 WPF Theme/Styles/Sidebar.axaml 13 个 DataTemplateKey 类型模板。
        WPF 按类型隐式查找（app 级 merged dictionary + DataTemplateKey），Avalonia 12
        ContentPresenter 只走 FindDataTemplate（逻辑树 Control.DataTemplates → 全局），
        资源字典字符串 key 永不命中 → 侧栏树渲染 ToString() 类型名。搬入

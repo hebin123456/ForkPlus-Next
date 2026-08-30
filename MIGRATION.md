@@ -89,7 +89,22 @@ git push origin HEAD
 | 3 运行时验证 | 🔄 进行中（**约 94%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**、**DataTrigger 视觉状态（IsActive 加粗/IsWorktree 图标/BisectGood 换色/HEAD 行加粗）+ Linux HEAD symref 兜底**；待验证：次级窗口（FileHistory/Blame/Merge） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 98%**。单元测试 3856/3856 全绿；三平台 CI 就位（windows/linux 已跑通，macOS native/tokei 显式下载修复中）。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**→**IPC 二次启动开仓**）已通，**三平台 CI 已就位**（push master 自动构建 win/linux/macOS 产物，主分支已由 main 改名 master），剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、6 个平台差异单测）。
+**整体进度估算：约 99%**。单元测试 3856/3856 全绿；三平台 CI 就位（windows/linux 已跑通，macOS native/tokei 显式下载修复中）。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**→**IPC 二次启动开仓**→**统计页图表全复活**）已通，**三平台 CI 已就位**（push master 自动构建 win/linux/macOS 产物，主分支已由 main 改名 master），剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、6 个平台差异单测）。
+
+## 运行时修复链 17（2026-08-30 本轮17：统计页 OxyPlot 图表全复活 + 热力图空白根因）
+
+1. **【已修+实证】OxyPlot.Avalonia 与 Avalonia 12 二进制不兼容（统计页图表全空白）**——两处 MissingMethodException，源码内置重编：
+   - NuGet 包 `OxyPlot.Avalonia 2.1.0-avalonia11` 仅针对 Avalonia 11 编译，AV12 运行时炸两处（均实测复现）：① 包内 `Themes/Default.axaml` 编译产物调用 `TemplateBinding.ProvideValue()` 返回 IBinding，AV12 已改返回 BindingBase → 主题应用即 MissingMethodException；② `CanvasRenderContext` 编译产物绑定 `StreamGeometryContext.LineTo(Point)` 单参签名，AV12 已加 `isStroked` 参数 → 渲染坐标轴刻度线时炸。
+   - 修复：取 oxyplot-avalonia 上游源码（MIT）内置到 `src/ThirdParty/OxyPlot.Avalonia.AV12/`，以 AV12 编译器重编。两处源码级本来就兼容（默认参数展开 + 返回类型协变）。**程序集名保持 OxyPlot.Avalonia**：`avares://OxyPlot.Avalonia/Themes/Default.axaml` 资源路径、xmlns 映射均不变，ForkPlus 的 XAML/using 零改动。上游若发布 AV12 版可切回 NuGet。
+   - 主题必须手动 Include：`App.axaml` 加 `<StyleInclude Source="avares://OxyPlot.Avalonia/Themes/Default.axaml"/>`（包无 buildTransitive 自动注入，缺了它 PlotView 无 ControlTemplate → 图表空白）。
+2. **【已修+实证】贡献热力图空白（只有 Less/More 图例，53×7 网格全空）**——wpf2avalonia 迁移工具丢失属性变更回调：
+   - 根因：`ContributionHeatmap.CommitsByDateProperty` 注册时 `AvaloniaProperty.Register(...)` **未挂 changed 回调**，`OnCommitsByDateChanged` 成死代码 → `CommitsByDate` 赋值后 `RebuildCells()` 永不执行。WPF 的 `DependencyProperty.Register(name, type, owner, new PropertyMetadata(default, changed))` 第 4 参回调被迁移工具丢弃——**系统性模式，同类还有 `AiActionButton.ActionVerbProperty`**（一并修复）。
+   - 修复：改走 `WpfPropertyCompat.Register(name, default, changed)`（项目内已有封装，Changed 订阅 + ActionObserver 适配）。修复后热力图 53×7 网格 + 绿色渐变 + 摘要（总计 251 / 最长连续 9 天 / 最活跃 2026-07-19 (32)）全渲染。verification/30-stats-oxyplot-heatmap-fixed.png。
+   - 排查提示：全库还有约 18 处 `AvaloniaProperty.Register(name)` 无回调注册，其中定义了 `On*Changed` 死方法的是明确丢失（已全修）；其余多数 getter/setter 即可，无回调属正常。
+3. **【伪问题排除】"饼图只显示半圆"**——不是渲染 bug：
+   - 独立测试程序（oxytest，本地 AV12 重编 OxyPlot + 手动 Include 主题）同数据同配置饼图渲染为**完整圆**（橙 97%/绿 3%/蓝极小扇区 + 3% 标签，verification/30c-oxyplot-av12-pie-standalone.png）。
+   - ForkPlus 统计窗口里的"半圆"是**视口裁剪**：PiePlot 固定 450×450，统计内容总高（日期+折线图 350+热力图+贡献者+饼图 450+柱状图×2+代码行数）约 1500px 超出窗口（896/980），ScrollViewer 视口正好切在饼图中间——顶部视口见上半圆（30-*.png）、End 键滚到底见下半圆（30b-*.png），两段拼合即完整圆。与原版 WPF 布局行为一致（XAML 原样迁移），非回归。
+4. **【清理】统计页临时诊断代码清零**：`/tmp/stat_diag.txt` 相关的 7 处 AppendAllText（UpdatePlots/UpdatePreview/GetRepositoryStatsGitCommand/RepositoryStatisticsWindow_Loaded）全部移除，恢复原逻辑。
 
 ## 运行时修复链 16（2026-08-30 本轮16：tokei 三平台化 + IPC 二次启动崩溃修复）
 

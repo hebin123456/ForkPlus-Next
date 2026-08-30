@@ -15,7 +15,7 @@ namespace ForkPlus.UI.Controls
 	public class AiActionButton : Button
 	{
 		public static readonly global::Avalonia.StyledProperty<string> ActionVerbProperty =
-    global::Avalonia.AvaloniaProperty.Register<AiActionButton, string>("ActionVerb");
+    global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<AiActionButton, string>("ActionVerb", null, (owner, e) => OnActionVerbChanged(owner, e));
 
 		private string _savedToolTip;
 		private bool _isBusy;
