@@ -86,10 +86,10 @@ git push origin HEAD
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中（**约 92%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**；待验证：次级窗口（FileHistory/Blame/Merge）、DataTrigger 视觉状态、大仓库性能（虚拟化） |
+| 3 运行时验证 | 🔄 进行中（**约 94%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**、**DataTrigger 视觉状态（IsActive 加粗/IsWorktree 图标/BisectGood 换色/HEAD 行加粗）+ Linux HEAD symref 兜底**；待验证：次级窗口（FileHistory/Blame/Merge） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 92%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置窗口含 Tab 切换）已通，剩余为次级窗口冒烟、偏好设置打开时的 Git 错误空弹窗排查、视觉状态补齐与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、性能虚拟化）。
+**整体进度估算：约 94%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态）已通，剩余为次级窗口冒烟、偏好设置打开时的 Git 错误空弹窗排查与工程收尾（FlaUI 隔离、WpfCompat 死代码清理）。
 
 ## 运行时修复链 8（2026-08-30 本轮8：偏好设置 TabControl 复活 + 对话框 SetStatus 崩溃）
 
@@ -126,6 +126,20 @@ git push origin HEAD
    - 现象：文件菜单"偏好设置"项右侧显示 `Ctrl+OemComma`（WPF 里 KeyGesture.GetDisplayStringForCulture 会映射为实际标点，Avalonia `KeyGesture.ToString()` 直接输出枚举名）。
    - 修复：新建 `UI/Controls/KeyGestureTextConverter.cs`（IValueConverter，KeyGesture → `ToFriendlyString()`，已有扩展含 OemComma→","、OemPeriod→"."、Return→Enter、OemPlus→"=" 映射）；`Menu.axaml` 本地注册（`MenuKeyGestureTextConverter`，ControlTheme 模板内 StaticResource 只查本地链，与 BooleanToVisibilityConverter 同教训）+ 3 处 MenuItem 模板的快捷键 TextBlock 从 `Text="{TemplateBinding InputGesture}"` 改为 `Text="{Binding InputGesture, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource MenuKeyGestureTextConverter}}"`。
    - 验证：`verification/26-menu-shortcut-localized.png`——偏好设置项显示 `Ctrl+,`，其余 Ctrl+Shift+N/Ctrl+N/Ctrl+G/Ctrl+T/Ctrl+O/Ctrl+P/Ctrl+W 全部正常。
+
+## 运行时修复链 12（2026-08-30 本轮12：DataTrigger 视觉状态补齐 + Linux HEAD symref 兜底）
+
+1. **【已修+实证】WPF DataTrigger 外观状态丢失簇（IsActive 加粗 / IsWorktree 图标 / BisectGood 换色 / IsHead 加粗）**：
+   - 根因：WPF `DataTrigger` 的非 Visibility Setter（FontWeight/Source/颜色）在 Avalonia 无模板级等价物（此前 TODO 注释保留原片段，模板硬编码默认值）。
+   - 修复模式一（**转换器**）：新建 `UI/Controls/BoolToFontWeightConverter.cs`（bool→Bold/Normal），FontWeight 直接绑定 VM 布尔属性。应用于：提交列表 HEAD 行加粗（`Listview.axaml` NoSelectionRevisionListViewItemStyle 的 Setter Binding，**Avalonia ControlTheme Setter 的 Binding 相对 DataContext 求值**，同 MultiselectionTreeView 的 IsFocusable 先例）、引用徽章 LocalBranchViewModel、ReferencePanel 两个模板、侧栏 LocalBranch/MainWorktree/Worktree SidebarItem 模板。
+   - 修复模式二（**双元素分支**）：BisectGood 换色用 Good/Bad 两组 Border+Image 按 `IsVisible="{Binding IsGood}"` / `{Binding !IsGood}` 切换（与 RemoteBranch 模板 `!HasDownstream` 模式一致）；侧栏当前分支图标用 ActiveBranchImage/BranchImage 双 Image 分支。
+   - VM 补属性：`ReferencePanelBisectMarkViewModel.IsGood`、`ReferencePanelLocalBranchViewModel.IsActive`（原 WPF 靠 DataTrigger 无需暴露）。
+2. **【已修+实证】Linux 上 native biturbo `bt_get_references` 不返回 HEAD symref → 当前分支 IsActive 恒 false**：
+   - 现象：侧栏 master 不加粗、无 ActiveBranch 对勾图标（显示普通 Y 字形 BranchIcon）、引用徽章当前分支不加粗。
+   - 定位过程（三层 TEMP-DEBUG 日志，已删）：`LocalBranchSidebarItem` ctor 打印 IsActive=False → `RefreshReferences` 打印 symrefs 发现**只有 `refs/remotes/origin/HEAD`，缺 `HEAD` 本身** → `ReferenceStorage.New` 打印 activeBranchIndex=null。Windows 原版 native 返回 HEAD，Linux 版不返回（native 库平台行为差异）。
+   - 修复：`BtReferencesExtensions.EnsureHeadSymref(gitDir, symrefs, targets)`——symrefs 无 "HEAD" 时读 `.git/HEAD`（"ref: refs/heads/xxx"）兜底追加；detached HEAD（HEAD 是裸 SHA 非 symref）原样返回。`GetReferencesGitCommand.Execute` 与 `RefreshRepositoryReferencesGitCommand.RefreshReferences` 两个调用点都已接入。
+   - **验证（1920×1280）**：把测试仓库切回 master（`git checkout master`——注意之前仓库处于 detached HEAD at v0.40.2，那时 IsActive=False 是**正确行为**不是 bug，排查时先确认仓库检出状态！），重启后日志 `activeBranchIndex=0 symrefsLen=2`、`master IsActive=True`，截图侧栏 master **文字加粗 + 灰色对勾图标**（vs 下方远端/标签等 Regular 字重）。`verification/22-datatrigger-active-branch-1920x1280.png`。
+   - **教训**：① 排查"当前分支不高亮"先 `git symbolic-ref HEAD` 确认不是 detached HEAD；② native biturbo 的平台行为差异（HEAD symref）会静默破坏 ActiveBranchIndex 推导链——`ReferenceStorage.New` 靠 symrefs 里的 "HEAD" 匹配 refs/heads/*，这是整条链的单一事实源。
 
 ## 运行时修复链 11（2026-08-30 本轮11：文件管理器定位跨平台化）
 
@@ -396,10 +410,10 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 
 1. ~~提交选中与详情联动~~ ✅ **已完成**（本轮5 实证：verification/21-commit-select-details-1920x1280.png，蓝色高亮 + 详情面板完整填充 + 13 文件树）。
 2. ~~侧栏分支/标签树数据验证~~ ✅ **已完成**（本轮5 读图实证：侧栏分支/标签/远程/子模块分组树正常渲染）。
-3. ~~菜单命令执行~~ ✅ **已完成**（本轮6 实证：菜单横排 + 文件菜单 11 项展开 + "退出"命令执行进程退出；verification/2026-08-30-*.png）。剩余小项：偏好设置对话框打开验证、`Ctrl+OemComma` 快捷键本地化、菜单弹出位置对齐、"在 Finder 中显示"平台文案。
+3. ~~菜单命令执行~~ ✅ **已完成**（本轮6 实证：菜单横排 + 文件菜单 11 项展开 + "退出"命令执行进程退出；verification/2026-08-30-*.png）。剩余小项：~~偏好设置对话框打开验证~~（本轮7 已通）、~~`Ctrl+OemComma` 快捷键本地化~~（本轮9 KeyGestureTextConverter 已修）、~~"在 Finder 中显示"平台文案~~（本轮11 已修）、菜单弹出位置对齐（未做）。
 4. **次级窗口冒烟**：右键文件 → FileHistoryWindow / BlameWindow / SideBySideMergeWindow 打开验证（这三个窗口本轮改过构造链）。
-5. **DataTrigger 视觉状态补齐**：IsActive 加粗 / IsWorktree 图标 / BisectGood 换色（原片段已注释保留在 App.axaml 模板旁），用 VM 计算属性 + Classes 选择器实现。
-6. **性能 TODO**：当前提交列表 ItemsPanel 为非虚拟化 StackPanel，GetEnumerator 全量物化在大仓库有代价 → 切 VirtualizingStackPanel（Avalonia 虚拟化面板走 ItemContainerGenerator 按可见范围生成，兼容惰性源）。
+5. ~~DataTrigger 视觉状态补齐~~ ✅ **已完成**（本轮12 实证：IsActive 加粗/IsWorktree 图标/BisectGood 换色/HEAD 行加粗 + Linux HEAD symref 兜底；verification/22-datatrigger-active-branch-1920x1280.png）。
+6. ~~性能 TODO：提交列表虚拟化~~ ✅ **已完成**（本轮10：MultiselectionTreeView 模板补 ItemsPanel TemplateBinding 恢复虚拟化）。
 7. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
 8. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
 9. **macOS 光标位置**：MouseHelper 的 X11 方案在 macOS 返回 (0,0)，后续补 NSEvent.mouseLocation（P/Invoke libAppKit 或 ObjCRuntime）。

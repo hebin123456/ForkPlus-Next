@@ -4,6 +4,9 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://ForkPlus/Theme/Generic.Light.axaml" />
       </ResourceDictionary.MergedDictionaries>
+      <!-- TODO 迁移：DataTrigger 视觉状态补齐——bool→FontWeight 转换器（IsActive 加粗当前分支），
+           下方 DataTemplates 的 LocalBranch/ReferencePanel 模板引用。 -->
+      <controls:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
     </ResourceDictionary>
   </Application.Resources>
 
@@ -478,12 +481,17 @@
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
-      <Image Grid.Column="0" Height="16" Width="16" x:Name="BranchImage">
+      <!-- TODO 迁移：WPF DataTrigger LocalBranch.IsActive=True → BranchImage 换 ActiveBranchIcon
+           （双 Image 分支恢复；选中+聚焦组合换 ActiveBranchSelectedIcon 的 MultiDataTrigger 暂缓）。 -->
+      <Image Grid.Column="0" Height="16" Width="16" x:Name="ActiveBranchImage" Source="{DynamicResource ActiveBranchIcon}" IsVisible="{Binding LocalBranch.IsActive}" />
+      <Image Grid.Column="0" Height="16" Width="16" x:Name="BranchImage" IsVisible="{Binding !LocalBranch.IsActive}">
         <Image.Source>
           <Binding Path="UpstreamStatus"><Binding.Converter><ui:UpstreamStatusToImageConverter /></Binding.Converter></Binding>
         </Image.Source>
       </Image>
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="Normal" x:Name="TitleTextBlock">
+      <!-- TODO 迁移：WPF DataTrigger LocalBranch.IsActive=True → FontWeight=Bold（当前分支加粗），
+           经 BoolToFontWeight 转换器绑定恢复。 -->
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="{Binding LocalBranch.IsActive, Converter={StaticResource BoolToFontWeight}}" x:Name="TitleTextBlock">
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
@@ -747,7 +755,9 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <Image Grid.Column="0" Source="{DynamicResource WorktreeIcon}" Height="16" Width="16" x:Name="WorktreeImage" />
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" x:Name="TitleTextBlock">
+      <!-- TODO 迁移：WPF DataTrigger Worktree.IsActive=True → FontWeight=Bold（当前工作树加粗），
+           经 BoolToFontWeight 转换器绑定恢复。 -->
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="{Binding Worktree.IsActive, Converter={StaticResource BoolToFontWeight}}" x:Name="TitleTextBlock">
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
@@ -1088,7 +1098,9 @@
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
       <Image Grid.Column="0" Source="{DynamicResource WorktreeIcon}" Height="16" Width="16" x:Name="WorktreeImage" />
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" x:Name="TitleTextBlock">
+      <!-- TODO 迁移：WPF DataTrigger Worktree.IsActive=True → FontWeight=Bold（当前工作树加粗），
+           经 BoolToFontWeight 转换器绑定恢复。 -->
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch" FontWeight="{Binding Worktree.IsActive, Converter={StaticResource BoolToFontWeight}}" x:Name="TitleTextBlock">
         <TextBlock.Text>
           <Binding Path="Title" />
         </TextBlock.Text>
@@ -1098,7 +1110,7 @@
       </TextBlock>
     </Grid>
     
-  
+
     <!--
       TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
       原始片段：
@@ -1118,16 +1130,7 @@
               <Setter TargetName="WorktreeImage" Value="{DynamicResource WorktreeSelectedIcon}" Property="Source" />
             </MultiDataTrigger>
     -->
-    <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
-      原始片段：
-      <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
-              <DataTrigger.Binding>
-                <Binding Path="Worktree.IsActive" />
-              </DataTrigger.Binding>
-              <Setter TargetName="TitleTextBlock" Property="FontWeight" Value="Bold" />
-            </DataTrigger>
-    --></DataTemplate>
+    <!-- 已修复：Worktree.IsActive 加粗经 BoolToFontWeight 转换器绑定恢复（见上方 TitleTextBlock）。 --></DataTemplate>
 <!-- ===================== 修订列表引用徽章（原 Listview.axaml ReferencesDataTemplates.DataTemplate.Resources） =====================
      TODO 迁移：WPF 原版 5 个 DataTemplateKey 模板嵌在 ReferencesDataTemplates 的
      DataTemplate.Resources 里，靠 ContentPresenter 隐式按类型查找命中；Avalonia 12
@@ -1162,7 +1165,9 @@
       </Border.Background>
       <StackPanel Orientation="Horizontal">
         <Path Stretch="None" Margin="3,0,0,0" VerticalAlignment="Center" Data="{DynamicResource OptionMarkGeomentry}" Fill="{DynamicResource ReferenceForeground}" x:Name="ActiveBranchIcon" IsVisible="{Binding IsActive}" />
-        <Border BorderThickness="0" CornerRadius="4,0,0,4" x:Name="IconBorder" IsVisible="False">
+        <!-- TODO 迁移：WPF DataTrigger IsWorktree=True → IconBorder.Visibility=Visible（工作树分支图标），
+             硬编码 False 丢失视觉状态，改为直接绑定恢复。 -->
+        <Border BorderThickness="0" CornerRadius="4,0,0,4" x:Name="IconBorder" IsVisible="{Binding IsWorktree}">
           <Border.BorderBrush>
             <Binding Path="BorderBrush" />
           </Border.BorderBrush>
@@ -1171,7 +1176,9 @@
           </Border.Background>
           <Image Source="{DynamicResource WorktreeIcon}" Height="14" Width="14" Margin="2,0,2,0" />
         </Border>
-        <controls:HighlightableTextBlock FontWeight="Regular" Margin="4,-1,4,1" x:Name="NameTextBlock" Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+        <!-- TODO 迁移：WPF DataTrigger IsActive=True → FontWeight=Bold（当前分支加粗），
+             FontWeight="Regular" 硬编码丢失视觉状态，经 BoolToFontWeight 转换器绑定恢复。 -->
+        <controls:HighlightableTextBlock FontWeight="{Binding IsActive, Converter={StaticResource BoolToFontWeight}}" Margin="4,-1,4,1" x:Name="NameTextBlock" Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
           <controls:HighlightableTextBlock.Text>
             <Binding Path="Name" />
           </controls:HighlightableTextBlock.Text>
@@ -1213,11 +1220,24 @@
     </StackPanel>
   </DataTemplate>
 <DataTemplate DataType="ui:BisectMarkViewModel">
+    <!-- TODO 迁移：WPF DataTrigger IsGood=True → Icon 换 BisectGoodIcon、Border/Background
+         换 BisectGood 系列配色。DataTrigger 丢失后原模板硬编码 Bad 样式，改为 Good/Bad
+         双分支 IsVisible 绑定（与 RemoteBranch 模板 !HasDownstream 模式一致）。 -->
     <StackPanel Orientation="Horizontal" Height="18" Margin="3,2,3,2">
-      <Border BorderThickness="1" CornerRadius="4,0,0,4" BorderBrush="{DynamicResource RevisionList.BisectBadBorder}" Background="{DynamicResource ListBox.Static.Background}" x:Name="IconBorder">
+      <Border BorderThickness="1" CornerRadius="4,0,0,4" BorderBrush="{DynamicResource RevisionList.BisectGoodBorder}" Background="{DynamicResource ListBox.Static.Background}" x:Name="IconBorder" IsVisible="{Binding IsGood}">
+        <Image Height="14" Width="14" Margin="2,0,2,0" Source="{DynamicResource BisectGoodIcon}" x:Name="GoodIcon" />
+      </Border>
+      <Border BorderThickness="1" CornerRadius="4,0,0,4" BorderBrush="{DynamicResource RevisionList.BisectBadBorder}" Background="{DynamicResource ListBox.Static.Background}" x:Name="IconBorder2" IsVisible="{Binding !IsGood}">
         <Image Height="14" Width="14" Margin="2,0,2,0" Source="{DynamicResource BisectBadIcon}" x:Name="Icon" />
       </Border>
-      <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" BorderBrush="{DynamicResource RevisionList.BisectBadBorder}" Background="{DynamicResource RevisionList.BisectBadBackground}" x:Name="LabelBorder">
+      <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" BorderBrush="{DynamicResource RevisionList.BisectGoodBorder}" Background="{DynamicResource RevisionList.BisectGoodBackground}" x:Name="LabelBorder" IsVisible="{Binding IsGood}">
+        <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+          <TextBlock.Text>
+            <Binding Path="Name" />
+          </TextBlock.Text>
+        </TextBlock>
+      </Border>
+      <Border BorderThickness="0,1,1,1" Padding="2,0" CornerRadius="0,4,4,0" BorderBrush="{DynamicResource RevisionList.BisectBadBorder}" Background="{DynamicResource RevisionList.BisectBadBackground}" x:Name="LabelBorder2" IsVisible="{Binding !IsGood}">
         <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
           <TextBlock.Text>
             <Binding Path="Name" />
@@ -1262,7 +1282,9 @@
   </DataTemplate>
 <DataTemplate DataType="controls:ReferencePanelLocalBranchViewModel">
     <Border Height="18" BorderThickness="1" CornerRadius="4" Margin="0,2,4,2" Padding="2,0" BorderBrush="{DynamicResource RevisionSummary.ReferenceBorder}" Background="{DynamicResource RevisionSummary.ReferenceBackground}">
-      <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}">
+      <!-- TODO 迁移：WPF DataTrigger IsActive=True → FontWeight=Bold（详情面板当前分支加粗），
+           经 BoolToFontWeight 转换器绑定恢复。 -->
+      <TextBlock Theme="{DynamicResource ReferenceLabelTextBlockStyle}" FontWeight="{Binding IsActive, Converter={StaticResource BoolToFontWeight}}">
         <TextBlock.Text>
           <Binding Path="Name" />
         </TextBlock.Text>

@@ -1,5 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  
+
+  <!-- TODO 迁移：DataTrigger 视觉状态补齐——bool→FontWeight 转换器（提交列表 HEAD 行加粗）。 -->
+  <controls:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
   <ControlTheme x:Key="ListItemRoundedBorderStyle" TargetType="Border">
     <Setter Property="Margin" Value="4,0,4,0" />
     <Setter Property="CornerRadius" Value="4" />
@@ -191,7 +193,15 @@
   </ControlTheme>
   <ControlTheme x:Key="NoSelectionRevisionListViewItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
     <Setter Property="Focusable" Value="False" />
-    
+    <!-- TODO 迁移：WPF DataTrigger IsHead=True → FontWeight=Bold（提交列表 HEAD 行加粗），
+         经 BoolToFontWeight 转换器绑定 DataContext 属性恢复（同 MultiselectionTreeView 的
+         IsFocusable Setter 绑定模式，Avalonia ControlTheme Setter Binding 相对 DataContext 求值）。 -->
+    <Setter Property="FontWeight">
+      <Setter.Value>
+        <Binding Path="IsHead" Converter="{StaticResource BoolToFontWeight}" />
+      </Setter.Value>
+    </Setter>
+
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Stretch" />
     <Setter Property="Padding" Value="0" />
