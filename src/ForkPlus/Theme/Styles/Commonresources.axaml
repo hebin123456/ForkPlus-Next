@@ -7,6 +7,8 @@
   <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
   <!-- TODO 迁移：WPF 内置 BooleanToVisibilityConverter（Avalonia 无内置），补托管实现供 StaticResource 引用 -->
   <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+  <!-- TODO 迁移：菜单快捷键显示本地化（KeyGesture.ToString 会显示 "Ctrl+OemComma" 枚举名） -->
+  <controls:KeyGestureTextConverter x:Key="KeyGestureTextConverter" />
   <ControlTheme x:Key="{x:Type editor:CodeEditor}" TargetType="editor:CodeEditor">
     <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CodeEditorForeground}" />

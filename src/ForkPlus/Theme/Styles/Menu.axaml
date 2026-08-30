@@ -1,5 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <StreamGeometry x:Key="MenuArrowGeometry">M5.51,5L0.792,9.718L0.115,9.039L4.154,5L0.115,0.961L0.792,0.282L5.51,5Z</StreamGeometry>
+  <!-- TODO 迁移：快捷键显示本地化转换器（OemComma→"," 等），下方 MenuItem 模板 TextBlock 绑定使用 -->
+  <controls:KeyGestureTextConverter x:Key="MenuKeyGestureTextConverter" />
   <ControlTheme x:Key="MenuShadowBorderStyle" TargetType="Border">
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="Padding" Value="8" />
@@ -278,7 +280,7 @@
           <ContentPresenter Content="{TemplateBinding Icon}" HorizontalAlignment="Center" Height="16" Width="16" Margin="0,0,6,0" VerticalAlignment="Center" x:Name="Icon" />
         </StackPanel>
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" TextElement.Foreground="{DynamicResource Menu.MenuItem.Static.Foreground}" x:Name="menuHeaderContainer" />
-        <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding InputGesture}" VerticalAlignment="Center" Foreground="{DynamicResource Menu.MenuItem.Static.Gesture.Foreground}" x:Name="menuGestureText" />
+        <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{Binding InputGesture, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource MenuKeyGestureTextConverter}}" VerticalAlignment="Center" Foreground="{DynamicResource Menu.MenuItem.Static.Gesture.Foreground}" x:Name="menuGestureText" />
       </Grid>
     </Border>
     <!--
@@ -332,7 +334,7 @@
           <ContentPresenter Content="{TemplateBinding Icon}" HorizontalAlignment="Center" Height="16" Width="16" Margin="0,0,6,0" VerticalAlignment="Center" x:Name="Icon" />
         </StackPanel>
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" x:Name="ContentPresenter" />
-        <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding InputGesture}" VerticalAlignment="Center" x:Name="TextBlock" />
+        <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{Binding InputGesture, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource MenuKeyGestureTextConverter}}" VerticalAlignment="Center" x:Name="TextBlock" />
         <Path Grid.Column="4" Data="{DynamicResource MenuArrowGeometry}" Fill="{DynamicResource MainMenu.Static.Foreground}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Stretch="None" x:Name="RightArrow" />
         <Popup Focusable="False" Placement="Right" x:Name="PART_Popup">
           <Popup.IsOpen>
@@ -436,7 +438,7 @@
           <ContentPresenter Content="{TemplateBinding Icon}" HorizontalAlignment="Center" Height="16" Width="16" Margin="0,0,6,0" VerticalAlignment="Center" x:Name="Icon" />
         </StackPanel>
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" x:Name="ContentPresenter" />
-        <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{TemplateBinding InputGesture}" VerticalAlignment="Center" x:Name="TextBlock" />
+        <TextBlock Grid.Column="3" Margin="{TemplateBinding Padding}" Opacity="0.7" Text="{Binding InputGesture, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource MenuKeyGestureTextConverter}}" VerticalAlignment="Center" x:Name="TextBlock" />
         <Path Grid.Column="4" Data="{DynamicResource MenuArrowGeometry}" Fill="{DynamicResource MainMenu.Static.Foreground}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Stretch="None" x:Name="RightArrow" />
         <Popup Focusable="False" Placement="Right" x:Name="PART_Popup">
           <Popup.IsOpen>

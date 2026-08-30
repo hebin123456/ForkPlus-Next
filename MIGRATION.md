@@ -120,6 +120,13 @@ git push origin HEAD
    - 修复：`GitUserControl` 加 `_suppressVersionWarning` 标志，`RefreshGitInstanceComboBox` 包 try/finally 拆出 `DoRefreshGitInstanceComboBox`，刷新期间抑制；用户手动切换 ComboBox 选项时仍正常弹（AddCustom 分支已有 ValidatePath 的具体错误提示，同样被抑制属合理行为）。
    - 验证：`verification/25-preferences-no-error-popup.png`——偏好设置打开后无任何错误弹窗，ErrorWindow 构造计数 0。
 
+## 运行时修复链 9（2026-08-30 本轮9：菜单快捷键显示本地化）
+
+1. **【已修+实证】菜单快捷键显示 `Ctrl+OemComma` 枚举名**：
+   - 现象：文件菜单"偏好设置"项右侧显示 `Ctrl+OemComma`（WPF 里 KeyGesture.GetDisplayStringForCulture 会映射为实际标点，Avalonia `KeyGesture.ToString()` 直接输出枚举名）。
+   - 修复：新建 `UI/Controls/KeyGestureTextConverter.cs`（IValueConverter，KeyGesture → `ToFriendlyString()`，已有扩展含 OemComma→","、OemPeriod→"."、Return→Enter、OemPlus→"=" 映射）；`Menu.axaml` 本地注册（`MenuKeyGestureTextConverter`，ControlTheme 模板内 StaticResource 只查本地链，与 BooleanToVisibilityConverter 同教训）+ 3 处 MenuItem 模板的快捷键 TextBlock 从 `Text="{TemplateBinding InputGesture}"` 改为 `Text="{Binding InputGesture, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource MenuKeyGestureTextConverter}}"`。
+   - 验证：`verification/26-menu-shortcut-localized.png`——偏好设置项显示 `Ctrl+,`，其余 Ctrl+Shift+N/Ctrl+N/Ctrl+G/Ctrl+T/Ctrl+O/Ctrl+P/Ctrl+W 全部正常。
+
 ## 运行时修复链 6（2026-08-30 本轮6：主菜单系统复活）
 
 上轮终点：所有交互埋雷清完，但主菜单还是"竖排挤在标题栏、点击无响应"的残废状态。本轮三连修复让菜单系统完全复活：
