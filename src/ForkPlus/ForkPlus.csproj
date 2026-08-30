@@ -119,8 +119,9 @@
     <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
     <!-- Unix (Linux/macOS): bash + curl，按 uname -s 选 .so / .dylib。
          用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
-         $(BiturboBaseUrl) 仍由 MSBuild 正常展开。-->
-    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; curl -fsSL &quot;$url&quot; -o &quot;$out&quot;; echo &quot;Restored $out from Biturbo latest release&quot;'" />
+         $(BiturboBaseUrl) 仍由 MSBuild 正常展开。
+         带 3 次重试（指数退避）——CI 上 GitHub release 下载偶发连接中断（与 RestoreTokei 同模式）。-->
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; >&amp;2; exit 1; }; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
   <!-- tokei.exe（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
        不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。Windows 产物名为 tokei.exe。
@@ -132,24 +133,39 @@
     </PropertyGroup>
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
   </Target>
-  <Target Name="CopyHelperExecutables" AfterTargets="Build">
-    <!-- 子进程 exe 用 $(TargetFramework) 跟随主工程 TFM（net10.0-windows10.0.19041.0）。
-         Exists 守卫保证非 Windows build 或子项目尚未构建时不会失败。-->
-    <!-- .NET 10 下 exe 是 native apphost（启动器），托管代码在同名 .dll 中，
-         apphost 还需 .runtimeconfig.json 才能解析运行时框架。三者必须一起拷到主程序
-         输出目录，否则主程序 spawn ForkPlus.AskPass.exe 时报“缺少 ForkPlus.AskPass.dll”
-         （v3.5.0 迁移时漏拷 .dll/.runtimeconfig.json，v3.5.1 修复）。-->
-    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe')" />
-    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll')" />
-    <Copy SourceFiles="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json')" />
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
-    <Copy SourceFiles="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json')" />
-    <!-- biturbo 原生库按平台拷贝：Exists 守卫确保只拷实际存在的那一份 -->
-    <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
-    <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
-    <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
-    <Copy SourceFiles="..\..\third_party\tokei.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\tokei.exe')" />
+  <!-- 子进程与 native 库的复制清单（Build 输出与 Publish 输出两处共用）。
+       TODO 迁移（CI）两点坑：
+       1) 原版只有 Build 后拷 $(TargetDir)，dotnet publish 的输出目录走的是 $(PublishDir)
+          （-o 指定或 bin/.../publish/）→ publish 产物缺 biturbo native 库与 AskPass/RI
+          托管 dll（apphost 在但 .dll 不在，spawn 时报缺程序集；v3.5.1 同款坑在 publish
+          场景的复现）→ 拆 Build/Publish 两个 Target 各自拷对应目录。
+       2) 清单收集必须放在 Target 内（执行期求值），不能放顶层 ItemGroup——RestoreBiturbo
+          是 BeforeTargets=Build 的下载动作，CI 全新 checkout 时评估阶段文件还不存在，
+          Exists 守卫全 false → publish 目录恒缺 native 库（本地二次构建才正常，CI 必踩）。
+       子进程产物按平台命名：Windows 是 .exe，Unix 是无扩展名 apphost，都在清单里由
+       Exists 守卫自动取舍。-->
+  <Target Name="CollectHelperOutputs" Returns="@(_HelperOutputs)">
+    <ItemGroup>
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json')" />
+      <!-- biturbo 原生库按平台：Exists 守卫确保只拷实际存在的那一份（每平台 CI 只有一份） -->
+      <_HelperOutputs Include="..\..\third_party\biturbo.dll" Condition="Exists('..\..\third_party\biturbo.dll')" />
+      <_HelperOutputs Include="..\..\third_party\libbiturbo.so" Condition="Exists('..\..\third_party\libbiturbo.so')" />
+      <_HelperOutputs Include="..\..\third_party\libbiturbo.dylib" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+      <_HelperOutputs Include="..\..\third_party\tokei.exe" Condition="Exists('..\..\third_party\tokei.exe')" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CopyHelperExecutables" AfterTargets="Build" DependsOnTargets="CollectHelperOutputs">
+    <Copy SourceFiles="@(_HelperOutputs)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="PublishHelperExecutables" AfterTargets="Publish" DependsOnTargets="CollectHelperOutputs">
+    <Copy SourceFiles="@(_HelperOutputs)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
   </Target>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.1" />

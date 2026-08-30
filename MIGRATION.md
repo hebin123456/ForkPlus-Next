@@ -89,7 +89,7 @@ git push origin HEAD
 | 3 运行时验证 | 🔄 进行中（**约 94%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**、**DataTrigger 视觉状态（IsActive 加粗/IsWorktree 图标/BisectGood 换色/HEAD 行加粗）+ Linux HEAD symref 兜底**；待验证：次级窗口（FileHistory/Blame/Merge） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 96%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**）已通，剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理）。
+**整体进度估算：约 97%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**）已通，**三平台 CI 已就位**（push main 自动构建 win/linux/macOS 产物），剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、6 个平台差异单测）。
 
 ## 运行时修复链 8（2026-08-30 本轮8：偏好设置 TabControl 复活 + 对话框 SetStatus 崩溃）
 
@@ -141,6 +141,23 @@ git push origin HEAD
    - 修复：`BtReferencesExtensions.EnsureHeadSymref(gitDir, symrefs, targets)`——symrefs 无 "HEAD" 时读 `.git/HEAD`（"ref: refs/heads/xxx"）兜底追加；detached HEAD（HEAD 是裸 SHA 非 symref）原样返回。`GetReferencesGitCommand.Execute` 与 `RefreshRepositoryReferencesGitCommand.RefreshReferences` 两个调用点都已接入。
    - **验证（1920×1280）**：把测试仓库切回 master（`git checkout master`——注意之前仓库处于 detached HEAD at v0.40.2，那时 IsActive=False 是**正确行为**不是 bug，排查时先确认仓库检出状态！），重启后日志 `activeBranchIndex=0 symrefsLen=2`、`master IsActive=True`，截图侧栏 master **文字加粗 + 灰色对勾图标**（vs 下方远端/标签等 Regular 字重）。`verification/22-datatrigger-active-branch-1920x1280.png`。
    - **教训**：① 排查"当前分支不高亮"先 `git symbolic-ref HEAD` 确认不是 detached HEAD；② native biturbo 的平台行为差异（HEAD symref）会静默破坏 ActiveBranchIndex 推导链——`ReferenceStorage.New` 靠 symrefs 里的 "HEAD" 匹配 refs/heads/*，这是整条链的单一事实源。
+
+## 运行时修复链 14（2026-08-30 本轮14：GitHub Actions 三平台 CI + publish 产物完整性修复）
+
+1. **【已修+实证】`dotnet publish` 产物缺 3 个关键文件（biturbo native 库 / AskPass.dll / RI.dll）**：
+   - 现象：Release publish 目录（`-o` 指定或 `bin/.../publish/`）里 ForkPlus 主程序与 apphost 齐全，但 `libbiturbo.so`、`ForkPlus.AskPass.dll`、`ForkPlus.RI.dll` 全缺——这样的产物拷到目标机一启动就崩（native 库加载失败/子进程缺程序集）。
+   - 根因（两层叠加）：
+     a) 原版 csproj 只有 `AfterTargets="Build"` 拷 `$(TargetDir)`，publish 阶段输出目录走的是 `$(PublishDir)`——两个目录根本不是同一个，Build 后的拷贝覆盖不到 publish 输出。
+     b) 修复 a) 时把清单放顶层 ItemGroup，又踩评估时序坑：`RestoreBiturbo` 是 `BeforeTargets="Build"` 的下载动作，CI 全新 checkout 时（third_party/ 为空）**评估阶段** native 库文件还不存在 → Exists 守卫全 false → 清单为空 → 恒缺。本地二次构建文件已在才正常，CI 必踩。
+   - 修复：清单收集移入 `CollectHelperOutputs` Target（**执行期**求值，Returns 元数据导出），`CopyHelperExecutables`(Build) 与 `PublishHelperExecutables`(Publish) 各自 `DependsOnTargets` 消费，分别拷 `$(TargetDir)` / `$(PublishDir)`。
+   - 验证：模拟 CI 冷启动（`rm third_party/libbiturbo.so` + `rm -rf bin obj Release`）→ publish 产物 5/5 关键文件齐全（`libbiturbo.so` 是 Restore 阶段从 `hebin123456/Biturbo` latest release 下载的）；产物实际启动冒烟通过。
+2. **【新增】GitHub Actions 三平台 CI（`.github/workflows/build.yml`）**：
+   - 触发：push main / PR / 手动；matrix 三平台：`windows-x64`(win-x64/zip)、`linux-x64`(linux-x64/tar.gz)、`macos-arm64`(osx-arm64/tar.gz，macos-latest 现为 M1 runner，与 Biturbo release 的 arm64 dylib 匹配)。
+   - 流程：checkout → setup-dotnet 10.0.x → `dotnet publish src/ForkPlus/ForkPlus.csproj -c Release`（RestoreBiturbo/RestoreTokei Target 构建期自动从 `hebin123456/Biturbo`、`hebin123456/tokei` 的 latest release 拉各平台 native 产物）→ **Verify critical outputs** 步骤硬校验 9 个关键文件（ForkPlus.dll/runtimeconfig + AskPass/RI 的 apphost/dll/runtimeconfig + 对应平台 native 库；Windows apphost 带 .exe 扩展名单独处理）→ tar.gz/zip 归档 → upload-artifact（保留 14 天）。
+   - 不构建 ForkPlus.AutomationTests（FlaUI Windows-only）。
+   - 本地已验证对应链路：csproj publish 完整性（上述冷启动测试）+ 归档命令。真三平台跑通以 Actions 首跑为准。
+   - 顺带：RestoreBiturbo Unix 分支补 3 次重试（指数退避）——CI 上 GitHub release 下载偶发中断（与 RestoreTokei 同模式）。
+3. **【已验证】Release publish 产物端到端冒烟**：`/tmp/pub_ci5`（CI 冷启动模拟构建）启动无异常、弹 Git 版本警告（沙盒 git 2.34.1 低于推荐 2.40，属合理检测）点确定后主界面完整渲染——菜单栏/工具栏/侧栏/提交区齐全，侧栏无"拉取请求/问题"区块（修复链 13 的验证在 Release 构建下依然成立）。截图：`verification/29-release-publish-smoke-1920x1280.png`。
 
 ## 运行时修复链 13（2026-08-30 本轮13：侧栏布局复活 + 偏好设置 Tab 下划线修复 + biturbo symref 复核）
 
