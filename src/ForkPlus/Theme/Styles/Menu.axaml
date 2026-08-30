@@ -134,7 +134,7 @@
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Grid.Column="1" Margin="{TemplateBinding Padding}" x:Name="ContentPresenter" />
         <Popup Focusable="False" Placement="Bottom" x:Name="PART_Popup">
           <Popup.IsOpen>
-            <Binding Path="IsSubmenuOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+            <Binding Path="IsSubMenuOpen"><!-- TODO 迁移修复：WPF 属性名 IsSubmenuOpen(小写m)；Avalonia 是 IsSubMenuOpen(大写M)，转换器保留 WPF 拼写导致绑定静默失败、菜单点击无响应 --><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </Popup.IsOpen>
           <Popup.PlacementTarget>
             <Binding ElementName="TemplateRoot" />
@@ -336,7 +336,7 @@
         <Path Grid.Column="4" Data="{DynamicResource MenuArrowGeometry}" Fill="{DynamicResource MainMenu.Static.Foreground}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Stretch="None" x:Name="RightArrow" />
         <Popup Focusable="False" Placement="Right" x:Name="PART_Popup">
           <Popup.IsOpen>
-            <Binding Path="IsSubmenuOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+            <Binding Path="IsSubMenuOpen"><!-- TODO 迁移修复：WPF 属性名 IsSubmenuOpen(小写m)；Avalonia 是 IsSubMenuOpen(大写M)，转换器保留 WPF 拼写导致绑定静默失败、菜单点击无响应 --><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </Popup.IsOpen>
           <Popup.PlacementTarget>
             <Binding ElementName="TemplateRoot" />
@@ -440,7 +440,7 @@
         <Path Grid.Column="4" Data="{DynamicResource MenuArrowGeometry}" Fill="{DynamicResource MainMenu.Static.Foreground}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Stretch="None" x:Name="RightArrow" />
         <Popup Focusable="False" Placement="Right" x:Name="PART_Popup">
           <Popup.IsOpen>
-            <Binding Path="IsSubmenuOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+            <Binding Path="IsSubMenuOpen"><!-- TODO 迁移修复：WPF 属性名 IsSubmenuOpen(小写m)；Avalonia 是 IsSubMenuOpen(大写M)，转换器保留 WPF 拼写导致绑定静默失败、菜单点击无响应 --><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </Popup.IsOpen>
           <Popup.PlacementTarget>
             <Binding ElementName="TemplateRoot" />
@@ -568,17 +568,46 @@
         <Setter Property="Template" Value="{DynamicResource SubmenuHeaderTemplateKey}" />
     </Style>-->
 </ControlTheme>
+<!-- TODO 迁移：WPF MenuItem.Role=TopLevelHeader 自动模板选择机制（Avalonia 无 Role 属性，
+     转换时丢失 → 顶层菜单项错用 SubmenuItemTemplateKey 竖排样式）。Avalonia 的等价机制：
+     Menu.ControlTheme 设置 ItemContainerTheme（Avalonia Menu.PrepareContainerForItemOverride
+     会自动为嵌套子项清除 ItemContainerTheme，使子项回落到隐式 MenuItem 主题）——
+     与官方 Fluent 主题 FluentTopLevelMenuItem 同一模式。 -->
+  <ControlTheme x:Key="TopLevelMenuItemTheme" TargetType="MenuItem">
+    <Setter Property="Height" Value="26" />
+    <Setter Property="Background" Value="#00FFFFFF" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="Foreground" Value="{DynamicResource Menu.MenuItem.Static.Foreground}" />
+    <Setter Property="Template" Value="{DynamicResource TopLevelHeaderTemplateKey}" />
+    <Setter Property="Padding" Value="5,0" />
+  </ControlTheme>
   <ControlTheme x:Key="{x:Type Menu}" TargetType="Menu">
     <Setter Property="Background" Value="{DynamicResource Menu.Static.Background}" />
     <Setter Property="Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
     <Setter Property="FontSize" Value="12" />
+    <Setter Property="ItemContainerTheme" Value="{StaticResource TopLevelMenuItemTheme}" />
+<!-- TODO 迁移：WPF Menu 默认 ItemsPanel 是水平 MenuPanel；转换后裸 ItemsPresenter 在
+     Avalonia 默认垂直 StackPanel → 菜单项垂直堆叠在标题栏（2026-08-30 冒烟实证：文件/
+     视图/仓库/窗口/帮助 竖排挤在左上角，点击无响应）。
+     根因（对照 Avalonia 12.1 源码）：Menu 类型的 ItemsPanel 默认值本来就是水平 StackPanel
+     （Menu.cs 静态构造 OverrideDefaultValue），但控件模板里的 ItemsPresenter 必须显式
+     ItemsPanel="{TemplateBinding ItemsPanel}" 才能继承宿主的面板——官方 Fluent 主题正是
+     这么写的；裸 <ItemsPresenter/> 会让 ItemsPresenter 用自己的默认垂直 StackPanel。
+     双保险：既显式 Setter 水平面板，又给 ItemsPresenter 补 TemplateBinding。 -->
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
 <!-- TODO 迁移：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
 <!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Menu">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-            <ItemsPresenter />
+            <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
           </Border>
         </ControlTemplate>
       </Setter.Value>

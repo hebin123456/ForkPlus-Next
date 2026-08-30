@@ -42,9 +42,10 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：Windows-only P/Invoke 崩溃簇清零——跨平台兼容层落地（2026-08-30 本轮5）。**
+**🎉 里程碑：主菜单系统完全复活（2026-08-30 本轮6）。**
 - `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
-- **完整冒烟通过（1920×1280）**：启动 → Git 版本警告对话框 → 主窗口 → 自动恢复 .nvm 仓库会话（提交列表/分支图/标签徽章/侧栏分支标签远程子模块树全渲染）→ 点击提交行 → 蓝色高亮选中 + 详情面板完整填充（作者/日期/完整 SHA/父提交/提交说明/13 个变更文件树）。verification/21-commit-select-details-1920x1280.png + 21a-repo-restored。
+- **菜单三连修复（本轮6）**：①横排布局恢复（ItemsPanel TemplateBinding）；②下拉菜单可打开（WPF/Avalonia 属性名大小写差异 `IsSubmenuOpen`→`IsSubMenuOpen`）；③菜单命令可执行（实测点击"退出"项应用正常关闭）。verification/2026-08-30-menu-horizontal-fixed.png + 2026-08-30-file-menu-dropdown-open.png。
+- **完整冒烟通过（1920×1280）**：启动 → Git 版本警告对话框 → 主窗口 → 自动恢复 .nvm 仓库会话（提交列表/分支图/标签徽章/侧栏分支标签远程子模块树全渲染）→ 点击提交行 → 蓝色高亮选中 + 详情面板完整填充（作者/日期/完整 SHA/父提交/提交说明/13 个变更文件树）→ 文件菜单展开 11 项（初始化新仓库/克隆/初始化 git mm 仓库/新建标签页/打开仓库/快速启动/关闭标签页/配置 SSH 密钥/账号/偏好设置/退出，快捷键齐全）→ 点击菜单项执行命令。verification/21-commit-select-details-1920x1280.png + 21a-repo-restored。
 - 本轮清零的 Unix 崩溃源（全部 DllNotFoundException，均有 fork.log 实证）：`StrCmpLogicalW`(shlwapi)、`StrFormatByteSize`(shlwapi)、`SHGetFileInfo`(shell32)、`GetCursorPos`(user32)、`ShellExecute` 打开文件。修复模式统一：`OperatingSystem.IsWindows()` 分支 + Unix 托管等价实现/占位。
 - MouseHelper 特殊：Avalonia 无全局 GetCursorPos 等价 API（InputManager internal、RawEventArgs 成员 protected，反射实证），改 X11 `XQueryPointer`（libX11，硬件级查询，拖放中也有效）。
 - **提交列表自动渲染**（无需任何兜底/诊断代码）：verification/18-commitlist-final-no-diag.png + 18a-zoom（.nvm 唯一提交行：v0.40.2 标签徽章[引用模板生效] + Jordan Harband 头像/姓名 + ffec9fe + 11 Mar 2025 20:30）。
@@ -77,16 +78,38 @@ git push origin HEAD
 | （本轮3） | 运行时：**仓库打开链路全通** | ClosableTabControl 选卡事件断链 + 侧栏早期 SelectionChanged NRE + DataTemplateKey→App.DataTemplates 57 个模板迁移 + ReferencePanel ControlTheme + SelectableTextBlock（详见「运行时修复链 3」） |
 | （本轮4） | 运行时：**提交列表自动渲染根因修复** | RevisionsDataSource 枚举器/Count 契约违背（WPF 索引器生成 vs Avalonia foreach 枚举生成）+ GridView→ItemTemplate 行模板 + CreateContainerForItemOverride 容器链 + TextField Inlines 触发链 + ContentPresenter ContentTemplate 补绑（详见「运行时修复链 4」） |
 | （本轮5） | 运行时：**跨平台 P/Invoke 崩溃簇清零** | shlwapi/shell32/user32 五处 DllNotFoundException 修复（托管等价实现/占位图标/X11 XQueryPointer），会话恢复 + 提交选中详情联动 1920×1280 完整冒烟实证（详见「运行时修复链 5」） |
+| （本轮6） | 运行时：**主菜单系统完全复活** | 菜单横排 + 下拉展开 + 命令执行三连修复（ItemsPanel TemplateBinding / IsSubMenuOpen 大小写 / ItemContainerTheme 顶层项主题），文件菜单 11 项全渲染（详见「运行时修复链 6」） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中（**约 85%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层；待验证：次级窗口（FileHistory/Blame/Merge）、菜单命令执行、DataTrigger 视觉状态、大仓库性能（虚拟化） |
+| 3 运行时验证 | 🔄 进行中（**约 88%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**；待验证：次级窗口（FileHistory/Blame/Merge）、偏好设置对话框、DataTrigger 视觉状态、大仓库性能（虚拟化） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 85%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情）已通，剩余为边缘交互（次级窗口/菜单命令/视觉状态补齐）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、性能虚拟化）。
+**整体进度估算：约 88%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单）已通，剩余为边缘交互（次级窗口/偏好设置对话框/视觉状态补齐）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、性能虚拟化）。
+
+## 运行时修复链 6（2026-08-30 本轮6：主菜单系统复活）
+
+上轮终点：所有交互埋雷清完，但主菜单还是"竖排挤在标题栏、点击无响应"的残废状态。本轮三连修复让菜单系统完全复活：
+
+1. **【修复1】菜单横排（Menu.axaml）**：
+   - 现象：文件/视图/仓库/窗口/帮助 五项竖排堆在标题栏左上角。
+   - 根因（对照 Avalonia 12.1 源码实证）：`Menu` 类型的 `ItemsPanel` 默认值本来就是**水平 StackPanel**（`Menu.cs` 静态构造 `ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel)`），但控件模板里的 `ItemsPresenter` 必须显式 `ItemsPanel="{TemplateBinding ItemsPanel}"` 才能继承宿主的面板——官方 Fluent 主题正是这么写的；WPF 转换来的模板是裸 `<ItemsPresenter/>`，Avalonia 会用自己的默认垂直 StackPanel。
+   - 修复：`<ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />` + 显式 Setter 水平 StackPanel 双保险。
+2. **【修复2】下拉菜单打不开（致命拼写差异）**：
+   - 现象：点"文件"菜单无任何反应（无异常、无日志）。
+   - 根因：WPF 属性名 `IsSubmenuOpen`（小写 m），Avalonia 是 `IsSubMenuOpen`（大写 M）。转换器保留 WPF 拼写 → `<Binding Path="IsSubmenuOpen">` 绑定到不存在的属性 → **静默失败**（无编译错误、无运行时异常，只有绑定日志）。Menu.axaml 3 处（TopLevelHeader/SubmenuHeader/SearchableSubmenuHeader 模板的 PART_Popup.IsOpen 绑定）。
+   - 修复：全局替换为 `IsSubMenuOpen`。**教训：WPF→Avalonia 大小写差异是静默杀手，`grep -rn 'SubmenuOpen' 比对拼写` 应列入转换检查清单。**
+3. **【修复3】顶层菜单项样式（ItemContainerTheme）**：
+   - 根因：WPF `MenuItem.Role`（TopLevelHeader/SubmenuItem 自动选择模板）在 Avalonia 不存在，转换时 Role 样式块全部注释化 → 所有菜单项（含顶层）都套 `SubmenuItemTemplateKey`（子菜单项竖排样式，带勾选列/固定宽度）。
+   - 修复：新增 `TopLevelMenuItemTheme`（用 `TopLevelHeaderTemplateKey`），在 Menu ControlTheme 上设置 `ItemContainerTheme` 引用它——与官方 Fluent 主题 `FluentTopLevelMenuItem` 同一模式。Avalonia `Menu.PrepareContainerForItemOverride` 会自动为嵌套子项清除 ItemContainerTheme，子项回落到隐式 MenuItem 主题（SubmenuItem 模板），无需额外处理。
+4. **验证（1920×1280 冒烟）**：
+   - 菜单横排：verification/2026-08-30-menu-horizontal-fixed.png
+   - 文件菜单展开 11 项：verification/2026-08-30-file-menu-dropdown-open.png（初始化新仓库 Ctrl+Shift+N / 克隆 Ctrl+N / 初始化 git mm 仓库 Ctrl+G / 新建标签页 Ctrl+T / 打开仓库 Ctrl+O / 快速启动 Ctrl+P / 关闭标签页 Ctrl+W / 配置 SSH 密钥 / 账号 / 偏好设置 Ctrl+OemComma / 退出）
+   - 命令执行：点击"退出"项 → 应用正常关闭（进程退出实证）。
+   - 已知小瑕疵（后续修）：快捷键显示 `Ctrl+OemComma` 未本地化为 `Ctrl+,`；菜单弹出位置偏左（屏幕左缘 x=0 而非菜单项下方对齐）；"在 Finder 中显示"文案需按平台区分。
 
 ## 运行时阻塞：Textblock.axaml StaticResource（✅ 已解决，存档备考）
 
@@ -296,12 +319,12 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 1. **IPC 命名管道消息模式（PlatformNotSupportedException）**：`IpcServer.cs:26` 的 `PipeTransmissionMode.Message` 仅 Windows 支持。协议本身用 4 字节长度前缀分帧（`PipeStreamExtensions.ReadString`），不依赖消息边界，已改为 `OperatingSystem.IsWindows() ? Message : Byte`。
 2. **沙盒无显示服务器**：`apt-get install -y xvfb` 后 `Xvfb :99 -screen 0 1920x1080x24` + `export DISPLAY=:99` 即可跑 GUI 冒烟。
 
-## 下一步行动（按优先级，2026-08-30 本轮5 更新）
+## 下一步行动（按优先级，2026-08-30 本轮6 更新）
 
 1. ~~提交选中与详情联动~~ ✅ **已完成**（本轮5 实证：verification/21-commit-select-details-1920x1280.png，蓝色高亮 + 详情面板完整填充 + 13 文件树）。
 2. ~~侧栏分支/标签树数据验证~~ ✅ **已完成**（本轮5 读图实证：侧栏分支/标签/远程/子模块分组树正常渲染）。
-3. **次级窗口冒烟**：右键文件 → FileHistoryWindow / BlameWindow / SideBySideMergeWindow 打开验证（这三个窗口本轮改过构造链）。
-4. **菜单命令执行**：File 菜单展开 → 命令触发（退出/打开仓库/Preferences 对话框）。
+3. ~~菜单命令执行~~ ✅ **已完成**（本轮6 实证：菜单横排 + 文件菜单 11 项展开 + "退出"命令执行进程退出；verification/2026-08-30-*.png）。剩余小项：偏好设置对话框打开验证、`Ctrl+OemComma` 快捷键本地化、菜单弹出位置对齐、"在 Finder 中显示"平台文案。
+4. **次级窗口冒烟**：右键文件 → FileHistoryWindow / BlameWindow / SideBySideMergeWindow 打开验证（这三个窗口本轮改过构造链）。
 5. **DataTrigger 视觉状态补齐**：IsActive 加粗 / IsWorktree 图标 / BisectGood 换色（原片段已注释保留在 App.axaml 模板旁），用 VM 计算属性 + Classes 选择器实现。
 6. **性能 TODO**：当前提交列表 ItemsPanel 为非虚拟化 StackPanel，GetEnumerator 全量物化在大仓库有代价 → 切 VirtualizingStackPanel（Avalonia 虚拟化面板走 ItemContainerGenerator 按可见范围生成，兼容惰性源）。
 7. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
