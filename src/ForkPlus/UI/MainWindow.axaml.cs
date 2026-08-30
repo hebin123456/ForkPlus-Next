@@ -107,6 +107,19 @@ namespace ForkPlus.UI
 			Toolbar.Initialize(this);
 			RefreshTitle();
 			base.SizeChanged += MainWindow_SizeChanged;
+			// TODO 迁移（根因）：WPF 里 Closing/Activated 在 XAML 或基类接线，迁移后丢失——
+			// Window_Closing（保存窗口位置+会话）与 Window_Activated（启动完成标记+激活刷新）
+			// 从未执行：窗口位置永不保存、_startUpFinished 恒 false、激活时仓库不刷新。
+			base.Closing += Window_Closing;
+			base.Activated += Window_Activated;
+			// 预同步几何（Width/Height 是 DIP 属性，Show 前设置可避免 1000x600 → 恢复尺寸的闪跳；
+			// Position/最大化在 OnOpened 里恢复，避免未显示窗口操作 PlatformImpl 的时序问题）。
+			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
+			if (windowLocationState.WindowState != global::Avalonia.Controls.WindowState.Minimized)
+			{
+				base.Width = windowLocationState.Width;
+				base.Height = windowLocationState.Height;
+			}
 			(global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow = this;
 			TabManager = new TabManager(TabControl);
 		}
@@ -192,26 +205,20 @@ namespace ForkPlus.UI
 			_templatePartNotificationManagerToggleButton.IsChecked = true;
 		}
 
-		protected void OnSourceInitialized(EventArgs e)
+		// TODO 迁移（根因）：WPF OnSourceInitialized 是窗口句柄创建后的虚方法回调，Avalonia 无此
+		// 生命周期；原 protected void OnSourceInitialized 从未被调用（死代码），导致窗口位置/大小
+		// 永不恢复（一直停在 XAML 默认 1000x600）。改在 OnOpened（Avalonia 等价时机）恢复。
+		protected override void OnOpened(EventArgs e)
 		{
-			base.OnSourceInitialized(e);
+			base.OnOpened(e);
 			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
 			if (windowLocationState.WindowState == global::Avalonia.Controls.WindowState.Minimized)
 			{
 				windowLocationState = new WindowLocationState(windowLocationState.Left, windowLocationState.Top, windowLocationState.Width, windowLocationState.Height, global::Avalonia.Controls.WindowState.Normal);
 			}
-			// 先同步 WPF 依赖属性到目标值，避免 WPF 在 Show 流程中用 XAML 默认值（Width=1000/Height=600）
-			// 覆盖 SetWindowPlacement 设置的 HWND 位置/尺寸，导致窗口位置/大小不恢复。
-			// TODO 迁移：WPF Window.Left/Top → Avalonia Window.Position（DIP→物理像素换算依赖 RenderScaling，实际恢复由 SetWindowPlacement 完成）。
-			base.Position = new global::Avalonia.PixelPoint((int)windowLocationState.Left, (int)windowLocationState.Top);
-			base.Width = windowLocationState.Width;
-			base.Height = windowLocationState.Height;
-			// 再用 Win32 SetWindowPlacement 精确恢复（处理多显示器、DPI、还原矩形）。
+			// 先同步几何属性到目标值（DIP），SetWindowLocationState 内部按平台走 Win32/Avalonia 路径
+			// （Unix 路径负责 DIP→物理像素换算并处理最大化）。
 			this.SetWindowLocationState(windowLocationState);
-			if (windowLocationState.WindowState == global::Avalonia.Controls.WindowState.Maximized)
-			{
-				base.WindowState = global::Avalonia.Controls.WindowState.Maximized;
-			}
 		}
 
 		protected override void OnKeyUp(KeyEventArgs e)
@@ -269,7 +276,10 @@ namespace ForkPlus.UI
 			}
 		}
 
-		protected void OnLocationChanged(EventArgs e)
+		// TODO 迁移（根因）：原来是非 override 的 protected void（隐藏 CustomWindow 虚方法），
+		// CustomWindow.PositionChanged → 虚方法 OnLocationChanged 永远分派到基类实现，
+		// 本方法体（移动窗口时保存位置）从未执行。改为 override 修复分发链。
+		protected override void OnLocationChanged(EventArgs e)
 		{
 			base.OnLocationChanged(e);
 			if (_startUpFinished)
@@ -278,7 +288,9 @@ namespace ForkPlus.UI
 			}
 		}
 
-		protected void OnStateChanged(EventArgs e)
+		// TODO 迁移（根因）：同 OnLocationChanged——原为隐藏基类的死代码，改 override 接入
+		// CustomWindow.OnPropertyChanged → OnStateChanged 分发链（状态切换时保存位置）。
+		protected override void OnStateChanged(EventArgs e)
 		{
 			base.OnStateChanged(e);
 			// 纯状态切换（最大化↔正常）若不伴随尺寸/位置变化，不会触发 SizeChanged/LocationChanged，

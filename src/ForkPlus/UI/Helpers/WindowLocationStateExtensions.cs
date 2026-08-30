@@ -161,10 +161,30 @@ namespace ForkPlus.UI.Helpers
 		[DllImport("user32.dll")]
 		private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
+		// TODO 迁移：Win32 GetWindowPlacement/SetWindowPlacement 在 Linux/macOS 抛 DllNotFoundException。
+		// Unix 路径改用 Avalonia 原生 API（Position 物理像素 + Width/Height/Bounds DIP）。
+		// Avalonia 无 RestoreBounds API（12.1.1 实证），用 ConditionalWeakTable 缓存"正常态"边界：
+		// 最大化/最小化时取缓存（等价 Win32 placement.normalPosition 还原矩形）。
+		private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Window, WindowLocationState> LastNormalBounds = new System.Runtime.CompilerServices.ConditionalWeakTable<Window, WindowLocationState>();
+
 		public static void SetWindowLocationState(this Window window, WindowLocationState state)
 		{
 			if (DesignTimeHelper.IsInDesignMode() || window == null || state == null)
 			{
+				return;
+			}
+			// TODO 迁移：Unix 上 Win32 SetWindowPlacement 不可用；Width/Height 是 DIP 可直接赋值，
+			// Position 是物理像素需乘 RenderScaling。先设几何再切最大化（WPF 同序）。
+			if (!OperatingSystem.IsWindows())
+			{
+				window.Width = state.Width;
+				window.Height = state.Height;
+				double num = (window.RenderScaling > 0.0) ? window.RenderScaling : 1.0;
+				window.Position = new global::Avalonia.PixelPoint((int)(state.Left * num), (int)(state.Top * num));
+				if (state.WindowState == global::Avalonia.Controls.WindowState.Maximized)
+				{
+					window.WindowState = global::Avalonia.Controls.WindowState.Maximized;
+				}
 				return;
 			}
 			WindowInteropHelper windowInteropHelper = new WindowInteropHelper(window);
@@ -183,6 +203,10 @@ namespace ForkPlus.UI.Helpers
 			{
 				return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, global::Avalonia.Controls.WindowState.Normal);
 			}
+			if (!OperatingSystem.IsWindows())
+			{
+				return GetWindowLocationStateAvalonia(window);
+			}
 			// 始终用 Win32 placement.normalPosition（还原矩形），即使最小化也如此。
 			// 之前最小化时走特殊分支用 WPF 的 window.Left/Top/Width/Height，而这些值在最小化时是
 			// 系统幽灵值（如 -32000），会导致保存错误的位置，下次恢复窗口跑到屏幕外。
@@ -198,15 +222,52 @@ namespace ForkPlus.UI.Helpers
 			{
 				return new WindowLocationState(100.0, 100.0, 1000.0, 600.0, global::Avalonia.Controls.WindowState.Normal);
 			}
+			if (!OperatingSystem.IsWindows())
+			{
+				return GetWindowLocationStateAvalonia(window);
+			}
 			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
 			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
 			TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
 			return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, FromShowCmd(placement.ShowCmd));
 		}
 
+		/// <summary>
+		/// TODO 迁移：Unix 路径的窗口几何读取。最大化/最小化时返回缓存的正常态边界（等价
+		/// Win32 placement.normalPosition 还原矩形语义）；正常态实时读取并刷新缓存。
+		/// </summary>
+		private static WindowLocationState GetWindowLocationStateAvalonia(Window window)
+		{
+			global::Avalonia.Controls.WindowState windowState = window.WindowState;
+			if (windowState != global::Avalonia.Controls.WindowState.Normal && LastNormalBounds.TryGetValue(window, out var value))
+			{
+				return value;
+			}
+			double num = (window.RenderScaling > 0.0) ? window.RenderScaling : 1.0;
+			global::Avalonia.PixelPoint position = window.Position;
+			global::Avalonia.Rect bounds = window.Bounds;
+			double width = bounds.Width;
+			double height = bounds.Height;
+			if (width <= 0.0 || double.IsNaN(width))
+			{
+				width = window.Width;
+			}
+			if (height <= 0.0 || double.IsNaN(height))
+			{
+				height = window.Height;
+			}
+			WindowLocationState windowLocationState = new WindowLocationState((double)position.X / num, (double)position.Y / num, width, height, windowState);
+			if (windowState == global::Avalonia.Controls.WindowState.Normal)
+			{
+				LastNormalBounds.Remove(window);
+				LastNormalBounds.Add(window, windowLocationState);
+			}
+			return windowLocationState;
+		}
+
 		public static void GetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
 		{
-			if (DesignTimeHelper.IsInDesignMode())
+			if (DesignTimeHelper.IsInDesignMode() || !OperatingSystem.IsWindows())
 			{
 				return;
 			}
@@ -229,7 +290,8 @@ namespace ForkPlus.UI.Helpers
 
 		public static bool AutoHideEnabled()
 		{
-			if (DesignTimeHelper.IsInDesignMode())
+			// TODO 迁移：任务栏自动隐藏探测（SHAppBarMessage）是 Windows 专属，Unix 恒 false。
+			if (DesignTimeHelper.IsInDesignMode() || !OperatingSystem.IsWindows())
 			{
 				return false;
 			}

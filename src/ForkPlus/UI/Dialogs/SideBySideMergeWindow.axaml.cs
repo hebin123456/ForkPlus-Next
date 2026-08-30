@@ -210,13 +210,17 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected void OnSourceInitialized(EventArgs e)
+		// TODO 迁移（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
+		// 窗口位置从未恢复）。改 OnOpened override（CustomWindow 已提供 OnOpened 虚链）。
+		protected override void OnOpened(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
 			this.SetWindowLocationState(ForkPlusSettings.Default.SideBySideMergeWindowLocationState);
 		}
 
-		protected void OnLocationChanged(EventArgs e)
+		// TODO 迁移（根因）：原为非 override 的隐藏方法，CustomWindow.PositionChanged 的
+		// 虚分发永远到不了这里（移动窗口保存位置从未执行）。改 override 接入分发链。
+		protected override void OnLocationChanged(EventArgs e)
 		{
 			base.OnLocationChanged(e);
 			if (_startUpFinished)

@@ -224,7 +224,20 @@ namespace ForkPlus.UI
 			}
 		}
 
-		protected void OnStateChanged(EventArgs e)
+		// TODO 迁移（根因）：WPF Window.StateChanged 事件 / OnStateChanged 虚方法在 Avalonia 无直接
+		// 对应（无 StateChanged 事件）。原 protected void OnStateChanged 无人调用（死代码），导致
+		// 最大化/还原按钮可见性切换、最大化边框厚度调整全部失效。现通过 OnPropertyChanged
+		// 监听 WindowStateProperty 转发，并改为 virtual 供子类（MainWindow 等）override。
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == WindowStateProperty)
+			{
+				OnStateChanged(EventArgs.Empty);
+			}
+		}
+
+		protected virtual void OnStateChanged(EventArgs e)
 		{
 			if (IsDesignMode)
 			{

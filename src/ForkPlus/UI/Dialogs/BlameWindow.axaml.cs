@@ -148,7 +148,9 @@ namespace ForkPlus.UI.Dialogs
 			base.Activated += BlameWindow_Activated;
 		}
 
-		protected void OnSourceInitialized(EventArgs e)
+		// TODO 迁移（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
+		// 窗口位置从未恢复）。改 OnOpened override（CustomWindow 已提供 OnOpened 虚链）。
+		protected override void OnOpened(EventArgs e)
 		{
 			base.OnSourceInitialized(e);
 			this.SetWindowLocationState(ForkPlusSettings.Default.BlameWindowLocationState);

@@ -69,6 +69,14 @@ namespace ForkPlus.UI.UserControls
 
 		public static Icon GetIconForFile(string filename, ShellIconSize size)
 		{
+			// TODO 迁移：SHGetFileInfo（shell32.dll）是 Windows 专属。Linux/macOS 抛
+			// DllNotFoundException——实证：点击提交行 → RevisionDetails 文件列表建图标缓存
+			// → 崩溃整个应用（2026-08-30 fork.log）。Unix 无系统图标 API，返回 null，
+			// 由 GetImageSourceForExtension 提供 BinaryFile 占位图标。
+			if (!OperatingSystem.IsWindows())
+			{
+				return null;
+			}
 			SHFILEINFO psfi = default(SHFILEINFO);
 			NativeMethods.SHGetFileInfo(filename, 0u, ref psfi, (uint)Marshal.SizeOf(psfi), size);
 			Icon result = null;
@@ -104,11 +112,44 @@ namespace ForkPlus.UI.UserControls
 			return GetImageSourceForExtension(extension, iconsize);
 		}
 
+		// TODO 迁移：Unix 无 SHGetFileInfo/ExtractAssociatedIcon（shell32 + System.Drawing 均
+		// Windows 专属）。用内置 BinaryFile 图标做统一占位（96x128 原图，列表显示时按目标
+		// 尺寸缩放），保证文件列表/历史/blame 等视图有图标可显示。后续可按 freedesktop
+		// 图标主题（xdg-icon/resource）实现按扩展名取真实图标。
+		[Null]
+		private static global::Avalonia.Media.IImage _unixPlaceholderFileIcon;
+
+		[Null]
+		private static global::Avalonia.Media.IImage UnixPlaceholderFileIcon
+		{
+			get
+			{
+				if (_unixPlaceholderFileIcon == null)
+				{
+					try
+					{
+						_unixPlaceholderFileIcon = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(new Uri("avares://ForkPlus/Assets/BinaryFile.png")));
+					}
+					catch (Exception ex)
+					{
+						Log.Error("Failed to load placeholder file icon", ex);
+					}
+				}
+				return _unixPlaceholderFileIcon;
+			}
+		}
+
 		public static global::Avalonia.Media.IImage GetImageSourceForExtension(string extension, ShellIconSize iconsize = ShellIconSize.SmallIcon)
 		{
 			LruCache<string, global::Avalonia.Media.IImage> defaultFileIconCache = DefaultFileIconCache;
 			if (defaultFileIconCache.TryGet(extension, out var value))
 			{
+				return value;
+			}
+			if (!OperatingSystem.IsWindows())
+			{
+				value = UnixPlaceholderFileIcon;
+				defaultFileIconCache.Put(extension, value);
 				return value;
 			}
 			Icon iconForExtension = GetIconForExtension(extension, iconsize);
@@ -136,6 +177,12 @@ namespace ForkPlus.UI.UserControls
 			if (!File.Exists(filePath))
 			{
 				return imageSource;
+			}
+			// TODO 迁移：Icon.ExtractAssociatedIcon（System.Drawing.Common）在 .NET 6+ 仅支持
+			// Windows，Unix 走 BinaryFile 占位图标（同 GetImageSourceForExtension）。
+			if (!OperatingSystem.IsWindows())
+			{
+				return UnixPlaceholderFileIcon;
 			}
 			try
 		{

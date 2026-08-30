@@ -42,8 +42,11 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：提交列表自动渲染根因修复——WPF/Avalonia 容器生成机制差异实证（2026-08-30 本轮4）。**
+**🎉 里程碑：Windows-only P/Invoke 崩溃簇清零——跨平台兼容层落地（2026-08-30 本轮5）。**
 - `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
+- **完整冒烟通过（1920×1280）**：启动 → Git 版本警告对话框 → 主窗口 → 自动恢复 .nvm 仓库会话（提交列表/分支图/标签徽章/侧栏分支标签远程子模块树全渲染）→ 点击提交行 → 蓝色高亮选中 + 详情面板完整填充（作者/日期/完整 SHA/父提交/提交说明/13 个变更文件树）。verification/21-commit-select-details-1920x1280.png + 21a-repo-restored。
+- 本轮清零的 Unix 崩溃源（全部 DllNotFoundException，均有 fork.log 实证）：`StrCmpLogicalW`(shlwapi)、`StrFormatByteSize`(shlwapi)、`SHGetFileInfo`(shell32)、`GetCursorPos`(user32)、`ShellExecute` 打开文件。修复模式统一：`OperatingSystem.IsWindows()` 分支 + Unix 托管等价实现/占位。
+- MouseHelper 特殊：Avalonia 无全局 GetCursorPos 等价 API（InputManager internal、RawEventArgs 成员 protected，反射实证），改 X11 `XQueryPointer`（libX11，硬件级查询，拖放中也有效）。
 - **提交列表自动渲染**（无需任何兜底/诊断代码）：verification/18-commitlist-final-no-diag.png + 18a-zoom（.nvm 唯一提交行：v0.40.2 标签徽章[引用模板生效] + Jordan Harband 头像/姓名 + ffec9fe + 11 Mar 2025 20:30）。
 - 根因（本轮4 最终实证）：`RevisionsDataSource` 的 `IEnumerable.GetEnumerator()` 返回 `_decoratedRevisions`（仅"已物化"行，Reload 后为空）而 `Count` 返回 `_visualGraph.Count` —— **枚举器与 Count 契约违背**。WPF ItemContainerGenerator 用 Count+IList 索引器取项（惰性物化），从不枚举 → 潜伏 10 年无影响；Avalonia 12 `PanelContainerGenerator.OnItemsChanged` Reset 分支用 `foreach` 枚举 ItemsView（`ItemCollection.GetEnumerator → Source.GetEnumerator`）生成容器 → 枚举空 = 0 容器 = 列表空白。修复：GetEnumerator 改按行惰性物化枚举（与索引器语义对齐），一行修复即恢复整条链。
 - [probe] 排查方法论（反射挂 `PostCollectionChanged` + 快照生成器状态）定位到"生成器订阅在、处理器执行完、无异常、foreach 却枚举 0 项"——排除法收敛到源集合契约，可直接复用到后续同类问题。
@@ -73,14 +76,17 @@ git push origin HEAD
 | （本轮2） | 运行时：**主窗口渲染成功** | StyleKeyOverride 根因修复 + TabControl ItemsPanel FuncTemplate + SelectionChanged 初始化时序 NRE + 16 文件样式修复（详见「运行时修复链 2」） |
 | （本轮3） | 运行时：**仓库打开链路全通** | ClosableTabControl 选卡事件断链 + 侧栏早期 SelectionChanged NRE + DataTemplateKey→App.DataTemplates 57 个模板迁移 + ReferencePanel ControlTheme + SelectableTextBlock（详见「运行时修复链 3」） |
 | （本轮4） | 运行时：**提交列表自动渲染根因修复** | RevisionsDataSource 枚举器/Count 契约违背（WPF 索引器生成 vs Avalonia foreach 枚举生成）+ GridView→ItemTemplate 行模板 + CreateContainerForItemOverride 容器链 + TextField Inlines 触发链 + ContentPresenter ContentTemplate 补绑（详见「运行时修复链 4」） |
+| （本轮5） | 运行时：**跨平台 P/Invoke 崩溃簇清零** | shlwapi/shell32/user32 五处 DllNotFoundException 修复（托管等价实现/占位图标/X11 XQueryPointer），会话恢复 + 提交选中详情联动 1920×1280 完整冒烟实证（详见「运行时修复链 5」） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中 | **首启全流程 + 仓库打开 + 提交列表自动渲染已通、零崩溃**；待验证：提交选中详情联动、侧栏分支/标签树数据、次级窗口、菜单交互 |
+| 3 运行时验证 | 🔄 进行中（**约 85%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层；待验证：次级窗口（FileHistory/Blame/Merge）、菜单命令执行、DataTrigger 视觉状态、大仓库性能（虚拟化） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
+
+**整体进度估算：约 85%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情）已通，剩余为边缘交互（次级窗口/菜单命令/视觉状态补齐）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、性能虚拟化）。
 
 ## 运行时阻塞：Textblock.axaml StaticResource（✅ 已解决，存档备考）
 
@@ -184,6 +190,30 @@ timeout 30 dotnet run --project src/ForkPlus/ForkPlus.csproj 2>&1 | grep -c "Unh
 6. **模板内 ContentPresenter ContentTemplate 补绑**：WPF ContentPresenter 自动继承 ContentTemplate；Avalonia 需显式 `ContentTemplate="{TemplateBinding ContentTemplate}"`（fix_ct_template2.py 批量，注释感知版）。
 7. **MultiselectionTreeViewItemCollection 已排查无恙**：Count/枚举器同源于 `_items`，与 RevisionsDataSource 不同源，无契约违背。
 
+## 运行时修复链 5（2026-08-30 本轮5：跨平台 P/Invoke 崩溃簇）
+
+上轮终点：仓库能打开但细节交互路径里埋着多个 Windows-only P/Invoke，Unix 上一触即崩（DllNotFoundException）。逐个排查修复（fork.log 路径 `/root/.local/share/ForkPlus/logs/fork.log`）：
+
+1. **【崩溃源1】NaturalStringComparer.StrCmpLogicalW（shlwapi.dll）**：
+   - 活路径：`RepositoryReferences.New` 排序引用 → `RefreshRepositoryData` 整体失败 → 主界面永久"加载中"。**这是上轮"仓库加载失败"的真凶之一**。
+   - 修复：`OperatingSystem.IsWindows()` 分支，Unix 走 `NumericIgnoreCaseStringComparer.CompareLogicalOrdinalIgnoreCase`（纯托管"逻辑排序"等价实现：数字段按数值比较）。与 `NumericIgnoreCaseStringComparer.cs` 同一处理模式（该文件本轮也补了平台守卫）。
+2. **【崩溃源2】FileSizeFormatter.StrFormatByteSize（shlwapi.dll）**：
+   - 活路径：BinaryContentUserControl（二进制差异视图）、FileHelper、GitLfsProgressHandler（LFS 进度）。
+   - 修复：Unix 走 `FormatManaged`：1024 进制、3 位有效数字（<10 两位小数/<100 一位/其余取整），输出风格与 Windows 一致（"18 bytes"/"1.85 KB"/"1.18 MB"）。
+3. **【崩溃源3】IconTools.SHGetFileInfo（shell32.dll）**：
+   - 活路径：点击提交行 → RevisionDetails 文件列表建图标缓存 → 崩溃整个应用。
+   - 修复：Unix 无系统图标 API，`GetIconForFile` 返回 null；`GetImageSourceForExtension` 提供 `BinaryFile.png` 内置占位图标（LRU 缓存）。后续可按 freedesktop 图标主题（xdg-icon-resource）实现按扩展名取真实图标。
+4. **【崩溃源4】MouseHelper.GetCursorPos（user32.dll）**：
+   - 活路径：Treemap.UpdateTooltipPosition（鼠标悬停提示）、DragAndDropListViewItem.OnGiveFeedback（拖放跟随）。
+   - **踩坑记录（重要，后续 agent 勿重复探索）**：先尝试订阅 `Avalonia.Input.InputManager.Instance.Process`（IObservable<RawInputEventArgs>）跟踪指针事件——编译报 CS0122/CS1061。用 MetadataLoadContext 反射 ref 程序集实证：`InputManager` 类是 **internal**（`public=False`）、`RawInputEventArgs.Root` 与 `RawPointerEventArgs.Position` 均为 **protected**（公开属性集为空）——**Avalonia 12 没有公开的全局光标位置 API**。
+   - 最终方案：X11 `XQueryPointer`（P/Invoke libX11.so.6，ldconfig 确认存在）：`XOpenDisplay(IntPtr.Zero)` 开独立连接读 `$DISPLAY`，`XDefaultRootWindow` 取根窗口，`XQueryPointer` 的 rootX/rootY 即屏幕像素坐标——与 `GetCursorPos` 语义完全等价的**硬件级查询**，不依赖 Avalonia 内部状态，**拖放进行中（指针事件被拖放循环接管）时依然有效**（订阅方案覆盖不了的场景）。macOS 暂返回 (0,0)（后续可补 NSEvent.mouseLocation）。
+   - 反射查证 API 可见性的工具：`/data/user/work/apicheck2`（MetadataLoadContext + PathAssemblyResolver，注意 coreDir 要用 `Path.GetDirectoryName(typeof(object).Assembly.Location)` 提供 core assembly）。
+5. **【崩溃源5】OpenFileInDefaultEditorCommand（ShellExecute/Shlwapi）**：
+   - 修复：Unix 用 `Process.Start(new ProcessStartInfo(path){ UseShellExecute = true })` 打开（xdg-open 语义）。
+6. **【本轮冒烟实证】（1920×1280，全链路零异常）**：
+   - 启动 → "Git 版本过旧"对话框（窗口几何 `xdotool getwindowgeometry --shell` 定位 + 读图定按钮中心 (553,126) 点击）→ 主窗口 → **自动恢复上次 .nvm 会话**（无需重新打开仓库）→ 提交列表/分支图/标签徽章/侧栏分支标签远程子模块树全渲染 → 点击提交行（精确坐标：裁剪读图定位行高 30px，行3中心 (500,250)）→ 蓝色高亮 + 详情面板完整填充（作者 Jordan Harband <ljharb@gmail.com>/日期/完整 SHA/父提交/说明/13 文件树）。
+   - 截图：verification/21-commit-select-details-1920x1280.png + 21a-repo-restored-1920x1280.png。
+
 ## pass7 修复记录（103→1，错误清单已全部消灭）
 
 原 A-I 分组的 103 个错误已全部修复，关键修复模式（后续 agent 遇同类问题直接套用）：
@@ -266,15 +296,17 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 1. **IPC 命名管道消息模式（PlatformNotSupportedException）**：`IpcServer.cs:26` 的 `PipeTransmissionMode.Message` 仅 Windows 支持。协议本身用 4 字节长度前缀分帧（`PipeStreamExtensions.ReadString`），不依赖消息边界，已改为 `OperatingSystem.IsWindows() ? Message : Byte`。
 2. **沙盒无显示服务器**：`apt-get install -y xvfb` 后 `Xvfb :99 -screen 0 1920x1080x24` + `export DISPLAY=:99` 即可跑 GUI 冒烟。
 
-## 下一步行动（按优先级，2026-08-30 本轮4 更新）
+## 下一步行动（按优先级，2026-08-30 本轮5 更新）
 
-1. **提交选中与详情联动**：列表已渲染，验证点击行 → 详情面板（提交说明/文件树/变更内容）加载；GraphCellView 提交图绘制质量检查（.nvm 单提交图形单元）。
-2. **侧栏分支/标签树数据验证**：.nvm 有 v0.40.2 tag，侧栏"所有提交"树下应显示分支/tag 节点（MultiselectionTreeView 容器链与 RevisionsDataSource 同源风险已排查：`MultiselectionTreeViewItemCollection` 的 Count/枚举器同源于 `_items`，无契约违背）。
-3. **DataTrigger 视觉状态补齐**：IsActive 加粗 / IsWorktree 图标 / BisectGood 换色（原片段已注释保留在 App.axaml 模板旁），用 VM 计算属性 + Classes 选择器实现。
-4. **性能 TODO**：当前提交列表 ItemsPanel 为非虚拟化 StackPanel，GetEnumerator 全量物化在大仓库有代价 → 切 VirtualizingStackPanel（Avalonia 虚拟化面板走 ItemContainerGenerator 按可见范围生成，兼容惰性源）。
-5. **交互冒烟**：File 菜单展开/命令执行、TabControl 切换（提交/变更/文件树）、Preferences 等次级对话框。
-6. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
-7. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
+1. ~~提交选中与详情联动~~ ✅ **已完成**（本轮5 实证：verification/21-commit-select-details-1920x1280.png，蓝色高亮 + 详情面板完整填充 + 13 文件树）。
+2. ~~侧栏分支/标签树数据验证~~ ✅ **已完成**（本轮5 读图实证：侧栏分支/标签/远程/子模块分组树正常渲染）。
+3. **次级窗口冒烟**：右键文件 → FileHistoryWindow / BlameWindow / SideBySideMergeWindow 打开验证（这三个窗口本轮改过构造链）。
+4. **菜单命令执行**：File 菜单展开 → 命令触发（退出/打开仓库/Preferences 对话框）。
+5. **DataTrigger 视觉状态补齐**：IsActive 加粗 / IsWorktree 图标 / BisectGood 换色（原片段已注释保留在 App.axaml 模板旁），用 VM 计算属性 + Classes 选择器实现。
+6. **性能 TODO**：当前提交列表 ItemsPanel 为非虚拟化 StackPanel，GetEnumerator 全量物化在大仓库有代价 → 切 VirtualizingStackPanel（Avalonia 虚拟化面板走 ItemContainerGenerator 按可见范围生成，兼容惰性源）。
+7. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
+8. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
+9. **macOS 光标位置**：MouseHelper 的 X11 方案在 macOS 返回 (0,0)，后续补 NSEvent.mouseLocation（P/Invoke libAppKit 或 ObjCRuntime）。
 
 ## 本轮新增的已验证修复模式（57→0 直接套用）
 

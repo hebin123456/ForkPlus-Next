@@ -27,8 +27,9 @@ namespace ForkPlus
 		/// TODO 迁移：StrCmpLogicalW 的托管等价实现：大小写不敏感 + 数字段按数值比较。
 		/// 语义对齐 Windows 行为：逐段比较，数字段按 ulong 数值（前导零不参与大小，
 		/// 数值相等时短段在前），文本段 OrdinalIgnoreCase。
+		/// NaturalStringComparer（引用排序等场景）在 Unix 上复用本实现。
 		/// </summary>
-		private static int CompareLogicalOrdinalIgnoreCase(string x, string y)
+		internal static int CompareLogicalOrdinalIgnoreCase(string x, string y)
 		{
 			if (ReferenceEquals(x, y)) return 0;
 			if (x == null) return -1;
