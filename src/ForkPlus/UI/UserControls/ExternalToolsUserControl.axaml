@@ -4,6 +4,9 @@
       
       <controls:InverseBooleanConverter x:Key="InverseBooleanConverter" />
       <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
+      <!-- TODO 迁移：WPF 内置 BooleanToVisibilityConverter 需本地注册（Avalonia StaticResource
+           在顶层 UserControl 实例化时只查本地资源链；缺失曾致本控件构造崩溃 → 偏好设置窗口打不开） -->
+      <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>

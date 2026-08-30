@@ -1,6 +1,9 @@
 <UserControl xmlns:local="clr-namespace:ForkPlus.UI.UserControls.Preferences" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.CustomCommandsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:uc="clr-namespace:ForkPlus.UI.UserControls">
   <UserControl.Resources>
     <ResourceDictionary>
+      <!-- TODO 迁移：WPF 内置 BooleanToVisibilityConverter 需本地注册（Avalonia 无内置且
+           StaticResource 顶层 UserControl 实例化时只查本地资源链；缺失会在本控件构造时崩溃） -->
+      <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       
       <ControlTheme x:Key="QuestionmarkTextBlock" TargetType="TextBlock" BasedOn="{StaticResource HintTextBlock}">
         <Setter Property="ToolTip.Tip">

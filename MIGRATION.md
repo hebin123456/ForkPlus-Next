@@ -111,6 +111,19 @@ git push origin HEAD
    - 命令执行：点击"退出"项 → 应用正常关闭（进程退出实证）。
    - 已知小瑕疵（后续修）：快捷键显示 `Ctrl+OemComma` 未本地化为 `Ctrl+,`；菜单弹出位置偏左（屏幕左缘 x=0 而非菜单项下方对齐）；"在 Finder 中显示"文案需按平台区分。
 
+## 运行时修复链 7（2026-08-30 本轮7：偏好设置对话框攻坚·转换器补齐）
+
+上轮终点：菜单全通，转向"偏好设置对话框打开"验证。链路：菜单"偏好设置" → `ShowPreferencesWindowCommand` → `PreferencesWindow.axaml`（7 个 Tab 全量构造）。当前进展：
+
+1. **【已修】WPF 内置 `BooleanToVisibilityConverter` 缺失（KeyNotFoundException 崩溃）**：
+   - 现象：`PreferencesWindow → IntegrationUserControl → ExternalToolsUserControl` 构造时抛 `KeyNotFoundException: Static resource 'BooleanToVisibilityConverter' not found`。
+   - 根因：WPF 的 `System.Windows.Controls.BooleanToVisibilityConverter` 是全局内置，XAML 里直接 `<StaticResource BooleanToVisibilityConverter>` 无需声明；Avalonia 无内置等价物，且 **StaticResource 在顶层 UserControl 实例化时只查本地资源链**（UserControl.Resources + 合并字典），Application 级注册不够用（这一点与 DynamicResource 行为不同）。
+   - 修复：新建 `UI/Controls/BooleanToVisibilityConverter.cs`（`IValueConverter`，bool→bool，因 Avalonia `IsVisible` 直收 bool，null 视为 false）+ `Commonresources.axaml` 全局注册 + **三个引用方控件本地注册**（ExternalToolsUserControl / MergeConflictUserControl / Preferences/CustomCommandsUserControl）。**教训：WPF 内置转换器（BooleanToVisibility/ObjectDataProvider 等）是迁移盲区，`grep -rn 'StaticResource BooleanToVisibility'` 应列入检查清单。**
+2. **【进行中】`HintTextBlock` 主题 Setter 内裸 ToolTip 控件（InvalidOperationException）**：
+   - 现象：修完转换器后继续抛 `System.InvalidOperationException: Cannot use a control as a Setter value. Wrap the control in a <Template>`（Textblock.axaml:114）。
+   - 根因：WPF 允许 Setter.Value 直接放控件（ToolTip 模板化内容），Avalonia 要求必须是 Template/DataTemplate 包装。
+   - 修复方向：用 `<DataTemplate>` 包裹 ToolTip 内容，且 Avalonia 的 ToolTip.Tip 推荐直接绑字符串/内容模板而非 ToolTip 控件实例。
+
 ## 运行时阻塞：Textblock.axaml StaticResource（✅ 已解决，存档备考）
 
 **现象**：`dotnet run` 启动时抛

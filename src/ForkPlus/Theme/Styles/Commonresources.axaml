@@ -5,6 +5,8 @@
   <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
   
   <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
+  <!-- TODO 迁移：WPF 内置 BooleanToVisibilityConverter（Avalonia 无内置），补托管实现供 StaticResource 引用 -->
+  <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
   <ControlTheme x:Key="{x:Type editor:CodeEditor}" TargetType="editor:CodeEditor">
     <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CodeEditorForeground}" />
