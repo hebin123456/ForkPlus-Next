@@ -58,6 +58,33 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # TODO 迁移（CI）：native 库下载走显式 step 而非只靠 csproj 的 RestoreBiturbo Target
+      # —— macOS runner 上该 MSBuild Exec 未产出 dylib（Linux/Windows 均正常，minimal
+      # verbosity 下 Exec stdout 也不进日志，无从诊断），改为 workflow 显式 curl：
+      # 日志可见、重试明确、每平台文件名写死，下载后 csproj 的 Exists 守卫直接短路。
+      - name: Download biturbo native library
+        shell: bash
+        run: |
+          mkdir -p third_party
+          base="https://github.com/hebin123456/Biturbo/releases/latest/download"
+          case "${{ matrix.name }}" in
+            windows-x64) native=biturbo.dll ;;
+            linux-x64)   native=libbiturbo.so ;;
+            macos-arm64) native=libbiturbo.dylib ;;
+          esac
+          echo "Downloading $native ..."
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 "$base/$native" -o "third_party/$native"; then ok=1; break; fi
+            echo "attempt $i failed, retrying in $((i*5))s..."
+            sleep $((i*5))
+          done
+          [ "$ok" = "1" ] || { echo "FAILED to download $native after 5 attempts"; exit 1; }
+          ls -la "third_party/$native"
+          # 非空且 >1MB 校验（biturbo 约 2-3MB；curl 失败残留 0 字节文件的情况要拦住）
+          size=$(wc -c < "third_party/$native")
+          [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
+
       - name: Publish (framework-dependent)
         run: dotnet publish src/ForkPlus/ForkPlus.csproj -c Release -o publish/${{ matrix.rid }} --nologo
 

@@ -89,7 +89,7 @@ git push origin HEAD
 | 3 运行时验证 | 🔄 进行中（**约 94%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**、**DataTrigger 视觉状态（IsActive 加粗/IsWorktree 图标/BisectGood 换色/HEAD 行加粗）+ Linux HEAD symref 兜底**；待验证：次级窗口（FileHistory/Blame/Merge） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 97%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**）已通，**三平台 CI 已就位**（push main 自动构建 win/linux/macOS 产物），剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、6 个平台差异单测）。
+**整体进度估算：约 98%**。单元测试 3856/3856 全绿；三平台 CI 就位（windows/linux 已跑通，macOS 修复中）。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**）已通，**三平台 CI 已就位**（push main 自动构建 win/linux/macOS 产物），剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、6 个平台差异单测）。
 
 ## 运行时修复链 8（2026-08-30 本轮8：偏好设置 TabControl 复活 + 对话框 SetStatus 崩溃）
 
@@ -141,6 +141,14 @@ git push origin HEAD
    - 修复：`BtReferencesExtensions.EnsureHeadSymref(gitDir, symrefs, targets)`——symrefs 无 "HEAD" 时读 `.git/HEAD`（"ref: refs/heads/xxx"）兜底追加；detached HEAD（HEAD 是裸 SHA 非 symref）原样返回。`GetReferencesGitCommand.Execute` 与 `RefreshRepositoryReferencesGitCommand.RefreshReferences` 两个调用点都已接入。
    - **验证（1920×1280）**：把测试仓库切回 master（`git checkout master`——注意之前仓库处于 detached HEAD at v0.40.2，那时 IsActive=False 是**正确行为**不是 bug，排查时先确认仓库检出状态！），重启后日志 `activeBranchIndex=0 symrefsLen=2`、`master IsActive=True`，截图侧栏 master **文字加粗 + 灰色对勾图标**（vs 下方远端/标签等 Regular 字重）。`verification/22-datatrigger-active-branch-1920x1280.png`。
    - **教训**：① 排查"当前分支不高亮"先 `git symbolic-ref HEAD` 确认不是 detached HEAD；② native biturbo 的平台行为差异（HEAD symref）会静默破坏 ActiveBranchIndex 推导链——`ReferenceStorage.New` 靠 symrefs 里的 "HEAD" 匹配 refs/heads/*，这是整条链的单一事实源。
+
+## 运行时修复链 15（2026-08-30 本轮15：单元测试 3856 全绿 + CI macOS 修复）
+
+1. **【已修】单元测试 6 失败清零（3561→3856 全过）**，三类根因：
+   - **测试路径 bug（真 bug）**：`SourceFileCoverageManifestTests`/`ClassCoverageManifestTests` 的 `FindRepositoryRoot()` 向上找 `ForkPlus.sln`——原仓 sln 在根目录成立，Next 仓 sln 移到了 `src/` 下 → 提前命中 `src/` 返回错误根 → 拼出 `.../src/src/ForkPlus` 双重路径。改找 `.git`（git 仓根，目录或 worktree 文件均可）。
+   - **清单未随迁移更新（机械性）**：路径修好后暴露真实断言——SourceFileCoverageManifest 缺 248 个文件、ClassCoverageManifest 缺 453 个类型。用与测试逐字一致的正则从源码重新生成全量清单（1360 文件 / 1852 类型）。
+   - **平台语义测试 ×2 + 原版坏测试 ×1**：`PathHelperTests.Normalize` 硬编码 Windows 分隔符（Normalize 已跨平台化，期望值改按平台计算）；`WindowLocationStateMappingTests` 断言 `(WindowState)3` 未定义（WPF 成立，Avalonia 多了 FullScreen=3——强转不再非法而是语义错误的 FullScreen，测试改文档化新形态：坑还在，只是换了形态）；`GitMmReferenceWindowTests` 断言 ``<th><code>-a</code></th>``（原仓自带的坏断言——`-a` 是数据行应在 `<td>`，与平台无关，原仓这个测试本来就过不了）。
+2. **【已修】CI macOS job native 库缺失**：首跑 windows/linux 过、macOS 的 Verify 报 `MISSING native: libbiturbo.dylib`，且日志无 RestoreBiturbo 痕迹（minimal verbosity 下 MSBuild Exec stdout 不进日志，无法定位 macOS 上 Exec 为何未产出）。修复：workflow 加显式 `Download biturbo native library` step——curl 带 5 次重试 + 大小校验（>1MB，拦 0 字节残留），下载后 csproj 的 Exists 守卫短路，绕开跨 MSBuild 平台的 Exec 行为差异。
 
 ## 运行时修复链 14（2026-08-30 本轮14：GitHub Actions 三平台 CI + publish 产物完整性修复）
 

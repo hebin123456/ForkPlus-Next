@@ -78,11 +78,15 @@ namespace ForkPlus.Tests
 		public void DirectCastShowCmdToWindowState_WouldBeWrong()
 		{
 			// 文档化为何不能直接强转：记录旧 bug 的具体表现。
-			// SW_SHOWMAXIMIZED(3) 直接强转 (WindowState)3 既不是 Normal(0)、Minimized(1)、Maximized(2)，
-			// 是未定义值。这条断言永远成立，作为"为什么需要 FromShowCmd"的活文档。
+			// WPF 时代：(WindowState)3 是未定义值（Normal=0/Minimized=1/Maximized=2）。
+			// TODO 迁移：Avalonia 的 WindowState 多了 FullScreen=3——强转 (WindowState)3
+			// 不再产生非法枚举，而是**语义错误**的 FullScreen（最大化窗口被恢复成全屏）。
+			// 坑换了形态依然存在：唯一正确路径仍是 FromShowCmd(SW_SHOWMAXIMIZED)→Maximized。
 			int swShowMaximized = 3;
+			global::Avalonia.Controls.WindowState directCast = (global::Avalonia.Controls.WindowState)swShowMaximized;
 
-			Assert.False(System.Enum.IsDefined(typeof(global::Avalonia.Controls.WindowState), (global::Avalonia.Controls.WindowState)swShowMaximized));
+			Assert.NotEqual(global::Avalonia.Controls.WindowState.Maximized, directCast);
+			Assert.Equal(global::Avalonia.Controls.WindowState.FullScreen, directCast);
 		}
 	}
 }
