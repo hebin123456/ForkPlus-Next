@@ -861,9 +861,20 @@ namespace ForkPlus.UI
 			throw new NotImplementedException();
 		}
 
+		// TODO 迁移：WPF 版返回 _decoratedRevisions.GetEnumerator()（仅"已物化"行，Reload 后为空）。
+		// WPF ItemContainerGenerator 生成容器走 Count + IList 索引器（GetDecoratedRevisionAtRow 惰性物化），
+		// 枚举器从不参与容器生成 → 空枚举器在 WPF 下无影响（潜伏契约违背：Count=1 但枚举 0 项）。
+		// Avalonia 12 PanelContainerGenerator.OnItemsChanged 的 Reset 分支改用 foreach 枚举 ItemsView
+		// （ItemCollection.GetEnumerator → Source.GetEnumerator）生成容器 → 枚举空列表 = 0 容器 = 列表空白。
+		// 修正：按行枚举（与索引器/Count 语义一致，逐行惰性物化），[probe] 实证链见 MIGRATION.md 运行时修复链 4。
+		// 注：当前 ItemsPanel 是非虚拟化 StackPanel，大仓库全量物化有性能代价，后续切 VirtualizingStackPanel 优化。
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return _decoratedRevisions.GetEnumerator();
+			int count = Count;
+			for (int i = 0; i < count; i++)
+			{
+				yield return GetDecoratedRevisionAtRow(i);
+			}
 		}
 	}
 }

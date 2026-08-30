@@ -42,11 +42,12 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：提交列表首次完整渲染（2026-08-30 本轮4 初）→ 回归空白根因排查中。**
-- `dotnet build` 0 错误；AVLN XAML 错误 0。
-- 提交列表曾在诊断代码（含 ManualRefresh 兜底）加持下完整渲染：verification/16-commitlist-rendered.png + 16a-commitlist-zoom.png（.nvm 唯一提交：图形列、v0.40.2 标签徽章[引用模板生效]、主题"v0.40.2"、JH 头像、Jordan Harband、ffec9fe、11 Mar 2025 20:30）。诊断日志实证数据链路全通：`StringValue='v0.40.2'`、行容器量测 513×23、引用徽章 ItemsControl 81×22。
-- 但移除诊断代码后重启回归空白：诊断块里的 `ItemsPresenter.Refresh()` 反射调用一直在兜底容器生成 → **自动容器生成链断点仍在**（详见「下一步行动」第 1 条，[probe] 探针已就位）。
-- 上一轮里程碑：仓库打开链路全通（2026-08-29 本轮3，verification/15-*.png）：配置 Git 对话框 → Git 版本警告 → 用户信息表单 → 主窗口（仓库管理器列表 .nvm/.oh-my-zsh + 仓库详情摘要/统计）→ 点击"打开" → 仓库视图加载完成，全程零未处理异常。
+**🎉 里程碑：提交列表自动渲染根因修复——WPF/Avalonia 容器生成机制差异实证（2026-08-30 本轮4）。**
+- `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
+- **提交列表自动渲染**（无需任何兜底/诊断代码）：verification/18-commitlist-final-no-diag.png + 18a-zoom（.nvm 唯一提交行：v0.40.2 标签徽章[引用模板生效] + Jordan Harband 头像/姓名 + ffec9fe + 11 Mar 2025 20:30）。
+- 根因（本轮4 最终实证）：`RevisionsDataSource` 的 `IEnumerable.GetEnumerator()` 返回 `_decoratedRevisions`（仅"已物化"行，Reload 后为空）而 `Count` 返回 `_visualGraph.Count` —— **枚举器与 Count 契约违背**。WPF ItemContainerGenerator 用 Count+IList 索引器取项（惰性物化），从不枚举 → 潜伏 10 年无影响；Avalonia 12 `PanelContainerGenerator.OnItemsChanged` Reset 分支用 `foreach` 枚举 ItemsView（`ItemCollection.GetEnumerator → Source.GetEnumerator`）生成容器 → 枚举空 = 0 容器 = 列表空白。修复：GetEnumerator 改按行惰性物化枚举（与索引器语义对齐），一行修复即恢复整条链。
+- [probe] 排查方法论（反射挂 `PostCollectionChanged` + 快照生成器状态）定位到"生成器订阅在、处理器执行完、无异常、foreach 却枚举 0 项"——排除法收敛到源集合契约，可直接复用到后续同类问题。
+- 上一轮里程碑：仓库打开链路全通（2026-08-29 本轮3，verification/15-*.png）。
 
 错误数轨迹（按唯一错误去重统计）：
 
@@ -71,13 +72,14 @@ git push origin HEAD
 | （本轮） | AVLN 1→**0** + 运行时推进 | App 生命周期迁移 + 运行时冒烟修复链（资产大小写/BitmapImage shim/代理 owner 窗口/ColorConverter/对话框 NRE，详见「运行时冒烟已修复的问题」） |
 | （本轮2） | 运行时：**主窗口渲染成功** | StyleKeyOverride 根因修复 + TabControl ItemsPanel FuncTemplate + SelectionChanged 初始化时序 NRE + 16 文件样式修复（详见「运行时修复链 2」） |
 | （本轮3） | 运行时：**仓库打开链路全通** | ClosableTabControl 选卡事件断链 + 侧栏早期 SelectionChanged NRE + DataTemplateKey→App.DataTemplates 57 个模板迁移 + ReferencePanel ControlTheme + SelectableTextBlock（详见「运行时修复链 3」） |
+| （本轮4） | 运行时：**提交列表自动渲染根因修复** | RevisionsDataSource 枚举器/Count 契约违背（WPF 索引器生成 vs Avalonia foreach 枚举生成）+ GridView→ItemTemplate 行模板 + CreateContainerForItemOverride 容器链 + TextField Inlines 触发链 + ContentPresenter ContentTemplate 补绑（详见「运行时修复链 4」） |
 
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中 | **首启全流程 + 仓库打开 + 提交列表一次性完整渲染已通、零崩溃**；待修复：自动容器生成链断点（提交列表回归空白，[probe] 排查中）；待验证：侧栏分支/标签树数据、次级窗口、菜单交互 |
+| 3 运行时验证 | 🔄 进行中 | **首启全流程 + 仓库打开 + 提交列表自动渲染已通、零崩溃**；待验证：提交选中详情联动、侧栏分支/标签树数据、次级窗口、菜单交互 |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
 ## 运行时阻塞：Textblock.axaml StaticResource（✅ 已解决，存档备考）
@@ -165,6 +167,23 @@ timeout 30 dotnet run --project src/ForkPlus/ForkPlus.csproj 2>&1 | grep -c "Unh
 
 **验证方法**（本轮实际执行路径）：`Xvfb :98` + `interact4.sh`（launch/list/shot/click/type/key 分阶段驱动）→ 依次点"继续"→"确定"→"完成"→"打开" → 每步 `import -window` 截图 → 与 verification/ 编号截图对比。应用进程存活 + /tmp/run_log.txt 无 Unhandled = 通过。
 
+## 运行时修复链 4（2026-08-30 本轮4：提交列表渲染）
+
+上轮终点：仓库打开成功但提交列表空白（.nvm 有 1 个提交）。期间曾靠诊断代码里的 ManualRefresh（反射调 `ItemsPresenter.Refresh`）渲染成功过一次——清理诊断后回归空白，说明自动链仍有断点。逐层定位修复：
+
+1. **【根因·终局】RevisionsDataSource 枚举器与 Count 契约违背**（一行修复恢复整条链）：
+   - 原实现：`IEnumerator IEnumerable.GetEnumerator() => _decoratedRevisions.GetEnumerator()`（仅"已物化"行，`Reload` 里 `_decoratedRevisions = new List<DecoratedRevision>(Count)` 后为空）；`Count => _visualGraph.Count`（=1）；`IList.this[i] => GetDecoratedRevisionAtRow(i)`（惰性分页物化）。
+   - **WPF 为何正常**：WPF ItemContainerGenerator 生成容器走 `Count + IList 索引器`（索引器按需物化，WPF 虚拟化），**从不枚举** → 契约违背潜伏无影响。
+   - **Avalonia 12 为何断**：`PanelContainerGenerator.OnItemsChanged` 的 Reset 分支 `Add(0, ItemsView)` → `foreach (object item in items)`（`ItemCollection.GetEnumerator → Source.GetEnumerator`）→ 枚举到空列表 → 0 容器 → 列表空白。
+   - **修复**：GetEnumerator 改为 `for (i=0; i<Count; i++) yield return GetDecoratedRevisionAtRow(i)`（与索引器语义对齐）。**模式：自定义 IList 数据源迁移后，务必校验 GetEnumerator 与 Count/索引器的一致性——WPF 框架不枚举，Avalonia 枚举，潜伏契约违背会浮出。**
+   - **[probe] 实证链**（排除法收敛过程，可直接复用）：① Changed 阶段探针（`Items.CollectionChanged`）确认弱事件链通、viewCount=1；② 反射快照确认生成器在、Panel 在、`PostCollectionChanged` 订阅在（注意 `_postCollectionChanged` 声明在基类 `ItemsSourceView`，反射必须 `GetType().BaseType.GetField`）；③ 反射挂自己的处理器到内部 `PostCollectionChanged`（`GetAddMethod(nonPublic:true).Invoke`，`AddEventHandler` 会拒 internal 事件）——订阅序在生成器之后，触发即证明生成器处理器执行完且无异常，但 `panelChildrenAfterGenerator=0` → 断定 foreach 枚举 0 项 → 收敛到源集合契约。
+2. **GridView → ItemTemplate 行模板重建**：WPF `ListView.View=GridView`（CellTemplate 列体系）在 Avalonia 无等价物；将注释保留的 CellTemplate 转成两个 `DataTemplate`（SingleRowRevisionTemplate 8 列 Grid / DoubleRowRevisionTemplate 双行 Grid），`RefreshRevisionListViewTemplate` 按 `GetAvailableWidth()>500` 切换 `ListBox.ItemTemplate`。
+3. **容器生成虚方法修正**（DragAndDropListView/MultiselectionListView/DragAndDropListBox/MultiselectionTreeView）：WPF `GetContainerForItemOverride`/`IsItemItsOwnContainerOverride` 在 Avalonia 12 由 `CreateContainerForItemOverride(item,index,recycleKey)`/`NeedsContainerOverride` 取代——原非 override 的 WPF 方法名是死代码，容器落到默认 ListBoxItem，`PrepareContainerForItemOverride` 强转 null（改 `?.` 防 NRE）。
+4. **GraphCellView 渲染期布局**：WPF 版在 `OnRender` 里 `Width = cellWidth * lines.Length`；Avalonia 渲染期使布局失效抛 `InvalidOperationException("Visual was invalidated during the render pass")` → 移到 `MeasureOverride` 返回期望尺寸，`OnDataContextChanged` 时手动失效量测（容器复用换绑）。
+5. **TextField/RevisionSubjectTextField Inlines 触发链**：WPF `DependencyProperty.Register(PropertyChangedCallback→RefreshInlines)` 转换丢回调 → Inlines 永不填充 → 主题文本空白。`GetObservable(...).Subscribe(AnonymousObserver<string>(RefreshInlines))` 补回（StringValue/HighlightString 基类 + IsParentSelected/HasBody 派生类）。注意 AnonymousObserver 显式泛型（匿名方法不能直转 IObserver）。
+6. **模板内 ContentPresenter ContentTemplate 补绑**：WPF ContentPresenter 自动继承 ContentTemplate；Avalonia 需显式 `ContentTemplate="{TemplateBinding ContentTemplate}"`（fix_ct_template2.py 批量，注释感知版）。
+7. **MultiselectionTreeViewItemCollection 已排查无恙**：Count/枚举器同源于 `_items`，与 RevisionsDataSource 不同源，无契约违背。
+
 ## pass7 修复记录（103→1，错误清单已全部消灭）
 
 原 A-I 分组的 103 个错误已全部修复，关键修复模式（后续 agent 遇同类问题直接套用）：
@@ -249,12 +268,13 @@ ilspycmd -l c bin/Debug/net10.0/ForkPlus.dll | grep -c CompiledAvaloniaXaml
 
 ## 下一步行动（按优先级，2026-08-30 本轮4 更新）
 
-1. **【进行中·最高优先级】提交列表"渲染成功后回归空白"根因**：本轮3 末尾提交列表曾完整渲染（verification/16-commitlist-rendered.png：图形列 + v0.40.2 标签徽章 + 主题 + JH 头像 + 作者 + SHA + 日期，零异常）。但清理诊断代码后重启应用回归空白——当时诊断块里的 ManualRefresh（反射调 ItemsPresenter.Refresh）实际在兜底容器生成，**说明自动容器生成链本身仍是断的**，此前渲染成功是兜底代码的功劳。已加 [probe] 探针（RevisionListViewUserControl.axaml.cs）定位断链层：源集合 Reset → CollectionChangedEventManager 弱事件 → ItemsSourceView → ItemCollection → PanelContainerGenerator.OnItemsChanged → 容器生成。静态源码分析已完成（decomp/ 下 Avalonia 12.1.1 反编译），待跑探针读 [probe] 日志定位。
-2. **引用徽章渲染验证**：提交列表填充后确认"引用"列的 ReferenceViewModel 徽章用上新迁移的模板（标签蓝框 + 图标，而非 ToString 类型名）。ReferencePanel（提交详情面板的 refs 行）同理。
+1. **提交选中与详情联动**：列表已渲染，验证点击行 → 详情面板（提交说明/文件树/变更内容）加载；GraphCellView 提交图绘制质量检查（.nvm 单提交图形单元）。
+2. **侧栏分支/标签树数据验证**：.nvm 有 v0.40.2 tag，侧栏"所有提交"树下应显示分支/tag 节点（MultiselectionTreeView 容器链与 RevisionsDataSource 同源风险已排查：`MultiselectionTreeViewItemCollection` 的 Count/枚举器同源于 `_items`，无契约违背）。
 3. **DataTrigger 视觉状态补齐**：IsActive 加粗 / IsWorktree 图标 / BisectGood 换色（原片段已注释保留在 App.axaml 模板旁），用 VM 计算属性 + Classes 选择器实现。
-4. **交互冒烟**：File 菜单展开/命令执行、TabControl 切换（提交/变更/文件树）、Preferences 等次级对话框。
-5. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
-6. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
+4. **性能 TODO**：当前提交列表 ItemsPanel 为非虚拟化 StackPanel，GetEnumerator 全量物化在大仓库有代价 → 切 VirtualizingStackPanel（Avalonia 虚拟化面板走 ItemContainerGenerator 按可见范围生成，兼容惰性源）。
+5. **交互冒烟**：File 菜单展开/命令执行、TabControl 切换（提交/变更/文件树）、Preferences 等次级对话框。
+6. **FlaUI 替换**：`ForkPlus.AutomationTests` 用了 FlaUI.UIA3（NU1701，net461 兼容包），在非 Windows/Avalonia 下不可用，需评估替换或隔离。
+7. **WpfCompat 死代码清理**：`RemoveContextMenuOpeningHandler` 等空实现、`Freeze` 直通方法等，编译已过但语义是占位的，运行时验证后决定补实现还是删。
 
 ## 本轮新增的已验证修复模式（57→0 直接套用）
 
