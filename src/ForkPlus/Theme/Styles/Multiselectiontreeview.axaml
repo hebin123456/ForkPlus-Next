@@ -101,7 +101,10 @@
         <ControlTemplate TargetType="controls:MultiselectionTreeView">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
-              <ItemsPresenter />
+              <!-- TODO 迁移：补 ItemsPanel TemplateBinding——MultiselectionTreeView 继承 ListBox（默认 ItemsPanel
+                   为 VirtualizingStackPanel），未绑定时 ItemsPresenter 落到非虚拟化 StackPanel，
+                   大仓库提交列表全量实化导致性能崩塌（与 Menu/TabControl 修复同坑）。 -->
+              <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>

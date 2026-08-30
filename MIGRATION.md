@@ -127,6 +127,15 @@ git push origin HEAD
    - 修复：新建 `UI/Controls/KeyGestureTextConverter.cs`（IValueConverter，KeyGesture → `ToFriendlyString()`，已有扩展含 OemComma→","、OemPeriod→"."、Return→Enter、OemPlus→"=" 映射）；`Menu.axaml` 本地注册（`MenuKeyGestureTextConverter`，ControlTheme 模板内 StaticResource 只查本地链，与 BooleanToVisibilityConverter 同教训）+ 3 处 MenuItem 模板的快捷键 TextBlock 从 `Text="{TemplateBinding InputGesture}"` 改为 `Text="{Binding InputGesture, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource MenuKeyGestureTextConverter}}"`。
    - 验证：`verification/26-menu-shortcut-localized.png`——偏好设置项显示 `Ctrl+,`，其余 Ctrl+Shift+N/Ctrl+N/Ctrl+G/Ctrl+T/Ctrl+O/Ctrl+P/Ctrl+W 全部正常。
 
+## 运行时修复链 10（2026-08-30 本轮10：提交列表虚拟化）
+
+1. **【已修+实证】提交列表/树形列表非虚拟化 StackPanel → VirtualizingStackPanel**：
+   - 根因：`MultiselectionTreeView : ListBox`（Avalonia ListBox 静态构造默认 ItemsPanel 就是 `VirtualizingStackPanel`），但其 ControlTheme 模板里 `<ItemsPresenter />` **未绑定 ItemsPanel** → 落到非虚拟化垂直 StackPanel，大仓库提交列表全量实化（每行一个 TreeViewControlItem + 图形绘制），性能崩塌。与链 6（Menu）、链 7（TabControl）是**同一个坑的第三处**。
+   - 修复：`Multiselectiontreeview.axaml` 主模板 `<ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />`。
+   - **附注**：该控件同时被侧栏分支树、文件历史、Issue/PR 列表、RevisionFileTree 复用（5+ 处），一处修复全部受益；TreeViewControlItem 默认样式有固定 `Height=20`，与虚拟化行高估算契合。
+   - 验证：`verification/27-commit-list-virtualized.png`——.nvm 仓库（数千提交）提交列表正常渲染（提交信息/图节点/分支标签/作者/SHA/日期列完整），滚轮滚动 10 次后无空白行、无串行、无图形断裂。
+   - **教训汇总（ItemsPanel TemplateBinding 检查清单）**：WPF→Avalonia 迁移所有 ItemsControl 系模板（Menu✅/TabControl✅/ListBox系✅/TreeView系✅）逐一检查 ItemsPresenter 是否绑定 ItemsPanel，**这是系统性坑，预计还有零星残留，后续遇到"布局竖排/性能差"优先查这里**。
+
 ## 运行时修复链 6（2026-08-30 本轮6：主菜单系统复活）
 
 上轮终点：所有交互埋雷清完，但主菜单还是"竖排挤在标题栏、点击无响应"的残废状态。本轮三连修复让菜单系统完全复活：
