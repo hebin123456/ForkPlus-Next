@@ -19,6 +19,13 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class SearchTabItem : TabItem, ForkPlus.UI.ILocalizableControl
 	{
+		// TODO 迁移：WPF 隐式样式查找会沿基类链找到 {x:Type TabItem} 隐式样式；
+		// Avalonia 12 的 ControlTheme 按 StyleKey（默认=具体类型）精确匹配，TabItem 子类
+		// 匹配不到 → 回落 ContentControl 主题（PART_ContentPresenter），导致侧栏 TabItem
+		// 在 headerPanel 里渲染整个 Content（搜索框/服务页平铺进头部，布局全乱）。
+		// StyleKeyOverride=TabItem 恢复基类主题（同 CustomWindow.cs 修复模式）。
+		protected override global::System.Type StyleKeyOverride => typeof(TabItem);
+
 		private bool _isSearchInProgress;
 
 		private RevisionSearchType _searchType;

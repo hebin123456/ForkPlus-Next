@@ -42,7 +42,7 @@ git push origin HEAD
 
 ## 当前状态
 
-**🎉 里程碑：主菜单系统完全复活（2026-08-30 本轮6）。**
+**🎉 里程碑：主界面侧栏布局与原版对齐（2026-08-30 本轮13）。**（前一轮：主菜单系统完全复活——本轮6）
 - `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
 - **菜单三连修复（本轮6）**：①横排布局恢复（ItemsPanel TemplateBinding）；②下拉菜单可打开（WPF/Avalonia 属性名大小写差异 `IsSubmenuOpen`→`IsSubMenuOpen`）；③菜单命令可执行（实测点击"退出"项应用正常关闭）。verification/2026-08-30-menu-horizontal-fixed.png + 2026-08-30-file-menu-dropdown-open.png。
 - **完整冒烟通过（1920×1280）**：启动 → Git 版本警告对话框 → 主窗口 → 自动恢复 .nvm 仓库会话（提交列表/分支图/标签徽章/侧栏分支标签远程子模块树全渲染）→ 点击提交行 → 蓝色高亮选中 + 详情面板完整填充（作者/日期/完整 SHA/父提交/提交说明/13 个变更文件树）→ 文件菜单展开 11 项（初始化新仓库/克隆/初始化 git mm 仓库/新建标签页/打开仓库/快速启动/关闭标签页/配置 SSH 密钥/账号/偏好设置/退出，快捷键齐全）→ 点击菜单项执行命令。verification/21-commit-select-details-1920x1280.png + 21a-repo-restored。
@@ -89,7 +89,7 @@ git push origin HEAD
 | 3 运行时验证 | 🔄 进行中（**约 94%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**、**DataTrigger 视觉状态（IsActive 加粗/IsWorktree 图标/BisectGood 换色/HEAD 行加粗）+ Linux HEAD symref 兜底**；待验证：次级窗口（FileHistory/Blame/Merge） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 94%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态）已通，剩余为次级窗口冒烟、偏好设置打开时的 Git 错误空弹窗排查与工程收尾（FlaUI 隔离、WpfCompat 死代码清理）。
+**整体进度估算：约 96%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**）已通，剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理）。
 
 ## 运行时修复链 8（2026-08-30 本轮8：偏好设置 TabControl 复活 + 对话框 SetStatus 崩溃）
 
@@ -137,11 +137,28 @@ git push origin HEAD
 2. **【已修+实证】Linux 上 native biturbo `bt_get_references` 不返回 HEAD symref → 当前分支 IsActive 恒 false**：
    - 现象：侧栏 master 不加粗、无 ActiveBranch 对勾图标（显示普通 Y 字形 BranchIcon）、引用徽章当前分支不加粗。
    - 定位过程（三层 TEMP-DEBUG 日志，已删）：`LocalBranchSidebarItem` ctor 打印 IsActive=False → `RefreshReferences` 打印 symrefs 发现**只有 `refs/remotes/origin/HEAD`，缺 `HEAD` 本身** → `ReferenceStorage.New` 打印 activeBranchIndex=null。Windows 原版 native 返回 HEAD，Linux 版不返回（native 库平台行为差异）。
+   - **【本轮13 复核更正】后续用 ctypes 直接实测 `libbiturbo.so`（分支态仓库）确认 native 返回 HEAD symref 正常——当时"缺失"的真因是测试仓库处于 detached HEAD（详见修复链 13 第 3 条）。下述 C# 兜底逻辑保留（无害的防御层）。**
    - 修复：`BtReferencesExtensions.EnsureHeadSymref(gitDir, symrefs, targets)`——symrefs 无 "HEAD" 时读 `.git/HEAD`（"ref: refs/heads/xxx"）兜底追加；detached HEAD（HEAD 是裸 SHA 非 symref）原样返回。`GetReferencesGitCommand.Execute` 与 `RefreshRepositoryReferencesGitCommand.RefreshReferences` 两个调用点都已接入。
    - **验证（1920×1280）**：把测试仓库切回 master（`git checkout master`——注意之前仓库处于 detached HEAD at v0.40.2，那时 IsActive=False 是**正确行为**不是 bug，排查时先确认仓库检出状态！），重启后日志 `activeBranchIndex=0 symrefsLen=2`、`master IsActive=True`，截图侧栏 master **文字加粗 + 灰色对勾图标**（vs 下方远端/标签等 Regular 字重）。`verification/22-datatrigger-active-branch-1920x1280.png`。
    - **教训**：① 排查"当前分支不高亮"先 `git symbolic-ref HEAD` 确认不是 detached HEAD；② native biturbo 的平台行为差异（HEAD symref）会静默破坏 ActiveBranchIndex 推导链——`ReferenceStorage.New` 靠 symrefs 里的 "HEAD" 匹配 refs/heads/*，这是整条链的单一事实源。
 
-## 运行时修复链 11（2026-08-30 本轮11：文件管理器定位跨平台化）
+## 运行时修复链 13（2026-08-30 本轮13：侧栏布局复活 + 偏好设置 Tab 下划线修复 + biturbo symref 复核）
+
+1. **【已修+实证】侧栏出现多余"拉取请求/问题"内容 + 搜索框平铺进标签头（布局全乱）**：
+   - 现象：主界面左侧栏出现不该显示的"拉取请求/问题"区块（原版 WPF 该功能 `ServiceRadioButton Visibility="Collapsed"` 永久隐藏），且侧栏 TabControl 的标签头区域渲染了整个 TabItem 的 Content（搜索框平铺、布局溢出）。
+   - 根因：**Avalonia 12 ControlTheme 按 StyleKey 精确匹配，默认 StyleKey = 具体类型**。`SearchTabItem`/`ServiceTabItem` 都是 `TabItem` 子类，但 `{x:Type TabItem}` ControlTheme 匹配不到它们 → 回落到 ContentControl 主题 → TabControl 的 headerPanel 把整个 Content（而非 Header）渲染进标签头。这与 `CustomWindow.cs` 的 StyleKeyOverride 修复（修复链 2 根因）是同一类坑的第 4、5 处。
+   - 修复：两个类各加 `protected override Type StyleKeyOverride => typeof(TabItem);` 恢复基类主题（模板 `Content="{TemplateBinding Header}"` 正常生效，Content 只进 PART_SelectedContentHost）。
+   - 验证（1920×1280）：`verification/28-sidebar-layout-fixed-1920x1280.png` + `28a-sidebar-zoom.png`——侧栏与原版 WPF 布局一致：本地变更/所有提交 → 分支/搜索切换按钮 → 过滤框 → 分支/远端/标签/贮藏/子模块 分组树，**无"拉取请求/问题"区块**，搜索框不再平铺。
+2. **【已修】偏好设置选中 Tab 无下划线指示条（ModernTabControl）**：
+   - 现象：偏好设置窗口切 Tab 时，蓝色下划线指示条（PART_IndicatorBorder）永远停在第一个 Tab 下不动。
+   - 根因：WPF `TabControl.OnSelectionChanged` 是框架调用的虚方法重写；Avalonia 12 **没有**该虚方法（实证：写 `protected override` 报 CS0115 no suitable method found to override）→ 转换工具丢掉 `override` 后成方法隐藏 → 死代码，指示条只在 OnSizeChanged 初始化一次。
+   - 修复：构造函数显式订阅 `base.SelectionChanged` 路由事件转发回原方法（同 ClosableTabControl 修复链 3 模式）；同时删除 `e.Handled = true`——WPF 原版该行位于 base 调用之后（广播已完成），仅语义残留；Avalonia 的 EventRoute 里 Handled=true 会跳过同元素后续订阅者（`!e.Handled || entry.HandledEventsToo`），保留会吞掉 ServiceTabItem 等 XAML 订阅的 SelectionChanged 处理器。
+3. **【已复核·非 bug】biturbo `bt_get_references` Linux 不返回 HEAD symref 的真相**：
+   - 用 ctypes 直接调 `third_party/libbiturbo.so` 实测（`/data/user/work/test_biturbo.py`）：分支态仓库（HEAD = "ref: refs/heads/master"）**symrefs 正常含 `HEAD -> refs/heads/master`**；detached HEAD 仓库（HEAD = 裸 SHA）symrefs 为空——这是正确行为（detached HEAD 不是 symref）。
+   - 对照 biturbo 源码（`src/ffi/bt_references.rs` 第 94-119 行）：HEAD 读取/解析逻辑齐全，packed-refs/loose refs/special heads 全处理，与 C# 侧 `BtReferences.cs` 结构体布局逐字段一致（5×BtBuf{ptr,len,cap}+u64 hash）。
+   - 结论：**native 库本身没有 bug**。上一轮观察到的"缺 HEAD symref"是当时测试仓库处于 detached HEAD（at v0.40.2 tag）导致的误诊（MIGRATION.md 修复链 12 第 2 条已记录此教训）。已入库的 `EnsureHeadSymref` C# 兜底逻辑无害（分支态时 native 正常返回 HEAD，兜底直接原样返回；仅万一对齐问题时多一层保险），保留不回滚。biturbo 仓库无需改动。
+
+
 
 1. **【已修】"在文件管理器中显示"Windows 硬编码簇（explorer.exe / 反斜杠路径）**：
    - `FileHelper.OpenInWindowsExplorer`：原硬编码 `explorer.exe /select`（Unix 上 Process.Start 抛异常被 catch 静默吞掉）。改为三分支：Windows 保留 `/select` 选中语法；macOS `open -R`（Reveal in Finder）；Linux `xdg-open` 父目录（org.freedesktop.FileManager1.ShowItems 依赖桌面环境无通用"选中"机制，打开所在目录是稳妥等价物）。

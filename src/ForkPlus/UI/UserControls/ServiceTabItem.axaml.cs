@@ -12,6 +12,11 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class ServiceTabItem : TabItem
 	{
+		// TODO 迁移：同 SearchTabItem——ControlTheme 按 StyleKey 精确匹配，TabItem 子类
+		// 匹配不到隐式 TabItem 主题 → 回落 ContentControl 主题，服务页（拉取请求/问题）
+		// 整个 Content 平铺进 TabControl headerPanel（原版此功能隐藏时也不该出现）。
+		// StyleKeyOverride=TabItem 恢复基类主题。
+		protected override global::System.Type StyleKeyOverride => typeof(TabItem);
 
 		public RepositoryUserControl RepositoryUserControl { get; private set; }
 
