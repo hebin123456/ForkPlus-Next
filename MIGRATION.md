@@ -113,10 +113,12 @@ git push origin HEAD
    - `verification/23-preferences-git-tab.png`：Git 页选中（蓝色下划线），Git 实例探测 `2.34.1 - /usr/bin/git`、全局用户信息表单正常。
    - `verification/24-preferences-integration-tab.png`：集成页选中，外部合并/差异工具配置、Shell 配置完整渲染。
    - 操作路径：`xdotool key ctrl+comma` 直接发快捷键打开偏好设置（比菜单点击坐标稳定，菜单项坐标每次读图偏差大）。
-5. **【排查中】偏好设置打开时弹"Git 错误"空弹窗**：
-   - 现象：Ctrl+, 打开偏好设置的同时弹出一个 `Git 错误` 对话框（740×330），内容区为空（无 git stderr 文本）。
-   - 已排除：`GitUserControl` 6 处 ErrorWindow 调用点已过目，`SetGlobalUserIdentity` 走 LostFocus 不会在构造期触发；`ConfigureSshKeysWindow` 与本链路无关。
-   - 待查：空内容说明 `gitCommandResult.Error` 为 null 或空——需要定位是哪个构造期 git 命令失败（候选：`GetGlobalUserIdentityGitCommand` 构造期探测、AI 增强/集成页的 git 探测命令）。
+5. **【已修+实证】偏好设置打开时弹"Git 错误"弹窗（重复版本警告）**：
+   - 现象：Ctrl+, 打开偏好设置的同时弹出一个 `Git 错误` 对话窗。
+   - 定位方法（推荐复用）：ErrorWindow 无参构造（所有构造路径入口）加 TEMP-DEBUG 环境变量门控的 `StackTrace` 打印（`FORKPLUS_DEBUG_ERRWIN=1 dotnet run`）→ 读栈：`ErrorWindow..ctor(String) ← GitUserControl.WarnIfGitVersionUnsupported ← GitInstanceComboBox_SelectionChanged ← RefreshGitInstanceComboBox 程序化设置 SelectedItem 触发 SelectionChanged`。
+   - 根因：偏好设置构造期 `RefreshGitInstanceComboBox()` 设置 `SelectedItem` 会触发 `SelectionChanged` → `WarnIfGitVersionUnsupported(App.GitPath)` —— git 2.34.1 低于推荐版本即弹警告。启动时 GitVersionChecker 已弹过一次"Git 版本过旧"，这里是重复噪音；且弹窗文案是长句英文键（字典无翻译返回原文，读图易误判为"空弹窗"）。
+   - 修复：`GitUserControl` 加 `_suppressVersionWarning` 标志，`RefreshGitInstanceComboBox` 包 try/finally 拆出 `DoRefreshGitInstanceComboBox`，刷新期间抑制；用户手动切换 ComboBox 选项时仍正常弹（AddCustom 分支已有 ValidatePath 的具体错误提示，同样被抑制属合理行为）。
+   - 验证：`verification/25-preferences-no-error-popup.png`——偏好设置打开后无任何错误弹窗，ErrorWindow 构造计数 0。
 
 ## 运行时修复链 6（2026-08-30 本轮6：主菜单系统复活）
 

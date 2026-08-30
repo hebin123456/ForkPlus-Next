@@ -193,6 +193,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 	private bool _isRefreshingGitMm;
 
+		// TODO 迁移：RefreshGitInstanceComboBox 程序化设置 SelectedItem 会触发
+		// SelectionChanged → WarnIfGitVersionUnsupported，导致每次打开偏好设置都弹一次
+		// 版本警告（启动时 GitVersionChecker 已弹过，重复噪音）。刷新期间抑制。
+		private bool _suppressVersionWarning;
+
 		public GitUserControl()
 		{
 			InitializeComponent();
@@ -310,7 +315,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			}
 			Log.Info("Git Location: " + App.GitPath);
-			WarnIfGitVersionUnsupported(App.GitPath);
+			if (!_suppressVersionWarning)
+			{
+				WarnIfGitVersionUnsupported(App.GitPath);
+			}
 		}
 
 		/// <summary>
@@ -345,6 +353,19 @@ namespace ForkPlus.UI.UserControls.Preferences
 		}
 
 		private void RefreshGitInstanceComboBox()
+		{
+			_suppressVersionWarning = true;
+			try
+			{
+				DoRefreshGitInstanceComboBox();
+			}
+			finally
+			{
+				_suppressVersionWarning = false;
+			}
+		}
+
+		private void DoRefreshGitInstanceComboBox()
 		{
 			List<GitInstanceItem> list = new List<GitInstanceItem>(5);
 			GitInstanceItem gitInstanceItem = GitInstanceItem.CreateEnvironmentGitInstance();
