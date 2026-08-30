@@ -85,10 +85,10 @@ git push origin HEAD
 | 0 基线导入 | ✅ 完成 | 全量转换产物入库 |
 | 1 C# 编译清零 | ✅ **完成** | 主工程 + AskPass + RI + 4 个测试工程全部 0 错误 |
 | 2 XAML (AVLN) 清零 | ✅ **完成** | 0 错误，XAML IL 重写恢复，`CompiledAvaloniaXaml.*` 已生成 |
-| 3 运行时验证 | 🔄 进行中（**约 88%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**；待验证：次级窗口（FileHistory/Blame/Merge）、偏好设置对话框、DataTrigger 视觉状态、大仓库性能（虚拟化） |
+| 3 运行时验证 | 🔄 进行中（**约 90%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口打开（7 Tab 全构造）**；待验证：偏好设置 Tab 横排/内容切换、次级窗口（FileHistory/Blame/Merge）、DataTrigger 视觉状态、大仓库性能（虚拟化） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 88%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单）已通，剩余为边缘交互（次级窗口/偏好设置对话框/视觉状态补齐）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、性能虚拟化）。
+**整体进度估算：约 90%**。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置窗口）已通，剩余为偏好设置 Tab 布局修复、次级窗口冒烟、视觉状态补齐与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、性能虚拟化）。
 
 ## 运行时修复链 6（2026-08-30 本轮6：主菜单系统复活）
 
@@ -119,10 +119,16 @@ git push origin HEAD
    - 现象：`PreferencesWindow → IntegrationUserControl → ExternalToolsUserControl` 构造时抛 `KeyNotFoundException: Static resource 'BooleanToVisibilityConverter' not found`。
    - 根因：WPF 的 `System.Windows.Controls.BooleanToVisibilityConverter` 是全局内置，XAML 里直接 `<StaticResource BooleanToVisibilityConverter>` 无需声明；Avalonia 无内置等价物，且 **StaticResource 在顶层 UserControl 实例化时只查本地资源链**（UserControl.Resources + 合并字典），Application 级注册不够用（这一点与 DynamicResource 行为不同）。
    - 修复：新建 `UI/Controls/BooleanToVisibilityConverter.cs`（`IValueConverter`，bool→bool，因 Avalonia `IsVisible` 直收 bool，null 视为 false）+ `Commonresources.axaml` 全局注册 + **三个引用方控件本地注册**（ExternalToolsUserControl / MergeConflictUserControl / Preferences/CustomCommandsUserControl）。**教训：WPF 内置转换器（BooleanToVisibility/ObjectDataProvider 等）是迁移盲区，`grep -rn 'StaticResource BooleanToVisibility'` 应列入检查清单。**
-2. **【进行中】`HintTextBlock` 主题 Setter 内裸 ToolTip 控件（InvalidOperationException）**：
+2. **【已修】`HintTextBlock` 主题 Setter 内裸 ToolTip 控件（InvalidOperationException）**：
    - 现象：修完转换器后继续抛 `System.InvalidOperationException: Cannot use a control as a Setter value. Wrap the control in a <Template>`（Textblock.axaml:114）。
    - 根因：WPF 允许 Setter.Value 直接放控件（ToolTip 模板化内容），Avalonia 要求必须是 Template/DataTemplate 包装。
-   - 修复方向：用 `<DataTemplate>` 包裹 ToolTip 内容，且 Avalonia 的 ToolTip.Tip 推荐直接绑字符串/内容模板而非 ToolTip 控件实例。
+   - 修复：`Textblock.axaml` 的 `HintTextBlock` 改为 `<Setter Property="ToolTip.Tip" Value="{Binding Tag, RelativeSource={RelativeSource Self}}" />`（Tip 为字符串时 ToolTip 内部 `new ToolTip{Content=tip}` 渲染，语义等价）；`CustomCommandsUserControl.axaml` 的 QuestionmarkTextBlock/NameQuestionmarkTextBlock 同法改用 StringFormat 拼标题行。
+   - **验证：偏好设置窗口成功打开**（截图 `verification/2026-08-30-preferences-window-open.png`），7 个 Tab 构造全通，通用页设置内容正常渲染。这是迁移启动以来第一个完整打开的大型对话框窗口。
+3. **【已定位】偏好设置 TabControl 标签竖排 + 内容溢出（视觉树转储实证）**：
+   - 现象：标签（通用/提交/AI 代码评审...）竖排堆叠在左侧，窗口内容被裁切，TabControl 实际宽 1398 而窗口仅 546。
+   - 根因：`Tabcontrol.axaml` 的 TabControl 模板里 `ItemsPresenter` **缺 `ItemsPanel="{TemplateBinding ItemsPanel}"`** —— Avalonia 的 ItemsPresenter 在未绑定 ItemsPanel 时落到默认垂直 StackPanel（WPF 同样有此默认值，但 WPF 模板里总是显式绑定）。Menu.axaml 修复链 6 已踩过同一坑（菜单竖排 → ItemsPanel TemplateBinding 修复），TabControl 是第二处。
+   - 修复方向：给 TabControl 模板的 ItemsPresenter 加 `ItemsPanel="{TemplateBinding ItemsPanel}"`，并在 ControlTheme 里给 ItemsPanel 设横排 StackPanel/WrapPanel。
+   - **教训：迁移所有 ItemsControl 系模板（Menu/TabControl/ListBox/TreeView）必须逐一检查 ItemsPresenter 是否绑定 ItemsPanel，这是 WPF→Avalonia 模板改写的高频坑。**
 
 ## 运行时阻塞：Textblock.axaml StaticResource（✅ 已解决，存档备考）
 

@@ -5,44 +5,14 @@
            StaticResource 顶层 UserControl 实例化时只查本地资源链；缺失会在本控件构造时崩溃） -->
       <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
       
+      <!-- TODO 迁移：WPF 原版 Setter.Value 里放 ToolTip 控件（"Available variables:" + PlacementTarget.Tag），
+           Avalonia 禁止 Setter 值为控件。改为 StringFormat 拼接标题行 + Tag（&#10; 换行），
+           Tag 为 null 时 StringFormat 不生效 → 无 tooltip，行为与 WPF 空值时一致。 -->
       <ControlTheme x:Key="QuestionmarkTextBlock" TargetType="TextBlock" BasedOn="{StaticResource HintTextBlock}">
-        <Setter Property="ToolTip.Tip">
-          <Setter.Value>
-            <ToolTip>
-              <ToolTip.DataContext>
-                <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
-              </ToolTip.DataContext>
-              <StackPanel>
-                <TextBlock Text="Available variables:" />
-                <TextBlock>
-                  <TextBlock.Text>
-                    <Binding Path="Tag" />
-                  </TextBlock.Text>
-                </TextBlock>
-              </StackPanel>
-            </ToolTip>
-          </Setter.Value>
-        </Setter>
+        <Setter Property="ToolTip.Tip" Value="{Binding Tag, RelativeSource={RelativeSource Self}, StringFormat='Available variables:&#10;{0}'}" />
       </ControlTheme>
       <ControlTheme x:Key="NameQuestionmarkTextBlock" TargetType="TextBlock" BasedOn="{StaticResource HintTextBlock}">
-        <Setter Property="ToolTip.Tip">
-          <Setter.Value>
-            <ToolTip>
-              <ToolTip.DataContext>
-                <Binding Path="PlacementTarget" RelativeSource="{RelativeSource Self}" />
-              </ToolTip.DataContext>
-              <StackPanel>
-                <TextBlock Text="Use '/' for nesting" />
-                <TextBlock Text="Available variables:" />
-                <TextBlock>
-                  <TextBlock.Text>
-                    <Binding Path="Tag" />
-                  </TextBlock.Text>
-                </TextBlock>
-              </StackPanel>
-            </ToolTip>
-          </Setter.Value>
-        </Setter>
+        <Setter Property="ToolTip.Tip" Value="{Binding Tag, RelativeSource={RelativeSource Self}, StringFormat='Use / for nesting&#10;Available variables:&#10;{0}'}" />
       </ControlTheme>
     </ResourceDictionary>
   </UserControl.Resources>
