@@ -199,24 +199,84 @@ namespace ForkPlus.UI.WpfCompat
 
     /// <summary>
     /// WPF ListCollectionView shim：支持 Filter + Refresh 的可绑定集合视图。
-    /// 通过 CollectionChanged(Reset) 通知绑定目标刷新。
+    /// TODO 迁移：WPF 的 ItemsControl 接受任意 IEnumerable 视图（Reset 通知即可）；
+    /// Avalonia 的 ItemsSourceView 契约是"实现了 INotifyCollectionChanged 就必须实现 IList"，
+    /// 否则抛 ArgumentException: Collection implements INotifyCollectionChanged but not IList
+    /// （统计窗口 CodeLinesRefListBox.ItemsSource 实测崩溃）。因此本 shim 物化过滤结果为
+    /// 只读非泛型 IList；Filter 赋值 / Refresh() 时重算缓存并广播 Reset。
     /// </summary>
-    public class ListCollectionView : System.Collections.IEnumerable, System.Collections.Specialized.INotifyCollectionChanged
+    public class ListCollectionView : System.Collections.IList, System.Collections.Specialized.INotifyCollectionChanged
     {
         private readonly System.Collections.IEnumerable _source;
-        public System.Predicate<object> Filter { get; set; }
-        public event System.Collections.Specialized.NotifyCollectionChangedEventHandler CollectionChanged
+        private readonly System.Collections.Generic.List<object> _view = new();
+        private System.Predicate<object> _filter;
+
+        public event System.Collections.Specialized.NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public ListCollectionView(System.Collections.IEnumerable source)
         {
-            add { }
-            remove { }
+            _source = source ?? throw new System.ArgumentNullException(nameof(source));
+            Rebuild();
         }
-        public ListCollectionView(System.Collections.IEnumerable source) { _source = source; }
-        public System.Collections.IEnumerator GetEnumerator()
+
+        /// <summary>过滤谓词。赋值即刷新（与 WPF 设置 Filter 自动刷新一致）。</summary>
+        public System.Predicate<object> Filter
         {
+            get => _filter;
+            set
+            {
+                _filter = value;
+                Rebuild();
+                OnCollectionChanged();
+            }
+        }
+
+        public void Refresh()
+        {
+            Rebuild();
+            OnCollectionChanged();
+        }
+
+        private void Rebuild()
+        {
+            _view.Clear();
             foreach (var item in _source)
-                if (Filter == null || Filter(item)) yield return item;
+                if (_filter == null || _filter(item))
+                    _view.Add(item);
         }
-        public void Refresh() { /* 绑定刷新依赖宿主重设 ItemsSource；调用方已有该逻辑 */ }
+
+        private void OnCollectionChanged()
+        {
+            CollectionChanged?.Invoke(this, new System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+                System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
+        }
+
+        // ----- IEnumerable（Avalonia ItemsSourceView 经 IList 读）-----
+        public System.Collections.IEnumerator GetEnumerator() => _view.GetEnumerator();
+
+        // ----- ICollection / IList：只读物化视图（ItemsSourceView 只读访问即可）-----
+        public int Count => _view.Count;
+        public bool IsSynchronized => false;
+        public object SyncRoot => this;
+        public void CopyTo(System.Array array, int index)
+        {
+            for (int i = 0; i < _view.Count; i++)
+                array.SetValue(_view[i], index + i);
+        }
+        public bool IsFixedSize => false;
+        public bool IsReadOnly => true;
+        public object this[int index]
+        {
+            get => _view[index];
+            set => throw new System.NotSupportedException("ListCollectionView is a read-only materialized view.");
+        }
+        public int Add(object value) => throw new System.NotSupportedException("ListCollectionView is a read-only materialized view.");
+        public void Clear() => throw new System.NotSupportedException("ListCollectionView is a read-only materialized view.");
+        public void Insert(int index, object value) => throw new System.NotSupportedException("ListCollectionView is a read-only materialized view.");
+        public void Remove(object value) => throw new System.NotSupportedException("ListCollectionView is a read-only materialized view.");
+        public void RemoveAt(int index) => throw new System.NotSupportedException("ListCollectionView is a read-only materialized view.");
+        public bool Contains(object value) => _view.Contains(value);
+        public int IndexOf(object value) => _view.IndexOf(value);
     }
 
     // ===== 路由命令体系（WPF RoutedCommand/CommandBinding 的按键路由替代）=====
