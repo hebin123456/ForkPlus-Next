@@ -221,19 +221,94 @@ namespace System.Windows.Media.Imaging
 
     /// <summary>
     /// WPF System.Windows.Media.Imaging 静态类。
-    /// CreateBitmapSourceFromHIcon 是 GDI→WPF 位图桥；Avalonia 侧需要走 WriteableBitmap，
-    /// 迁移期返回 null（调用方已有 null 兜底），TODO 迁移：补 Win32 图标位图转换。
+    /// TODO 迁移（根因修复）：原 stub 返回 null，Windows 上文件类型图标（提交列表/暂存区）
+    /// 全部空白。现走 GDI Bitmap → LockBits → Avalonia WriteableBitmap 真实转换。
     /// </summary>
     public static class Imaging
     {
         public static global::Avalonia.Media.IImage CreateBitmapSourceFromHIcon(IntPtr hIcon, Int32Rect sourceRect, BitmapSizeOptions sizeOptions)
         {
-            return null; // TODO 迁移：GDI HICON → Avalonia Bitmap
+            if (hIcon == IntPtr.Zero || !global::System.OperatingSystem.IsWindows())
+            {
+                return null;
+            }
+            try
+            {
+                // Icon.FromHandle 包装不接管所有权（DestroyIcon 由调用方负责），Dispose 仅释放包装。
+                using global::System.Drawing.Icon icon = global::System.Drawing.Icon.FromHandle(hIcon);
+                using global::System.Drawing.Bitmap bmp = icon.ToBitmap();
+                return GdiBitmapToAvalonia(bmp);
+            }
+            catch
+            {
+                return null; // 与 WPF 行为一致：失败返回 null，调用方已有 null 兜底
+            }
         }
 
         public static global::Avalonia.Media.IImage CreateBitmapSourceFromHBitmap(IntPtr bitmap, Int32Rect sourceRect, BitmapSizeOptions sizeOptions)
         {
-            return null; // TODO 迁移：GDI HBITMAP → Avalonia Bitmap
+            if (bitmap == IntPtr.Zero || !global::System.OperatingSystem.IsWindows())
+            {
+                return null;
+            }
+            try
+            {
+                using global::System.Drawing.Bitmap bmp = global::System.Drawing.Image.FromHbitmap(bitmap);
+                return GdiBitmapToAvalonia(bmp);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// GDI 32bppArgb（直通 alpha）→ Avalonia Bgra8888+Premul（逐像素预乘），行距按各自 Stride/RowBytes 拷贝。
+        /// </summary>
+        private static unsafe global::Avalonia.Media.IImage GdiBitmapToAvalonia(global::System.Drawing.Bitmap bmp)
+        {
+            if (bmp.Width <= 0 || bmp.Height <= 0)
+            {
+                return null;
+            }
+            var rect = new global::System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height);
+            global::System.Drawing.Imaging.BitmapData data = bmp.LockBits(
+                rect,
+                global::System.Drawing.Imaging.ImageLockMode.ReadOnly,
+                global::System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            try
+            {
+                var wb = new global::Avalonia.Media.Imaging.WriteableBitmap(
+                    new global::Avalonia.PixelSize(bmp.Width, bmp.Height),
+                    new global::Avalonia.Vector(96.0, 96.0),
+                    global::Avalonia.Platform.PixelFormat.Bgra8888,
+                    global::Avalonia.Platform.AlphaFormat.Premul);
+                using (global::Avalonia.Platform.ILockedFramebuffer frame = wb.Lock())
+                {
+                    byte* src = (byte*)data.Scan0;
+                    byte* dst = (byte*)frame.Address;
+                    for (int y = 0; y < bmp.Height; y++)
+                    {
+                        byte* s = src + (long)y * data.Stride;
+                        byte* d = dst + (long)y * frame.RowBytes;
+                        for (int x = 0; x < bmp.Width; x++)
+                        {
+                            byte b = s[0], g = s[1], r = s[2], a = s[3];
+                            d[0] = (byte)(b * a / 255);
+                            d[1] = (byte)(g * a / 255);
+                            d[2] = (byte)(r * a / 255);
+                            d[3] = a;
+                            s += 4;
+                            d += 4;
+                        }
+                    }
+                }
+                return wb;
+            }
+            finally
+            {
+                bmp.UnlockBits(data);
+            }
         }
     }
 }
