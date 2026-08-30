@@ -60,7 +60,10 @@
               <RowDefinition Height="Auto" />
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <ItemsPresenter Grid.Column="0" Margin="0" Grid.Row="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
+            <!-- TODO 迁移：WPF TabControl 默认 ItemsPanel 是 TabPanel（横排）；Avalonia 默认是 WrapPanel，
+                 但模板 ItemsPresenter 不绑 ItemsPanel 时落到 ItemsPresenter 自身默认垂直 StackPanel → 标签竖排。
+                 必须显式 TemplateBinding（同 Menu.axaml 修复链6 的坑）。 -->
+            <ItemsPresenter Grid.Column="0" Margin="0" Grid.Row="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" ItemsPanel="{TemplateBinding ItemsPanel}" />
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" Grid.Row="1" KeyboardNavigation.TabNavigation="Local" x:Name="contentPanel" TabIndex="2">
               <ContentPresenter Margin="{TemplateBinding Padding}" x:Name="PART_SelectedContentHost" />
             </Border>
@@ -121,6 +124,14 @@
     </Style>
     <Style Selector="^[TabStripPlacement=Right] /template/ RowDefinition#RowDefinition1">
         <Setter Property="RowDefinition.Height" Value="0" />
+    </Style>
+    <!-- TODO 迁移：TabStripPlacement=Left/Right 时面板改纵排（仿 Avalonia Fluent 主题；
+         默认 WrapPanel 横排只适用 Top/Bottom） -->
+    <Style Selector="^[TabStripPlacement=Left] /template/ ItemsPresenter#headerPanel > WrapPanel">
+        <Setter Property="Orientation" Value="Vertical" />
+    </Style>
+    <Style Selector="^[TabStripPlacement=Right] /template/ ItemsPresenter#headerPanel > WrapPanel">
+        <Setter Property="Orientation" Value="Vertical" />
     </Style>
     <Style Selector="^:disabled /template/ Grid#templateRoot">
 <!-- TODO 迁移：WPF Foreground Setter 已删（Avalonia Border 无 Foreground 属性） -->
@@ -421,7 +432,8 @@
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid Grid.Column="0" Grid.Row="0">
-              <ItemsPresenter Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
+              <!-- TODO 迁移：同上，ItemsPresenter 必须显式绑 ItemsPanel，否则默认垂直 StackPanel → 标签竖排 -->
+              <ItemsPresenter Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" ItemsPanel="{TemplateBinding ItemsPanel}" />
             </Grid>
             <Canvas Grid.Column="0" Grid.Row="0">
               <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />

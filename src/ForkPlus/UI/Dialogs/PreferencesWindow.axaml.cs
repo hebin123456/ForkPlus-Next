@@ -23,6 +23,10 @@ namespace ForkPlus.UI.Dialogs
 		public PreferencesWindow()
 		{
 			base.ShowLogo = false;
+			// TODO 迁移：WPF 原版靠首行 RowDefinition Height=0 隐藏 AddDialogHeader 的占位标题；
+			// Avalonia 里 0 高度行的子控件仍溢出渲染（与 [Dialog Title] 与 Tab 行重叠），
+			// 直接关掉 Header 生成（与 RepositoryStatisticsWindow 等 5 处同模式）。
+			base.ShowHeader = false;
 			InitializeComponent();
 			base.ShowCancelButton = false;
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Close");
