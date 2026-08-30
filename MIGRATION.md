@@ -89,7 +89,21 @@ git push origin HEAD
 | 3 运行时验证 | 🔄 进行中（**约 94%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**、**DataTrigger 视觉状态（IsActive 加粗/IsWorktree 图标/BisectGood 换色/HEAD 行加粗）+ Linux HEAD symref 兜底**；待验证：次级窗口（FileHistory/Blame/Merge） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 98%**。单元测试 3856/3856 全绿；三平台 CI 就位（windows/linux 已跑通，macOS 修复中）。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**）已通，**三平台 CI 已就位**（push main 自动构建 win/linux/macOS 产物），剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、6 个平台差异单测）。
+**整体进度估算：约 98%**。单元测试 3856/3856 全绿；三平台 CI 就位（windows/linux 已跑通，macOS native/tokei 显式下载修复中）。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**→**IPC 二次启动开仓**）已通，**三平台 CI 已就位**（push master 自动构建 win/linux/macOS 产物，主分支已由 main 改名 master），剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、6 个平台差异单测）。
+
+## 运行时修复链 16（2026-08-30 本轮16：tokei 三平台化 + IPC 二次启动崩溃修复）
+
+1. **【已修+实证】tokei 只在 Windows 拉取（统计页跨平台不可用）**，三层修复：
+   - **代码层**：`GetCodeLineStatsGitCommand.TokeiExeName` 原为 const `"tokei.exe"`——Unix 下找 `tokei.exe` 恒落空，统计页直接报 "not found"。改为按平台取名的 static readonly（Windows→`tokei.exe` / Unix→`tokei`），并新增 `EnsureExecutableBit()`（`File.Get/SetUnixFileMode` 补 x 位，防 MSBuild Copy/tar/手动解压丢权限位导致 spawn Permission denied；Windows 直接跳过）。
+   - **csproj 层**：`RestoreTokei` Target 的 Condition 原卡死 `'$(OS)' == 'Windows_NT'`（整 target 不跑），Linux/macOS 构建不拉 tokei。扩成三平台：Windows 裸 exe 存 `tokei.exe`；Unix 按 `uname -s` 选 `tokei-x86_64-apple-darwin.tar.gz` / `tokei-x86_64-unknown-linux-gnu.tar.gz`，tar 解压出裸二进制存 `third_party/tokei`（**实测 v14.0.1 的 tar 内就是裸 tokei 无目录**，沙箱验证解压→复制→`--output json` 全通）。`CollectHelperOutputs` 清单补 Unix 无扩展名 `tokei` 条目（Exists 守卫自动取舍）。
+   - **CI 层**：workflow 加显式 `Download tokei` step（与 biturbo 同模式：5 次重试 + >1MB 大小校验 + 裸/tar 两分支），`Verify critical outputs` 补 tokei 存在性校验。注意 **tokei release 暂无 aarch64-apple-darwin 资产**，macOS-arm64 产物用 x86_64-apple-darwin（经 Rosetta 2 运行），后续上游补 arm64 可切。
+2. **【已修+实证】IPC 服务线程 Unix 崩溃（二次启动带崩主实例）——真 bug，Linux 实测复现**：
+   - 现象：验证统计页时用 `./ForkPlus /root/.oh-my-zsh` 命令行开仓（OpenRepositoryCliCommand → HandleCommandLineArguments → NamedPipe 转发首个实例），**运行中的主实例整个进程退出**，二次实例 20s 超时。
+   - 根因：`IpcServer.EventLoop` finally 里的 `pipeServer.WaitForPipeDrain()` 是 Windows-only API，Unix 抛 `PlatformNotSupportedException`；外层 catch 只接 `IOException` → 未捕获异常打穿 IPC 线程 → 进程崩溃。等价场景：Linux/macOS 上文件管理器双击 .git 目录、终端 `forkplus <repo路径>`，只要主实例在跑就必崩。
+   - 修复：`WaitForPipeDrain` 加 `OperatingSystem.IsWindows()` 门控。Unix 无需 drain：协议是 4 字节长度前缀分帧 + 单请求-响应，响应写进内核缓冲后客户端 ReadString 收满即返回，Disconnect 前无需等客户端读完。
+   - 验证：重启主实例 → `./ForkPlus /root/.oh-my-zsh` IPC 返回 exit=0（Handled）→ **主实例存活且成功切到 oh-my-zsh 仓库**（master 分支 + 提交列表完整渲染）。
+3. **【已修】third_party 二进制退库**：`third_party/libbiturbo.so`（2.9MB）此前被误提交——csproj 注释明确"不再以二进制提交到仓库，改为构建期拉取"，但文件还在库里。`git rm --cached` + .gitignore 补 `third_party/` 下五个原生产物（biturbo.dll/.so/.dylib + tokei/tokei.exe），与构建期下载策略对齐。
+4. **IPC 实战附带发现（方法论）**：IPC 转发按**进程名**找其他实例（`Process.GetProcessesByName(currentProcess.ProcessName)`）——用 `dotnet ForkPlus.dll` 启动时进程名是 `dotnet`，永远找不到主实例（连接 100ms 超时后静默降级单实例模式）；必须用 apphost `./ForkPlus` 启动才能配对。apphost 还要求 `DOTNET_ROOT` 环境变量（framework-dependent 发布的固有约束，README 需提示用户）。
 
 ## 运行时修复链 8（2026-08-30 本轮8：偏好设置 TabControl 复活 + 对话框 SetStatus 崩溃）
 

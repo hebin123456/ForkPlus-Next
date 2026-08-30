@@ -4,3 +4,11 @@ obj/
 .vs/
 .idea/
 *.binlog
+
+# 构建期从 hebin123456/Biturbo、hebin123456/tokei 的 latest release 拉取的原生产物
+# 不入库（RestoreBiturbo/RestoreTokei Target 与 CI 显式下载步骤负责拉取）
+third_party/biturbo.dll
+third_party/libbiturbo.so
+third_party/libbiturbo.dylib
+third_party/tokei
+third_party/tokei.exe

@@ -123,15 +123,27 @@
          带 3 次重试（指数退避）——CI 上 GitHub release 下载偶发连接中断（与 RestoreTokei 同模式）。-->
     <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; >&amp;2; exit 1; }; echo &quot;Restored $out from Biturbo latest release&quot;'" />
   </Target>
-  <!-- tokei.exe（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
-       不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。Windows 产物名为 tokei.exe。
-       本 target 缺失时下载到 third_party/；已存在则跳过。CI 每次全新 checkout 都会拉最新版。
-       带重试（3 次，指数退避）以容忍 GitHub release 下载偶发连接中断。-->
-  <Target Name="RestoreTokei" BeforeTargets="Build" Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')">
+  <!-- tokei（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
+       不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。v14.0.1 release 覆盖三平台：
+         Windows x64 → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 third_party/tokei.exe）
+         Linux   x64 → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 third_party/tokei）
+         macOS       → tokei-x86_64-apple-darwin.tar.gz（同上；arm64 机器经 Rosetta 2 运行，
+                       release 暂无 aarch64-apple-darwin 资产——如后续补上可切原生 arm64）
+       TODO 迁移：原 target 只在 Windows_NT 下生效（Condition 卡死），Linux/macOS 构建不拉
+       tokei，统计页功能直接不可用。本 target 按 $(OS) 分派，缺失时下载；已存在则跳过。
+       CI 每次全新 checkout 都会拉最新版。带重试（3 次，指数退避）以容忍 GitHub release
+       下载偶发连接中断。-->
+  <Target Name="RestoreTokei" BeforeTargets="Build">
     <PropertyGroup>
       <TokeiBaseUrl>https://github.com/hebin123456/tokei/releases/latest/download</TokeiBaseUrl>
     </PropertyGroup>
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
+    <!-- Windows: PowerShell 拉取裸 exe 存为 tokei.exe -->
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\tokei.exe')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; $url='$(TokeiBaseUrl)/tokei-x86_64-pc-windows-msvc.exe'; $out='..\..\third_party\tokei.exe'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored tokei.exe from tokei latest release'&quot;" />
+    <!-- Unix (Linux/macOS): bash + curl 下载 tar.gz，解压出裸 tokei 二进制（tar 保留可执行位，
+         再 chmod +x 兜底），存为 third_party/tokei（无扩展名）。按 uname -s 选 darwin/linux 资产。
+         用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
+         $(TokeiBaseUrl) 仍由 MSBuild 正常展开（与 RestoreBiturbo 同模式）。-->
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\tokei')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then asset=&quot;tokei-x86_64-apple-darwin.tar.gz&quot;; else asset=&quot;tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; url=&quot;$(TokeiBaseUrl)/$asset&quot;; tmp=`mktemp -d`; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$tmp/tokei.tar.gz&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; >&amp;2; exit 1; }; tar -xzf &quot;$tmp/tokei.tar.gz&quot; -C &quot;$tmp&quot;; mv &quot;$tmp/tokei&quot; ../../third_party/tokei; chmod +x ../../third_party/tokei; rm -rf &quot;$tmp&quot;; echo &quot;Restored ../../third_party/tokei from tokei latest release ($asset)&quot;'" />
   </Target>
   <!-- 子进程与 native 库的复制清单（Build 输出与 Publish 输出两处共用）。
        TODO 迁移（CI）两点坑：
@@ -158,7 +170,9 @@
       <_HelperOutputs Include="..\..\third_party\biturbo.dll" Condition="Exists('..\..\third_party\biturbo.dll')" />
       <_HelperOutputs Include="..\..\third_party\libbiturbo.so" Condition="Exists('..\..\third_party\libbiturbo.so')" />
       <_HelperOutputs Include="..\..\third_party\libbiturbo.dylib" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+      <!-- tokei 按平台：Windows 是 tokei.exe，Unix 是无扩展名 tokei（Exists 守卫自动取舍） -->
       <_HelperOutputs Include="..\..\third_party\tokei.exe" Condition="Exists('..\..\third_party\tokei.exe')" />
+      <_HelperOutputs Include="..\..\third_party\tokei" Condition="Exists('..\..\third_party\tokei')" />
     </ItemGroup>
   </Target>
   <Target Name="CopyHelperExecutables" AfterTargets="Build" DependsOnTargets="CollectHelperOutputs">

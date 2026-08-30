@@ -1,10 +1,13 @@
 # ForkPlus-Next 三平台自动构建
 #
-# 触发：push 到 main / 手动 / PR
+# 触发：push 到 master / 手动 / PR
+# （主分支已由 main 改名 master，2026-08-30）
 # 产物：framework-dependent publish 目录（需目标机安装 .NET 10 运行时），含各平台
-#       biturbo native 库（构建期由 ForkPlus.csproj 的 RestoreBiturbo Target 自动从
-#       hebin123456/Biturbo latest release 拉取：win→biturbo.dll / linux→libbiturbo.so /
-#       macos→libbiturbo.dylib）+ AskPass/RI 子进程三件套（apphost/dll/runtimeconfig）。
+#       biturbo native 库（构建期由 workflow 显式 curl + ForkPlus.csproj 的 RestoreBiturbo
+#       Target 兜底，从 hebin123456/Biturbo latest release 拉取：win→biturbo.dll /
+#       linux→libbiturbo.so / macos→libbiturbo.dylib）+ tokei 代码统计工具（hebin123456/tokei
+#       latest release：win→tokei.exe / unix→tokei，Linux/macOS 为 tar.gz 需解压）+
+#       AskPass/RI 子进程三件套（apphost/dll/runtimeconfig）。
 #
 # 平台对应关系（与 Biturbo release 资产架构一致）：
 #   windows-latest → x64（biturbo.dll = x86_64）
@@ -18,9 +21,9 @@ name: build
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 concurrency:
@@ -85,6 +88,46 @@ jobs:
           size=$(wc -c < "third_party/$native")
           [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
 
+      # TODO 迁移（CI）：tokei 与 biturbo 同模式显式下载（不走 csproj 的 RestoreTokei Exec，
+      # 规避 macOS runner 上 MSBuild Exec 行为差异）。三平台资产：
+      #   windows → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 tokei.exe）
+      #   linux   → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 tokei）
+      #   macos   → tokei-x86_64-apple-darwin.tar.gz（同上；release 暂无 aarch64-apple-darwin
+      #             资产，arm64 目标机经 Rosetta 2 运行——CI 只打包不执行，不受影响）
+      - name: Download tokei
+        shell: bash
+        run: |
+          mkdir -p third_party
+          base="https://github.com/hebin123456/tokei/releases/latest/download"
+          case "${{ matrix.name }}" in
+            windows-x64) asset="tokei-x86_64-pc-windows-msvc.exe"; out="third_party/tokei.exe"; bare=1 ;;
+            linux-x64)   asset="tokei-x86_64-unknown-linux-gnu.tar.gz"; out="third_party/tokei"; bare=0 ;;
+            macos-arm64) asset="tokei-x86_64-apple-darwin.tar.gz"; out="third_party/tokei"; bare=0 ;;
+          esac
+          echo "Downloading $asset ..."
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 "$base/$asset" -o "third_party/tokei-download"; then ok=1; break; fi
+            echo "attempt $i failed, retrying in $((i*5))s..."
+            sleep $((i*5))
+          done
+          [ "$ok" = "1" ] || { echo "FAILED to download $asset after 5 attempts"; exit 1; }
+          if [ "$bare" = "1" ]; then
+            mv "third_party/tokei-download" "$out"
+          else
+            # tar.gz 内是裸 tokei 二进制（无目录结构），解压到临时目录再就位
+            tmp=$(mktemp -d)
+            tar -xzf "third_party/tokei-download" -C "$tmp" || { echo "FAILED to extract $asset"; exit 1; }
+            [ -f "$tmp/tokei" ] || { echo "archive does not contain bare 'tokei' binary"; ls -la "$tmp"; exit 1; }
+            mv "$tmp/tokei" "$out"
+            rm -rf "$tmp" "third_party/tokei-download"
+          fi
+          chmod +x "$out" || true
+          ls -la "$out"
+          # 非空且 >1MB 校验（解压后二进制约 2-7MB；拦 0 字节/截断残留）
+          size=$(wc -c < "$out")
+          [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
+
       - name: Publish (framework-dependent)
         run: dotnet publish src/ForkPlus/ForkPlus.csproj -c Release -o publish/${{ matrix.rid }} --nologo
 
@@ -101,13 +144,14 @@ jobs:
             [ -f "$f" ] || { echo "MISSING: $f"; missing=1; }
           done
           case "${{ matrix.name }}" in
-            windows-x64) native=biturbo.dll ;;
-            linux-x64)   native=libbiturbo.so ;;
-            macos-arm64) native=libbiturbo.dylib ;;
+            windows-x64) native=biturbo.dll; tokei_file=tokei.exe ;;
+            linux-x64)   native=libbiturbo.so; tokei_file=tokei ;;
+            macos-arm64) native=libbiturbo.dylib; tokei_file=tokei ;;
           esac
           [ -f "$native" ] || { echo "MISSING native: $native"; missing=1; }
+          [ -f "$tokei_file" ] || { echo "MISSING tokei: $tokei_file"; missing=1; }
           if [ "$missing" -ne 0 ]; then exit 1; fi
-          echo "All critical outputs present (native=$native)."
+          echo "All critical outputs present (native=$native, tokei=$tokei_file)."
 
       - name: Archive (tar.gz)
         if: matrix.ext == 'tar.gz'
