@@ -11,7 +11,7 @@
     </Grid.RowDefinitions>
     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,4,0,0">
       <TextBlock Text="Release Notes" FontWeight="Medium" FontSize="13" Margin="0,0,0,4" />
-      <TextBox x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="280" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />
+      <TextBox Text="" x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="280" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />
       <CheckBox x:Name="SkipVersionCheckBox" Content="Don't remind me for this version" Margin="0,8,0,0" FontSize="13" />
     </StackPanel>
   </Grid>

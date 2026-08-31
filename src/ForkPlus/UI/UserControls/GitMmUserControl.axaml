@@ -147,7 +147,7 @@
 
           <!-- RichTextBox 输出区 -->
           <Border Grid.Row="2" BorderThickness="0" Background="{DynamicResource CodeEditorBackground}">
-            <TextBox BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
+            <TextBox Text="" BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
           </Border>
         </Grid>
       </Border>

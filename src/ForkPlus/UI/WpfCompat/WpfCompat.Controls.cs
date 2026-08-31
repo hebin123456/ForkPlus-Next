@@ -418,6 +418,9 @@ namespace ForkPlus.UI.WpfCompat
 
         private static T Wait<T>(Task<T> task)
         {
+            // TODO 迁移：GetClipboard() 无窗口时返回 null → task 为 null，WPF 下 Clipboard 独立于窗口，
+            // 这里防御 null（启动早期/窗口关闭后调用剪贴板不再 NRE）。
+            if (task == null) return default;
             if (task.IsCompleted) return task.Result;
             var frame = new DispatcherFrame();
             task.ContinueWith(_ => Dispatcher.UIThread.Post(() => frame.Continue = false),

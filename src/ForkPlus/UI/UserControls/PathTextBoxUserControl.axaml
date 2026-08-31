@@ -6,7 +6,7 @@
           <DynamicResource ResourceKey="BrowseButtonStyle" />
         </Button.Theme>
       </Button>
-      <TextBox Margin="0" Padding="4,2,4,2" x:Name="PathTextBox" />
+      <TextBox Text="" Margin="0" Padding="4,2,4,2" x:Name="PathTextBox" />
     </DockPanel.Children>
   </DockPanel>
 </UserControl>

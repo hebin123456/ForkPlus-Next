@@ -131,7 +131,7 @@
         <StackPanel.Children>
           <CheckBox Margin="10,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="ShowDiffChangeMarksCheckBox_Changed" x:Name="ShowDiffChangeMarksCheckBox">Show -+ marks</CheckBox>
           <TextBlock Margin="14,4,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Font size:" />
-          <TextBox Width="30" Margin="10,4,0,0" HorizontalAlignment="Left" TextAlignment="Left" TextChanged="CodeEditorFontSizeTextBox_TextChanged" x:Name="CodeEditorFontSizeTextBox" />
+          <TextBox Text="" Width="30" Margin="10,4,0,0" HorizontalAlignment="Left" TextAlignment="Left" TextChanged="CodeEditorFontSizeTextBox_TextChanged" x:Name="CodeEditorFontSizeTextBox" />
         </StackPanel.Children>
       </StackPanel>
       <StackPanel Grid.Row="7" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">

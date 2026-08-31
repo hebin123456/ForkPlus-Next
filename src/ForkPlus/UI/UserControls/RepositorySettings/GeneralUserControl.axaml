@@ -78,6 +78,6 @@
     <Separator Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,20,0,0" />
     <TextBlock Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Text="Diff View" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
     <TextBlock Grid.Column="0" Grid.Row="11" Text="Tab Width:" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-    <TextBox Grid.Row="11" Grid.Column="1" Width="30" Margin="0,4,0,4" Padding="4,2,4,2" TextAlignment="Left" HorizontalAlignment="Left" TextChanged="TabWidthTextBox_TextChanged" x:Name="TabWidthTextBox" />
+    <TextBox Text="" Grid.Row="11" Grid.Column="1" Width="30" Margin="0,4,0,4" Padding="4,2,4,2" TextAlignment="Left" HorizontalAlignment="Left" TextChanged="TabWidthTextBox_TextChanged" x:Name="TabWidthTextBox" />
   </Grid>
 </UserControl>

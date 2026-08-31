@@ -19,7 +19,7 @@
       <StackPanel x:Name="ResultPanel" IsVisible="False">
         <TextBlock x:Name="VersionInfoTextBlock" FontSize="13" FontWeight="Medium" Margin="0,0,0,6" TextWrapping="Wrap" />
         <TextBlock x:Name="ReleaseNotesLabel" Text="Release Notes" FontWeight="Medium" FontSize="13" Margin="0,4,0,4" />
-        <TextBox x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="220" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />
+        <TextBox Text="" x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="220" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />
         <CheckBox x:Name="SkipVersionCheckBox" Content="Don't remind me for this version" Margin="0,8,0,0" FontSize="13" />
       </StackPanel>
     </StackPanel>

@@ -40,6 +40,13 @@ namespace ForkPlus.UI.Controls
 
 		public PlaceholderTextBox()
 		{
+			// TODO 迁移：WPF TextBox.Text 默认 ""，Avalonia 12 默认 null——全仓约 100 处
+			// `.Text.Trim()` 等 C# 调用在未输入时会 NRE（CloneWindow.TryParseUrlFromClipboard
+			// 崩溃实证）。构造期回填空串恢复 WPF 语义（Style setter 方案对构造期访问无效）。
+			if (base.Text == null)
+			{
+				base.Text = string.Empty;
+			}
 			base.Loaded += delegate
 			{
 				base.ContextMenu = GetContextMenu();

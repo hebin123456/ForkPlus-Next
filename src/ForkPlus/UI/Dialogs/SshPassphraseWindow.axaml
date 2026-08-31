@@ -19,7 +19,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Passphrase:" />
-      <TextBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="PasswordBox" PasswordChar="●" />
+      <TextBox Text="" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="PasswordBox" PasswordChar="●" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

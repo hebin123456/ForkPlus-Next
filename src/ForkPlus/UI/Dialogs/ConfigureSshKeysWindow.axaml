@@ -115,7 +115,7 @@
           <TextBlock Grid.Row="1" Grid.Column="0" Margin="14,4,0,4" FontSize="13" HorizontalAlignment="Right" Text="SHA256:" />
           <controls:SelectableTextBlock Grid.Row="1" Grid.Column="1" Margin="8,4,1,4" FontSize="13" VerticalAlignment="Center" x:Name="SshKeySha256TextBox" />
           <TextBlock Grid.Row="2" Grid.Column="0" Margin="18,4,0,0" FontSize="13" Text="Public Key:" />
-          <TextBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="14,4,0,0" FontSize="13" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" x:Name="SshKeyPublicKeyTextBox" />
+          <TextBox Text="" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="14,4,0,0" FontSize="13" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" x:Name="SshKeyPublicKeyTextBox" />
           <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" FontSize="13" Margin="14,2,0,0">
             <HyperlinkButton NavigateUri="dummy" Theme="{StaticResource BlueUnderlineHyperlinkStyle}">
               <TextBlock HorizontalAlignment="Center" Text="Copy to clipboard" Margin="0" />

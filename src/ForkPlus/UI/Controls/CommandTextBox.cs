@@ -46,6 +46,16 @@ namespace ForkPlus.UI.Controls
 
 		public CommandDescriptor CommandDescriptor { get; private set; }
 
+		public CommandTextBox()
+		{
+			// TODO 迁移：WPF TextBox.Text 默认 ""，Avalonia 12 默认 null——同 PlaceholderTextBox 的构造期回填，
+			// 防止 `.Text.Trim()` 等 C# 调用在未输入时 NRE（剪贴板读取崩溃同根）。
+			if (base.Text == null)
+			{
+				base.Text = string.Empty;
+			}
+		}
+
 		private string Placeholder
 		{
 			get

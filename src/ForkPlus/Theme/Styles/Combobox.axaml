@@ -360,7 +360,7 @@
         </ToggleButton.IsChecked>
       </ToggleButton>
       <Border Margin="0" CornerRadius="3,0,0,3" BorderThickness="1" Padding="4,2" Background="{DynamicResource TextBox.Static.Background}" BorderBrush="#00FFFFFF" x:Name="border">
-        <TextBox HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="PART_EditableTextBox" Theme="{StaticResource ComboBoxEditableTextBox}">
+        <TextBox Text="" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="PART_EditableTextBox" Theme="{StaticResource ComboBoxEditableTextBox}">
           <TextBox.IsReadOnly>
             <Binding Path="IsReadOnly"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </TextBox.IsReadOnly>

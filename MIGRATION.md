@@ -42,6 +42,17 @@ git push origin HEAD
 
 ## 当前状态
 
+**📋 口径更正（2026-08-31 本轮20）：此前"整体进度 99%/94%"的估算只覆盖编译层+沙箱链路，按真机可用度衡量严重高估。** 真机 bug 清单（用户实测报告 6 项）才是当前真实进度标尺，已修 2 项、待修 4 项，详见下表。后续进度一律以此清单为准。
+
+| # | 真机 bug（用户报告） | 状态 |
+|---|---|---|
+| 1 | 初始化新仓库异常（剪贴板相关报错） | ✅ 本轮20 修复（双根因：TextBox.Text null NRE + 非 Windows 文件选择器静默失败） |
+| 2 | 各界面 [] 包裹的占位标题 | 🔧 修复中（ForkPlusDialogWindow 占位符机制在，需排查漏网路径） |
+| 3 | 切换主题报错 | ⬜ 待修（SwitchApplicationThemeCommand 资源字典替换链） |
+| 4 | Windows 两套最大化/最小化按钮叠影 | ⬜ 待修（CustomWindow ExtendClientArea 处理不完整） |
+| 5 | Kali 额外外层框 | ⬜ 待修（与 #4 同根：窗口装饰层） |
+| 6 | Windows 加载 git mm 仓库直接崩溃 | ⬜ 待修（GitMmUserControl 链路，可用普通 git 仓库模拟） |
+
 **🎉 里程碑：主界面侧栏布局与原版对齐（2026-08-30 本轮13）。**（前一轮：主菜单系统完全复活——本轮6）
 - `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
 - **菜单三连修复（本轮6）**：①横排布局恢复（ItemsPanel TemplateBinding）；②下拉菜单可打开（WPF/Avalonia 属性名大小写差异 `IsSubmenuOpen`→`IsSubMenuOpen`）；③菜单命令可执行（实测点击"退出"项应用正常关闭）。verification/2026-08-30-menu-horizontal-fixed.png + 2026-08-30-file-menu-dropdown-open.png。
@@ -89,7 +100,27 @@ git push origin HEAD
 | 3 运行时验证 | 🔄 进行中（**约 94%**） | **核心链路全通**：首启向导、仓库打开、提交列表渲染、提交选中详情联动、会话恢复、跨平台 P/Invoke 兼容层、**主菜单（横排/下拉/命令执行）**、**偏好设置窗口（7 Tab 全构造 + 标签横排 + 内容切换实证）**、**DataTrigger 视觉状态（IsActive 加粗/IsWorktree 图标/BisectGood 换色/HEAD 行加粗）+ Linux HEAD symref 兜底**；待验证：次级窗口（FileHistory/Blame/Merge） |
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
-**整体进度估算：约 99%**。单元测试 3856/3856 全绿；三平台 CI 就位（windows/linux 已跑通，macOS native/tokei 显式下载修复中）。编译两大阶段（C#/XAML 清零）已 100% 完成；运行时验证核心链路（启动→开仓→列表→详情→菜单→偏好设置含 Tab 切换→当前分支视觉状态→**侧栏布局与原版对齐**→**IPC 二次启动开仓**→**统计页图表全复活**）已通，**三平台 CI 已就位**（push master 自动构建 win/linux/macOS 产物，主分支已由 main 改名 master），剩余为次级窗口冒烟（FileHistory/Blame/Merge）与工程收尾（FlaUI 隔离、WpfCompat 死代码清理、6 个平台差异单测）。
+**整体进度估算（2026-08-31 更正口径）：编译/CI 层 100%（C# 与 AVLN 清零、单测 3856 全绿、三平台 CI 就位）；运行时按真机 bug 清单计——6 项已修 1 项（#1 初始化仓库链路），另 1 项部分完成（#2 对话框占位标题），其余 4 项待修**。沙箱链路（启动→开仓→列表→详情→菜单→偏好设置→侧栏→统计页图表）已通并留证，但沙箱通过 ≠ 真机可用（用户实测 Windows/Kali 均有阻断性 bug），后续进度以真机 bug 清单为准。
+
+## 运行时修复链 20（2026-08-31 本轮20：真机 bug 清单启动——初始化仓库链路修复）
+
+用户真机（Windows + Kali）实测报告 6 个 bug，本链修复第 1 个。此前进度口径已更正（见「当前状态」）。
+
+1. **【已修+实证】非 Windows 文件/目录选择对话框静默失败（初始化新仓库/克隆/打开仓库全无反应）**：
+   - 现象：Kali 上 Ctrl+Shift+N（初始化新仓库）、Ctrl+N（克隆）、Ctrl+O（打开仓库）等所有依赖文件选择的功能按下后无任何反应——无弹窗、无报错、无日志。
+   - 根因：`OpenDialog` 全量走 `FileDialogInterop`（Win32 COM IFileDialog 直调），其入口 `if (!IsWindows) return false;` —— 非 Windows 平台**静默返回取消**。这是 WPF 原版迁移时留下的平台假设：WPF 的 `Microsoft.Win32.OpenFileDialog` 在 Windows 上就是 COM IFileDialog 封装，迁移时只做了 Windows 实现。
+   - 修复：新建 `UI/StorageProviderDialogs.cs`——Avalonia 12 `IStorageProvider`（OpenFolderPickerAsync/OpenFilePickerAsync/SaveFilePickerAsync），**DispatcherFrame PushFrame 同步桥接**（沿用 WpfCompat Clipboard/WindowDialogCompat 的既有模式，ForkPlus 调用链全同步无需异步化改造）。`OpenDialog.ShowOpen/ShowSave` 按 `OperatingSystem.IsWindows()` 分流：Windows 保留 Win32 COM（与 WPF 原版行为一致），Linux/macOS 走 StorageProvider（XDG portal/NSPanel 由 Avalonia 自动对接）。
+   - 实证（1920×1280 Xvfb）：主实例开仓 .nvm → Ctrl+Shift+N → **"选择仓库"文件夹选择器正常弹出**（文件列表/隐藏文件开关/OK/Cancel 完整渲染，verification/31a-init-repo-folder-picker-open.png + 31b 列表视图）；点选 Docs 行有选中高亮；应用全程存活、0 未处理异常。
+   - 已知跟进：对话框内点击 OK 完成目录选择后 git init 落盘的最后一步自动化验证未走完（Xvfb 无 WM 下对话框按钮点击坐标偏差），链路代码路径已通，下次冒烟补实证。
+   - **教训：所有 WPF `Microsoft.Win32.*FileDialog` 调用点在迁移后必须检查非 Windows 分支——静默 return false 比 crash 更难发现（无任何症状）。**
+2. **【已修】TextBox.Text 默认 null NRE 簇（"初始化新仓库异常，提示应该是读取剪切板的 bug"的根因之一）**：
+   - 根因：WPF `TextBox.Text` 默认 `""`，Avalonia 12 默认 `null`。全仓约百处 `.Text.Trim()` / `.Text.Length` 等 C# 调用在未输入时 NRE。已实证崩溃点：`CloneWindow.TryParseUrlFromClipboard` 的 `RepositoryUrlTextBox.Text.Trim()`（Clone 对话框构造即炸）。
+   - 修复（三层）：
+     - `PlaceholderTextBox` / `CommandTextBox` 构造器回填空串（控件基类层，覆盖所有子类实例）；
+     - 22 个 .axaml 文件的裸 `<TextBox x:Name=...>` 补 `Text=""`（XAML 声明层，覆盖直接用原生 TextBox 的场景——Combobox 模板 PART_EditableTextBox、AskPass/SshPassphrase 密码框、Legal/TagDetails 只读展示框、偏好设置各数值输入框等）；
+     - `WpfCompat.Clipboard.Wait<T>` 补 task==null 防护（无窗口时 GetClipboard() 返回 null，WPF 剪贴板不依赖窗口而 Avalonia 依赖）。
+   - **教训：WPF→Avalonia 控件默认值差异是 NRE 温床（Text null vs ""、SelectedIndex -1 vs null 等），`grep -rn '\.Text\.Trim()'` 应列入迁移检查清单。**
+3. **【方法论】Xvfb 冒烟的窗口遮挡干扰**：沙盒里残留的 Chromium 无头窗口会盖住截图视野——先 `xdotool search --name Chromium | xargs xdotool windowunmap` 再截图；对话框定位用 `import -window <id>` 单窗截图 + Python PIL 按颜色聚类找控件行坐标（文件夹图标黄色 RGB 阈值聚类得行 y 范围，比肉眼估算可靠）。
 
 ## 运行时修复链 17（2026-08-30 本轮17：统计页 OxyPlot 图表全复活 + 热力图空白根因）
 

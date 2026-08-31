@@ -96,27 +96,38 @@ namespace ForkPlus.UI
                 private static bool ShowOpen(Window parent, string title, string initialDirectory, bool folderPicker,
                         (string name, string spec)[] filters, out string path)
                 {
-                        IntPtr owner = GetOwnerHandle(parent);
-                        if (FileDialogInterop.ShowOpenDialog(owner, title, initialDirectory, folderPicker, filters, out path))
+                        // TODO 迁移：跨平台化——Windows 保留 Win32 COM IFileDialog（与 WPF 原版行为一致），
+                        // Linux/macOS 走 Avalonia StorageProvider（此前非 Windows 静默返回 false，
+                        // 导致 Kali/macOS 上"初始化新仓库/克隆/打开仓库"等所有文件选择功能无反应）。
+                        bool result;
+                        if (OperatingSystem.IsWindows())
                         {
-                                NotifyDialogClosed(parent);
-                                return true;
+                                IntPtr owner = GetOwnerHandle(parent);
+                                result = FileDialogInterop.ShowOpenDialog(owner, title, initialDirectory, folderPicker, filters, out path);
+                        }
+                        else
+                        {
+                                result = StorageProviderDialogs.ShowOpenDialog(parent, title, initialDirectory, folderPicker, filters, out path);
                         }
                         NotifyDialogClosed(parent);
-                        return false;
+                        return result;
                 }
 
                 private static bool ShowSave(Window parent, string title, string initialDirectory, string defaultFileName,
                         (string name, string spec)[] filters, out string path)
                 {
-                        IntPtr owner = GetOwnerHandle(parent);
-                        if (FileDialogInterop.ShowSaveDialog(owner, title, initialDirectory, defaultFileName, filters, out path))
+                        bool result;
+                        if (OperatingSystem.IsWindows())
                         {
-                                NotifyDialogClosed(parent);
-                                return true;
+                                IntPtr owner = GetOwnerHandle(parent);
+                                result = FileDialogInterop.ShowSaveDialog(owner, title, initialDirectory, defaultFileName, filters, out path);
+                        }
+                        else
+                        {
+                                result = StorageProviderDialogs.ShowSaveDialog(parent, title, initialDirectory, defaultFileName, filters, out path);
                         }
                         NotifyDialogClosed(parent);
-                        return false;
+                        return result;
                 }
 
                 private static void NotifyDialogClosed([Null] Window parent)

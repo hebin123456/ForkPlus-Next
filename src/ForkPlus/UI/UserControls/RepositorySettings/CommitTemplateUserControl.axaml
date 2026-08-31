@@ -37,7 +37,7 @@
       <Separator Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,12,0,8" />
       <CheckBox Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="SkipCommitMessageCheckBox_Changed" x:Name="SkipCommitMessageCheckBox">Do not require commit message</CheckBox>
       <TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Commit message regex:" x:Name="CommitMessageRegexLabel" />
-      <TextBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,6,0,0" HorizontalAlignment="Stretch" Height="64" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" TextChanged="CommitMessageRegexTextBox_TextChanged" x:Name="CommitMessageRegexTextBox" />
+      <TextBox Text="" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,6,0,0" HorizontalAlignment="Stretch" Height="64" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" TextChanged="CommitMessageRegexTextBox_TextChanged" x:Name="CommitMessageRegexTextBox" />
     </Grid.Children>
   </Grid>
 </UserControl>

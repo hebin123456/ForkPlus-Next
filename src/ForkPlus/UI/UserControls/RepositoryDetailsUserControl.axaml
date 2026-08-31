@@ -265,7 +265,7 @@
               <Border Grid.Row="8" Margin="-2,4,-2,4" x:Name="ReadmeContainer" Theme="{DynamicResource TileBorderDark}">
                 <StackPanel Grid.Row="7" Margin="15">
                   <TextBlock Grid.Row="7" Margin="10,0,0,0" Text="README.MD" FontSize="16" FontWeight="Bold" FontFamily="Consolas" />
-                  <TextBox FontFamily="Consolas" MaxWidth="500" Margin="10" HorizontalAlignment="Left" TextWrapping="Wrap" BorderThickness="0" FontSize="13" Background="#00FFFFFF" x:Name="ReadmeTextBox" />
+                  <TextBox Text="" FontFamily="Consolas" MaxWidth="500" Margin="10" HorizontalAlignment="Left" TextWrapping="Wrap" BorderThickness="0" FontSize="13" Background="#00FFFFFF" x:Name="ReadmeTextBox" />
                 </StackPanel>
               </Border>
             </Grid>

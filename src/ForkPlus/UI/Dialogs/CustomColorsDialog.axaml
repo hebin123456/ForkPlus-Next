@@ -149,7 +149,7 @@
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Rectangle x:Name="PopupPreviewRect" Width="36" Height="24" Stroke="{DynamicResource BorderBrush}" StrokeThickness="1" />
-            <TextBox Grid.Column="1" x:Name="PopupHexBox" Margin="8,0,0,0" VerticalAlignment="Center" TextChanged="PopupHex_TextChanged" />
+            <TextBox Text="" Grid.Column="1" x:Name="PopupHexBox" Margin="8,0,0,0" VerticalAlignment="Center" TextChanged="PopupHex_TextChanged" />
           </Grid>
           <!-- 选色实时落盘，点 Popup 外部即关闭，无需 OK/Cancel 按钮 -->
         </StackPanel>
