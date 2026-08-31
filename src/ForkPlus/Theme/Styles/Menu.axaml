@@ -34,7 +34,8 @@
           <Border Theme="{DynamicResource MenuShadowBorderStyle}">
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
               <ScrollViewer>
-                <ItemsPresenter Margin="{TemplateBinding Padding}" />
+                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，非虚拟化坑）。 -->
+                <ItemsPresenter Margin="{TemplateBinding Padding}" ItemsPanel="{TemplateBinding ItemsPanel}" />
               </ScrollViewer>
             </Border>
           </Border>
@@ -170,7 +171,7 @@
                     </Rectangle>
                   </Canvas>
                   <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Left" Margin="29,2,0,2" Width="1" x:Name="Rectangle" />
-                  <ItemsPresenter KeyboardNavigation.TabNavigation="Cycle" x:Name="ItemsPresenter" />
+                  <ItemsPresenter KeyboardNavigation.TabNavigation="Cycle" x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </Grid>
               </ScrollViewer>
             </Border>
@@ -372,7 +373,7 @@
                     </Rectangle>
                   </Canvas>
                   <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Left" Margin="29,2,0,2" Width="1" x:Name="Rectangle" />
-                  <ItemsPresenter KeyboardNavigation.TabNavigation="Cycle" x:Name="ItemsPresenter" />
+                  <ItemsPresenter KeyboardNavigation.TabNavigation="Cycle" x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </Grid>
               </ScrollViewer>
             </Border>
@@ -483,7 +484,7 @@
                       </Rectangle>
                     </Canvas>
                     <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Left" Margin="29,2,0,2" Width="1" x:Name="Rectangle" />
-                    <ItemsPresenter KeyboardNavigation.TabNavigation="Cycle" x:Name="ItemsPresenter" />
+                    <ItemsPresenter KeyboardNavigation.TabNavigation="Cycle" x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
                   </Grid>
                 </ScrollViewer>
               </Grid>

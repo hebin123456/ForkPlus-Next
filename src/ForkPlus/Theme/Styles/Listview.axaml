@@ -184,7 +184,10 @@
         <ControlTemplate TargetType="ListBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Theme="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
-              <ItemsPresenter />
+              <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21）——ListViewWithGridViewStyle 是
+                   提交列表（RevisionListView）主题，裸 ItemsPresenter 落到非虚拟化 StackPanel，
+                   大仓库提交列表全量实化 = 用户报告"加载非常卡"的直接根因（与修复链10同坑）。 -->
+              <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>
@@ -341,7 +344,8 @@
         <ControlTemplate TargetType="ListBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-              <ItemsPresenter />
+              <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑：非虚拟化 StackPanel）。 -->
+              <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>
@@ -380,7 +384,8 @@
             </Border>
             <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="6" x:Name="Bd">
               <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
-                <ItemsPresenter />
+                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑）。 -->
+                <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
               </ScrollViewer>
             </Border>
           </Grid>
@@ -550,7 +555,8 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="controls:ReferencePanel">
-          <ItemsPresenter />
+          <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑：非虚拟化 StackPanel）。 -->
+          <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>

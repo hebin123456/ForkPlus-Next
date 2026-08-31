@@ -258,7 +258,8 @@
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <ItemsPresenter x:Name="ItemsPresenter" />
+                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，非虚拟化坑）。 -->
+                <ItemsPresenter x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
               </Grid>
             </ScrollViewer>
           </Border>
@@ -348,7 +349,8 @@
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <ItemsPresenter x:Name="ItemsPresenter" />
+                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，非虚拟化坑）。 -->
+                <ItemsPresenter x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
               </Grid>
             </ScrollViewer>
           </Border>
@@ -476,7 +478,8 @@
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <ItemsPresenter x:Name="ItemsPresenter" />
+                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，非虚拟化坑）。 -->
+                <ItemsPresenter x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
               </Grid>
             </ScrollViewer>
           </Border>

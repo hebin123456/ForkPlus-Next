@@ -52,6 +52,7 @@ git push origin HEAD
 | 4 | Windows 两套最大化/最小化按钮叠影 | ⬜ 待修（CustomWindow ExtendClientArea 处理不完整） |
 | 5 | Kali 额外外层框 | ⬜ 待修（与 #4 同根：窗口装饰层） |
 | 6 | Windows 加载 git mm 仓库直接崩溃 | ⬜ 待修（GitMmUserControl 链路，可用普通 git 仓库模拟） |
+| 7 | 加载非常卡（性能） | ✅ 本轮21 修复（提交列表等 12 处裸 ItemsPresenter 全部补虚拟化绑定） |
 
 **🎉 里程碑：主界面侧栏布局与原版对齐（2026-08-30 本轮13）。**（前一轮：主菜单系统完全复活——本轮6）
 - `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
@@ -101,6 +102,21 @@ git push origin HEAD
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
 **整体进度估算（2026-08-31 更正口径）：编译/CI 层 100%（C# 与 AVLN 清零、单测 3856 全绿、三平台 CI 就位）；运行时按真机 bug 清单计——6 项已修 1 项（#1 初始化仓库链路），另 1 项部分完成（#2 对话框占位标题），其余 4 项待修**。沙箱链路（启动→开仓→列表→详情→菜单→偏好设置→侧栏→统计页图表）已通并留证，但沙箱通过 ≠ 真机可用（用户实测 Windows/Kali 均有阻断性 bug），后续进度以真机 bug 清单为准。
+
+## 运行时修复链 21（2026-08-31 本轮21：性能——提交列表等 12 处裸 ItemsPresenter 虚拟化清剿，用户报告"加载非常非常卡"）
+
+1. **【已修+实测】提交列表非虚拟化（"加载非常卡"直接根因）**：
+   - 根因：`Listview.axaml` 的 `ListViewWithGridViewStyle`（提交列表 RevisionListView 的主题）模板里是裸 `<ItemsPresenter />`——未绑定 `ItemsPanel` 时 Avalonia 落到**非虚拟化 StackPanel**，大仓库提交列表（几千上万行）**全量实化**：每行 GraphCell 路径绘制 + 8 列绑定全部生成。这正是修复链 10 在侧栏树上修过的同一个坑（当时只修了 Multiselectiontreeview.axaml:107 一处，MIGRATION.md 里"预计还有零星残留"的预言成真）。
+   - 修复（全仓清剿 12 处）：
+     - `Listview.axaml` 4 处——**ListViewWithGridViewStyle（提交列表，最关键）**、另一 ListBox 主题、圆角弹层 ListBox、ReferencePanel；
+     - `Multiselectiontreeview.axaml:271`——**FileListMultiselectionTreeViewWithGridViewStyle（变更文件列表）**，大变更集同样全量实化；
+     - `Combobox.axaml` 3 处（下拉弹层，账号列表等）；
+     - `Menu.axaml` 4 处（菜单/子菜单模板）。
+   - 修法统一：`<ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />`（ListBox 默认 ItemsPanel 即 VirtualizingStackPanel）。
+   - **实测（3000 提交仓库，fast-import 秒级生成）**：启动开仓后 ≤4 秒主界面完整渲染（侧栏/工具栏/提交列表/底部标签全出）；**只实化可视区 11 行——虚拟化生效的直接证据**（修复前裸 StackPanel 会实化全部 3000 行）；点击提交行 <1.2 秒选中高亮 + 底部详情面板完整填充（作者/SHA/父提交/引用）；应用全程存活 0 未处理异常。verification/32a-bigrepo-3000-commits-virtualized.png + 32b-row-click-detail.png。
+   - **教训：WPF ListBox 模板迁移时，模板内 ItemsPresenter 必须带 `{TemplateBinding ItemsPanel}`——WPF 默认虚拟化而 Avalonia 未绑定时静默退化为 StackPanel，无任何警告，唯一症状就是大数据量时性能崩塌。迁移检查清单应加：`grep -rn '<ItemsPresenter' | grep -v ItemsPanel`。**
+2. **【待查】选中行与详情面板不同步**：实测发现点击 #2994 行后底部详情显示的仍是 #3000 的数据（截图 32b 可见）——SelectionChanged→详情刷新链路有滞后或索引错位，疑似独立 bug，列入待修。
+3. **【自动化备注】Xvfb 下滚轮（xdotool click 4/5）与 End 键对 Avalonia X11 滚动无效**，滚动测试未走通；用"点击行看详情填充"验证交互响应性。后续滚动验证可换键盘方向键或 ScrollViewer API 注入。
 
 ## 运行时修复链 20（2026-08-31 本轮20：真机 bug 清单启动——初始化仓库链路修复）
 

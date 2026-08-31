@@ -268,7 +268,9 @@
         <ControlTemplate TargetType="controls:MultiselectionTreeView">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" x:Name="Bd">
             <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF" Theme="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
-              <ItemsPresenter Margin="0,4,0,0" />
+              <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21）——此主题是文件列表（变更文件树），
+                   未绑定时非虚拟化 StackPanel 全量实化，大变更集同样性能崩塌（与修复链10同坑）。 -->
+              <ItemsPresenter Margin="0,4,0,0" ItemsPanel="{TemplateBinding ItemsPanel}" />
             </controls:TouchpadAwareScrollViewer>
           </Border>
         </ControlTemplate>
