@@ -55,6 +55,7 @@ git push origin HEAD
 | 7 | 加载非常卡（性能） | ✅ 本轮21 修复（提交列表等 12 处裸 ItemsPresenter 全部补虚拟化绑定） |
 | 8 | git mm 子仓标签页展示不对（竖排堆叠） | ✅ 本轮22 修复（GitMmSubrepoTabControlStyle 双缺陷：ItemsPanel 未绑 + ItemContainerTheme 丢失） |
 | 9 | AI 辅助开发/解释等弹窗跑到另一个显示器 | ✅ 本轮23 修复（非模态 Show() 窗口统一 ShowAtOwnerScreen，跟随主窗口所在屏） |
+| 10 | AI 相关弹窗样式全都有问题（无排版/无代码块底色/无表格） | ✅ 本轮24 修复（WebView2 占位实现被 TextBlock 去标签化 → 原生 HTML 子集渲染器） |
 
 **🎉 里程碑：主界面侧栏布局与原版对齐（2026-08-30 本轮13）。**（前一轮：主菜单系统完全复活——本轮6）
 - `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
@@ -104,6 +105,20 @@ git push origin HEAD
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
 **整体进度估算（2026-08-31 更正口径）：编译/CI 层 100%（C# 与 AVLN 清零、单测 3856 全绿、三平台 CI 就位）；运行时按真机 bug 清单计——6 项已修 1 项（#1 初始化仓库链路），另 1 项部分完成（#2 对话框占位标题），其余 4 项待修**。沙箱链路（启动→开仓→列表→详情→菜单→偏好设置→侧栏→统计页图表）已通并留证，但沙箱通过 ≠ 真机可用（用户实测 Windows/Kali 均有阻断性 bug），后续进度以真机 bug 清单为准。
+
+## 运行时修复链 24（2026-09-02 本轮24：AI 弹窗样式全无——WebView2 占位实现原生化，对齐 WPF 版 md-ai-output.css）
+
+1. **【已修】AI 辅助开发/AI 解释/AI 代码评审/git mm 手册弹窗内容完全没有样式（真机 bug#10）**：
+   - 现象：所有 AI 弹窗的内容都是纯文本一坨——标题不放大不加粗、代码块没有底色边框、列表没有缩进、表格糊成一列、AI 代码评审的建议卡/按钮全部丢失。
+   - 根因：原 WPF 版所有 AI 弹窗的输出都靠 **WebView2 渲染 HTML + md-ai-output.css**（GitHub 风格 markdown 排版，明暗双套配色跟 prefers-color-scheme）。迁移时 WebView2 被 wpf2ava 换成 TextBlock 占位实现（`NavigateToString` 只做去标签纯文本显示），HTML 结构与 CSS 全部丢失——占位实现语义上就是"把网页当纯文本"。
+   - 修复（两层）：
+     - 新建 `UI/WpfCompat/MarkdownHtmlRenderer.cs`（约 950 行）：容错 HTML 子集解析器（未闭合自动兜底）+ Avalonia 控件树渲染器。支持块级 h1-h6/p/ul/ol/li/blockquote/pre/hr/div/details/summary/table/thead/tbody/tr/th/td/button，行内 strong/b/em/i/code/a/br/span/u/del/sub/sup/img（占位文本），`button[onclick='previewSuggestion(N)/applySuggestion(N)']` → WebMessage 回调，`style="color:#xxx"`（ShowError 红字）。配色/字号/间距逐条对齐原版 `ForkPlus.Assets.md-ai-output.css`（body #fafafa/#282828、pre #f6f8fa/#292A2F、链接 #0366d6/#429CFF、13px 基准字号等），明暗两套 Palette 跟随 `ForkPlusSettings.Default.Theme.IsDarkBase()`。
+     - 重写 `UI/WpfCompat/WebView2Stub.cs`：`WebView2 : ScrollViewer`（自带内部滚动），`NavigateToString` 提取 body → 渲染器生成控件树；兼容桥——NavigationCompleted 延迟到渲染帧后触发（AiDevelopmentWindow 依赖它+scrollHeight 做气泡自动高度）、`ExecuteScriptAsync("document.documentElement.scrollHeight")` 返回实测内容高度、`window.scrollTo(0,…)` 映射滚动到底、ApplicationThemeChanged 时新配色重渲染。调用面（NavigateToString/EnsureCoreWebView2Async/CoreWebView2 事件/ExecuteScriptAsync/DefaultBackgroundColor/Dispose）零改动。
+   - AiCodeReviewWindow 手工拼接的 `ai-current-file/ai-status/ai-suggestion` 状态条与建议卡（圆角边框 + 按钮）按原版内联 CSS 还原为 Border 卡片 + Avalonia Button。
+2. **【已修+回归测试】行内样式遮蔽块级样式（渲染器自身 bug，写测试时发现）**：Run 一度无条件携带 `FontWeight.Normal/FontStyle.Normal/Foreground=Pal.Text`，把 TextBlock 层的**标题加粗、h6 灰字、段落红字（style='color:#d33'）、ai-empty 灰字**全部遮蔽（Avalonia 行内属性优先于块级继承）。修复：Run 仅在确有覆盖时设置属性，默认前景色放块级 MakeTextBlock。
+3. **验证**：新建 `ForkPlus.Tests/MarkdownHtmlRendererTests.cs` 8 个测试（Biturbo md→html 全要素样例/暗色配色/等宽代码块/建议卡+按钮 WebMessage 回调/行内红字/HTML 实体解码/未闭合标签容错/标题加粗不被行内遮蔽）全过；全套 3883 测试全绿；`dotnet build` 0 错误。覆盖率清单（ClassCoverageManifest/SourceFileCoverageManifest）补登记本轮及本轮23 新增类型与文件。
+4. **已知取舍（Avalonia TextBlock 行内 Run 无背景色/无内嵌控件）**：行内 `code` 只有等宽字体（CSS 的 5% 灰底渲不出来），代码块 `pre` 完整还原；`<a>` 只着色不可点击；`<img>` 显示 [alt] 占位。后续如需完全对齐可换 Avalonia.WebView 或 HTML 渲染库。
+5. **教训：WPF 里"控件内嵌浏览器渲染富文本"的迁移清单——WebView2/CEF 等占位实现必须补 HTML/CSS 渲染能力（自研子集渲染器或引第三方 WebView），TextBlock 去标签化是静默的样式黑洞。检查：grep NavigateToString 的实现是否只有 Text/Inlines 赋值即是占位。**
 
 ## 运行时修复链 23（2026-09-02 本轮23：多显示器弹窗乱飞——非模态窗口统一跟随主窗口所在屏幕）
 
