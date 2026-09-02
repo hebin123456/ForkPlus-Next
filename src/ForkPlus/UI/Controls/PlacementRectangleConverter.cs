@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Controls
 				Point point2 = new Point(num - Margin.Right, num2 - Margin.Bottom);
 				return new Rect(point, point2);
 			}
-			// TODO 迁移：Avalonia Rect 无 Empty 静态字段；绑定无值时返回 UnsetValue（保持目标属性默认值）。
+			// Migration note：Avalonia Rect 无 Empty 静态字段；绑定无值时返回 UnsetValue（保持目标属性默认值）。
 			return global::Avalonia.AvaloniaProperty.UnsetValue;
 		}
 

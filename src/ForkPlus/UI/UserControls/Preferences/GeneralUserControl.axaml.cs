@@ -130,7 +130,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void SrcDirsListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: SrcDirViewModel dataContext })
+			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* Migration note：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: SrcDirViewModel dataContext })
 			{
 				SrcDirsListBox.ContextMenu.Items.Clear();
 				SrcDirsListBox.ContextMenu.SetItems(CreateSrcDirContextMenu(dataContext));
@@ -291,6 +291,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			if (_initialized && LanguageComboBox.SelectedItem is ComboBoxItem { Tag: string language })
 			{
+				LanguageComboBox.SetCurrentValue(ComboBox.IsDropDownOpenProperty, false);
 				ForkPlusSettings.Default.UiLanguage = language;
 				if (_parentWindow is PreferencesWindow preferencesWindow)
 				{
@@ -347,7 +348,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private void RemoveSrcDir(string path)
 		{
 			if (new MessageBoxWindow("Do you want to remove the selected source directory?", "Fork will not look for repositories in this folder automatically", "Remove", "Cancel", showCancelButton: true, 550.0)
-				.SetOwnerAndCenter(_parentWindow).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
+				.SetOwnerAndCenter(_parentWindow).ShowDialog().GetValueOrDefault()) // Migration note：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
 			{
 				List<string> list = new List<string>(RepositoryManager.Instance.SourceDirs);
 				list.Remove(path);

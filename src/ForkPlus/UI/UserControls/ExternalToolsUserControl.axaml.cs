@@ -108,7 +108,7 @@ namespace ForkPlus.UI.UserControls
 		private void RemoveToolButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (ToolsListBox.SelectedItem is ExternalToolViewModel item && new MessageBoxWindow("Do you want to remove the selected external tool?", "You can't undo this action", "Remove", "Cancel", showCancelButton: true, 550.0)
-				.SetOwnerAndCenter(_parentWindow).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
+				.SetOwnerAndCenter(_parentWindow).ShowDialog().GetValueOrDefault()) // Migration note：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
 			{
 				int num = _toolViewModels.IndexOf(item) - 1;
 				_toolViewModels.Remove(item);
@@ -132,7 +132,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void ToolsListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: ExternalToolViewModel dataContext })
+			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* Migration note：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: ExternalToolViewModel dataContext })
 			{
 				ToolsListBox.ContextMenu.Items.Clear();
 				ToolsListBox.ContextMenu.SetItems(GetContextMenu(dataContext, _toolViewModels, _toolDefinitions));

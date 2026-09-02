@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Dialogs
 		public MessageBoxWindow(string title, string description, string submitTitle, string cancelTitle = "Cancel", bool showCancelButton = true, double width = 600.0, bool showWarningIcon = false)
 		{
 			InitializeComponent();
-			// TODO 迁移：WPF 构造期 chrome 已就绪；Avalonia 12 延迟初始化，
+			// Migration note：WPF 构造期 chrome 已就绪；Avalonia 12 延迟初始化，
 			// 经 Customize* pending 机制在 chrome 就绪后应用（构造期安全）。
 			CustomizeTitleTextBlock(delegate(TextBlock t)
 			{

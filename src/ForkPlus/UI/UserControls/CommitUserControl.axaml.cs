@@ -57,6 +57,8 @@ namespace ForkPlus.UI.UserControls
 
 		private int _stagedDiffStatsRequestId;
 
+		private int _diffRequestId;
+
 		private bool _isLoaded;
 
 		[Null]
@@ -245,7 +247,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			PrepareCommitMsgHook = "prepare-commit-msg";
 			Commands = new CommitUserControlCommands();
-			// TODO 迁移：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
+			// Migration note：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
 		}
 
 		public CommitUserControl()
@@ -1206,6 +1208,15 @@ namespace ForkPlus.UI.UserControls
 			UpdateCommitSection();
 		}
 
+		public void RefreshSelectedFileDiff()
+		{
+			ChangedFile selectedFile = StageFileUserControl.SelectedUnstagedFiles.FirstItem() ?? StageFileUserControl.SelectedStagedFiles.FirstItem();
+			if (selectedFile != null)
+			{
+				_updateDiffAction.InvokeNow(new ChangedFileArgs(selectedFile, loadLargeUntrackedFiles: false));
+			}
+		}
+
 		public void SaveCommitMessage()
 		{
 			GitModule.Settings.DraftMessage = FullCommitMessage;
@@ -1330,11 +1341,11 @@ namespace ForkPlus.UI.UserControls
 			{
 				_refreshing = false;
 			}
-			ChangedFile selectedFile = (StageFileUserControl.IsStagedListSelected ? StageFileUserControl.SelectedStagedFiles : StageFileUserControl.SelectedUnstagedFiles).FirstItem();
+			ChangedFile selectedFile = StageFileUserControl.SelectedUnstagedFiles.FirstItem() ?? StageFileUserControl.SelectedStagedFiles.FirstItem();
 			if (selectedFile != null)
 			{
 				// v3.10.2：移除 5000 文件数阈值，大列表同样自动加载选中文件的 diff。
-				_updateDiffAction.InvokeWithDelay(new ChangedFileArgs(selectedFile, loadLargeUntrackedFiles: false));
+				_updateDiffAction.InvokeNow(new ChangedFileArgs(selectedFile, loadLargeUntrackedFiles: false));
 			}
 			UpdateCommitSection();
 			_ = RepositoryUserControl.GitModule;
@@ -1513,7 +1524,7 @@ namespace ForkPlus.UI.UserControls
 		private void StageFileUserControl_SelectionChanged(object sender, FileListEventArgs e)
 		{
 			ChangedFile selectedFile = e.SelectedFile;
-			_updateDiffAction.InvokeWithDelay(new ChangedFileArgs(selectedFile, loadLargeUntrackedFiles: false));
+			_updateDiffAction.InvokeNow(new ChangedFileArgs(selectedFile, loadLargeUntrackedFiles: false));
 		}
 
 		private void StageFileUserControl_StagedFilesItemSourceChanged(object sender, EventArgs e)
@@ -1700,6 +1711,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void UpdateDiff(ChangedFileArgs args)
 		{
+			int requestId = ++_diffRequestId;
 			if (args == null || args.ChangedFile == null || args.ChangedFile.IsDirectory)
 			{
 				FileDiffControl.Content = null;
@@ -1707,35 +1719,51 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			GitModule gitModule = GitModule;
-		Task<GitCommandResult<DiffContent>> task = new Task<GitCommandResult<DiffContent>>(() => LoadWorkingDirectoryDiff(gitModule, args));
-		task.ContinueWith(delegate(Task<GitCommandResult<DiffContent>> getFileChangesTask)
-		{
-			// Bug 修复：原先用引用相等（x == args.ChangedFile）判断"diff 加载完成后选中项是否仍是该文件"。
-			// git mm 下状态刷新频繁（切子仓/刷新 runtime state/命令完成都会触发 RefreshRepositoryStatusUi），
-			// SetDataAsync 重建列表后即使选中的还是同一个文件，ChangedFile 也是新实例，
-			// 引用相等判定失败 → 刚算好的 diff 被丢弃 → "文件变化了但 diff 内容显示不出来"。
-			// 改为按 Path+Staged 语义比较（同一文件在 staged/unstaged 两侧各有一条记录，需区分），
-			// 文件确实从列表消失时依然会正确丢弃过期结果。
-			ChangedFile target = args.ChangedFile;
-			if ((StageFileUserControl.IsStagedListSelected ? StageFileUserControl.SelectedStagedFiles : StageFileUserControl.SelectedUnstagedFiles).ContainsItem((ChangedFile x) => x.Path == target.Path && x.Staged == target.Staged))
+			Task.Run(() => LoadWorkingDirectoryDiff(gitModule, args)).ContinueWith(delegate(Task<GitCommandResult<DiffContent>> getFileChangesTask)
 			{
-				FileDiffControl.RepositoryUserControl = RepositoryUserControl;
-				FileDiffControl.Content = getFileChangesTask.Result;
-				_diffPopupWindow?.UpdateDiff(getFileChangesTask.Result);
-			}
-		}, TaskScheduler.FromCurrentSynchronizationContext());
-		task.Start();
+				Dispatcher.UIThread.Post(delegate
+				{
+					if (getFileChangesTask.IsCanceled || requestId != _diffRequestId)
+					{
+						return;
+					}
+					if (getFileChangesTask.IsFaulted)
+					{
+						GitCommandResult<DiffContent> failure = GitCommandResult<DiffContent>.Failure(getFileChangesTask.Exception);
+						FileDiffControl.RepositoryUserControl = RepositoryUserControl;
+						FileDiffControl.Content = failure;
+						_diffPopupWindow?.UpdateDiff(failure);
+						Log.Error("Load working directory diff failed", getFileChangesTask.Exception);
+						return;
+					}
+					// git mm 下状态刷新频繁，SetDataAsync 重建列表后同一路径会是新 ChangedFile 实例。
+					// 按 Path+Staged 匹配，避免引用不等导致刚加载好的 diff 被丢弃。
+					ChangedFile target = args.ChangedFile;
+					ChangedFile[] selectedFiles = target.Staged ? StageFileUserControl.SelectedStagedFiles : StageFileUserControl.SelectedUnstagedFiles;
+					if (selectedFiles.ContainsItem((ChangedFile x) => x.Path == target.Path && x.Staged == target.Staged))
+					{
+						FileDiffControl.RepositoryUserControl = RepositoryUserControl;
+						FileDiffControl.Content = getFileChangesTask.Result;
+						_diffPopupWindow?.UpdateDiff(getFileChangesTask.Result);
+					}
+				});
+			});
 		}
 
 		private GitCommandResult<DiffContent> LoadWorkingDirectoryDiff(GitModule gitModule, ChangedFileArgs args)
 		{
+			if (gitModule == null)
+			{
+				return GitCommandResult<DiffContent>.Failure(new GitCommandError.Bug("Git module is not available"));
+			}
 			ChangedFile changedFile = args.ChangedFile;
 			GetWorkingDirectoryFileChangesGitCommand.WorkingDirectoryRevisionDiffTarget revisionTarget = null;
 			if (changedFile.Staged && AmendMode)
 			{
 				revisionTarget = new GetWorkingDirectoryFileChangesGitCommand.WorkingDirectoryRevisionDiffTarget.Amend();
 			}
-			return new GetWorkingDirectoryFileChangesGitCommand().Execute(gitModule, changedFile, revisionTarget, ForkPlusSettings.Default.DiffContextSize, gitModule.Settings.TabWidth, ForkPlusSettings.Default.DiffIgnoreWhitespaces, ForkPlusSettings.Default.DiffShowEntireFile, args.LoadLargeUntrackedFiles, resolvedConflict: false);
+			int tabWidth = gitModule.Settings?.TabWidth ?? 4;
+			return new GetWorkingDirectoryFileChangesGitCommand().Execute(gitModule, changedFile, revisionTarget, ForkPlusSettings.Default.DiffContextSize, tabWidth, ForkPlusSettings.Default.DiffIgnoreWhitespaces, ForkPlusSettings.Default.DiffShowEntireFile, args.LoadLargeUntrackedFiles, resolvedConflict: false);
 		}
 
 		private GitRequestResult LoadRawWorkingDirectoryDiff(GitModule gitModule, ChangedFileArgs args)
@@ -2453,7 +2481,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			// 至少 2 个 staged 文件才有拆分意义；只有 1 个时也允许（让 AI 生成单条 message）
 			AiCommitComposerWindow window = new AiCommitComposerWindow(GitModule, stagedFiles, AmendMode);
-			window.SetOwnerCompat(MainWindow.Instance); // TODO 迁移：WPF { Owner=.. }（非模态 Show）→ SetOwnerCompat。
+			window.SetOwnerCompat(MainWindow.Instance); // Migration note：WPF { Owner=.. }（非模态 Show）→ SetOwnerCompat。
 			window.Show();
 		}
 

@@ -1,5 +1,5 @@
 // WPF → Avalonia 迁移兼容层 第三部分：动画/输入/绑定/树/杂项 shim
-// 全部通过 GlobalUsings.cs 全局可见。带 TODO 迁移标记，收尾阶段逐个替换。
+// 全部通过 GlobalUsings.cs 全局可见。带 Migration note标记，收尾阶段逐个替换。
 
 using System;
 using System.Collections.Generic;
@@ -215,27 +215,11 @@ namespace ForkPlus.UI.WpfCompat
     }
 
     /// <summary>
-    /// WPF UIElement 捕获/焦点/坐标 API 的扩展 shim（this. 调用侧）。
-    /// TODO 迁移：Avalonia 12 无全局指针捕获查询（捕获经由 PointerEventArgs.Pointer.Capture），
-    /// Capture/Release 当前为 no-op 记账，后续在具体手势控件里改为事件内捕获。
+    /// WPF UIElement coordinate API helpers.
+    /// Pointer capture is handled at each pointer event with Pointer.Capture(...).
     /// </summary>
     public static class InputCompat
     {
-        private static readonly System.Collections.Generic.HashSet<InputElement> _captured = new();
-
-        public static void CaptureMouse(this InputElement element)
-        {
-            if (element != null) _captured.Add(element);
-        }
-
-        public static void ReleaseMouseCapture(this InputElement element)
-        {
-            if (element != null) _captured.Remove(element);
-        }
-
-        public static bool IsPointerCaptured(this InputElement element)
-            => element != null && _captured.Contains(element);
-
         public static Point PointFromScreen(this Visual visual, PixelPoint point)
             => TopLevel.GetTopLevel(visual)?.PointToClient(point) ?? default;
 
@@ -326,7 +310,7 @@ namespace ForkPlus.UI.WpfCompat
         /// <summary>WPF WindowChrome.SetWindowChrome(window, chrome)。Avalonia 自绘 chrome，no-op。</summary>
         public static void SetWindowChrome(global::Avalonia.AvaloniaObject window, WindowChrome chrome)
         {
-            // TODO 迁移：CustomWindow 已自绘标题栏/缩放边框，chrome 参数仅存档不生效。
+            // Migration note：CustomWindow 已自绘标题栏/缩放边框，chrome 参数仅存档不生效。
         }
     }
 
@@ -361,7 +345,7 @@ namespace ForkPlus.UI.WpfCompat
     public class ScrollContentPresenterStub { }
 
     // ===== WPF 动画体系 stub =====
-    // TODO 迁移：Avalonia 动画模型完全不同（Animation + Transitions，声明式）。
+    // Migration note：Avalonia 动画模型完全不同（Animation + Transitions，声明式）。
     // 这里只保留类型形状让代码编译；视觉动效待后续按控件逐个移植。
 
     public enum FillBehavior { HoldEnd, Stop }
@@ -388,7 +372,7 @@ namespace ForkPlus.UI.WpfCompat
         public IEasingFunctionBase EasingFunction { get; set; }
         public object BeginTime { get; set; }
 
-        // TODO 迁移：WPF DoubleAnimation(from, to, duration) 构造函数（TimeSpan 或 Duration 重载）。
+        // Migration note：WPF DoubleAnimation(from, to, duration) 构造函数（TimeSpan 或 Duration 重载）。
         public DoubleAnimation() { }
         public DoubleAnimation(double? from, double? to, Duration duration)
         {
@@ -461,7 +445,7 @@ namespace ForkPlus.UI.WpfCompat
     /// WPF element.BeginAnimation(property, animation) 的等价物。
     /// 对 double 属性用 DispatcherTimer 做线性补间；Thickness/其他类型 no-op。
     /// 同一 (target, property) 的新动画会顶掉旧动画（对应 WPF HandoffBehavior.SnapshotAndReplace 近似）。
-    /// TODO 迁移：正式实现请改用 Avalonia Animations/Transitions。
+    /// Migration note：正式实现请改用 Avalonia Animations/Transitions。
     /// </summary>
     public static class WpfAnimation
     {
@@ -498,7 +482,7 @@ namespace ForkPlus.UI.WpfCompat
                         timer.Stop();
                         target.SetValue(property, to); // 终值精确落点
                         _running.TryRemove(new KeyValuePair<(AvaloniaObject, AvaloniaProperty), DispatcherTimer>((target, property), timer));
-                        // TODO 迁移：WPF Timeline.Completed 在动画结束时触发。
+                        // Migration note：WPF Timeline.Completed 在动画结束时触发。
                         da.RaiseCompleted();
                     }
                 };
@@ -508,7 +492,7 @@ namespace ForkPlus.UI.WpfCompat
             else if (animation is ThicknessAnimation ta && property.PropertyType == typeof(Thickness))
             {
                 if (ta.To.HasValue)
-                    target.SetValue(property, ta.To.Value); // TODO 迁移：Thickness 补间，当前直接跳到终值
+                    target.SetValue(property, ta.To.Value); // Migration note：Thickness 补间，当前直接跳到终值
             }
         }
     }

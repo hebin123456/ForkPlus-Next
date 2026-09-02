@@ -15,7 +15,7 @@ namespace ForkPlus.Git.Commands
 			[Null]
 			public static string TryFindInstance()
 			{
-				// TODO 迁移：原为硬编码 Windows 路径 "%userprofile%\.local\bin\claude.exe"（%VAR%
+				// Migration note：原为硬编码 Windows 路径 "%userprofile%\.local\bin\claude.exe"（%VAR%
 				// 与反斜杠均不适用于 Unix）。改为跨平台：Unix 的 ~/.local/bin/claude 无 .exe，
 				// 同时保留 Windows %userprofile% 展开路径与常见全局安装位置作回退。
 				return FindExistingInstance(new string[4]

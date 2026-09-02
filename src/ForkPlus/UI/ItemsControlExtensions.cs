@@ -22,7 +22,7 @@ namespace ForkPlus.UI
 
 		public static ItemContainer GetContainerAtPoint<ItemContainer>(this ItemsControl control, Point p) where ItemContainer : global::Avalonia.Controls.Control
 		{
-			// TODO 迁移：WPF HitTestResult.VisualHit → 兼容层 HitTest 直接返回 Visual。
+			// Migration note：WPF HitTestResult.VisualHit → 兼容层 HitTest 直接返回 Visual。
 			global::Avalonia.Visual visualHit = VisualTreeHelper.HitTest(control, p);
 			if (visualHit == null)
 			{

@@ -63,7 +63,7 @@ namespace ForkPlus.UI
 			return PreferencesLocalization.Current("Local branch:") + "\t" + localBranch.Name;
 		}
 
-		public override void StartDrag(global::Avalonia.Input.InputElement dragSource, MultiselectionTreeViewItem[] nodes) // TODO 迁移：WPF DependencyObject → InputElement（DoDragDrop 需要）。
+		public override void StartDrag(global::Avalonia.Input.InputElement dragSource, MultiselectionTreeViewItem[] nodes) // Migration note：WPF DependencyObject → InputElement（DoDragDrop 需要）。
 		{
 			global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(dragSource, GetDataObject(nodes), (global::Avalonia.Input.DragDropEffects)7);
 		}

@@ -94,7 +94,7 @@ namespace ForkPlus.UI
 				};
 			}
 			InitializeComponent();
-			// TODO 迁移：WPF Window.OnDrop override → Avalonia DragDrop.DropEvent 订阅转发。
+			// Migration note：WPF Window.OnDrop override → Avalonia DragDrop.DropEvent 订阅转发。
 			global::Avalonia.Input.DragDrop.SetAllowDrop(this, true);
 			AddHandler(global::Avalonia.Input.DragDrop.DropEvent, (s, e) => OnDrop(e));
 			base.IsTitleVisible = true;
@@ -107,7 +107,7 @@ namespace ForkPlus.UI
 			Toolbar.Initialize(this);
 			RefreshTitle();
 			base.SizeChanged += MainWindow_SizeChanged;
-			// TODO 迁移（根因）：WPF 里 Closing/Activated 在 XAML 或基类接线，迁移后丢失——
+			// Migration note（根因）：WPF 里 Closing/Activated 在 XAML 或基类接线，迁移后丢失——
 			// Window_Closing（保存窗口位置+会话）与 Window_Activated（启动完成标记+激活刷新）
 			// 从未执行：窗口位置永不保存、_startUpFinished 恒 false、激活时仓库不刷新。
 			base.Closing += Window_Closing;
@@ -205,7 +205,7 @@ namespace ForkPlus.UI
 			_templatePartNotificationManagerToggleButton.IsChecked = true;
 		}
 
-		// TODO 迁移（根因）：WPF OnSourceInitialized 是窗口句柄创建后的虚方法回调，Avalonia 无此
+		// Migration note（根因）：WPF OnSourceInitialized 是窗口句柄创建后的虚方法回调，Avalonia 无此
 		// 生命周期；原 protected void OnSourceInitialized 从未被调用（死代码），导致窗口位置/大小
 		// 永不恢复（一直停在 XAML 默认 1000x600）。改在 OnOpened（Avalonia 等价时机）恢复。
 		protected override void OnOpened(EventArgs e)
@@ -276,7 +276,7 @@ namespace ForkPlus.UI
 			}
 		}
 
-		// TODO 迁移（根因）：原来是非 override 的 protected void（隐藏 CustomWindow 虚方法），
+		// Migration note（根因）：原来是非 override 的 protected void（隐藏 CustomWindow 虚方法），
 		// CustomWindow.PositionChanged → 虚方法 OnLocationChanged 永远分派到基类实现，
 		// 本方法体（移动窗口时保存位置）从未执行。改为 override 修复分发链。
 		protected override void OnLocationChanged(EventArgs e)
@@ -288,7 +288,7 @@ namespace ForkPlus.UI
 			}
 		}
 
-		// TODO 迁移（根因）：同 OnLocationChanged——原为隐藏基类的死代码，改 override 接入
+		// Migration note（根因）：同 OnLocationChanged——原为隐藏基类的死代码，改 override 接入
 		// CustomWindow.OnPropertyChanged → OnStateChanged 分发链（状态切换时保存位置）。
 		protected override void OnStateChanged(EventArgs e)
 		{
@@ -510,7 +510,7 @@ namespace ForkPlus.UI
 			}));
 		}
 
-		// TODO 迁移：WPF Closing 事件是 CancelEventHandler(CancelEventArgs)，
+		// Migration note：WPF Closing 事件是 CancelEventHandler(CancelEventArgs)，
 		// Avalonia Window.Closing 是 EventHandler<WindowClosingEventArgs>。
 		private void Window_Closing(object sender, global::Avalonia.Controls.WindowClosingEventArgs e)
 		{

@@ -297,7 +297,7 @@ namespace ForkPlus
 					NotificationCenter.Current.RaiseActiveTabChanged(this, value);
 					SaveSession();
 					ForkPlusSettings.Default.Save();
-					// TODO 迁移：WPF Dispatcher.BeginInvoke(priority, action) → Avalonia Dispatcher.Post(action, priority)（参数顺序相反）。
+					// Migration note：WPF Dispatcher.BeginInvoke(priority, action) → Avalonia Dispatcher.Post(action, priority)（参数顺序相反）。
 					Application.Current?.Dispatcher.Post(new Action(delegate
 					{
 						if (_tabControl.SelectedTab == value)

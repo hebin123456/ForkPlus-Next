@@ -111,7 +111,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			StageAllIconName = "StageAllIcon";
 			UnstageAllIconName = "UnstageAllIcon";
-			// TODO 迁移：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
+			// Migration note：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
 		}
 
 		public StageFileUserControl()
@@ -169,6 +169,16 @@ namespace ForkPlus.UI.UserControls
 					ShowDiffPopup?.Invoke(this, EventArgs.Empty);
 				}
 			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+			UnstagedFilesFileListUserControl.TreeView.AddHandler(
+				InputElement.PointerPressedEvent,
+				new EventHandler<PointerPressedEventArgs>(UnstagedFilesFileListUserControl_ContextMenuPointerPressed),
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+				handledEventsToo: true);
+			StagedFilesFileListUserControl.TreeView.AddHandler(
+				InputElement.PointerPressedEvent,
+				new EventHandler<PointerPressedEventArgs>(StagedFilesFileListUserControl_ContextMenuPointerPressed),
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+				handledEventsToo: true);
 			FilterTextBox.FilterRequestChanged += delegate
 			{
 				_refreshFilterAction.InvokeWithDelay(FilterTextBox.FilterRequest);
@@ -396,25 +406,55 @@ namespace ForkPlus.UI.UserControls
 
 		private void UnstagedFilesFileListUserControl_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (!HasSelectedItems(UnstagedFilesFileListUserControl))
+			Point point;
+			Point? position = e.TryGetPosition(UnstagedFilesFileListUserControl.TreeView, out point) ? point : null;
+			if (OpenFileListContextMenu(UnstagedFilesFileListUserControl, e.Source, position, UnstagedFilesContextMenuOpening))
 			{
 				e.Handled = true;
+				return;
 			}
-			else
-			{
-				this.UnstagedFilesContextMenuOpening?.Invoke(this, UnstagedFilesFileListUserControl.ContextMenu);
-			}
+			e.Handled = true;
+			UnstagedFilesFileListUserControl.ContextMenu?.Close();
 		}
 
 		private void StagedFilesFileListUserControl_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (!HasSelectedItems(StagedFilesFileListUserControl))
+			Point point;
+			Point? position = e.TryGetPosition(StagedFilesFileListUserControl.TreeView, out point) ? point : null;
+			if (OpenFileListContextMenu(StagedFilesFileListUserControl, e.Source, position, StagedFilesContextMenuOpening))
 			{
 				e.Handled = true;
+				return;
 			}
-			else
+			e.Handled = true;
+			StagedFilesFileListUserControl.ContextMenu?.Close();
+		}
+
+		private void UnstagedFilesFileListUserControl_ContextMenuPointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			if (!IsRightButtonPress(e, UnstagedFilesFileListUserControl.TreeView))
 			{
-				this.StagedFilesContextMenuOpening?.Invoke(this, StagedFilesFileListUserControl.ContextMenu);
+				return;
+			}
+			e.Handled = true;
+			UnstagedFilesFileListUserControl.ContextMenu?.Close();
+			if (!OpenFileListContextMenu(UnstagedFilesFileListUserControl, e.Source, e.GetPosition(UnstagedFilesFileListUserControl.TreeView), UnstagedFilesContextMenuOpening))
+			{
+				UnstagedFilesFileListUserControl.ContextMenu?.Close();
+			}
+		}
+
+		private void StagedFilesFileListUserControl_ContextMenuPointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			if (!IsRightButtonPress(e, StagedFilesFileListUserControl.TreeView))
+			{
+				return;
+			}
+			e.Handled = true;
+			StagedFilesFileListUserControl.ContextMenu?.Close();
+			if (!OpenFileListContextMenu(StagedFilesFileListUserControl, e.Source, e.GetPosition(StagedFilesFileListUserControl.TreeView), StagedFilesContextMenuOpening))
+			{
+				StagedFilesFileListUserControl.ContextMenu?.Close();
 			}
 		}
 
@@ -454,9 +494,65 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		private static bool HasSelectedItems(FileListUserControl fileList)
+		private bool OpenFileListContextMenu(FileListUserControl fileList, object source, Point? position, EventHandler<ContextMenu> opening)
 		{
-			return fileList.TreeView.SelectedItems.Count > 0;
+			if (!TrySelectContextMenuTarget(fileList, source, position))
+			{
+				return false;
+			}
+			ContextMenu contextMenu = fileList.ContextMenu;
+			if (contextMenu == null)
+			{
+				return false;
+			}
+			opening?.Invoke(this, contextMenu);
+			if (contextMenu.Items.Count == 0)
+			{
+				return false;
+			}
+			contextMenu.PlacementTarget = fileList.TreeView;
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, fileList.TreeView);
+			contextMenu.Open();
+			return true;
+		}
+
+		private static bool TrySelectContextMenuTarget(FileListUserControl fileList, object source, Point? position)
+		{
+			TreeViewControlItem container = FindVisualAncestorOrSelf<TreeViewControlItem>(source as global::Avalonia.Visual);
+			if (container == null && position.HasValue)
+			{
+				container = fileList.TreeView.GetContainerAtPoint<TreeViewControlItem>(position.Value);
+			}
+			if (container?.DataContext is not MultiselectionTreeViewItem item)
+			{
+				return false;
+			}
+			if (item.IsSelected)
+			{
+				return true;
+			}
+			fileList.TreeView.SelectedItems.Clear();
+			fileList.TreeView.SelectedItems.Add(item);
+			fileList.TreeView.SelectedItem = item;
+			return true;
+		}
+
+		private static bool IsRightButtonPress(PointerPressedEventArgs e, Control relativeTo)
+		{
+			PointerPointProperties properties = e.GetCurrentPoint(relativeTo).Properties;
+			return properties.IsRightButtonPressed || properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed;
+		}
+
+		private static T FindVisualAncestorOrSelf<T>(global::Avalonia.Visual visual) where T : class
+		{
+			for (global::Avalonia.Visual current = visual; current != null; current = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(current))
+			{
+				if (current is T match)
+				{
+					return match;
+				}
+			}
+			return null;
 		}
 
 		private void StageAllButton_Click(object sender, RoutedEventArgs e)

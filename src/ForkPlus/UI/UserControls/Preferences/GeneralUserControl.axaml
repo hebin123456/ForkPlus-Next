@@ -31,7 +31,7 @@
     </Grid.RowDefinitions>
     <Grid.Children>
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Source Code Folder" Margin="0">
-<!-- TODO 迁移：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
         <TextBlock.Style>
           <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
         </TextBlock.Style>
@@ -116,14 +116,14 @@
       </Grid>
       <Separator Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,12,0,0" />
       <TextBlock Grid.Row="4" Grid.Column="0" Text="Diff View" Margin="0,4,0,0">
-<!-- TODO 迁移：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
         <TextBlock.Style>
           <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
         </TextBlock.Style>
 -->
       </TextBlock>
       <fuced:DiffCodeEditor Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Height="110" Margin="10,0,0,4" BorderThickness="1" x:Name="DiffCodeEditor">
-<!-- TODO 迁移：Control.BorderBrush 块已删（DiffCodeEditor 基类无 BorderBrush） -->
+<!-- Migration note：Control.BorderBrush 块已删（DiffCodeEditor 基类无 BorderBrush） -->
 
         <ScrollViewer.VerticalScrollBarVisibility>Auto</ScrollViewer.VerticalScrollBarVisibility>
       </fuced:DiffCodeEditor>

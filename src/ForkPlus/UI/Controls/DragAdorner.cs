@@ -20,7 +20,7 @@ namespace ForkPlus.UI.Controls
 			: base(adornedElement)
 		{
 			_initialPosition = position;
-			// TODO 迁移：WPF VisualBrush(visual) 在 Avalonia 12.1 为 Avalonia.Media.VisualBrush(Visual)，
+			// Migration note：WPF VisualBrush(visual) 在 Avalonia 12.1 为 Avalonia.Media.VisualBrush(Visual)，
 			// 反编译产物里误写成不存在的 Avalonia.Media.ImmutableBrush。
 			_visualBrush = new global::Avalonia.Media.VisualBrush(base.AdornedElement)
 			{

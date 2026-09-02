@@ -81,7 +81,7 @@
               <ToggleButton.Theme>
                 <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
               </ToggleButton.Theme>
-<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
               <Image>
                 <Image.Source>
@@ -89,7 +89,10 @@
                 </Image.Source>
               </Image>
             </ToggleButton>
-            <Popup HorizontalOffset="-370" IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}" x:Name="ActivityManagerPopup">
+            <Popup Placement="Top"
+                   PlacementTarget="{Binding ElementName=ShowActivityManagerToggleButton}"
+                   IsOpen="{Binding IsChecked, ElementName=ShowActivityManagerToggleButton}"
+                   x:Name="ActivityManagerPopup">
               <local:ActivityManagerUserControl x:Name="ActivityManagerUserControl" />
             </Popup>
             <!-- v3.11.0：git mm Output 切换按钮（仅 git mm 激活时可见，紧邻活动管理器按钮右侧） -->

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using ForkPlus.UI.UserControls;
 
 namespace ForkPlus.UI.Controls
 {
@@ -20,9 +21,19 @@ namespace ForkPlus.UI.Controls
 				{
 					if (success)
 					{
-						base.Value = newString;
+						if (DataContext is RepositoryManagerRepositoryItem repositoryItem)
+						{
+							repositoryItem.Name = newString;
+						}
+						else
+						{
+							SetCurrentValue(EditableTextBlock.ValueProperty, newString);
+						}
 					}
-					base.IsInEditMode = false;
+					if (DataContext is RepositoryManagerTreeViewItem treeViewItem)
+					{
+						treeViewItem.IsInEditMode = false;
+					}
 				});
 			}
 			else

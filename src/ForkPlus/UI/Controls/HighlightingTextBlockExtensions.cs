@@ -46,7 +46,7 @@ namespace ForkPlus.UI.Controls
 						textBlock.Inlines.Add(new Run());
 					}
 					Uri uri = issueTrackerUrls[issueIndex.Value];
-					// TODO 迁移：WPF Hyperlink(Run) 内联超链接 → Avalonia HyperlinkButton（Content 承载 Run，
+					// Migration note：WPF Hyperlink(Run) 内联超链接 → Avalonia HyperlinkButton（Content 承载 Run，
 					// InlineCollection.Add(Control) 支持 Control 作为内联元素）。
 					global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton
 					{

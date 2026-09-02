@@ -14,6 +14,8 @@ namespace ForkPlus.UI.Controls
 	{
 		private bool _wasSelected;
 
+		private bool _handledPlainSelection;
+
 		private Point _dragStartPoint;
 
 		private DragAndDropListViewAdorner _adorner;
@@ -26,26 +28,48 @@ namespace ForkPlus.UI.Controls
 
 		public bool AllowDrag { get; set; }
 
+		public DragAndDropListViewItem()
+		{
+			AddHandler(DragDrop.DragEnterEvent, (_, e) => OnDragEnter(e));
+			AddHandler(DragDrop.DragOverEvent, (_, e) => OnDragEnter(e));
+			AddHandler(DragDrop.DragLeaveEvent, (_, e) => OnDragLeave(e));
+			AddHandler(DragDrop.DropEvent, (_, e) => OnDrop(e));
+		}
+
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
+			_handledPlainSelection = false;
 			_wasSelected = base.IsSelected;
-			if (!base.IsSelected)
+			bool plainLeftClick = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+				&& !e.KeyModifiers.HasFlag(KeyModifiers.Control)
+				&& !e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+			if (plainLeftClick && ParentListView != null && ParentListView.SelectionMode == SelectionMode.Multiple)
+			{
+				ParentListView.SelectedItems.Clear();
+				base.OnPointerPressed(e);
+				_handledPlainSelection = true;
+				_wasSelected = true;
+			}
+			else if (!base.IsSelected)
 			{
 				base.OnPointerPressed(e);
 			}
-			if (Mouse.LeftButton == MouseButtonState.Pressed)
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_dragStartPoint = e.GetPosition(null);
-				this.CaptureMouse();
+				e.Pointer.Capture(this);
 			}
 		}
 
 		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
-			this.ReleaseMouseCapture();
-			if (_wasSelected)
+			if (e.Pointer.Captured == this)
 			{
-				// TODO 迁移：WPF 原码在 OnMouseLeftButtonUp 里调 base.OnMouseLeftButtonDown(e)（点击已选项时补触发选择）。
+				e.Pointer.Capture(null);
+			}
+			if (_wasSelected && !_handledPlainSelection)
+			{
+				// Migration note：WPF 原码在 OnMouseLeftButtonUp 里调 base.OnMouseLeftButtonDown(e)（点击已选项时补触发选择）。
 				// Avalonia 12 需合成 PointerPressedEventArgs 才能复用 base.OnPointerPressed 的选择逻辑。
 				global::Avalonia.Visual root = global::Avalonia.Controls.TopLevel.GetTopLevel(this);
 				if (root != null)
@@ -58,7 +82,7 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (!this.IsPointerCaptured()) // TODO 迁移：WPF UIElement.IsPointerCaptured 属性 → InputCompat 扩展
+			if (e.Pointer.Captured != this)
 			{
 				base.OnPointerMoved(e);
 				return;
@@ -111,7 +135,7 @@ namespace ForkPlus.UI.Controls
 		protected void OnDragEnter(DragEventArgs e)
 		{
 			DecoratedRevision item = null;
-			if ((e.Source as global::Avalonia.Controls.Presenters.ContentPresenter)?.Content is DecoratedRevision decoratedRevision) // TODO 迁移：ContentPresenter 在 Avalonia.Controls.Presenters 命名空间。
+			if ((e.Source as global::Avalonia.Controls.Presenters.ContentPresenter)?.Content is DecoratedRevision decoratedRevision) // Migration note：ContentPresenter 在 Avalonia.Controls.Presenters 命名空间。
 			{
 				item = decoratedRevision;
 			}

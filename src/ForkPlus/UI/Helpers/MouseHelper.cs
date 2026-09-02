@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Helpers
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool GetCursorPos(ref Win32Point pt);
 
-		// TODO 迁移：GetCursorPos（user32.dll）是 Windows 专属，Unix 抛 DllNotFoundException
+		// Migration note：GetCursorPos（user32.dll）是 Windows 专属，Unix 抛 DllNotFoundException
 		// （活路径实证：Treemap.UpdateTooltipPosition 鼠标悬停提示、DragAndDropListViewItem.
 		// OnGiveFeedback 拖放跟随）。曾尝试订阅 Avalonia InputManager.Process 跟踪指针事件，
 		// 但反射实证（ref 程序集）：InputManager 类 internal、RawInputEventArgs.Root 与

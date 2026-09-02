@@ -22,7 +22,7 @@ namespace ForkPlus.Services.Wpf
 
 		public bool TryActivateWindowByTitle(string title)
 	{
-		// TODO 迁移：WPF Application.Current.Windows（Avalonia.WindowCollection 命名空间下不存在该类型，
+		// Migration note：WPF Application.Current.Windows（Avalonia.WindowCollection 命名空间下不存在该类型，
 		// CS0234）改为 WpfCompat WpfApp.Windows：转发到 IClassicDesktopStyleApplicationLifetime.Windows
 		// （IReadOnlyList<Window>），遍历语义不变。
 		System.Collections.Generic.IReadOnlyList<global::Avalonia.Controls.Window> windowCollection = global::ForkPlus.UI.WpfCompat.WpfApp.Windows;

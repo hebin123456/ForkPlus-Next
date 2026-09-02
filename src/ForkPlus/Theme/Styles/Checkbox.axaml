@@ -1,6 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!--
-      TODO(wpf2avalonia): 焦点视觉样式 OptionMarkFocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      WPF migration note: 焦点视觉样式 OptionMarkFocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
       原始片段：
       <Style x:Key="OptionMarkFocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
           <Setter Property="Template">
@@ -42,7 +42,7 @@
       </Setter.Value>
     </Setter>
   
-<!-- TODO 迁移：WPF 选择器 ^[HasContent=true] 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[HasContent=true] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[HasContent=true]">
         <Setter Property="Padding" Value="6,-1,0,0" />
     </Style>-->
@@ -57,7 +57,7 @@
         <Setter Value="{DynamicResource OptionMark.Disabled.Glyph}" Property="Fill" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter#ContentPresenter">
-<!-- TODO 迁移：WPF Foreground Setter 已删（Avalonia Border 无 Foreground 属性） -->
+<!-- Migration note：WPF Foreground Setter 已删（Avalonia Border 无 Foreground 属性） -->
     </Style>
     <Style Selector="^:pressed /template/ Border#CheckBoxBorder">
         <Setter Value="{DynamicResource OptionMark.Pressed.Background}" Property="Background" />

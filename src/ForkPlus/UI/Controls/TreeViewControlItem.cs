@@ -63,8 +63,8 @@ namespace ForkPlus.UI.Controls
 
 		internal double CalculateIndent()
 		{
-			int num = 19 * Node.Level;
-			num -= 19;
+			int num = 10 * Node.Level;
+			num -= 10;
 			if (num < 0)
 			{
 				return 0.0;
@@ -74,21 +74,25 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
+			if (ParentTreeView != null)
+			{
+				ParentTreeView.LastClickedItem = Node;
+			}
 			_wasSelected = base.IsSelected;
 			if (!base.IsSelected)
 			{
 				base.OnPointerPressed(e);
 			}
-			if (ParentTreeView.AllowDragDrop && Mouse.LeftButton == MouseButtonState.Pressed)
+			if (ParentTreeView.AllowDragDrop && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_startPoint = e.GetPosition(null);
-				this.CaptureMouse();
+				e.Pointer.Capture(this);
 			}
 		}
 
 		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (!this.IsPointerCaptured()) // TODO 迁移：WPF UIElement.IsPointerCaptured 属性 → InputCompat 扩展
+			if (e.Pointer.Captured != this)
 			{
 				return;
 			}
@@ -122,10 +126,13 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
-			this.ReleaseMouseCapture();
+			if (e.Pointer.Captured == this)
+			{
+				e.Pointer.Capture(null);
+			}
 			if (_wasSelected)
 			{
-				// TODO 迁移：WPF 原码在 OnMouseLeftButtonUp 里调 base.OnMouseLeftButtonDown(e)（点击已选项时补触发选择）。
+				// Migration note：WPF 原码在 OnMouseLeftButtonUp 里调 base.OnMouseLeftButtonDown(e)（点击已选项时补触发选择）。
 				// Avalonia 12 需合成 PointerPressedEventArgs 才能复用 base.OnPointerPressed 的选择逻辑。
 				global::Avalonia.Visual root = global::Avalonia.Controls.TopLevel.GetTopLevel(this);
 				if (root != null)

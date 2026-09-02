@@ -5,7 +5,7 @@
         
       
     <!--
-      TODO(wpf2avalonia): Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
       原始片段：
       <DataTrigger xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>
@@ -50,7 +50,7 @@
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Repository Url:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:PlaceholderTextBox TextChanged="RepositoryUrlTextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,53,2" Placeholder="Git Repository Url" Icon="{DynamicResource SubmoduleIcon}" x:Name="RepositoryUrlTextBox" />
       <controls:DropDownButton Grid.Row="0" Grid.Column="1" Margin="1,1,3,1" Background="#00FFFFFF" Height="18" BorderThickness="0" HorizontalAlignment="Right" Focusable="False" x:Name="NetworkProtocolDropDownButton">
-<!-- TODO 迁移：WPF controls:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF controls:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
         <controls:DropDownButton.ContextMenu>
           <ContextMenu Opened="NetworkProtocolContextMenu_Opened" />

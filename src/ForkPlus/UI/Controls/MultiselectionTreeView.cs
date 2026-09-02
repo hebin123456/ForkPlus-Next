@@ -46,7 +46,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO 迁移：WPF 非 DependencyProperty 的 CLR 封装对应 Avalonia StyledProperty；
+		// Migration note：WPF 非 DependencyProperty 的 CLR 封装对应 Avalonia StyledProperty；
 		// Avalonia 12 无 AvaloniaProperty.Register(string, Type, Type) 非泛型重载（CS0411），
 		// 改用 Register<MultiselectionTreeView, MultiselectionTreeViewItem>("RootItem")。
 		public static readonly global::Avalonia.StyledProperty<MultiselectionTreeViewItem> RootItemProperty;
@@ -124,21 +124,21 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		public MultiselectionTreeViewItem LastClickedItem { get; private set; }
+		public MultiselectionTreeViewItem LastClickedItem { get; internal set; }
 
 		static MultiselectionTreeView()
 		{
-			// TODO 迁移：WPF 用 AvaloniaProperty.Register(name, propertyType, ownerType) 非泛型重载；
+			// Migration note：WPF 用 AvaloniaProperty.Register(name, propertyType, ownerType) 非泛型重载；
 			// Avalonia 12 只有 Register<TOwner, TValue> 泛型重载（CS0411），按泛型形式注册。
 			RootItemProperty = global::Avalonia.AvaloniaProperty.Register<MultiselectionTreeView, MultiselectionTreeViewItem>("RootItem");
-			// TODO 迁移：WPF VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata(..., VirtualizationMode.Recycling)
+			// Migration note：WPF VirtualizingStackPanel.VirtualizationModeProperty.OverrideMetadata(..., VirtualizationMode.Recycling)
 			// 让本控件容器回收复用；Avalonia 12 的 VirtualizingStackPanel 没有 VirtualizationMode 概念
 			// （CS0117/CS0103/CS0305），其 ItemsPresenter 容器生成器默认即回收复用容器，故此行为降级为无操作。
 		}
 
 		public MultiselectionTreeView()
 		{
-			// TODO 迁移：WPF ListBox 有 protected virtual OnSelectionChanged 虚方法可 override；
+			// Migration note：WPF ListBox 有 protected virtual OnSelectionChanged 虚方法可 override；
 			// Avalonia 12 的 ListBox 没有该方法（CS0117），改为订阅 SelectionChanged 事件，
 			// 保持"选中变化同步节点 IsSelected"的原语义（见 OnSelectionChanged）。
 			SelectionChanged += MultiselectionTreeView_SelectionChanged;
@@ -184,7 +184,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO 迁移：WPF ItemsControl.GetContainerForItemOverride()（返回 ItemContainer）在
+		// Migration note：WPF ItemsControl.GetContainerForItemOverride()（返回 ItemContainer）在
 		// Avalonia 12 无此虚方法；对应机制是 CreateContainerForItemOverride(item, index, recycleKey)。
 		// 原非 override 的 GetContainerForItemOverride 永远不会被框架调用 → 实际容器是 ListBox
 		// 默认 ListBoxItem（非 TreeViewControlItem），PrepareContainerForItemOverride 里
@@ -212,7 +212,7 @@ namespace ForkPlus.UI.Controls
 			{
 				addedItem.IsSelected = true;
 			}
-			// TODO 迁移：WPF 在 override 末尾调 base.OnSelectionChanged(e) 触发 ListBox 的 SelectionChanged 事件；
+			// Migration note：WPF 在 override 末尾调 base.OnSelectionChanged(e) 触发 ListBox 的 SelectionChanged 事件；
 			// Avalonia 12 中本方法改为由 SelectionChanged 事件回调（见构造函数订阅），事件已由基类触发，无需再转发。
 		}
 
@@ -258,15 +258,15 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
-			base.OnPointerPressed(e);
 			Point position = e.GetPosition(this);
-			LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
+			LastClickedItem = (this.GetObjectAtPoint<TreeViewControlItem>(position) as TreeViewControlItem)?.Node;
+			base.OnPointerPressed(e);
 		}
 
 		protected override void OnDoubleTapped(global::Avalonia.Input.TappedEventArgs e)
 		{
 			Point position = e.GetPosition(this);
-			LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
+			LastClickedItem = (this.GetObjectAtPoint<TreeViewControlItem>(position) as TreeViewControlItem)?.Node;
 			base.OnDoubleTapped(e);
 			LastClickedItem = null;
 		}
@@ -302,7 +302,7 @@ namespace ForkPlus.UI.Controls
 				throw new ArgumentNullException("node");
 			}
 			ScrollIntoView(node);
-			// TODO 迁移：WPF 判断 ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated 决定
+			// Migration note：WPF 判断 ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated 决定
 			// 立即/延迟聚焦，延迟路径用 Dispatcher.Post(DispatcherPriority.Loaded, DispatcherOperationCallback, node)；
 			// Avalonia 12 的 ItemContainerGenerator 没有 Status/GeneratorStatus（CS1061/CS0103），
 			// 也没有 DispatcherOperationCallback 委托（CS0246）。替代判定：ContainerFromItem 取到容器
@@ -340,7 +340,7 @@ namespace ForkPlus.UI.Controls
 			if (multiselectionTreeViewItem != node)
 			{
 				ScrollIntoView((object)multiselectionTreeViewItem);
-				// TODO 迁移：WPF Dispatcher.Post(priority, action) 参数序在 Avalonia 是
+				// Migration note：WPF Dispatcher.Post(priority, action) 参数序在 Avalonia 是
 				// Post(action, priority)（CS1503），此处按 Avalonia 顺序调整。
 				base.Dispatcher.Post(delegate
 				{
@@ -407,7 +407,7 @@ namespace ForkPlus.UI.Controls
 	{
 		if (!_updatesLocked)
 		{
-			// TODO 迁移：WPF MultiSelector.SetSelectedItems(IEnumerable) 原子替换选中集合，
+			// Migration note：WPF MultiSelector.SetSelectedItems(IEnumerable) 原子替换选中集合，
 			// Avalonia 12 的 ListBox 没有该 API（CS0103）；等效实现：清空 SelectedItems 后逐个添加
 			// （会触发 SelectionChanged → OnSelectionChanged 同步节点 IsSelected，与 WPF 行为一致）。
 			IList selectedItems = base.SelectedItems;
@@ -583,7 +583,7 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_previewNodeView != null)
 			{
-				// TODO 迁移：WPF Control.BackgroundProperty 在 Avalonia 不存在（Background 定义在 TemplatedControl）；
+				// Migration note：WPF Control.BackgroundProperty 在 Avalonia 不存在（Background 定义在 TemplatedControl）；
 				// TreeViewControlItem : ListBoxItem → ContentControl → TemplatedControl，
 				// 改用 TemplatedControl.BackgroundProperty 清除拖放预览背景。
 				_previewNodeView.ClearValue(global::Avalonia.Controls.Primitives.TemplatedControl.BackgroundProperty);

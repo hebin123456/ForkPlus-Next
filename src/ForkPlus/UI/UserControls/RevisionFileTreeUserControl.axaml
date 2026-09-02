@@ -1,5 +1,5 @@
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RevisionFileTreeUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
        Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
        搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
   <UserControl.DataTemplates>
@@ -27,7 +27,7 @@
       <ColumnDefinition MinWidth="220" MaxWidth="850" />
       <ColumnDefinition />
     </Grid.ColumnDefinitions>
-    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" Grid.Column="0" SelectionMode="Single" x:Name="FilesTreeView" DoubleTapped="FilesTreeView_MouseDoubleClick">
+    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" ContextRequested="FilesTreeView_ContextMenuOpening" Grid.Column="0" SelectionMode="Single" x:Name="FilesTreeView" DoubleTapped="FilesTreeView_MouseDoubleClick">
       <controls:MultiselectionTreeView.ItemTemplate>
         <DataTemplate>
           <ContentControl>

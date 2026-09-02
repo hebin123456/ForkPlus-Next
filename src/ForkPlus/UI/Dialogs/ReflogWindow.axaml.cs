@@ -49,20 +49,14 @@ namespace ForkPlus.UI.Dialogs
 			string language = ForkPlusSettings.Default.UiLanguage;
 			Title = PreferencesLocalization.Translate("Reflog", language);
 			HeaderTitle.Text = PreferencesLocalization.Translate("Reflog History", language);
+			IndexHeader.Text = PreferencesLocalization.Translate("Index", language);
+			ShaHeader.Text = PreferencesLocalization.Translate("SHA", language);
+			OperationHeader.Text = PreferencesLocalization.Translate("Operation", language);
+			CommitSubjectHeader.Text = PreferencesLocalization.Translate("Commit Subject", language);
+			TimeHeader.Text = PreferencesLocalization.Translate("Time", language);
 			RefreshButton.Content = PreferencesLocalization.Translate("Refresh", language);
 			JumpButton.Content = PreferencesLocalization.Translate("Jump to...", language);
 			StatusText.Text = PreferencesLocalization.Translate("Double-click an entry to jump to that state.", language);
-			// v3.4.1：翻译 GridView 列头
-			if (ReflogListView.GetGridView() is GridView gridView)
-			{
-				foreach (object col in gridView.Columns)
-				{
-					if (col is GridViewColumn gvc && gvc.Header is string header)
-					{
-						gvc.Header = PreferencesLocalization.Translate(header, language);
-					}
-				}
-			}
 		}
 
 		/// <summary>读取 reflog 并填充 ListView。</summary>

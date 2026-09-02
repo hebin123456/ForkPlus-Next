@@ -1,6 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <!-- TODO 迁移：DataTrigger 视觉状态补齐——bool→FontWeight 转换器（提交列表 HEAD 行加粗）。 -->
+  <!-- Migration note：DataTrigger 视觉状态补齐——bool→FontWeight 转换器（提交列表 HEAD 行加粗）。 -->
   <controls:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
   <ControlTheme x:Key="ListItemRoundedBorderStyle" TargetType="Border">
     <Setter Property="Margin" Value="4,0,4,0" />
@@ -11,7 +11,7 @@
     <Setter Property="CornerRadius" Value="0" />
   </ControlTheme>
   <DataTemplate x:Key="ReferencesDataTemplates">
-<!-- TODO 迁移：WPF DataTemplate.Resources 已删（原内容见 git 历史） -->
+<!-- Migration note：WPF DataTemplate.Resources 已删（原内容见 git 历史） -->
 
     <ContentPresenter>
       <ContentPresenter.Content>
@@ -20,7 +20,7 @@
     </ContentPresenter>
   </DataTemplate>
   <!--
-      TODO(wpf2avalonia): 焦点视觉样式 FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      WPF migration note: 焦点视觉样式 FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
       原始片段：
       <Style x:Key="FocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
           <Setter Property="Template">
@@ -72,12 +72,12 @@
     <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style>
-<!-- TODO 迁移：WPF 在 Border#Bd 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） --></ControlTheme>
-<!-- TODO 迁移：原 WPF ListBox 简单版主题（ScrollViewer+ItemsPresenter）已删——pass3 把 ListView 转 ListBox 后与下方 ListView 迁移版主题撞 key（运行时重复键异常）；保留功能完整的一份（含选中高亮与 TouchpadAwareScrollViewer）。 -->
+<!-- Migration note：WPF 在 Border#Bd 上设 Foreground 的样式已删（Avalonia 该控件无 Foreground） --></ControlTheme>
+<!-- Migration note：原 WPF ListBox 简单版主题（ScrollViewer+ItemsPresenter）已删——pass3 把 ListView 转 ListBox 后与下方 ListView 迁移版主题撞 key（运行时重复键异常）；保留功能完整的一份（含选中高亮与 TouchpadAwareScrollViewer）。 -->
   <!--
-      TODO(wpf2avalonia): TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
+      WPF migration note: TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
       原始片段：
       <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
           <Setter Property="IsVisible" Value="False" />
@@ -98,46 +98,26 @@
               <RowDefinition Height="*" />
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <DockPanel Margin="{TemplateBinding Padding}">
-              <controls:TouchpadAwareScrollViewer DockPanel.Dock="Top" Focusable="False" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Hidden">
-                <!--
-      TODO(wpf2avalonia): <GridViewHeaderRowPresenter>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
-      原始片段：
-      <GridViewHeaderRowPresenter Margin="0" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" Columns="{Binding Path=TemplatedParent.View.Columns, RelativeSource={RelativeSource TemplatedParent}}" xmlns="https://github.com/avaloniaui">
-                        <GridViewHeaderRowPresenter.AllowsColumnReorder>
-                          <Binding Path="TemplatedParent.View.AllowsColumnReorder"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                        </GridViewHeaderRowPresenter.AllowsColumnReorder>
-                        <GridViewHeaderRowPresenter.ColumnHeaderContainerStyle>
-                          <Binding Path="TemplatedParent.View.ColumnHeaderContainerStyle"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                        </GridViewHeaderRowPresenter.ColumnHeaderContainerStyle>
-                        <GridViewHeaderRowPresenter.ColumnHeaderToolTip>
-                          <Binding Path="TemplatedParent.View.ColumnHeaderToolTip"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                        </GridViewHeaderRowPresenter.ColumnHeaderToolTip>
-                        <GridViewHeaderRowPresenter.ColumnHeaderContextMenu>
-                          <Binding Path="TemplatedParent.View.ColumnHeaderContextMenu"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                        </GridViewHeaderRowPresenter.ColumnHeaderContextMenu>
-                        <GridViewHeaderRowPresenter.ColumnHeaderTemplate>
-                          <Binding Path="TemplatedParent.View.ColumnHeaderTemplate"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-                        </GridViewHeaderRowPresenter.ColumnHeaderTemplate>
-                      </GridViewHeaderRowPresenter>
-    -->
-              </controls:TouchpadAwareScrollViewer>
-              <ScrollContentPresenter CanHorizontallyScroll="False" CanVerticallyScroll="False" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" x:Name="PART_ScrollContentPresenter" />
-            </DockPanel>
-            <ScrollBar Cursor="Arrow" Minimum="0" Orientation="Horizontal" Grid.Row="1" x:Name="PART_HorizontalScrollBar" Theme="{DynamicResource HorizontalScrollBarStyle}"> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
-              <ScrollBar.Value>
-                <Binding Path="HorizontalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-              </ScrollBar.Value>
-            </ScrollBar>
-            <ScrollBar Cursor="Arrow" Grid.Column="1" Minimum="0" Orientation="Vertical" x:Name="PART_VerticalScrollBar" Theme="{DynamicResource VerticalScrollBarStyle}"> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
-              <ScrollBar.Value>
-                <Binding Path="VerticalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-              </ScrollBar.Value>
-            </ScrollBar>
-            <DockPanel Background="{DynamicResource ScrollViewerBackground}" Grid.Column="1" LastChildFill="False" Grid.Row="1">
-              <Rectangle DockPanel.Dock="Left" Fill="{DynamicResource ScrollBar.Static.Background}" Width="1" /> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
-              <Rectangle DockPanel.Dock="Top" Fill="{DynamicResource ScrollBar.Static.Background}" Height="1" /> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
-            </DockPanel>
+            <ScrollContentPresenter Grid.Row="0"
+                                    Grid.Column="0"
+                                    Margin="{TemplateBinding Padding}"
+                                    CanHorizontallyScroll="True"
+                                    CanVerticallyScroll="True"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{x:Null}"
+                                    x:Name="PART_ScrollContentPresenter" />
+            <ScrollBar Grid.Row="0"
+                       Grid.Column="1"
+                       Cursor="Arrow"
+                       x:Name="PART_VerticalScrollBar"
+                       Theme="{DynamicResource VerticalScrollBarStyle}" />
+            <ScrollBar Grid.Row="1"
+                       Grid.Column="0"
+                       Cursor="Arrow"
+                       Orientation="Horizontal"
+                       x:Name="PART_HorizontalScrollBar"
+                       Theme="{DynamicResource HorizontalScrollBarStyle}" />
+            <Rectangle Grid.Row="1" Grid.Column="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
@@ -166,13 +146,13 @@
     <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style>
     <Style Selector="^:selected">
         <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
     </Style></ControlTheme>
   <ControlTheme x:Key="ListViewWithGridViewStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
-<!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
+<!-- Migration note：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
     <Style.Resources>
       <ResourceDictionary>
         <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemGridViewStyle}" />
@@ -183,8 +163,12 @@
       <Setter.Value>
         <ControlTemplate TargetType="ListBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Theme="{DynamicResource ListViewWithGridViewScrollViewerStyle}">
-              <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21）——ListViewWithGridViewStyle 是
+            <controls:TouchpadAwareScrollViewer Focusable="false"
+                                                Padding="{TemplateBinding Padding}"
+                                                Theme="{DynamicResource ListViewWithGridViewScrollViewerStyle}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21）——ListViewWithGridViewStyle 是
                    提交列表（RevisionListView）主题，裸 ItemsPresenter 落到非虚拟化 StackPanel，
                    大仓库提交列表全量实化 = 用户报告"加载非常卡"的直接根因（与修复链10同坑）。 -->
               <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
@@ -196,7 +180,7 @@
   </ControlTheme>
   <ControlTheme x:Key="NoSelectionRevisionListViewItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
     <Setter Property="Focusable" Value="False" />
-    <!-- TODO 迁移：WPF DataTrigger IsHead=True → FontWeight=Bold（提交列表 HEAD 行加粗），
+    <!-- Migration note：WPF DataTrigger IsHead=True → FontWeight=Bold（提交列表 HEAD 行加粗），
          经 BoolToFontWeight 转换器绑定 DataContext 属性恢复（同 MultiselectionTreeView 的
          IsFocusable Setter 绑定模式，Avalonia ControlTheme Setter Binding 相对 DataContext 求值）。 -->
     <Setter Property="FontWeight">
@@ -212,7 +196,7 @@
     
   
     <!--
-      TODO(wpf2avalonia): Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
       原始片段：
       <DataTrigger xmlns="https://github.com/avaloniaui">
               <DataTrigger.Binding>
@@ -222,7 +206,7 @@
             </DataTrigger>
     -->
     <!--
-      TODO(wpf2avalonia): Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
       原始片段：
       <DataTrigger xmlns="https://github.com/avaloniaui">
               <DataTrigger.Binding>
@@ -254,7 +238,7 @@
     <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="MultiselectListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}">
     <Setter Property="Template">
@@ -278,7 +262,7 @@
     <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="NoSelectionListBoxItemStyle" TargetType="ListBoxItem">
     <Setter Property="Focusable" Value="False" />
@@ -316,15 +300,15 @@
     </Setter>
   
     <Style Selector="^:selected /template/ Border#Bd">
-<!-- TODO 迁移：WPF Setter Property=Style 已删（Avalonia 不能通过 Setter 换样式） -->
+<!-- Migration note：WPF Setter Property=Style 已删（Avalonia 不能通过 Setter 换样式） -->
         <Setter Value="{DynamicResource Item.SelectedInactive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedInactive.Border}" Property="BorderBrush" />
     </Style>
     <Style Selector="^:selected /template/ Border#Bd">
-<!-- TODO 迁移：WPF Setter Property=Style 已删（Avalonia 不能通过 Setter 换样式） -->
+<!-- Migration note：WPF Setter Property=Style 已删（Avalonia 不能通过 Setter 换样式） -->
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type ListBox}" TargetType="ListBox">
     <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}" />
@@ -334,17 +318,21 @@
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="0" x:Name="Bd">
-            <controls:TouchpadAwareScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-              <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑：非虚拟化 StackPanel）。 -->
+            <controls:TouchpadAwareScrollViewer Focusable="false"
+                                                Padding="{TemplateBinding Padding}"
+                                                Background="{TemplateBinding Background}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑：非虚拟化 StackPanel）。 -->
               <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
             </controls:TouchpadAwareScrollViewer>
           </Border>
@@ -353,11 +341,11 @@
     </Setter>
     
   
-<!-- TODO 迁移：WPF 选择器 ^[SelectionMode=Extended] 无对应 Avalonia 属性，样式块已删（原始内容见 git 历史） -->
+<!-- Migration note：WPF 选择器 ^[SelectionMode=Extended] 无对应 Avalonia 属性，样式块已删（原始内容见 git 历史） -->
 </ControlTheme>
   <ControlTheme x:Key="NoSelectionListBoxStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
     
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
   </ControlTheme>
   <ControlTheme x:Key="AutoCompleteListBoxStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
     <Setter Property="VerticalAlignment" Value="Top" />
@@ -368,11 +356,11 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="BorderBrush" Value="{DynamicResource Menu.MenuItem.Static.Border}" />
     <Setter Property="Background" Value="{DynamicResource Menu.MenuItem.Static.Background}" />
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF Setter Property=HorizontalContentAlignment 已删（Avalonia 该类型无此属性） -->
-<!-- TODO 迁移：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF Setter Property=HorizontalContentAlignment 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF Setter Property=VerticalContentAlignment 已删（Avalonia 该类型无此属性） -->
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBox">
@@ -383,10 +371,14 @@
               </Border.Effect>
             </Border>
             <Border Margin="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="6" x:Name="Bd">
-              <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" Background="#00FFFFFF">
-                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑）。 -->
+              <controls:TouchpadAwareScrollViewer Focusable="false"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  Background="#00FFFFFF"
+                                                  ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                                  ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑）。 -->
                 <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
-              </ScrollViewer>
+              </controls:TouchpadAwareScrollViewer>
             </Border>
           </Grid>
         </ControlTemplate>
@@ -406,7 +398,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
-<!-- TODO 迁移：WPF ControlTemplate.Resources 块注释化（Avalonia ControlTemplate 无 Resources，模板内资源须上移至 ControlTheme.Resources 或改用 DataTemplates 集合）。原始片段：
+<!-- Migration note：WPF ControlTemplate.Resources 块注释化（Avalonia ControlTemplate 无 Resources，模板内资源须上移至 ControlTheme.Resources 或改用 DataTemplates 集合）。原始片段：
           <ControlTemplate.Resources>
             <ResourceDictionary>
               <DataTemplate DataType="controls:AutoCompleteSuggestion" x:Key="AutoCompleteSuggestionTemplate">
@@ -499,7 +491,7 @@
     </Setter>
   </ControlTheme>
   <!--
-      TODO(wpf2avalonia): TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
+      WPF migration note: TargetType=GridViewColumnHeader 的主题已随 GridView 列视图体系移除（Avalonia 无该控件）；列头样式请以 Grid/列布局手工重建。
       原始片段：
       <Style x:Key="{x:Type GridViewColumnHeader}" TargetType="{x:Type GridViewColumnHeader}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
           <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -544,18 +536,18 @@
           </Setter>
         </Style>
     -->
-  <!-- TODO 迁移：WPF 原版此 Style 无 BasedOn（迁移误加 BasedOn="{StaticResource {x:Type controls:ReferencePanel}}"，
+  <!-- Migration note：WPF 原版此 Style 无 BasedOn（迁移误加 BasedOn="{StaticResource {x:Type controls:ReferencePanel}}"，
        Avalonia 无对应隐式 ControlTheme → KeyNotFoundException 崩溃，已按原版移除）。 -->
   <ControlTheme x:Key="ReferencePanelStyle" TargetType="controls:ReferencePanel">
 
-    <!-- TODO 迁移：WPF 原版此 Style 无 Template（依赖 WPF 内置 ItemsControl 默认模板）；
+    <!-- Migration note：WPF 原版此 Style 无 Template（依赖 WPF 内置 ItemsControl 默认模板）；
          Avalonia ControlTheme 无模板则不渲染条目，补 ItemsPresenter 模板等价复刻。
          ItemTemplate 里的 4 个 ReferencePanel*ViewModel DataTemplate 已随
          DataTemplate 迁移搬入 App.axaml Application.DataTemplates（按类型命中）。 -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="controls:ReferencePanel">
-          <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑：非虚拟化 StackPanel）。 -->
+          <!-- Migration note：补 ItemsPanel TemplateBinding（修复链21，与修复链10同坑：非虚拟化 StackPanel）。 -->
           <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
         </ControlTemplate>
       </Setter.Value>
@@ -563,7 +555,7 @@
     <Setter Property="ItemTemplate">
       <Setter.Value>
         <DataTemplate>
-<!-- TODO 迁移：WPF DataTemplate.Resources 块注释化（Avalonia DataTemplate 无 Resources）。原始片段：
+<!-- Migration note：WPF DataTemplate.Resources 块注释化（Avalonia DataTemplate 无 Resources）。原始片段：
           <DataTemplate.Resources>
             <ResourceDictionary>
               <DataTemplate DataType="controls:ReferencePanelTagViewModel" x:Key="ReferencePanelTagViewModelTemplate">

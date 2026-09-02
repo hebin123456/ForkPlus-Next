@@ -243,7 +243,7 @@ namespace ForkPlus.UI.Dialogs
 			AiStreamingView.UpdateTheme();
 		}
 
-		// TODO 迁移（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
+		// Migration note（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
 		// 窗口位置从未恢复）。改 OnOpened override（CustomWindow 已提供 OnOpened 虚链）。
 		protected override void OnOpened(EventArgs e)
 		{
@@ -255,11 +255,11 @@ namespace ForkPlus.UI.Dialogs
 			this.SetWindowLocationState(ForkPlusSettings.Default.AiResultWindowLocationState);
 			if (WpfApp.MainWindow?.WindowState == global::Avalonia.Controls.WindowState.Maximized)
 			{
-				WindowState = global::Avalonia.Controls.WindowState.Maximized; // TODO 迁移：自动转换误将属性名写成全限定类型名，恢复属性赋值。
+				WindowState = global::Avalonia.Controls.WindowState.Maximized; // Migration note：自动转换误将属性名写成全限定类型名，恢复属性赋值。
 			}
 		}
 
-		// TODO 迁移（根因）：原为非 override 的隐藏方法，CustomWindow.PositionChanged 的
+		// Migration note（根因）：原为非 override 的隐藏方法，CustomWindow.PositionChanged 的
 		// 虚分发永远到不了这里（移动窗口保存位置从未执行）。改 override 接入分发链。
 		protected override void OnLocationChanged(EventArgs e)
 		{
@@ -869,7 +869,7 @@ namespace ForkPlus.UI.Dialogs
 			try
 			{
 				AiSuggestionPreviewWindow window = new AiSuggestionPreviewWindow(_repositoryUserControl, suggestion.File, suggestion.Comment, suggestion.OldText, suggestion.NewText);
-				window.SetOwnerAndCenter(this); // TODO 迁移：WPF { Owner=this } → SetOwnerAndCenter。
+				window.SetOwnerAndCenter(this); // Migration note：WPF { Owner=this } → SetOwnerAndCenter。
 				if (window.ShowDialog().GetValueOrDefault())
 				{
 					ApplySuggestion(index);

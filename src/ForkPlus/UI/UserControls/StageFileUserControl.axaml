@@ -26,7 +26,7 @@
         <Button DockPanel.Dock="Left" ToolTip.Tip="Filter" Click="FilterButton_Click" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
           <Image Source="{DynamicResource SearchIcon}" />
         </Button>
-        <controls:DropDownButton DockPanel.Dock="Right" ToolTip.Tip="View Mode" ClickMode="Press" x:Name="FileListSettingsDropdownButton" Theme="{DynamicResource CodeEditorHeaderDropDownButtonStyle}">
+        <controls:DropDownButton DockPanel.Dock="Right" ToolTip.Tip="View Mode" x:Name="FileListSettingsDropdownButton" Theme="{DynamicResource CodeEditorHeaderDropDownButtonStyle}">
           <Image Source="{DynamicResource ListIcon}" VerticalAlignment="Center" />
           <controls:DropDownButton.ContextMenu>
             <ContextMenu Opened="FileListSettingsDropdownButton_ContextMenuOpened" />
@@ -46,7 +46,7 @@
           <TextBlock DockPanel.Dock="Left" Margin="0,3,0,3" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="UnstagedStatusTextBlock" />
         </DockPanel>
       </Border>
-      <userControls:FileListUserControl ColumnHeaderSizeChanged="UnstagedFilesFileListUserControl_ColumnHeaderSizeChanged" Grid.Row="3" EnableMultiSelection="True" x:Name="UnstagedFilesFileListUserControl">
+      <userControls:FileListUserControl ContextRequested="UnstagedFilesFileListUserControl_ContextMenuOpening" ColumnHeaderSizeChanged="UnstagedFilesFileListUserControl_ColumnHeaderSizeChanged" Grid.Row="3" EnableMultiSelection="True" x:Name="UnstagedFilesFileListUserControl">
         <userControls:FileListUserControl.ContextMenu>
           <ContextMenu />
         </userControls:FileListUserControl.ContextMenu>
@@ -63,7 +63,8 @@
           <TextBlock Text="Staged" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="10,2,4,3" FontSize="14" FontWeight="Medium" x:Name="StagedTitleTextBlock" />
         </DockPanel>
       </Border>
-      <userControls:FileListUserControl ColumnHeaderSizeChanged="StagedFilesFileListUserControl_ColumnHeaderSizeChanged" Grid.Row="2" EnableMultiSelection="True" x:Name="StagedFilesFileListUserControl">
+      <!-- Avalonia Grid 只有 2 行（0=header,1=list），原 Row=2 会导致布局/命中异常 -->
+      <userControls:FileListUserControl ContextRequested="StagedFilesFileListUserControl_ContextMenuOpening" ColumnHeaderSizeChanged="StagedFilesFileListUserControl_ColumnHeaderSizeChanged" Grid.Row="1" EnableMultiSelection="True" x:Name="StagedFilesFileListUserControl">
         <userControls:FileListUserControl.ContextMenu>
           <ContextMenu />
         </userControls:FileListUserControl.ContextMenu>
@@ -71,7 +72,7 @@
     </Grid>
     <GridSplitter Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Theme="{DynamicResource HorizontalGridSplitter}" />
     <GridSplitter Grid.Row="1" Grid.Column="1" Height="32" Background="#00FFFFFF" HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" IsTabStop="False">
-<!-- TODO 迁移：WPF GridSplitter.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF GridSplitter.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
     </GridSplitter>
     <GridSplitter Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" Theme="{DynamicResource HorizontalGridSplitter}" />

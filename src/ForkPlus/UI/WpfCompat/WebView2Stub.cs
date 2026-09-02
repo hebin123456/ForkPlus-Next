@@ -1,7 +1,7 @@
 // WPF → Avalonia 迁移兼容层：WebView2 占位实现
 // 原工程用 Microsoft.Web.WebView2（Windows-only WPF 控件）渲染 AI 对话的 markdown→HTML。
 // Avalonia 侧暂无内置 WebView；迁移期用纯文本占位控件保住调用面，HTML 以去标签文本显示。
-// TODO 迁移：接入跨平台 WebView（如 Avalonia WebView / CefNet / Native WebView handler）后删除本文件。
+// Migration note：接入跨平台 WebView（如 Avalonia WebView / CefNet / Native WebView handler）后删除本文件。
 
 using System;
 using System.Text.RegularExpressions;

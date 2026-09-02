@@ -1,16 +1,19 @@
 <UserControl xmlns:RepositoryOverview="clr-namespace:ForkPlus.UI.Dialogs.RepositoryOverview" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RepositoryOverview.RepositoryOverviewCommitsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <Grid>
-    <ListBox BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="RevisionsListBox">
+    <ListBox BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="RevisionsListBox" ContextRequested="RevisionsListBox_ContextMenuOpening" DoubleTapped="RevisionsListBoxItem_MouseDoubleClick">
       <ListBox.ContextMenu>
         <ContextMenu />
       </ListBox.ContextMenu>
       <ListBox.ItemContainerTheme>
-        <ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}" />
+        <ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource ListBoxItemStyle}">
+          <Setter Property="HorizontalAlignment" Value="Stretch" />
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </ControlTheme>
       </ListBox.ItemContainerTheme>
       <ListBox.ItemTemplate>
         <DataTemplate>
-          <DockPanel Height="20">
-            <Grid DockPanel.Dock="Left" Width="14" Height="14" Margin="2,0,0,0" VerticalAlignment="Center">
+          <Grid Height="20" HorizontalAlignment="Stretch" ColumnDefinitions="18,*,Auto">
+            <Grid Grid.Column="0" Width="14" Height="14" Margin="2,0,0,0" VerticalAlignment="Center">
               <controls:AvatarImage>
                 <controls:AvatarImage.UserIdentity>
                   <Binding Path="Author" />
@@ -20,21 +23,21 @@
                 </ToolTip.Tip>
               </controls:AvatarImage>
             </Grid>
-            <TextBlock DockPanel.Dock="Right" Margin="4,0,0,2" VerticalAlignment="Bottom" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorDateTextBlock">
-              <TextBlock.Text>
-                <Binding Path="AuthorDate" />
-              </TextBlock.Text>
-            </TextBlock>
-            <controls:AutoTooltipTextBlock Margin="4,0,2,2" FontSize="13" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis">
+            <controls:AutoTooltipTextBlock Grid.Column="1" Margin="4,0,2,2" FontSize="13" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis">
               <controls:AutoTooltipTextBlock.Text>
                 <Binding Path="Subject" />
               </controls:AutoTooltipTextBlock.Text>
             </controls:AutoTooltipTextBlock>
-          </DockPanel>
+            <TextBlock Grid.Column="2" Margin="4,0,4,2" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="AuthorDateTextBlock">
+              <TextBlock.Text>
+                <Binding Path="AuthorDate" />
+              </TextBlock.Text>
+            </TextBlock>
+          </Grid>
           
         
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                     <DataTrigger.Binding>

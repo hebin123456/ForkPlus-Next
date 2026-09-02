@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls;
@@ -8,7 +9,7 @@ using Avalonia.Interactivity;
 namespace ForkPlus.UI.Controls
 {
 	/// <summary>
-	/// TODO 迁移（根因）：WPF 原实现 override OnChecked/OnUnchecked（WPF ToggleButton 的虚方法），
+	/// Migration note（根因）：WPF 原实现 override OnChecked/OnUnchecked（WPF ToggleButton 的虚方法），
 	/// Avalonia ToggleButton 无这两个虚方法 → 方法从未被调用，下拉菜单永远打不开。
 	/// Avalonia 对应虚方法为 OnIsCheckedChanged（12.1.1 实证 virtual），在此打开/关闭 ContextMenu。
 	/// </summary>
@@ -34,8 +35,13 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
+			// 兼容 WPF 行为：下拉菜单宽度至少与触发按钮等宽（原版不会因某个长文本把菜单撑得很宽）。
+			// 这里用 MinWidth，既保证等宽，又避免某些菜单需要更宽时被硬裁剪。
+			contextMenu.MinWidth = Math.Max(contextMenu.MinWidth, Bounds.Width);
 			contextMenu.PlacementTarget = this;
 			contextMenu.Placement = PlacementMode.Bottom;
+
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, this);
 			contextMenu.Closed -= ContextMenu_Closed;
 			contextMenu.Closed += ContextMenu_Closed;
 			contextMenu.Open();

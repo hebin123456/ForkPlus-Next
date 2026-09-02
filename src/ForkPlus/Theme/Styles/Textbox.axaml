@@ -8,9 +8,9 @@
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     
-<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
@@ -24,7 +24,7 @@
     </Setter>
     
   
-<!-- TODO 迁移：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
         <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
     </Style>-->
@@ -35,5 +35,5 @@
     <Style Selector="^:focus /template/ Border#Border">
         <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
     </Style></ControlTheme>
-<!-- TODO 迁移：原 WPF PasswordBox 隐式样式（x:Key={x:Type PasswordBox}）Avalonia 无 PasswordBox 类型，pass7 误转成第二个 TextBox 主题导致资源重复键（运行时 Add 抛 ArgumentException），已删除；密码框语义由各 TextBox 元素上的 PasswordChar 属性承担。 -->
+<!-- Migration note：原 WPF PasswordBox 隐式样式（x:Key={x:Type PasswordBox}）Avalonia 无 PasswordBox 类型，pass7 误转成第二个 TextBox 主题导致资源重复键（运行时 Add 抛 ArgumentException），已删除；密码框语义由各 TextBox 元素上的 PasswordChar 属性承担。 -->
 </ResourceDictionary>

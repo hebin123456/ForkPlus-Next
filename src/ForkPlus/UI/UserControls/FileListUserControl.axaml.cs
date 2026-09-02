@@ -75,7 +75,12 @@ namespace ForkPlus.UI.UserControls
 		private ChangedFile[] _rawChangedFiles;
 
 		public static readonly global::Avalonia.StyledProperty<bool> EnableMultiSelectionProperty =
-    global::Avalonia.AvaloniaProperty.RegisterAttached<FileListUserControl, global::Avalonia.AvaloniaObject, bool>("EnableMultiSelection");
+    global::Avalonia.AvaloniaProperty.Register<FileListUserControl, bool>("EnableMultiSelection");
+
+		static FileListUserControl()
+		{
+			EnableMultiSelectionProperty.Changed.AddClassHandler<FileListUserControl>((x, e) => x.EnableMultiSelectionPropertyChanged(e));
+		}
 
 		private FileListMode _mode;
 
@@ -153,7 +158,12 @@ namespace ForkPlus.UI.UserControls
 
 		private void EnableMultiSelectionPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 		{
-			if (e.NewValue is bool && (bool)e.NewValue)
+			UpdateSelectionMode(e.NewValue is bool && (bool)e.NewValue);
+		}
+
+		private void UpdateSelectionMode(bool enableMultiSelection)
+		{
+			if (enableMultiSelection)
 			{
 				TreeView.SelectionMode = SelectionMode.Multiple;
 			}
@@ -171,6 +181,7 @@ namespace ForkPlus.UI.UserControls
 			FileListTreeView treeView = TreeView;
 			treeView.ItemsDrop = (EventHandler<FileListTreeView.DropEventArgs>)Delegate.Combine(treeView.ItemsDrop, new EventHandler<FileListTreeView.DropEventArgs>(TreeView_ItemsDrop));
 			TreeView.RootItem = new FileListItem(new ChangedFile("", staged: true), "", null);
+			UpdateSelectionMode(EnableMultiSelection);
 			RefreshTreeViewItemTemplate();
 		}
 
@@ -179,17 +190,28 @@ namespace ForkPlus.UI.UserControls
 			switch (Mode)
 			{
 			case FileListMode.List:
-				TreeView.ItemTemplate = base.Resources["ListViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
-{				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
-}				break;
+				TreeView.ItemTemplate = base.Resources["ListViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // Migration note：WPF DataTemplate 强转 → Avalonia IDataTemplate。
+				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
+				ApplyItemContainerTheme("TreeViewControlItemStyle");
+				break;
 			case FileListMode.Tree:
-				TreeView.ItemTemplate = base.Resources["TreeViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
-{				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
-}				break;
+				TreeView.ItemTemplate = base.Resources["TreeViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // Migration note：WPF DataTemplate 强转 → Avalonia IDataTemplate。
+				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.DefaultStyle);
+				ApplyItemContainerTheme("TreeViewControlItemStyle");
+				break;
 			case FileListMode.CombinedList:
-				TreeView.ItemTemplate = base.Resources["ListViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate 强转 → Avalonia IDataTemplate。
-{				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.GridViewStyle);
-}				break;
+				TreeView.ItemTemplate = base.Resources["CombinedListViewTemplate"] as global::Avalonia.Controls.Templates.IDataTemplate;
+				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(TreeView, global::ForkPlus.UI.Theme.FileListMultiselectionTreeView.GridViewStyle);
+				ApplyItemContainerTheme("TreeViewControlItemGridViewStyle");
+				break;
+			}
+		}
+
+		private void ApplyItemContainerTheme(string resourceKey)
+		{
+			if (Application.Current?.TryFindResource(resourceKey, out var resource) == true && resource is ControlTheme theme)
+			{
+				TreeView.ItemContainerTheme = theme;
 			}
 		}
 
@@ -237,12 +259,20 @@ namespace ForkPlus.UI.UserControls
 			e.Handled = true;
 			if (!_stopSelectionChangedEvents)
 			{
-				FileListItem[] array = TreeView.SelectedItems.CompactMap((object x) => x as FileListItem);
-				MultiselectionTreeViewItem[] items = array;
-				items.RefreshSelectionType();
-				ChangedFile selectedItem = ((array.Length != 0) ? array[0].ChangedFile : null);
-				SelectionChanged?.Invoke(this, new FileListEventArgs(selectedItem));
+				NotifySelectionChangedFromCurrentItems();
 			}
+		}
+
+		private void NotifySelectionChangedFromCurrentItems()
+		{
+			FileListItem[] array = TreeView.SelectedItems.CompactMap((object x) => x as FileListItem);
+			MultiselectionTreeViewItem[] items = array;
+			items.RefreshSelectionType();
+			FileListItem clickedFile = TreeView.LastClickedItem as FileListItem;
+			ChangedFile selectedItem = clickedFile != null && !clickedFile.IsDirectory
+				? clickedFile.ChangedFile
+				: array.FirstOrDefault((FileListItem x) => !x.IsDirectory)?.ChangedFile;
+			SelectionChanged?.Invoke(this, new FileListEventArgs(selectedItem));
 		}
 
 		private void TreeView_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
@@ -492,6 +522,7 @@ namespace ForkPlus.UI.UserControls
 			SelectItems(TreeView.RootItem.Children, selectedItemsToRestore);
 			if (TreeView.SelectedItems.Count > 0)
 			{
+				NotifySelectionChangedFromCurrentItems();
 				return;
 			}
 			FileListItem fileListItem = selectedItemsToRestore.Last();
@@ -506,6 +537,7 @@ namespace ForkPlus.UI.UserControls
 					if (!fileListItem3.IsDirectory)
 					{
 						TreeView.SelectAndFocus(fileListItem3);
+						NotifySelectionChangedFromCurrentItems();
 						return;
 					}
 					fileListItem3 = fileListItem3.Next() as FileListItem;
@@ -518,6 +550,7 @@ namespace ForkPlus.UI.UserControls
 					if (!fileListItem4.IsDirectory)
 					{
 						TreeView.SelectAndFocus(fileListItem4);
+						NotifySelectionChangedFromCurrentItems();
 						return;
 					}
 					fileListItem4 = fileListItem4.Previous() as FileListItem;
@@ -525,6 +558,7 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			SelectLastAvailableFile();
+			NotifySelectionChangedFromCurrentItems();
 		}
 
 		private void SelectLastAvailableFile()

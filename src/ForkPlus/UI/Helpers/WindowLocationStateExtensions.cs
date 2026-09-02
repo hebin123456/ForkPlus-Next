@@ -161,7 +161,7 @@ namespace ForkPlus.UI.Helpers
 		[DllImport("user32.dll")]
 		private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
-		// TODO 迁移：Win32 GetWindowPlacement/SetWindowPlacement 在 Linux/macOS 抛 DllNotFoundException。
+		// Migration note：Win32 GetWindowPlacement/SetWindowPlacement 在 Linux/macOS 抛 DllNotFoundException。
 		// Unix 路径改用 Avalonia 原生 API（Position 物理像素 + Width/Height/Bounds DIP）。
 		// Avalonia 无 RestoreBounds API（12.1.1 实证），用 ConditionalWeakTable 缓存"正常态"边界：
 		// 最大化/最小化时取缓存（等价 Win32 placement.normalPosition 还原矩形）。
@@ -173,7 +173,7 @@ namespace ForkPlus.UI.Helpers
 			{
 				return;
 			}
-			// TODO 迁移：Unix 上 Win32 SetWindowPlacement 不可用；Width/Height 是 DIP 可直接赋值，
+			// Migration note：Unix 上 Win32 SetWindowPlacement 不可用；Width/Height 是 DIP 可直接赋值，
 			// Position 是物理像素需乘 RenderScaling。先设几何再切最大化（WPF 同序）。
 			if (!OperatingSystem.IsWindows())
 			{
@@ -233,7 +233,7 @@ namespace ForkPlus.UI.Helpers
 		}
 
 		/// <summary>
-		/// TODO 迁移：Unix 路径的窗口几何读取。最大化/最小化时返回缓存的正常态边界（等价
+		/// Migration note：Unix 路径的窗口几何读取。最大化/最小化时返回缓存的正常态边界（等价
 		/// Win32 placement.normalPosition 还原矩形语义）；正常态实时读取并刷新缓存。
 		/// </summary>
 		private static WindowLocationState GetWindowLocationStateAvalonia(Window window)
@@ -290,7 +290,7 @@ namespace ForkPlus.UI.Helpers
 
 		public static bool AutoHideEnabled()
 		{
-			// TODO 迁移：任务栏自动隐藏探测（SHAppBarMessage）是 Windows 专属，Unix 恒 false。
+			// Migration note：任务栏自动隐藏探测（SHAppBarMessage）是 Windows 专属，Unix 恒 false。
 			if (DesignTimeHelper.IsInDesignMode() || !OperatingSystem.IsWindows())
 			{
 				return false;
@@ -311,7 +311,7 @@ namespace ForkPlus.UI.Helpers
 				unitY = (int)pixelY;
 				return;
 			}
-			// TODO 迁移：WPF PresentationSource.FromVisual(visual).CompositionTarget.TransformToDevice
+			// Migration note：WPF PresentationSource.FromVisual(visual).CompositionTarget.TransformToDevice
 			// 提供 DIP→像素矩阵（PresentationSource 在 Avalonia 是内部类，CS0122）；
 			// Avalonia 等价物是 TopLevel.RenderScaling（设备缩放比，对应矩阵的 M11/M22）。
 			double transformToDevice = GetVisualScaling(visual);
@@ -335,7 +335,7 @@ namespace ForkPlus.UI.Helpers
 				pixelY = (int)unitY;
 				return;
 			}
-			// TODO 迁移：同 TransformFromPixels——PresentationSource（Avalonia 内部类，CS0122）
+			// Migration note：同 TransformFromPixels——PresentationSource（Avalonia 内部类，CS0122）
 			// 改用 TopLevel.RenderScaling 做 DIP↔像素换算。
 			double transformToDevice = GetVisualScaling(visual);
 			if (transformToDevice > 0.0)
@@ -353,7 +353,7 @@ namespace ForkPlus.UI.Helpers
 		/// <summary>取 visual 所在 TopLevel 的设备缩放比（无 TopLevel 时按 1.0 处理）。</summary>
 		private static double GetVisualScaling(Visual visual)
 		{
-			global::Avalonia.Controls.TopLevel topLevel = global::Avalonia.Controls.TopLevel.GetTopLevel(visual); // TODO 迁移：TopLevel 在 Controls 命名空间。
+			global::Avalonia.Controls.TopLevel topLevel = global::Avalonia.Controls.TopLevel.GetTopLevel(visual); // Migration note：TopLevel 在 Controls 命名空间。
 			return topLevel?.RenderScaling ?? 1.0;
 		}
 

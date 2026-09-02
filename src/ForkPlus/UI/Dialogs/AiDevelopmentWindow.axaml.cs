@@ -222,7 +222,7 @@ namespace ForkPlus.UI.Dialogs
 				Brushes.Gray);
 		}
 
-		// TODO 迁移（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
+		// Migration note（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
 		// 窗口位置从未恢复）。改 OnOpened override（CustomWindow 已提供 OnOpened 虚链）。
 		protected override void OnOpened(EventArgs e)
 		{
@@ -233,7 +233,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (WpfApp.MainWindow?.WindowState == global::Avalonia.Controls.WindowState.Maximized)
 		{
-			WindowState = global::Avalonia.Controls.WindowState.Maximized; // TODO 迁移：自动转换误将属性名写成全限定类型名，恢复属性赋值。
+			WindowState = global::Avalonia.Controls.WindowState.Maximized; // Migration note：自动转换误将属性名写成全限定类型名，恢复属性赋值。
 		}
 		}
 
@@ -278,7 +278,7 @@ namespace ForkPlus.UI.Dialogs
 				Text = PreferencesLocalization.Current("Describe your development requirement below. The AI will analyze your codebase and generate file changes. You can have a continuous conversation - the AI remembers previous context in this session."),
 				FontSize = 12,
 				TextWrapping = TextWrapping.Wrap,
-				Foreground = (Brush)this.TryFindResource("SecondaryLabelBrush"), // TODO 迁移：WPF FindResource → TryFindResource 兼容扩展。
+				Foreground = (Brush)this.TryFindResource("SecondaryLabelBrush"), // Migration note：WPF FindResource → TryFindResource 兼容扩展。
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 			panel.Children.Add(title);

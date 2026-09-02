@@ -50,6 +50,7 @@ namespace ForkPlus.UI.Controls
 		public CustomAdorner(global::Avalonia.Input.InputElement adornernedElement, bool centeredHorizontally = false)
 			: base(adornernedElement)
 		{
+			IsHitTestVisible = true;
 			_centeredHorizontallyInParent = centeredHorizontally;
 		}
 

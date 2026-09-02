@@ -1,5 +1,5 @@
 <ui:CustomWindow xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.FileHistoryWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns="https://github.com/avaloniaui">
-  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
        Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
        搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
   <ui:CustomWindow.DataTemplates>
@@ -74,7 +74,7 @@
         
       
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>
@@ -171,7 +171,7 @@
         
       
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>

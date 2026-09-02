@@ -1,5 +1,5 @@
 <TabItem xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.IssuesTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
        Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
        搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
   <TabItem.DataTemplates>

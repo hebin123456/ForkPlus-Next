@@ -85,7 +85,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		public MergeCodeEditor()
 		{
-			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
+			// Migration note：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			Theme = ForkPlusSettings.Default.Theme;
 			_mergeChunkSelectionLayer = new MergeChunkSelectionLayer(this);
 			base.TextArea.TextView.InsertLayer(_mergeChunkSelectionLayer, KnownLayer.Selection, LayerInsertionPosition.Above);

@@ -6,11 +6,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
-// TODO 迁移：HeaderedContentControl / HeaderedItemsControl 在 Avalonia 12 位于 Primitives 命名空间。
+// Migration note：HeaderedContentControl / HeaderedItemsControl 在 Avalonia 12 位于 Primitives 命名空间。
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
-// TODO 迁移：逻辑树遍历用 Avalonia 原生 LogicalExtensions（WPF LogicalTreeHelper.GetChildren 的等价物）。
+// Migration note：逻辑树遍历用 Avalonia 原生 LogicalExtensions（WPF LogicalTreeHelper.GetChildren 的等价物）。
 using Avalonia.LogicalTree;
 using System.Text.RegularExpressions;
 using ForkPlus.Settings;
@@ -34,7 +34,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private const string LanguagesDirectoryName = "Languages";
 
-		// TODO 迁移：WPF 里这些附加属性注册在静态类 PreferencesLocalization 上；
+		// Migration note：WPF 里这些附加属性注册在静态类 PreferencesLocalization 上；
 		// Avalonia 的 AvaloniaProperty.RegisterAttached<TOwner,...> 要求 TOwner 是非静态的
 		// AvaloniaObject 派生类型（静态类做类型参数会报 CS0718），
 		// 故引入该内部占位类作为 owner。属性仍可附加到任意 AvaloniaObject，语义与 WPF 相同。
@@ -300,7 +300,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		IEnumerable logicalChildren;
 		try
 		{
-			// TODO 迁移：WPF LogicalTreeHelper.GetChildren(element) →
+			// Migration note：WPF LogicalTreeHelper.GetChildren(element) →
 			// Avalonia 的 LogicalExtensions.GetLogicalChildren（WpfCompat 的 LogicalTreeHelper
 			// 未提供 GetChildren，这里直接用 Avalonia 原生逻辑树遍历）。
 			logicalChildren = (element as global::Avalonia.LogicalTree.ILogical)?.GetLogicalChildren();
@@ -328,8 +328,16 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private static void ApplyElementCore(global::Avalonia.AvaloniaObject element, Dictionary<string, string> dictionary)
 		{
+			if (element is StyledElement { DataContext: global::ForkPlus.UI.Dialogs.WorkspaceViewModel })
+			{
+				return;
+			}
 			if (element is TextBlock textBlock)
 			{
+				if (IsWorkspaceToolbarTitleElement(element))
+				{
+					return;
+				}
 				if (!HasBinding(element, TextBlock.TextProperty))
 				{
 					string original = GetOriginal(element, OriginalTextProperty, textBlock.Text);
@@ -364,7 +372,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 					placeholderTextBox.Placeholder = Translate(original, dictionary);
 				}
 			}
-			// TODO 迁移：WPF FrameworkElement.ToolTip 实例属性 / Control.ToolTipProperty 在 Avalonia
+			// Migration note：WPF FrameworkElement.ToolTip 实例属性 / Control.ToolTipProperty 在 Avalonia
 		// 是附加属性 ToolTip.Tip，读取用 ToolTip.GetTip，属性对象是 ToolTip.TipProperty。
 		if (element is global::Avalonia.Controls.Control frameworkElement && global::Avalonia.Controls.ToolTip.GetTip(frameworkElement) is string toolTip && !HasBinding(element, global::Avalonia.Controls.ToolTip.TipProperty))
 			{
@@ -378,14 +386,41 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			if (element is ToolbarDropDownButton toolbarDropDownButton)
 			{
+				if (toolbarDropDownButton.Name == "WorkspacesToolbarDropdownButton")
+				{
+					return;
+				}
 				string original = GetOriginal(element, OriginalTitleProperty, toolbarDropDownButton.Title);
 				toolbarDropDownButton.Title = Translate(original, dictionary);
 			}
 		}
 
+		private static bool IsWorkspaceToolbarTitleElement(global::Avalonia.AvaloniaObject element)
+		{
+			if (element is ToolbarDropDownButton toolbarDropDownButton)
+			{
+				return toolbarDropDownButton.Name == "WorkspacesToolbarDropdownButton";
+			}
+			if (element is StyledElement styledElement && styledElement.TemplatedParent is ToolbarDropDownButton templatedButton)
+			{
+				return templatedButton.Name == "WorkspacesToolbarDropdownButton";
+			}
+			if (element is global::Avalonia.Visual visual)
+			{
+				foreach (global::Avalonia.Visual ancestor in global::Avalonia.VisualTree.VisualExtensions.GetVisualAncestors(visual))
+				{
+					if (ancestor is ToolbarDropDownButton ancestorButton)
+					{
+						return ancestorButton.Name == "WorkspacesToolbarDropdownButton";
+					}
+				}
+			}
+			return false;
+		}
+
 		private static bool HasBinding(global::Avalonia.AvaloniaObject element, global::Avalonia.AvaloniaProperty property)
 	{
-		// TODO 迁移：WPF 用 BindingOperations.GetBindingExpressionBase(element, property) 判断属性
+		// Migration note：WPF 用 BindingOperations.GetBindingExpressionBase(element, property) 判断属性
 		// 是否被数据绑定占用，有绑定就跳过翻译，避免覆盖绑定值。
 		// Avalonia 12 没有公开 API 查询已有 Binding（WpfCompat 的 BindingCompat 也未提供），
 		// 只能恒返回 false（不跳过翻译）。Avalonia 的绑定与本地值同处 LocalValue 优先级，

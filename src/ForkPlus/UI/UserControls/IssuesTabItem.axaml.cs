@@ -10,6 +10,7 @@ using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Helpers;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using Avalonia.Layout;
@@ -38,7 +39,7 @@ namespace ForkPlus.UI.UserControls
 
 		private string _searchQuery;
 
-		private ScrollViewer ScrollViewer => (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(TreeView, 0), 0);
+		private ScrollViewer ScrollViewer => ScrollViewerHelper.FindScrollViewer(TreeView);
 
 		public RepositoryUserControl RepositoryUserControl { get; private set; }
 
@@ -56,7 +57,7 @@ namespace ForkPlus.UI.UserControls
 				}
 			};
 			FilterTextBox.DropdownContextMenuOpened += FilterTextBox_DropdownContextMenuOpened;
-			// TODO 迁移：WPF ItemContainerGenerator.StatusChanged（容器生成完成通知）在 Avalonia 12 不存在；
+			// Migration note：WPF ItemContainerGenerator.StatusChanged（容器生成完成通知）在 Avalonia 12 不存在；
 			// 改为挂一次 LayoutUpdated（首次布局完成即容器已生成），回调里立即取消挂载，
 			// 保持原语义"容器生成完后再挂 ScrollViewer.ScrollChanged"（ScrollViewer 依赖视觉树查找）。
 			TreeView.LayoutUpdated += TreeView_LayoutInitializedOnce;
@@ -107,8 +108,13 @@ namespace ForkPlus.UI.UserControls
 
 		private void TreeView_LayoutInitializedOnce(object sender, EventArgs e)
 		{
+			ScrollViewer scrollViewer = ScrollViewer;
+			if (scrollViewer == null)
+			{
+				return;
+			}
 			TreeView.LayoutUpdated -= TreeView_LayoutInitializedOnce;
-			ScrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+			scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
 		}
 
 		private void FilterTextBox_DropdownContextMenuOpened(object sender, EventArgs e)
@@ -210,13 +216,13 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			if (VisualTreeHelper.GetChildrenCount(TreeView) == 0)
+			ScrollViewer scrollViewer = ScrollViewer;
+			if (scrollViewer == null)
 			{
 				Log.Debug("Refresh: Layout is not initialized. Request the first page");
 				LoadNext();
 				return;
 			}
-			ScrollViewer scrollViewer = ScrollViewer;
 			double num = scrollViewer.Offset.Y + scrollViewer.Viewport.Height;
 			if ((double)_root.Children.Count <= scrollViewer.Viewport.Height)
 			{

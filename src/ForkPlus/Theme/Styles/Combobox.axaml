@@ -41,7 +41,7 @@
     </Setter>
   
     <Style Selector="^:disabled /template/ Border#Bd">
-<!-- TODO 迁移：WPF Foreground Setter 已删（Avalonia Border 无 Foreground 属性） -->
+        <Setter Property="Opacity" Value="0.56" />
     </Style>
     <Style Selector="^:selected /template/ Border#SelectionIndicator">
         <Setter Property="IsVisible" Value="True" />
@@ -87,7 +87,6 @@
     
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
     <Setter Property="Focusable" Value="false" />
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
@@ -102,132 +101,28 @@
       </Setter.Value>
     </Setter>
   
-<!-- TODO 迁移：WPF 选择器 ^[IsEditable=true] /template/ Border#splitBorder 无对应 Avalonia 属性，样式块注释化。原始片段：
-    <Style Selector="^[IsEditable=true] /template/ Border#splitBorder">
-        <Setter Value="{DynamicResource ComboBox.Static.Editable.Button.Background}" Property="Background" />
-        <Setter Value="{DynamicResource ComboBox.Static.Editable.Button.Border}" Property="BorderBrush" />
-    </Style>-->
-
+    <Style Selector="^:pointerover /template/ Border#templateRoot">
+        <Setter Value="{DynamicResource ComboBox.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource ComboBox.Pressed.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#templateRoot">
+        <Setter Value="{DynamicResource ComboBox.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource ComboBox.Pressed.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#templateRoot">
+        <Setter Value="{DynamicResource ComboBox.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource ComboBox.Pressed.Border}" Property="BorderBrush" />
+    </Style>
     <Style Selector="^:pressed /template/ Path#arrow">
+        <Setter Value="{DynamicResource ComboBox.Pressed.Glyph}" Property="Fill" />
+    </Style>
+    <Style Selector="^:checked /template/ Path#arrow">
         <Setter Value="{DynamicResource ComboBox.Pressed.Glyph}" Property="Fill" />
     </Style>
     <Style Selector="^:disabled /template/ Border#templateRoot">
         <Setter Property="Opacity" Value="0.56" />
     </Style>
-    <!--
-      TODO(wpf2avalonia): 多条件 MultiDataTrigger（控件属性）需人工改写为段链选择器（^:a[Prop=v] /template/ …）。
-      原始片段：
-      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
-                    <MultiDataTrigger.Conditions>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsEditable"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ComboBox}" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsMouseOver"><Binding.RelativeSource><RelativeSource Mode="Self" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsPressed"><Binding.RelativeSource><RelativeSource Mode="Self" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsEnabled"><Binding.RelativeSource><RelativeSource Mode="Self" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                    </MultiDataTrigger.Conditions>
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Static.Editable.Background}" Property="Background" />
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Static.Editable.Border}" Property="BorderBrush" />
-                  </MultiDataTrigger>
-    -->
-    <!--
-      TODO(wpf2avalonia): 多条件 MultiDataTrigger（控件属性）需人工改写为段链选择器（^:a[Prop=v] /template/ …）。
-      原始片段：
-      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
-                    <MultiDataTrigger.Conditions>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsPressed"><Binding.RelativeSource><RelativeSource Mode="Self" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsEditable"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ComboBox}" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                    </MultiDataTrigger.Conditions>
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Pressed.Background}" Property="Background" />
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Pressed.Border}" Property="BorderBrush" />
-                  </MultiDataTrigger>
-    -->
-    <!--
-      TODO(wpf2avalonia): 多条件 MultiDataTrigger（控件属性）需人工改写为段链选择器（^:a[Prop=v] /template/ …）。
-      原始片段：
-      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
-                    <MultiDataTrigger.Conditions>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsPressed"><Binding.RelativeSource><RelativeSource Mode="Self" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsEditable"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ComboBox}" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                    </MultiDataTrigger.Conditions>
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Pressed.Editable.Background}" Property="Background" />
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Pressed.Editable.Border}" Property="BorderBrush" />
-                    <Setter TargetName="splitBorder" Value="{DynamicResource ComboBox.Pressed.Editable.Button.Background}" Property="Background" />
-                    <Setter TargetName="splitBorder" Value="{DynamicResource ComboBox.Pressed.Editable.Button.Border}" Property="BorderBrush" />
-                  </MultiDataTrigger>
-    -->
-    <!--
-      TODO(wpf2avalonia): 多条件 MultiDataTrigger（控件属性）需人工改写为段链选择器（^:a[Prop=v] /template/ …）。
-      原始片段：
-      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
-                    <MultiDataTrigger.Conditions>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsChecked"><Binding.RelativeSource><RelativeSource Mode="Self" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsEditable"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ComboBox}" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                    </MultiDataTrigger.Conditions>
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Pressed.Background}" Property="Background" />
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Pressed.Border}" Property="BorderBrush" />
-                  </MultiDataTrigger>
-    -->
-    <!--
-      TODO(wpf2avalonia): 多条件 MultiDataTrigger（控件属性）需人工改写为段链选择器（^:a[Prop=v] /template/ …）。
-      原始片段：
-      <MultiDataTrigger xmlns="https://github.com/avaloniaui">
-                    <MultiDataTrigger.Conditions>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsChecked"><Binding.RelativeSource><RelativeSource Mode="Self" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                      <Condition Value="true">
-                        <Condition.Binding>
-                          <Binding Path="IsEditable"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ComboBox}" /></Binding.RelativeSource></Binding>
-                        </Condition.Binding>
-                      </Condition>
-                    </MultiDataTrigger.Conditions>
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Pressed.Editable.Background}" Property="Background" />
-                    <Setter TargetName="templateRoot" Value="{DynamicResource ComboBox.Pressed.Editable.Border}" Property="BorderBrush" />
-                    <Setter TargetName="splitBorder" Value="{DynamicResource ComboBox.Pressed.Editable.Button.Background}" Property="Background" />
-                    <Setter TargetName="splitBorder" Value="{DynamicResource ComboBox.Pressed.Editable.Button.Border}" Property="BorderBrush" />
-                  </MultiDataTrigger>
-    --></ControlTheme>
+  </ControlTheme>
   <ControlTemplate x:Key="ComboBoxTemplate" TargetType="ComboBox">
     <Grid x:Name="templateRoot">
       <Grid.ColumnDefinitions>
@@ -236,7 +131,7 @@
       </Grid.ColumnDefinitions>
       <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="1" Margin="1" x:Name="PART_Popup">
         <Popup.IsOpen>
-          <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+          <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
         <Border Theme="{DynamicResource ComboboxShadowBorderStyle}">
           <Border MaxHeight="{TemplateBinding MaxDropDownHeight}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1,1,1,1" CornerRadius="6" x:Name="dropDownBorder">
@@ -258,7 +153,6 @@
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，非虚拟化坑）。 -->
                 <ItemsPresenter x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
               </Grid>
             </ScrollViewer>
@@ -267,50 +161,19 @@
       </Popup>
       <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" x:Name="toggleButton" Theme="{StaticResource ComboBoxToggleButton}">
         <ToggleButton.IsChecked>
-          <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+          <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
       <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="contentPresenter" />
     </Grid>
-    <!--
-      TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
-      原始片段：
-      <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
-            <Trigger Property="ItemsControl.HasItems" Value="false">
-              <Setter TargetName="dropDownBorder" Property="FrameworkElement.Height" Value="95" />
-            </Trigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="ItemsControl.IsGrouping" Value="true" />
-                <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false" />
-              </MultiTrigger.Conditions>
-              <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
-            </MultiTrigger>
-            <Trigger SourceName="DropDownScrollViewer" Property="ScrollViewer.CanContentScroll" Value="false">
-              <Setter TargetName="opaqueRect" Property="Canvas.Top">
-                <Setter.Value>
-                  <Binding ElementName="DropDownScrollViewer" Path="VerticalOffset" Mode="OneWay" />
-                </Setter.Value>
-              </Setter>
-              <Setter TargetName="opaqueRect" Property="Canvas.Left">
-                <Setter.Value>
-                  <Binding ElementName="DropDownScrollViewer" Path="HorizontalOffset" Mode="OneWay" />
-                </Setter.Value>
-              </Setter>
-            </Trigger>
-          </ControlTemplate.Triggers>
-    -->
   </ControlTemplate>
   <ControlTheme x:Key="ComboBoxEditableTextBox" TargetType="TextBox">
     
-<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
     <Setter Property="MinWidth" Value="0" />
     <Setter Property="MinHeight" Value="0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
@@ -327,7 +190,7 @@
       </Grid.ColumnDefinitions>
       <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" x:Name="PART_Popup">
         <Popup.IsOpen>
-          <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+          <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
         <Border Theme="{DynamicResource ComboboxShadowBorderStyle}">
           <Border MaxHeight="{TemplateBinding MaxDropDownHeight}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1,1,1,1" CornerRadius="6" x:Name="dropDownBorder">
@@ -349,7 +212,6 @@
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，非虚拟化坑）。 -->
                 <ItemsPresenter x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
               </Grid>
             </ScrollViewer>
@@ -358,7 +220,7 @@
       </Popup>
       <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" x:Name="toggleButton" Theme="{StaticResource ComboBoxToggleButton}">
         <ToggleButton.IsChecked>
-          <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+          <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
       <Border Margin="0" CornerRadius="3,0,0,3" BorderThickness="1" Padding="4,2" Background="{DynamicResource TextBox.Static.Background}" BorderBrush="#00FFFFFF" x:Name="border">
@@ -369,38 +231,6 @@
         </TextBox>
       </Border>
     </Grid>
-    <!--
-      TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
-      原始片段：
-      <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
-            <Trigger Property="UIElement.IsKeyboardFocusWithin" Value="true">
-              <Setter Value="{DynamicResource ForegroundBrush}" Property="TextElement.Foreground" />
-              <Setter TargetName="border" Value="{DynamicResource AccentBrush}" Property="Border.BorderBrush" />
-            </Trigger>
-            <Trigger Property="ItemsControl.HasItems" Value="false">
-              <Setter TargetName="dropDownBorder" Property="FrameworkElement.Height" Value="95" />
-            </Trigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="ItemsControl.IsGrouping" Value="true" />
-                <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false" />
-              </MultiTrigger.Conditions>
-              <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
-            </MultiTrigger>
-            <Trigger SourceName="DropDownScrollViewer" Property="ScrollViewer.CanContentScroll" Value="false">
-              <Setter TargetName="opaqueRect" Property="Canvas.Top">
-                <Setter.Value>
-                  <Binding ElementName="DropDownScrollViewer" Path="VerticalOffset" Mode="OneWay" />
-                </Setter.Value>
-              </Setter>
-              <Setter TargetName="opaqueRect" Property="Canvas.Left">
-                <Setter.Value>
-                  <Binding ElementName="DropDownScrollViewer" Path="HorizontalOffset" Mode="OneWay" />
-                </Setter.Value>
-              </Setter>
-            </Trigger>
-          </ControlTemplate.Triggers>
-    -->
   </ControlTemplate>
   <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox">
     
@@ -412,25 +242,15 @@
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Padding" Value="6,3,0,3" />
     <Setter Property="Height" Value="24" />
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}" />
     
   
-<!-- TODO 迁移：WPF 选择器 ^[IsEditable=true] 无对应 Avalonia 属性，样式块注释化。原始片段：
-    <Style Selector="^[IsEditable=true]">
-        <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
-        <Setter Property="Padding" Value="2" />
-        <Setter Property="Template" Value="{StaticResource ComboBoxEditableTemplate}" />
-    </Style>-->
 </ControlTheme>
   <ControlTheme x:Key="InteractiveRebaseToggleButton" TargetType="ToggleButton">
     
     <Setter Property="Margin" Value="0,2,0,2" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
     <Setter Property="Focusable" Value="false" />
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
       <Setter.Value>
@@ -456,7 +276,7 @@
       </Grid.ColumnDefinitions>
       <Popup Grid.ColumnSpan="2" Placement="Bottom" HorizontalOffset="-8" VerticalOffset="-8" Margin="1" TextElement.Foreground="{DynamicResource ForegroundBrush}" x:Name="PART_Popup">
         <Popup.IsOpen>
-          <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+          <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </Popup.IsOpen>
         <Border Theme="{DynamicResource ComboboxShadowBorderStyle}">
           <Border BorderBrush="{DynamicResource ComboBox.Popup.BorderBrush}" BorderThickness="1,1,1,1" Background="{DynamicResource ComboBox.Popup.BackgroundBrush}" MaxHeight="{TemplateBinding MaxDropDownHeight}" CornerRadius="6" x:Name="dropDownBorder">
@@ -478,7 +298,6 @@
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
-                <!-- TODO 迁移：补 ItemsPanel TemplateBinding（修复链21，非虚拟化坑）。 -->
                 <ItemsPresenter x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
               </Grid>
             </ScrollViewer>
@@ -487,39 +306,11 @@
       </Popup>
       <ToggleButton BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Foreground="{TemplateBinding Foreground}" Grid.ColumnSpan="2" x:Name="toggleButton" Theme="{StaticResource InteractiveRebaseToggleButton}">
         <ToggleButton.IsChecked>
-          <Binding Path="IsDropDownOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+          <Binding Path="IsDropDownOpen" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
         </ToggleButton.IsChecked>
       </ToggleButton>
       <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="false" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" TextElement.Foreground="{TemplateBinding Foreground}" x:Name="contentPresenter" />
     </Grid>
-    <!--
-      TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
-      原始片段：
-      <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
-            <Trigger Property="ItemsControl.HasItems" Value="false">
-              <Setter TargetName="dropDownBorder" Property="FrameworkElement.Height" Value="95" />
-            </Trigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="ItemsControl.IsGrouping" Value="true" />
-                <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false" />
-              </MultiTrigger.Conditions>
-              <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
-            </MultiTrigger>
-            <Trigger SourceName="DropDownScrollViewer" Property="ScrollViewer.CanContentScroll" Value="false">
-              <Setter TargetName="opaqueRect" Property="Canvas.Top">
-                <Setter.Value>
-                  <Binding ElementName="DropDownScrollViewer" Path="VerticalOffset" Mode="OneWay" />
-                </Setter.Value>
-              </Setter>
-              <Setter TargetName="opaqueRect" Property="Canvas.Left">
-                <Setter.Value>
-                  <Binding ElementName="DropDownScrollViewer" Path="HorizontalOffset" Mode="OneWay" />
-                </Setter.Value>
-              </Setter>
-            </Trigger>
-          </ControlTemplate.Triggers>
-    -->
   </ControlTemplate>
   <ControlTheme x:Key="InteractiveRebaseComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
     
@@ -529,14 +320,5 @@
     <Setter Property="BorderBrush" Value="#00FFFFFF" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Template" Value="{StaticResource InteractiveRebaseComboBoxTemplate}" />
-<!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
-    <Style.Resources>
-      <ResourceDictionary>
-        <ControlTheme x:Key="{x:Type ComboBoxItem}" TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-          
-        </ControlTheme>
-      </ResourceDictionary>
-    </Style.Resources>-->
-
   </ControlTheme>
 </ResourceDictionary>

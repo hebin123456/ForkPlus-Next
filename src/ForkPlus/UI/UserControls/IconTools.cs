@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
-// TODO 迁移：Imaging / Int32Rect / BitmapSizeOptions 来自 WPF System.Windows.Media.Imaging，
+// Migration note：Imaging / Int32Rect / BitmapSizeOptions 来自 WPF System.Windows.Media.Imaging，
 // 兼容层已在 WpfCompat.Batch2.cs 重建同名命名空间，这里显式引入。
 using System.Windows.Media.Imaging;
 using Avalonia;
@@ -69,7 +69,7 @@ namespace ForkPlus.UI.UserControls
 
 		public static Icon GetIconForFile(string filename, ShellIconSize size)
 		{
-			// TODO 迁移：SHGetFileInfo（shell32.dll）是 Windows 专属。Linux/macOS 抛
+			// Migration note：SHGetFileInfo（shell32.dll）是 Windows 专属。Linux/macOS 抛
 			// DllNotFoundException——实证：点击提交行 → RevisionDetails 文件列表建图标缓存
 			// → 崩溃整个应用（2026-08-30 fork.log）。Unix 无系统图标 API，返回 null，
 			// 由 GetImageSourceForExtension 提供 BinaryFile 占位图标。
@@ -112,7 +112,7 @@ namespace ForkPlus.UI.UserControls
 			return GetImageSourceForExtension(extension, iconsize);
 		}
 
-		// TODO 迁移：Unix 无 SHGetFileInfo/ExtractAssociatedIcon（shell32 + System.Drawing 均
+		// Migration note：Unix 无 SHGetFileInfo/ExtractAssociatedIcon（shell32 + System.Drawing 均
 		// Windows 专属）。用内置 BinaryFile 图标做统一占位（96x128 原图，列表显示时按目标
 		// 尺寸缩放），保证文件列表/历史/blame 等视图有图标可显示。后续可按 freedesktop
 		// 图标主题（xdg-icon/resource）实现按扩展名取真实图标。
@@ -157,7 +157,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			try
 			{
-				// TODO 迁移：WPF Imaging.CreateBitmapSourceFromHIcon 由兼容层 stub 提供
+				// Migration note：WPF Imaging.CreateBitmapSourceFromHIcon 由兼容层 stub 提供
 				//（当前返回 null，GDI HICON → Avalonia Bitmap 转换待补）。
 				value = Imaging.CreateBitmapSourceFromHIcon(iconForExtension.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
 			}
@@ -178,7 +178,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return imageSource;
 			}
-			// TODO 迁移：Icon.ExtractAssociatedIcon（System.Drawing.Common）在 .NET 6+ 仅支持
+			// Migration note：Icon.ExtractAssociatedIcon（System.Drawing.Common）在 .NET 6+ 仅支持
 			// Windows，Unix 走 BinaryFile 占位图标（同 GetImageSourceForExtension）。
 			if (!OperatingSystem.IsWindows())
 			{
@@ -186,7 +186,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			try
 		{
-			// TODO 迁移：WPF Imaging.CreateBitmapSourceFromHIcon 由兼容层 stub 提供
+			// Migration note：WPF Imaging.CreateBitmapSourceFromHIcon 由兼容层 stub 提供
 			//（当前返回 null，GDI HICON → Avalonia Bitmap 转换待补）。
 			imageSource = Imaging.CreateBitmapSourceFromHIcon(Icon.ExtractAssociatedIcon(filePath).Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
 		}

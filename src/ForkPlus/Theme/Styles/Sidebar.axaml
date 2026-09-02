@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ControlTheme x:Key="RepositoryTitleHyperlinkStyle" TargetType="HyperlinkButton">
     
-<!-- TODO 迁移：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
+<!-- Migration note：WPF Setter Property=TextDecorations 块注释化（HyperlinkButton 无此属性）。原始片段：
     <Setter Property="TextDecorations">
       <Setter.Value>
         <x:Null />
@@ -12,7 +12,7 @@
 
     <Style Selector="^:pointerover">
         <Setter Property="Foreground" Value="{DynamicResource ReferenceBrush}" />
-<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style></ControlTheme>
   <ControlTheme x:Key="SidebarButton" TargetType="RadioButton">
     
@@ -55,7 +55,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <!-- TODO 迁移：原重复 VerticalContentAlignment setter 已删（Avalonia 12 重复 setter 抛异常） -->
+    <!-- Migration note：原重复 VerticalContentAlignment setter 已删（Avalonia 12 重复 setter 抛异常） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="RadioButton">

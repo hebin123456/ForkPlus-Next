@@ -66,7 +66,7 @@ namespace ForkPlus.Git.Commands
 			return GitCommandResult<(string[], string[])>.Success((array3, array4));
 		}
 
-		/// <summary>TODO 迁移：确保 symrefs 里含 "HEAD" 条目。
+		/// <summary>Migration note：确保 symrefs 里含 "HEAD" 条目。
 		/// native biturbo 的 bt_get_references 在 Linux 上不返回 HEAD symref（Windows 原版返回，
 		/// 实测 Linux 仅返回 refs/remotes/origin/HEAD）。ReferenceStorage.New 靠 "HEAD" → target
 		/// 匹配 refs/heads/* 推导 ActiveBranchIndex；缺失时恒 null → 本地分支 IsActive 恒 false

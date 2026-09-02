@@ -36,7 +36,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				UpdateSubmitButton();
 			};
-			PasswordBox.Focus(); // TODO 迁移：WPF PasswordBox.Focus() 被误转成类型静态调用。
+			PasswordBox.Focus(); // Migration note：WPF PasswordBox.Focus() 被误转成类型静态调用。
 		}
 
 		protected override void OnSubmit()
@@ -50,8 +50,8 @@ namespace ForkPlus.UI.Dialogs
 			if (gitCommandResult.Result == ValidateSshKeyShellCommand.Result.IncorrectPassphrase)
 			{
 				SetStatus(ForkPlusDialogStatus.Warning, Translate("Incorrect passphrase"));
-				PasswordBox.Focus(); // TODO 迁移：WPF PasswordBox.Focus() 被误转成类型静态调用。
-				PasswordBox.SelectAll(); // TODO 迁移：WPF PasswordBox.SelectAll() 被误转成类型静态调用。
+				PasswordBox.Focus(); // Migration note：WPF PasswordBox.Focus() 被误转成类型静态调用。
+				PasswordBox.SelectAll(); // Migration note：WPF PasswordBox.SelectAll() 被误转成类型静态调用。
 			}
 			else if (gitCommandResult.Result == ValidateSshKeyShellCommand.Result.Success)
 			{

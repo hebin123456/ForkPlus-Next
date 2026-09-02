@@ -634,7 +634,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		{
 			try
 			{
-				// TODO 迁移：WPF BitmapImage{CreateOptions=PreservePixelFormat, CacheOption=OnLoad, UriSource=null, StreamSource=stream}
+				// Migration note：WPF BitmapImage{CreateOptions=PreservePixelFormat, CacheOption=OnLoad, UriSource=null, StreamSource=stream}
 				// 之后再用 FormatConvertedBitmap 转 Pbgra32；Avalonia 无这些属性/转换类，
 				// 直接 Bitmap(Stream) 同步解码（语义等价 BitmapCacheOption.OnLoad），解码结果即为统一的
 				// Bgra8888（Avalonia 无 Pbgra32/调色板概念），无需再做格式转换。
@@ -675,7 +675,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				global::Avalonia.Media.Imaging.Bitmap bitmapSource2 = rhsImageData?.ImageSource;
 				if (bitmapSource2 != null && bitmapSource.PixelSize.Width == bitmapSource2.PixelSize.Width && bitmapSource.PixelSize.Height == bitmapSource2.PixelSize.Height)
 				{
-					// TODO 迁移：WPF 先用 FormatConvertedBitmap(..., Bgra32, source.Palette, 0) 把两图统一转 Bgra32；
+					// Migration note：WPF 先用 FormatConvertedBitmap(..., Bgra32, source.Palette, 0) 把两图统一转 Bgra32；
 					// Avalonia 解码位图本身即为 Bgra8888/Rgba8888（无调色板/调色板转换），无需显式转换，
 					// 改为按位图实际 Format 的 BitsPerPixel 计算每像素字节数，逐通道比较逻辑保持不变。
 					int num = (bitmapSource.Format ?? global::Avalonia.Platform.PixelFormat.Bgra8888).BitsPerPixel / 8;
@@ -733,7 +733,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		}
 
 		/// <summary>从像素数组构建位图（替代 WPF Bitmap.Create(w, h, dpiX, dpiY, format, palette, pixels, stride)）。
-		/// TODO 迁移：Avalonia Bitmap 无 DpiX/DpiY/Palette 属性，DPI 统一按 96 输出；
+		/// Migration note：Avalonia Bitmap 无 DpiX/DpiY/Palette 属性，DPI 统一按 96 输出；
 		/// 差异像素为 BGRA(255,0,255,255) 品红（与 WPF Bgra32 品红一致），故用 Bgra8888 + Premul 构建。</summary>
 		private static global::Avalonia.Media.Imaging.Bitmap CreateBitmapFromArray(byte[] pixels, int width, int height, int stride)
 		{

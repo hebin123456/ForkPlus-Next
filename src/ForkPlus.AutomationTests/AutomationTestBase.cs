@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using FlaUI.Core;
 using FlaUI.Core.Input;
@@ -103,7 +104,16 @@ namespace ForkPlus.AutomationTests
 				// FlaUI 3.x: Application.GetAllTopLevelWindows(AutomationBase) 返回该进程的所有顶级窗口
 				foreach (var win in app.Application.GetAllTopLevelWindows(app.Automation))
 				{
-					string title = win.Title ?? "";
+					string title;
+					try
+					{
+						title = win.Title ?? "";
+					}
+					catch (COMException ex)
+					{
+						Console.WriteLine("[WaitForTopLevelWindow] Skipped unresponsive window title read: " + ex.Message);
+						continue;
+					}
 					if (title.IndexOf(titleSubstring, StringComparison.OrdinalIgnoreCase) >= 0)
 					{
 						return win;
@@ -488,7 +498,10 @@ namespace ForkPlus.AutomationTests
 			string baseDir = AppContext.BaseDirectory;
 			string[] candidates =
 			{
-				// .NET 10 迁移：net472 → net10.0-windows10.0.19041.0
+				// Avalonia 版：net10.0 输出目录（WinExe apphost）
+				Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\ForkPlus\bin\Debug\net10.0\ForkPlus.exe")),
+				Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\ForkPlus\bin\Release\net10.0\ForkPlus.exe")),
+				// 旧路径兼容（历史/CI 可能仍在用）
 				Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\ForkPlus\bin\Debug\net10.0-windows10.0.19041.0\ForkPlus.exe")),
 				Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\ForkPlus\bin\Release\net10.0-windows10.0.19041.0\ForkPlus.exe")),
 			};

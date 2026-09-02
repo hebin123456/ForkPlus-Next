@@ -22,7 +22,11 @@ namespace ForkPlus.UI.Dialogs
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return ((InteractiveRebaseComboBoxItem)value).Action;
+			if (value is InteractiveRebaseComboBoxItem item)
+			{
+				return item.Action;
+			}
+			return BindingOperations.DoNothing;
 		}
 
 		public override object ProvideValue(IServiceProvider serviceProvider)

@@ -164,9 +164,10 @@ namespace ForkPlus.UI.UserControls
 			};
 			contextMenu.Items.Add(item);
 		}
-		// TODO 迁移：WPF ContextMenu.PlacementTarget 接受任意 DependencyObject，
+		// Migration note：WPF ContextMenu.PlacementTarget 接受任意 DependencyObject，
 		// Avalonia 的 PlacementTarget 要求 Control，这里显式下转。
 		contextMenu.PlacementTarget = placementTarget as global::Avalonia.Controls.Control;
+		global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, contextMenu.PlacementTarget);
 		contextMenu.Open();
 	}
 
@@ -1210,12 +1211,12 @@ namespace ForkPlus.UI.UserControls
 			{
 				Header = CreateSubrepoTabHeader(subrepo),				Content = CreateSubrepoPlaceholder(subrepo),				Tag = subrepo,				ContextMenu = CreateSubrepoTabContextMenu(subrepo),				HorizontalContentAlignment = HorizontalAlignment.Stretch,				VerticalContentAlignment = VerticalAlignment.Stretch
 			},subrepo.Path);
-			// TODO 迁移：WPF TabItem.AllowDrop = true → Avalonia 附加属性 DragDrop.SetAllowDrop。
+			// Migration note：WPF TabItem.AllowDrop = true → Avalonia 附加属性 DragDrop.SetAllowDrop。
 			global::Avalonia.Input.DragDrop.SetAllowDrop(tabItem, true);
 			tabItem.PointerPressed += SubrepoTabItem_PreviewMouseDown;
 			tabItem.PointerMoved += SubrepoTabItem_PreviewMouseMove;
 			tabItem.PointerReleased += SubrepoTabItem_PreviewMouseUp;
-			// TODO 迁移：WPF element.Drop += handler → Avalonia DragDrop.AddDropHandler。
+			// Migration note：WPF element.Drop += handler → Avalonia DragDrop.AddDropHandler。
 			global::Avalonia.Input.DragDrop.AddDropHandler(tabItem, SubrepoTabItem_Drop);
 				SubreposTabControl.Items.Add(tabItem);
 				if (IsSamePath(subrepo.Path, preferredSubrepoPath))
@@ -1320,9 +1321,9 @@ namespace ForkPlus.UI.UserControls
 			{
 				PlacementTarget = SubrepoFilterButton,
 				Placement = PlacementMode.Bottom,
-				// TODO 迁移：WPF Popup.StaysOpen = false（点击外部关闭）→ Avalonia IsLightDismissEnabled = true。
+				// Migration note：WPF Popup.StaysOpen = false（点击外部关闭）→ Avalonia IsLightDismissEnabled = true。
 				IsLightDismissEnabled = true
-				// TODO 迁移：WPF Popup.AllowsTransparency = true 在 Avalonia 无对应属性
+				// Migration note：WPF Popup.AllowsTransparency = true 在 Avalonia 无对应属性
 				//（Popup 永远独立分层渲染，默认支持透明），已移除。
 			};
 			StackPanel itemsPanel = new StackPanel();
@@ -1562,12 +1563,12 @@ namespace ForkPlus.UI.UserControls
 		private void SubreposTabControl_PreviewMouseWheel(object sender, global::Avalonia.Input.PointerWheelEventArgs e)
 		{
 			ScrollViewer scrollViewer = FindVisualChild<ScrollViewer>(SubreposTabControl);
-		// TODO 迁移：WPF ScrollViewer.ScrollableWidth → Avalonia 的 Extent.Width - Viewport.Width。
+		// Migration note：WPF ScrollViewer.ScrollableWidth → Avalonia 的 Extent.Width - Viewport.Width。
 		if (scrollViewer == null || scrollViewer.Extent.Width - scrollViewer.Viewport.Width <= 0.0)
 		{
 			return;
 		}
-		// TODO 迁移：Avalonia PointerWheelEventArgs.Delta 是 Vector（WPF 是 double），取 Y 分量
+		// Migration note：Avalonia PointerWheelEventArgs.Delta 是 Vector（WPF 是 double），取 Y 分量
 		//（滚轮向上为正，原 WPF 语义是 offset - Delta，即向上滚向左滚动）。
 		scrollViewer.ScrollToHorizontalOffsetCompat(scrollViewer.Offset.X - e.Delta.Y);
 		e.Handled = true;
@@ -1584,7 +1585,7 @@ namespace ForkPlus.UI.UserControls
 		private void SubrepoTabItem_PreviewMouseDown(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
 	{
 		_subrepoTabDragItem = null;
-		// TODO 迁移：WPF MouseButtonEventArgs.LeftButton == MouseButtonState.Pressed →
+		// Migration note：WPF MouseButtonEventArgs.LeftButton == MouseButtonState.Pressed →
 		// Avalonia 用 GetCurrentPoint(null).Properties.IsLeftButtonPressed 判断。
 		if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && sender is TabItem tabItem && IsFromSubrepoTabHeader(tabItem, e.Source as global::Avalonia.AvaloniaObject))
 		{
@@ -1595,7 +1596,7 @@ namespace ForkPlus.UI.UserControls
 
 	private void SubrepoTabItem_PreviewMouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
 	{
-		// TODO 迁移：WPF Mouse.PrimaryDevice.LeftButton（全局按键状态）在 Avalonia 无对应，
+		// Migration note：WPF Mouse.PrimaryDevice.LeftButton（全局按键状态）在 Avalonia 无对应，
 		// 改为从当前指针事件读取左键状态。
 		if (!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed || !(sender is TabItem tabItem))
 		{
@@ -1621,7 +1622,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		// TODO 迁移：WPF 版签名是 (object, PointerPressedEventArgs)，与 Avalonia 的
+		// Migration note：WPF 版签名是 (object, PointerPressedEventArgs)，与 Avalonia 的
 	// PointerReleased（EventHandler<PointerReleasedEventArgs>）不匹配，改为对应的释放事件参数。
 	private void SubrepoTabItem_PreviewMouseUp(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
 	{
@@ -1690,7 +1691,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			return null;
 		}
-		// TODO 迁移：WPF 区分 ContentElement（ContentOperations.GetParent）/ Visual / Visual3D，
+		// Migration note：WPF 区分 ContentElement（ContentOperations.GetParent）/ Visual / Visual3D，
 		// Avalonia 没有 ContentElement 与 ContentOperations，也没有 Visual3D；
 		// 统一走 Visual 的视觉父级，非 Visual 时退化读逻辑树 Parent。
 		if (source is global::Avalonia.Visual visual)
@@ -1802,6 +1803,7 @@ namespace ForkPlus.UI.UserControls
 			contextMenu.Items.Add(hideMenuItem);
 			contextMenu.Items.Add(new Separator());
 			contextMenu.Items.Add(CreateSubrepoColorsMenuItem(subrepo));
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, SubreposTabControl);
 			return contextMenu;
 		}
 
@@ -1849,7 +1851,7 @@ namespace ForkPlus.UI.UserControls
 		if (colorEllipse != null)
 		{
 			SolidColorBrush brush = RepositoryColorsUserControl.GetBrush(EnsureRepositoryManagerEntry(subrepo.Path).Color);
-			// TODO 迁移：Brushes.* 在 Avalonia 12 返回 IImmutableSolidColorBrush，不能与
+			// Migration note：Brushes.* 在 Avalonia 12 返回 IImmutableSolidColorBrush，不能与
 			// SolidColorBrush 直接做 ?? 运算，改用 IBrush 变量承接（Stroke/Fill 均接受 IBrush）。
 			global::Avalonia.Media.IBrush effectiveBrush = brush;
 			if (effectiveBrush == null && subrepo.IsRootRepository)

@@ -90,7 +90,7 @@ namespace ForkPlus.UI.UserControls
 			global::Avalonia.Input.InputElement uIElement = e.Source as global::Avalonia.Input.InputElement;
 			if (uIElement is CalendarDayButton || uIElement is CalendarItem)
 			{
-				uIElement.ReleaseMouseCapture();
+				e.Pointer.Capture(null);
 			}
 		}
 

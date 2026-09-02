@@ -11,6 +11,7 @@ using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -76,6 +77,10 @@ namespace ForkPlus.UI.UserControls
 			case RepositoryViewMode.CommitViewMode:
 				RevisionView.Collapse();
 				CommitView.Show();
+				Dispatcher.UIThread.Post(delegate
+				{
+					CommitUserControl.RefreshSelectedFileDiff();
+				});
 				break;
 			default:
 				throw new InvalidOperationException();
@@ -100,8 +105,30 @@ namespace ForkPlus.UI.UserControls
 			Sha[] array = RevisionListViewUserControl.SelectedRevisions.Map((DecoratedRevision x) => x.Sha);
 			RevisionListViewUserControl.UpdateRepositoryData(repositoryData);
 			NoUIAutomationListView.SelectOptions selectOptions = ((!num) ? ((NoUIAutomationListView.SelectOptions)3) : NoUIAutomationListView.SelectOptions.None);
-			select = select ?? ((array.Length != 0) ? ((RevisionSelector)new RevisionSelector.Sha(array)) : ((RevisionSelector)new RevisionSelector.Head()));
-			RevisionListViewUserControl.Select(select, selectOptions, selectedIndex);
+			if (num && array.Length == 0)
+			{
+				RevisionListViewUserControl.Select(new int[1] { 0 });
+				DecoratedRevision selectedRevision = RevisionListViewUserControl.SelectedRevision;
+				if (selectedRevision != null)
+				{
+					_selectedRevisions = new DecoratedRevision[1] { selectedRevision };
+					RevisionDiffTarget.Revision target = new RevisionDiffTarget.Revision(selectedRevision.Sha);
+					RevisionDetails.ShowRevisionDetails(target, selectCommitTab: true);
+					Dispatcher.UIThread.Post(delegate
+					{
+						DecoratedRevision revision = RevisionListViewUserControl.SelectedRevision;
+						if (revision != null && revision.Sha == target.Sha)
+						{
+							RevisionDetails.ShowRevisionDetails(target, selectCommitTab: true);
+						}
+					}, DispatcherPriority.Loaded);
+				}
+			}
+			else
+			{
+				select = select ?? new RevisionSelector.Sha(array);
+				RevisionListViewUserControl.Select(select, selectOptions, selectedIndex);
+			}
 			_repositoryUserControl.CancelActiveFetchRevisionsJobs();
 		}
 
@@ -134,11 +161,56 @@ namespace ForkPlus.UI.UserControls
 			}
 			RevisionSelector select = ((!(target is RevisionDiffTarget.Range range)) ? ((!(target is RevisionDiffTarget.MultipleRevisions multipleRevisions)) ? new RevisionSelector.Sha(target.Sha) : new RevisionSelector.Sha(multipleRevisions.AllShas)) : new RevisionSelector.Sha(new Sha[2] { range.Sha, range.OtherSha }));
 			bool num = RevisionListViewUserControl.Select(select, selectOptions);
+			bool selectionMatchesTarget = num && SelectionMatchesTarget(target);
 			_handleRevisionListViewSelectioChangedEvent = true;
-			if (!num || filePath != null)
+			if (!num || filePath != null || !selectionMatchesTarget)
 			{
 				RevisionDetails.ShowRevisionDetails(target, filePath);
 			}
+			if (num && !selectionMatchesTarget)
+			{
+				Dispatcher.UIThread.Post(delegate
+				{
+					RevisionListViewUserControl.Select(select, selectOptions);
+				}, DispatcherPriority.Background);
+			}
+		}
+
+		private bool SelectionMatchesTarget(RevisionDiffTarget target)
+		{
+			DecoratedRevision[] selectedRevisions = RevisionListViewUserControl.SelectedRevisions;
+			if (selectedRevisions.Length == 0)
+			{
+				return false;
+			}
+			if (target is RevisionDiffTarget.Range range)
+			{
+				return ContainsSelectedRevision(selectedRevisions, range.Sha) && ContainsSelectedRevision(selectedRevisions, range.OtherSha);
+			}
+			if (target is RevisionDiffTarget.MultipleRevisions multipleRevisions)
+			{
+				foreach (Sha sha in multipleRevisions.AllShas)
+				{
+					if (!ContainsSelectedRevision(selectedRevisions, sha))
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+			return ContainsSelectedRevision(selectedRevisions, target.Sha);
+		}
+
+		private static bool ContainsSelectedRevision(DecoratedRevision[] selectedRevisions, Sha sha)
+		{
+			foreach (DecoratedRevision revision in selectedRevisions)
+			{
+				if (revision.Sha == sha)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		private void RevisionListViewUserControl_SearchRequestChanged(object sender, EventArgs<RevisionSearchQuery> e)

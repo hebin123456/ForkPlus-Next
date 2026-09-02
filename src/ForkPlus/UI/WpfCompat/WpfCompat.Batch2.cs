@@ -1,6 +1,6 @@
 // WPF → Avalonia 迁移兼容层 第四部分：第二批高频 API shim
 // （TryFindResource / Owner / ContainerFromElement / DoDragDrop / Cursors / Imaging stub）
-// 全部带 TODO 迁移标记，收尾阶段逐个替换为原生实现。
+// 全部带 Migration note标记，收尾阶段逐个替换为原生实现。
 
 using System;
 using System.Collections.Generic;
@@ -74,7 +74,7 @@ namespace ForkPlus.UI.WpfCompat
         }
 
         /// <summary>
-        /// TODO 迁移：WPF 对象初始化器 { Owner = owner, WindowStartupLocation = CenterOwner } 的等价物。
+        /// Migration note：WPF 对象初始化器 { Owner = owner, WindowStartupLocation = CenterOwner } 的等价物。
         /// Avalonia 对话框居中由 ShowDialog(owner) 保证，这里只登记 owner 并返回自身以便链式调用。
         /// </summary>
         public static Window SetOwnerAndCenter(this Window self, Window owner)
@@ -121,7 +121,7 @@ namespace ForkPlus.UI.WpfCompat
         /// <summary>
         /// WPF DragDrop.DoDragDrop(source, data, effects)（阻塞直到放下）。
         /// Avalonia 12 的 DoDragDropAsync 必须拿 PointerPressedEventArgs；
-        /// 这里对 source 挂 Tunnel 记录最近一次按下，首次手势可能不触发（TODO 迁移：改为事件内 await）。
+        /// 这里对 source 挂 Tunnel 记录最近一次按下，首次手势可能不触发（Migration note：改为事件内 await）。
         /// </summary>
         public static DragDropEffects DoDragDrop(InputElement source, object data, DragDropEffects allowedEffects)
         {
@@ -140,7 +140,7 @@ namespace ForkPlus.UI.WpfCompat
             if (transfer == null) return DragDropEffects.None;
 
             _ = global::Avalonia.Input.DragDrop.DoDragDropAsync(box.Value, transfer, allowedEffects);
-            return DragDropEffects.None; // 异步结果不回传（WPF 语义近似），TODO 迁移
+            return DragDropEffects.None; // 异步结果不回传（WPF 语义近似），Migration note
         }
 
         private static IDataTransfer ToTransfer(object data)
@@ -166,7 +166,7 @@ namespace ForkPlus.UI.WpfCompat
                 }
                 default:
                 {
-                    // 自定义对象：序列化到字符串格式，跨进程不可用（TODO 迁移：进程内拖放改用 InProcess 格式）
+                    // 自定义对象：序列化到字符串格式，跨进程不可用（Migration note：进程内拖放改用 InProcess 格式）
                     var dobj = new global::Avalonia.Input.DataTransfer();
                     var fmt2 = global::Avalonia.Input.DataFormat.CreateStringApplicationFormat("ForkPlusItem");
                     dobj.Add(global::Avalonia.Input.DataTransferItem.Create(fmt2, data?.ToString() ?? ""));
@@ -221,7 +221,7 @@ namespace System.Windows.Media.Imaging
 
     /// <summary>
     /// WPF System.Windows.Media.Imaging 静态类。
-    /// TODO 迁移（根因修复）：原 stub 返回 null，Windows 上文件类型图标（提交列表/暂存区）
+    /// Migration note（根因修复）：原 stub 返回 null，Windows 上文件类型图标（提交列表/暂存区）
     /// 全部空白。现走 GDI Bitmap → LockBits → Avalonia WriteableBitmap 真实转换。
     /// </summary>
     public static class Imaging

@@ -4,7 +4,7 @@
       
       <controls:InverseBooleanConverter x:Key="InverseBooleanConverter" />
       <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
-      <!-- TODO 迁移：WPF 内置 BooleanToVisibilityConverter 需本地注册（Avalonia StaticResource
+      <!-- Migration note：WPF 内置 BooleanToVisibilityConverter 需本地注册（Avalonia StaticResource
            在顶层 UserControl 实例化时只查本地资源链；缺失曾致本控件构造崩溃 → 偏好设置窗口打不开） -->
       <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </ResourceDictionary>
@@ -49,7 +49,7 @@
             
           
     <!--
-      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      WPF migration note: DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
       原始片段：
       <MultiDataTrigger xmlns="https://github.com/avaloniaui">
                       <MultiDataTrigger.Conditions>

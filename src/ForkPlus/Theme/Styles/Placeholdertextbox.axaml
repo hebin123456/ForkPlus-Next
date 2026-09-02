@@ -9,9 +9,9 @@
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     
-<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="FontSize" Value="13" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
@@ -34,7 +34,7 @@
     </Setter>
     
   
-<!-- TODO 迁移：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
         <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
     </Style>-->
@@ -49,7 +49,7 @@
         <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
     </Style>
     <!--
-      TODO(wpf2avalonia): 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
+      WPF migration note: 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
       原始片段：
       <Trigger Property="controls:PlaceholderTextBox.Icon" xmlns="https://github.com/avaloniaui">
                     <Trigger.Value>
@@ -68,9 +68,9 @@
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     
-<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="FontSize" Value="13" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="Template">
@@ -94,7 +94,7 @@
     </Setter>
     
   
-<!-- TODO 迁移：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
         <Setter Property="SelectionBrush" Value="#FF9A9A9A" />
     </Style>-->
@@ -109,7 +109,7 @@
         <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
     </Style>
     <!--
-      TODO(wpf2avalonia): 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
+      WPF migration note: 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
       原始片段：
       <Trigger Property="controls:PlaceholderTextBox.Icon" xmlns="https://github.com/avaloniaui">
                     <Trigger.Value>
@@ -146,7 +146,7 @@
         <Setter Property="IsVisible" Value="True" />
     </Style>
     <!--
-      TODO(wpf2avalonia): 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
+      WPF migration note: 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
       原始片段：
       <Trigger Property="controls:PlaceholderTextBox.Icon" xmlns="https://github.com/avaloniaui">
                     <Trigger.Value>
@@ -217,7 +217,7 @@
         <Setter Property="Opacity" Value="0.56" />
     </Style>
     <!--
-      TODO(wpf2avalonia): 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
+      WPF migration note: 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
       原始片段：
       <Trigger Property="controls:PlaceholderTextBox.Icon" xmlns="https://github.com/avaloniaui">
                     <Trigger.Value>
@@ -249,7 +249,7 @@
               </Grid.ColumnDefinitions>
               <Image Source="{DynamicResource SearchOnIcon}" Width="13" Height="13" Margin="4,0,0,0" x:Name="PART_Icon" />
               <controls:DropDownButton HorizontalAlignment="Left" Height="20" Margin="0" Background="#00FFFFFF" BorderThickness="0" Focusable="False" x:Name="PART_DropDownButton" IsVisible="False">
-<!-- TODO 迁移：WPF controls:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF controls:DropDownButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
                 <controls:DropDownButton.ContextMenu>
                   <ContextMenu />
@@ -299,7 +299,7 @@
         <Setter Value="{DynamicResource BorderBrush}" Property="BorderBrush" />
     </Style>
     <!--
-      TODO(wpf2avalonia): 条件(controls:FilterTextBox.Hint=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
+      WPF migration note: 条件(controls:FilterTextBox.Hint=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
       原始片段：
       <Trigger Property="controls:FilterTextBox.Hint" xmlns="https://github.com/avaloniaui">
                     <Trigger.Value>

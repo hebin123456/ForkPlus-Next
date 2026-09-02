@@ -12,7 +12,7 @@
               <DynamicResource ResourceKey="DropShadowColor" />
             </DropShadowEffect.Color>
             <DropShadowEffect.Opacity>0.2</DropShadowEffect.Opacity>
-<!-- TODO 迁移：WPF DropShadowEffect.ShadowDepth 已删（Avalonia 用 OffsetY） -->
+<!-- Migration note：WPF DropShadowEffect.ShadowDepth 已删（Avalonia 用 OffsetY） -->
 
           </DropShadowEffect>
         </Border.Effect>

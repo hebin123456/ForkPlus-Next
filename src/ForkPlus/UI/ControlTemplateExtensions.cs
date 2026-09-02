@@ -11,7 +11,7 @@ namespace ForkPlus.UI
 	public static class ControlTemplateExtensions
 	{
 		/// <summary>
-		/// TODO 迁移：WPF ControlTemplate.FindName(name, templatedParent) 在 Avalonia 无直接对应。
+		/// Migration note：WPF ControlTemplate.FindName(name, templatedParent) 在 Avalonia 无直接对应。
 		/// 近似实现：模板应用后控件经 NameScope.GetNameScope 持有模板命名域，先查命名域；
 		/// 查不到再沿可视树按 Control.Name 匹配（模板部件均已实例化时两者等价）。
 		/// </summary>

@@ -98,7 +98,7 @@
             
           
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                       <DataTrigger.Binding>
@@ -121,35 +121,35 @@
                     </DataTrigger>
     -->
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Binding="{Binding IsGitMmScanJob}" Value="True" xmlns="https://github.com/avaloniaui">
                       <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource SearchIcon}" />
                     </DataTrigger>
     -->
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Binding="{Binding IsGitMmStatusJob}" Value="True" xmlns="https://github.com/avaloniaui">
                       <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource RefreshIcon}" />
                     </DataTrigger>
     -->
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Binding="{Binding IsGitMmSyncJob}" Value="True" xmlns="https://github.com/avaloniaui">
                       <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PullIcon}" />
                     </DataTrigger>
     -->
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Binding="{Binding IsGitMmUploadJob}" Value="True" xmlns="https://github.com/avaloniaui">
                       <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource PushIcon}" />
                     </DataTrigger>
     -->
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Binding="{Binding IsGitMmStartJob}" Value="True" xmlns="https://github.com/avaloniaui">
                       <Setter TargetName="GitMmCategoryImage" Property="Source" Value="{DynamicResource BranchIcon}" />

@@ -30,7 +30,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private static readonly Typeface _typeface;
 
-		// TODO 迁移：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段在此补声明
+		// Migration note：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段在此补声明
 		private Typeface typeface = _typeface;
 
 		private double emSize = 11.0;
@@ -44,6 +44,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		private static readonly Pen _separatorPenDark;
 
 		private static readonly double HorizontalMargin;
+
+		private static readonly double ExtraMeasurePadding;
 
 		private readonly FormattedText _minusText;
 
@@ -81,11 +83,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_separatorPenLight = new Pen(new SolidColorBrush(Color.FromRgb(218, 218, 215)), 1.0);
 			_separatorPenDark = new Pen(new SolidColorBrush(Color.FromRgb(110, 110, 110)), 1.0);
 			HorizontalMargin = 7.0;
+			ExtraMeasurePadding = 6.0;
 		}
 
 		public DiffLineNumberMargin(DiffViewMode diffViewMode)
 		{
-			// TODO 迁移：WPF 原基类的 typeface/emSize 字段在此补声明
+			// Migration note：WPF 原基类的 typeface/emSize 字段在此补声明
 			this.typeface = _typeface;
 			emSize = 11.0;
 			RefreshBrushes();
@@ -147,9 +150,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			if (_diffViewMode == DiffViewMode.Split)
 			{
-				return new Size(CreateFormattedText(new string('9', _lineNumberLength * 2)).Width + HorizontalMargin * 3.0 + DiffMarksColumnWidth, 0.0);
+				return new Size(CreateFormattedText(new string('9', _lineNumberLength * 2)).Width + HorizontalMargin * 3.0 + DiffMarksColumnWidth + ExtraMeasurePadding, 0.0);
 			}
-			return new Size(CreateFormattedText(new string('9', _lineNumberLength)).Width + HorizontalMargin * 2.0 + DiffMarksColumnWidth, 0.0);
+			return new Size(CreateFormattedText(new string('9', _lineNumberLength)).Width + HorizontalMargin * 2.0 + DiffMarksColumnWidth + ExtraMeasurePadding, 0.0);
 		}
 
 		public override void Render(DrawingContext drawingContext)
@@ -166,7 +169,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					int? from = value.From;
 					if (from.HasValue)
 					{
-						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point((base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth) / 2.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
+						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), (base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth) / 2.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y);
 						if (_showDiffMarks && !value.To.HasValue)
 						{
 							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
@@ -175,7 +178,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					from = value.To;
 					if (from.HasValue)
 					{
-						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
+						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine.VisualTop - base.TextView.ScrollOffset.Y);
 						if (_showDiffMarks && !value.From.HasValue)
 						{
 							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
@@ -194,7 +197,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					int? from = value2.From;
 					if (from.HasValue)
 					{
-						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine2.VisualTop - base.TextView.ScrollOffset.Y));
+						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine2.VisualTop - base.TextView.ScrollOffset.Y);
 						if (_showDiffMarks && !value2.To.HasValue)
 						{
 							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0, visualLine2.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
@@ -213,7 +216,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					int? from = value3.To;
 					if (from.HasValue)
 					{
-						drawingContext.DrawText(CreateFormattedText(from.GetValueOrDefault().ToString()), new Point(base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine3.VisualTop - base.TextView.ScrollOffset.Y));
+						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine3.VisualTop - base.TextView.ScrollOffset.Y);
 						if (_showDiffMarks && !value3.From.HasValue)
 						{
 							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0, visualLine3.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
@@ -265,6 +268,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		private FormattedText CreateFormattedText(string text)
 		{
 			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush);
+		}
+
+		private void DrawRightAlignedText(DrawingContext drawingContext, string text, double right, double top)
+		{
+			FormattedText formattedText = CreateFormattedText(text);
+			drawingContext.DrawText(formattedText, new Point(right - formattedText.Width, top));
 		}
 	}
 }

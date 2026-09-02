@@ -35,7 +35,7 @@ namespace ForkPlus.UI.Controls
 
 		private void OnPaste(object sender, DataObjectPastingEventArgs e)
 		{
-			// TODO 迁移：WPF 原实现重建 DataObject 后替换 e.DataObject；
+			// Migration note：WPF 原实现重建 DataObject 后替换 e.DataObject；
 			// Avalonia 无粘贴拦截事件，PasteGuard shim 用 PastingDataObject.SetData 原位改写文本。
 			if (e.DataObject.GetDataPresent(typeof(string)))
 			{

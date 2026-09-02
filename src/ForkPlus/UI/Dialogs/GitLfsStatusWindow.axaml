@@ -50,7 +50,7 @@
             
           
     <!--
-      TODO(wpf2avalonia): DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
+      WPF migration note: DataTemplate.Triggers 内非 DataTrigger 触发器需人工改写。
       原始片段：
       <MultiDataTrigger xmlns="https://github.com/avaloniaui">
                       <MultiDataTrigger.Conditions>

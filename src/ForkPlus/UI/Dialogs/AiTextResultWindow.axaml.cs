@@ -10,7 +10,7 @@ using ForkPlus.Utils.Http;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
-using Avalonia.Input.Platform; // TODO 迁移：Avalonia 12 的 SetTextAsync 移到了 ClipboardExtensions 扩展方法。
+using Avalonia.Input.Platform; // Migration note：Avalonia 12 的 SetTextAsync 移到了 ClipboardExtensions 扩展方法。
 using Avalonia.Threading;
 
 namespace ForkPlus.UI.Dialogs
@@ -185,7 +185,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			try
 			{
-				Clipboard.SetTextAsync(md).GetAwaiter().GetResult(); // TODO 迁移：WPF Clipboard.SetText → Avalonia SetTextAsync（阻塞等待保持同步形状）。
+				Clipboard.SetTextAsync(md).GetAwaiter().GetResult(); // Migration note：WPF Clipboard.SetText → Avalonia SetTextAsync（阻塞等待保持同步形状）。
 				StatusTextBlock.Text = PreferencesLocalization.Current("Copied to clipboard");
 			}
 			catch (Exception ex)

@@ -6,7 +6,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <ToggleButton Grid.Row="0" Background="#00FFFFFF" BorderThickness="0" MinHeight="0" MinWidth="0" Padding="0" IsCheckedChanged="HeaderToggleButton_CheckedChanged" x:Name="HeaderToggleButton">
-<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
         <ToggleButton.Template>
           <ControlTemplate TargetType="ToggleButton">
@@ -14,7 +14,7 @@
               <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
             </Border>
             <!--
-      TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
+      WPF migration note: ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
       原始片段：
       <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
                     <Trigger Property="IsMouseOver" Value="True">

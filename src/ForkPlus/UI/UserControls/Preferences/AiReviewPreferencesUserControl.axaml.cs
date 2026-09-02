@@ -102,7 +102,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private void UpdateCustomSkillLineNumbers()
 		{
 			if (_skillInputTextBox == null || _skillLineNumbers == null) return;
-			// TODO 迁移：WPF TextBox.LineCount → Avalonia 无该属性，按 Text 换行统计。
+			// Migration note：WPF TextBox.LineCount → Avalonia 无该属性，按 Text 换行统计。
 			string text = _skillInputTextBox.Text ?? string.Empty;
 			int lineCount = text.Length == 0 ? 1 : text.Split('\n').Length;
 			var sb = new System.Text.StringBuilder();

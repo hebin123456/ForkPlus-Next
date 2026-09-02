@@ -119,8 +119,7 @@ namespace ForkPlus.UI.Dialogs
 				Margin = new Thickness(0.0, 2.0, 0.0, 0.0)
 			};
 			_backupCurrentStateCheckBox.IsChecked = ForkPlusSettings.Default.InteractiveRebase_CreateBackup;
-			VisualTreeAttachmentHelper.TrySetContent(base.Footer.CustomSection, _backupCurrentStateCheckBox, GetType().Name + ".Footer.CustomSection");
-			base.Footer.AlignStatusRight();
+			AttachBackupCurrentStateCheckBoxToFooter();
 			base.ShowCancelButton = true;
 			base.SubmitButtonTitle = Translate("Rebase");
 			SourceGitPointView.Value = _sourceBranch;
@@ -163,6 +162,17 @@ namespace ForkPlus.UI.Dialogs
 			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 _destination 尚未就绪，
 			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
 			RefreshCommandPreview();
+		}
+
+		private void AttachBackupCurrentStateCheckBoxToFooter()
+		{
+			if (base.Footer?.CustomSection == null)
+			{
+				Dispatcher.UIThread.Post(AttachBackupCurrentStateCheckBoxToFooter);
+				return;
+			}
+			VisualTreeAttachmentHelper.TrySetContent(base.Footer.CustomSection, _backupCurrentStateCheckBox, GetType().Name + ".Footer.CustomSection");
+			base.Footer.AlignStatusRight();
 		}
 
 	protected override string GetCommandPreview()
@@ -390,6 +400,10 @@ namespace ForkPlus.UI.Dialogs
 		private void UpdateListViewColumnsWidth()
 		{
 			GridView gridView = RevisionListView.GetGridView();
+			if (gridView == null || gridView.Columns.Count <= 2)
+			{
+				return;
+			}
 			double num = 0.0;
 			for (int i = 0; i < gridView.Columns.Count; i++)
 			{
@@ -431,6 +445,11 @@ namespace ForkPlus.UI.Dialogs
 			}
 			_updateInProgress = true;
 			InteractiveRebaseComboBoxItem interactiveRebaseComboBoxItem = e.AddedItems.FirstItem<InteractiveRebaseComboBoxItem>();
+			if (interactiveRebaseComboBoxItem == null)
+			{
+				_updateInProgress = false;
+				return;
+			}
 			InteractiveRebaseAction? action = interactiveRebaseComboBoxItem.Action;
 			InteractiveRebaseComboBoxItem interactiveRebaseComboBoxItem2 = e.RemovedItems.FirstItem<InteractiveRebaseComboBoxItem>();
 			ComboBox comboBox = (ComboBox)sender;
@@ -729,7 +748,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			int num = 130;
 			int num2 = 22;
-			// TODO 迁移：WPF TransformToAncestor → Avalonia TransformToVisual（返回 Matrix?，需判空）。
+			// Migration note：WPF TransformToAncestor → Avalonia TransformToVisual（返回 Matrix?，需判空）。
 			global::Avalonia.Matrix? matrix = listViewItem.TransformToVisual(RevisionListView);
 			Point point = (matrix.HasValue ? matrix.Value.Transform(new Point(num, 0.0)) : default(Point));
 			_adorner.Margin = new Thickness(num, point.Y + (double)num2, 0.0, 0.0);

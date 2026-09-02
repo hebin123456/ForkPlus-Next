@@ -612,7 +612,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			{
 				Log.Error("Failed to list refs for CodeLines popup", ex);
 			}
-			// TODO 迁移：WPF CollectionViewSource.GetDefaultView → WpfCompat ListCollectionView（Filter+Reset 通知）
+			// Migration note：WPF CollectionViewSource.GetDefaultView → WpfCompat ListCollectionView（Filter+Reset 通知）
 			_codeLineRefsView = new global::ForkPlus.UI.WpfCompat.ListCollectionView(_codeLineRefs);
 			// Workspace（RefSpec 为空）始终保留，其余按 Display 包含搜索文本（忽略大小写）
 			_codeLineRefsView.Filter = obj => FilterCodeLineRefItem((CodeLineRefItem)obj);
@@ -647,6 +647,7 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 		/// <summary>Popup 打开：清空搜索、刷新列表、聚焦搜索框并全选，方便直接输入覆盖搜索。</summary>
 		private void CodeLinesRefPopup_Opened(object sender, EventArgs e)
 		{
+			_isCodeLinesRefInitializing = true;
 			if (CodeLinesRefSearchBox.Text.Length > 0)
 			{
 				CodeLinesRefSearchBox.Text = "";
@@ -659,12 +660,14 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 			{
 				CodeLinesRefSearchBox.Focus();
 				CodeLinesRefSearchBox.SelectAll();
+				_isCodeLinesRefInitializing = false;
 			}));
 		}
 
 		/// <summary>Popup 关闭：清空搜索框文本，避免下次打开还带着旧过滤。</summary>
 		private void CodeLinesRefPopup_Closed(object sender, EventArgs e)
 		{
+			_isCodeLinesRefInitializing = false;
 			if (CodeLinesRefSearchBox.Text.Length > 0)
 			{
 				CodeLinesRefSearchBox.Text = "";
@@ -674,7 +677,12 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 		/// <summary>搜索框文本变化：刷新 CollectionView 重新过滤。</summary>
 		private void CodeLinesRefSearchBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			_isCodeLinesRefInitializing = true;
 			_codeLineRefsView?.Refresh();
+			CodeLinesRefSearchBox.Dispatcher.Post(new Action(() =>
+			{
+				_isCodeLinesRefInitializing = false;
+			}));
 		}
 
 		/// <summary>Popup 内 ListBox 选中项变化：更新按钮显示、关闭 Popup、触发 tokei 查询。</summary>
@@ -690,6 +698,10 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 				return;
 			}
 			UpdateCodeLinesRefButton(item);
+			if (string.Equals(item.RefSpec, _currentCodeLinesRef, StringComparison.Ordinal))
+			{
+				return;
+			}
 			CodeLinesRefPopup.IsOpen = false;
 			RefreshCodeLines(item.RefSpec);
 		}

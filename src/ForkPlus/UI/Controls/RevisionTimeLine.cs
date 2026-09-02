@@ -144,7 +144,7 @@ namespace ForkPlus.UI.Controls
 			};
 			pathFigure.Segments.Add(new PolyLineSegment
 		{
-			// TODO 迁移：WPF PointCollection → Avalonia 用 List<Point>（Points 是 IList<Point>）。
+			// Migration note：WPF PointCollection → Avalonia 用 List<Point>（Points 是 IList<Point>）。
 			Points = new System.Collections.Generic.List<global::Avalonia.Point>
 			{
 				new Point(x + 4.0, 0.0),
@@ -223,7 +223,7 @@ namespace ForkPlus.UI.Controls
 
 		private FormattedText CreateFormattedText(string text, TextAlignment alignment = TextAlignment.Center)
 		{
-			// TODO 迁移：WPF FormattedText 第 7 参 PixelsPerDip 在 Avalonia 不存在，直接省略。
+			// Migration note：WPF FormattedText 第 7 参 PixelsPerDip 在 Avalonia 不存在，直接省略。
 			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, 9.0, _labelBrush)
 			{
 				TextAlignment = alignment

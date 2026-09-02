@@ -37,7 +37,7 @@ namespace ForkPlus.UI.Commands
 		ForkPlusSettings.Default.UseCustomColors = false;
 		App.RefreshWindowBorderBrush();
 		// 匹配任意 Generic.{SkinName}.xaml（不再写死 Light|Dark），支持多预设皮肤
-		// TODO 迁移：WPF 写法 MergedDictionaries.Where/FirstOrDefault((ResourceDictionary rd) => rd.Source ...)
+		// Migration note：WPF 写法 MergedDictionaries.Where/FirstOrDefault((ResourceDictionary rd) => rd.Source ...)
 		// 在 Avalonia 报 CS1929/CS1061（MergedDictionaries 是 IList<IResourceProvider>，
 		// 且 ResourceDictionary 没有 Source）。改为 App.FindThemeResourceInclude()：遍历
 		// MergedDictionaries 按 ResourceInclude.Source（avares://ForkPlus/Theme/Generic.*.axaml）

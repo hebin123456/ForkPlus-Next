@@ -162,7 +162,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO 迁移：WPF new Rect(RenderSize) 由 Size 隐式转 Rect；Avalonia 用显式 new Rect(Size)。
+		// Migration note：WPF new Rect(RenderSize) 由 Size 隐式转 Rect；Avalonia 用显式 new Rect(Size)。
 		private Rect _boundsProbe => new Rect(base.Bounds.Size);
 	private Rect _bounds => new Rect(new Point(0.0, 0.0), new Size(base.Bounds.Size.Width, base.Bounds.Size.Height));
 
@@ -306,7 +306,7 @@ namespace ForkPlus.UI.Controls
 		{
 			if (_tooltipView != null)
 			{
-				// TODO 迁移：Avalonia PointFromScreen 入参为 PixelPoint（WPF 为屏幕坐标 Point），
+				// Migration note：Avalonia PointFromScreen 入参为 PixelPoint（WPF 为屏幕坐标 Point），
 				// MouseHelper 返回的是 DIP Point，这里做一次显式转换（假定显示缩放 1:1）。
 				Point screenPosition = MouseHelper.GetMousePosition();
 				Point point = Canvas.PointFromScreen(new global::Avalonia.PixelPoint((int)screenPosition.X, (int)screenPosition.Y));

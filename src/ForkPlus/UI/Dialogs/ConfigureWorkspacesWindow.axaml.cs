@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup;
 using ForkPlus.Settings;
+using ForkPlus.UI.Helpers;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -21,6 +22,9 @@ namespace ForkPlus.UI.Dialogs
 
 		public ConfigureWorkspacesWindow()
 		{
+			// “工作区配置”界面不需要左上角 ForkPlus Logo；该 Logo 会在 Column=0 宽度为 0 时仍绘制并覆盖内容。
+			base.ShowLogo = false;
+
 			Workspace[] all = ForkPlusSettings.Default.Workspaces.All;
 			_workspaceViewModels = new ObservableCollection<WorkspaceViewModel>(all.Map((Workspace x) => new WorkspaceViewModel(x)));
 			InitializeComponent();
@@ -30,6 +34,8 @@ namespace ForkPlus.UI.Dialogs
 			base.CancelButtonTitle = PreferencesLocalization.Current("Close");
 			WorkspacesListBox.ItemsSource = _workspaceViewModels;
 			WorkspacesListBox.SelectedIndex = 0;
+			WorkspacesListBox.ContextRequested += (_, e) => e.Handled = true;
+			WorkspacesListBox.AddHandler(InputElement.PointerPressedEvent, new EventHandler<PointerPressedEventArgs>(WorkspacesListBox_ContextMenuPointerPressed), RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
 			UpdateDeleteButtonState();
 			ShowWorkspaceInTitleCheckBox.IsChecked = ForkPlusSettings.Default.Workspaces.ShowInTitle;
 		}
@@ -52,23 +58,63 @@ namespace ForkPlus.UI.Dialogs
 
 		private void WorkspacesListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
-			{
-				WorkspacesListBox.ContextMenu.Items.Clear();
-				WorkspacesListBox.ContextMenu.SetItems(GetContextMenu(dataContext));
-			}
-			else
+			Point point;
+			if (!SetWorkspaceContextMenu(e.Source, e.TryGetPosition(WorkspacesListBox, out point) ? point : (Point?)null))
 			{
 				e.Handled = true;
-				WorkspacesListBox.ContextMenu.Close();
+				WorkspacesListBox.ContextMenu?.Close();
 			}
+		}
+
+		private void WorkspacesListBox_ContextMenuPointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			if (!e.GetCurrentPoint(WorkspacesListBox).Properties.IsRightButtonPressed)
+			{
+				return;
+			}
+
+			e.Handled = true;
+			WorkspacesListBox.ContextMenu?.Close();
+			if (!SetWorkspaceContextMenu(e.Source, e.GetPosition(WorkspacesListBox)))
+			{
+				WorkspacesListBox.ContextMenu?.Close();
+				return;
+			}
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(WorkspacesListBox.ContextMenu, WorkspacesListBox);
+			WorkspacesListBox.ContextMenu.Open();
+		}
+
+		private bool SetWorkspaceContextMenu(object source, Point? position)
+		{
+			ListBoxItem container = null;
+			for (global::Avalonia.Visual current = source as global::Avalonia.Visual; current != null; current = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(current))
+			{
+				if (current is ListBoxItem listBoxItem)
+				{
+					container = listBoxItem;
+					break;
+				}
+			}
+			if (container == null && position.HasValue)
+			{
+				container = global::ForkPlus.UI.ItemsControlExtensions.GetContainerAtPoint<ListBoxItem>(WorkspacesListBox, position.Value);
+			}
+			if (container is not { DataContext: WorkspaceViewModel dataContext })
+			{
+				return false;
+			}
+
+			WorkspacesListBox.SelectedItem = dataContext;
+			WorkspacesListBox.ContextMenu.Items.Clear();
+			WorkspacesListBox.ContextMenu.SetItems(GetContextMenu(dataContext));
+			return WorkspacesListBox.ContextMenu.Items.Count > 0;
 		}
 
 		private void WorkspacesListBox_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == Key.F2 && (sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
+			if (e.Key == Key.F2 && (sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* Migration note：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: WorkspaceViewModel dataContext })
 			{
-				dataContext.IsInEditMode = true;
+				BeginEditWorkspace(dataContext);
 			}
 		}
 
@@ -101,7 +147,7 @@ namespace ForkPlus.UI.Dialogs
 			renameMenuItem.Header = PreferencesLocalization.MenuHeader("Rename");
 			renameMenuItem.Click += delegate
 			{
-				workspaceViewModel.IsInEditMode = true;
+				BeginEditWorkspace(workspaceViewModel);
 			};
 			yield return renameMenuItem;
 
@@ -121,13 +167,80 @@ namespace ForkPlus.UI.Dialogs
 			_workspaceViewModels.Add(workspaceViewModel);
 			UpdateDeleteButtonState();
 			SelectAndFocusWorkspace(workspaceViewModel);
+			BeginEditWorkspace(workspaceViewModel);
+		}
+
+		private void BeginEditWorkspace(WorkspaceViewModel workspaceViewModel)
+		{
+			if (workspaceViewModel == null)
+			{
+				return;
+			}
+			SelectAndFocusWorkspace(workspaceViewModel);
 			workspaceViewModel.IsInEditMode = true;
+			Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+			{
+				foreach (TextBox textBox in global::Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(WorkspacesListBox).OfType<TextBox>())
+				{
+					if (textBox.DataContext == workspaceViewModel)
+					{
+						textBox.Text = workspaceViewModel.Name;
+						textBox.Focus();
+						textBox.SelectAll();
+						break;
+					}
+				}
+			}, Avalonia.Threading.DispatcherPriority.Background);
+		}
+
+		private void WorkspaceNameTextBox_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (sender is not TextBox textBox || textBox.DataContext is not WorkspaceViewModel workspaceViewModel)
+			{
+				return;
+			}
+			if (e.Key == Key.Escape)
+			{
+				CommitWorkspaceNameEdit(workspaceViewModel, textBox.Text, save: false);
+				e.Handled = true;
+			}
+		}
+
+		private void WorkspaceNameTextBox_KeyUp(object sender, KeyEventArgs e)
+		{
+			if (sender is not TextBox textBox || textBox.DataContext is not WorkspaceViewModel workspaceViewModel)
+			{
+				return;
+			}
+			if (e.Key == Key.Return || e.Key == Key.Enter)
+			{
+				CommitWorkspaceNameEdit(workspaceViewModel, textBox.Text, save: true);
+				e.Handled = true;
+			}
+		}
+
+		private void WorkspaceNameTextBox_LostFocus(object sender, RoutedEventArgs e)
+		{
+			if (sender is TextBox textBox && textBox.DataContext is WorkspaceViewModel workspaceViewModel && workspaceViewModel.IsInEditMode)
+			{
+				CommitWorkspaceNameEdit(workspaceViewModel, textBox.Text, save: true);
+			}
+		}
+
+		private void CommitWorkspaceNameEdit(WorkspaceViewModel workspaceViewModel, string text, bool save)
+		{
+			if (save)
+			{
+				workspaceViewModel.DisplayName = text;
+			}
+			workspaceViewModel.IsInEditMode = false;
+			WorkspacesListBox.Focus();
 		}
 
 		private void RemoveWorkspace(WorkspaceViewModel workspace)
 		{
 			if (new MessageBoxWindow("Do you want to delete the workspace '" + workspace.Name + "'?", "You can't undo this action", "Delete", "Cancel", showCancelButton: true, 500.0)
-				.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
+				.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // Migration note：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
 			{
 				int num = _workspaceViewModels.IndexOf(workspace);
 				_workspaceViewModels.Remove(workspace);

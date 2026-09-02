@@ -19,7 +19,7 @@
       <Border Grid.Column="1" Margin="8,6,0,2" Height="80" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" x:Name="GitPointsContainer">
         <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="GitPoints">
-<!-- TODO 迁移：WPF ItemsControl.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF ItemsControl.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
             <ItemsControl.ItemTemplate>
               <DataTemplate>

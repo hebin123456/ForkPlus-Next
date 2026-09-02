@@ -41,7 +41,7 @@ namespace ForkPlus.UI.Controls
 
 		private Sha? _activeMergePointSha;
 
-		// TODO 迁移：字段类型收紧为 StyledProperty<T>（XAML 编译器要求 typed property）。
+		// Migration note：字段类型收紧为 StyledProperty<T>（XAML 编译器要求 typed property）。
                 public static readonly global::Avalonia.StyledProperty<double> CellHeightProperty;
 
                 public static readonly global::Avalonia.StyledProperty<bool> ShowGraphToolTipProperty;
@@ -127,8 +127,7 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerEntered(global::Avalonia.Input.PointerEventArgs e)
 		{
-			e.Handled = true;
-			// TODO 迁移：WPF PointerEventArgs.LeftButton != MouseButtonState.Pressed → GetCurrentPoint().Properties.IsLeftButtonPressed
+			// Migration note：WPF PointerEventArgs.LeftButton != MouseButtonState.Pressed → GetCurrentPoint().Properties.IsLeftButtonPressed
 			if (ShowGraphToolTip && base.DataContext is DecoratedRevision decoratedRevision && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				base.OnPointerEntered(e);
@@ -143,7 +142,6 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerExited(global::Avalonia.Input.PointerEventArgs e)
 		{
-			e.Handled = true;
 			base.OnPointerExited(e);
 			IsMouseOver = false;
 			if (ShowGraphToolTip && base.DataContext is DecoratedRevision decoratedRevision && decoratedRevision.GetParents().Length > 1)
@@ -156,7 +154,6 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			e.Handled = true;
 			base.OnPointerMoved(e);
 			if (base.DataContext is DecoratedRevision decoratedRevision)
 			{
@@ -167,9 +164,8 @@ namespace ForkPlus.UI.Controls
 
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
-			e.Handled = true;
 			base.OnPointerPressed(e);
-			// TODO 迁移：WPF PointerPressedEventArgs.ChangedButton == MouseButton.Left → GetCurrentPoint().Properties.IsLeftButtonPressed
+			// Migration note：WPF PointerPressedEventArgs.ChangedButton == MouseButton.Left → GetCurrentPoint().Properties.IsLeftButtonPressed
 			if (IsMouseOver && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && base.DataContext is DecoratedRevision decoratedRevision)
 			{
 				this.ExpandToggle?.Invoke(this, EventArgs.Empty);
@@ -182,7 +178,7 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
-		// TODO 迁移：WPF 版在 OnRender 里直接设 this.Width = cellWidth * lines.Length（WPF 允许渲染后
+		// Migration note：WPF 版在 OnRender 里直接设 this.Width = cellWidth * lines.Length（WPF 允许渲染后
 		// 触发下一轮流排；Avalonia 渲染期使布局失效直接抛 InvalidOperationException
 		// "Visual was invalidated during the render pass"，实证见 MIGRATION.md 运行时修复链 4）。
 		// 正确做法：MeasureOverride 按数据源返回期望尺寸（Auto 列/StackPanel 布局取该值），
@@ -210,7 +206,7 @@ namespace ForkPlus.UI.Controls
 			{
 				// WPF 版在此构造 GuidelineSet 并 PushGuidelineSet 做像素对齐（列坐标均为
 				// cellWidth 整数倍，1px 线条需对齐到设备像素中点）。Avalonia 无 GuidelineSet，
-				// TODO 迁移：如需恢复像素级锐利，可在 DrawLine/DrawCommitPoint 内对坐标做
+				// Migration note：如需恢复像素级锐利，可在 DrawLine/DrawCommitPoint 内对坐标做
 				// Math.Floor(x)+0.5 半像素偏移；当前先按原始坐标绘制（视觉上可能有轻微模糊）。
 				GraphLine[] lines = decoratedRevision.GraphInfo.Lines;
 				foreach (GraphLine line in lines)
@@ -365,8 +361,8 @@ namespace ForkPlus.UI.Controls
 			popup.HorizontalOffset = horizontalOffset;
 			popup.VerticalOffset = -50.0;
 			popup.IsLightDismissEnabled= (!true);
-			/* TODO 迁移: AllowsTransparency 已删除 */;
-			/* TODO 迁移: PopupAnimation 已删除 */;
+			/* Migration note: AllowsTransparency 已删除 */;
+			/* Migration note: PopupAnimation 已删除 */;
 			popup.PlacementTarget = this;
 			RevisionGraphTooltipUserControl revisionGraphTooltipUserControl = new RevisionGraphTooltipUserControl(repositoryUserControl, sha);
 			revisionGraphTooltipUserControl.HeightChanged += delegate(object s, EventArgs<double> e)

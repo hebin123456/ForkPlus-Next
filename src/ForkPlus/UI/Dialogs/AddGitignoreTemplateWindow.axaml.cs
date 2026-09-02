@@ -140,7 +140,7 @@ namespace ForkPlus.UI.Dialogs
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Add");
 			base.DescriptionTextBlock.Inlines.Clear();
 			base.DescriptionTextBlock.Inlines.Add(new Run("Choose "));
-			// TODO 迁移：WPF Hyperlink(Run) → Avalonia HyperlinkButton（Content 承载 Run）。
+			// Migration note：WPF Hyperlink(Run) → Avalonia HyperlinkButton（Content 承载 Run）。
                         global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton
                         {
                                 Content = new Run(".gitignore"),

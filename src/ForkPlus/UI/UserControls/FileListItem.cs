@@ -84,7 +84,7 @@ namespace ForkPlus.UI.UserControls
 			return l.IsDirectory;
 		}
 
-		public override void StartDrag(global::Avalonia.Input.InputElement dragSource, MultiselectionTreeViewItem[] nodes) // TODO 迁移：WPF DependencyObject → InputElement（DoDragDrop 需要）。
+		public override void StartDrag(global::Avalonia.Input.InputElement dragSource, MultiselectionTreeViewItem[] nodes) // Migration note：WPF DependencyObject → InputElement（DoDragDrop 需要）。
 		{
 			try
 			{

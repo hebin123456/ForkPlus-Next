@@ -6,7 +6,7 @@ namespace ForkPlus.UI.UserControls
 	{
 		private const string GitMmPrefix = "git mm: ";
 
-		private readonly string _name;
+		private string _name;
 
 		private readonly bool _isGitMmWorkspace;
 
@@ -23,7 +23,10 @@ namespace ForkPlus.UI.UserControls
 				string newName = NormalizeName(value);
 				if (!(_name == newName))
 				{
+					_name = newName;
 					base.Title = FormatName(newName);
+					RaisePropertyChanged(nameof(Name));
+					RaisePropertyChanged(nameof(Title));
 					base.IsInEditMode = false;
 					RepositoryManager.Instance.RenameRepository(Repository.Path, newName);
 					RepositoryManager.Instance.Save();

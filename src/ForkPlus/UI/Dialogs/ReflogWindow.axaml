@@ -2,6 +2,7 @@
   <Grid Margin="8">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
@@ -13,8 +14,23 @@
       <Button DockPanel.Dock="Right" x:Name="JumpButton" Click="JumpButton_Click" Padding="12,4" Margin="4,0,0,0" Content="Jump to..." IsEnabled="False" />
     </DockPanel>
 
+    <!-- 列头（Avalonia 无 WPF GridViewColumnHeader，手工实现） -->
+    <Grid Grid.Row="1" ColumnDefinitions="70,90,240,*,160" Margin="0,0,0,6">
+      <TextBlock Grid.Column="0" x:Name="IndexHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Index" />
+      <TextBlock Grid.Column="1" x:Name="ShaHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="SHA" />
+      <TextBlock Grid.Column="2" x:Name="OperationHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Operation" />
+      <TextBlock Grid.Column="3" x:Name="CommitSubjectHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Commit Subject" />
+      <TextBlock Grid.Column="4" x:Name="TimeHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Time" />
+    </Grid>
+
     <!-- reflog 列表 -->
-    <ListBox Grid.Row="1" x:Name="ReflogListView" SelectionChanged="ReflogListView_SelectionChanged" DoubleTapped="ReflogListView_MouseDoubleClick">
+    <ListBox Grid.Row="2"
+             x:Name="ReflogListView"
+             SelectionChanged="ReflogListView_SelectionChanged"
+             DoubleTapped="ReflogListView_MouseDoubleClick"
+             Focusable="True"
+             ScrollViewer.VerticalScrollBarVisibility="Auto"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
       <!-- 原 WPF ItemContainerStyle（ReflogListItemStyle）迁移：ControlTheme 无 BasedOn 会失去
            Fluent ListBoxItem 模板，改用容器 Style 叠加到默认主题 -->
       <ListBox.Styles>
@@ -24,9 +40,20 @@
         </Style>
       </ListBox.Styles>
 
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <Grid ColumnDefinitions="70,90,240,*,160" VerticalAlignment="Center">
+            <TextBlock Grid.Column="0" Text="{Binding IndexDisplay}" />
+            <TextBlock Grid.Column="1" Text="{Binding ShaDisplay}" FontFamily="Consolas" />
+            <TextBlock Grid.Column="2" Text="{Binding OperationName}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="3" Text="{Binding CommitSubject}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="4" Text="{Binding TimeDisplay}" FontFamily="Consolas" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
     </ListBox>
 
     <!-- 状态栏 -->
-    <TextBlock Grid.Row="2" x:Name="StatusText" Margin="0,8,0,0" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Double-click an entry to jump to that state." />
+    <TextBlock Grid.Row="3" x:Name="StatusText" Margin="0,8,0,0" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Double-click an entry to jump to that state." />
   </Grid>
 </ui:CustomWindow>

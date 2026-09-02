@@ -27,7 +27,7 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class RevisionSummaryUserControl : UserControl
 	{
-		// TODO 迁移：TextButtonStyle 资源是 ControlTheme；IStyle 由 StyleCompat.SetStyle 消费（挂 Theme）。
+		// Migration note：TextButtonStyle 资源是 ControlTheme；IStyle 由 StyleCompat.SetStyle 消费（挂 Theme）。
 	private static global::Avalonia.Styling.IStyle ParentButtonStyle => Application.Current?.TryFindResource("TextButtonStyle") as global::Avalonia.Styling.IStyle;
 
 		[Null]
@@ -248,8 +248,8 @@ namespace ForkPlus.UI.UserControls
 				Popup popup = new Popup();
 				popup.HorizontalOffset = -270.0;
 				popup.IsLightDismissEnabled= (!false);
-				/* TODO 迁移: AllowsTransparency 已删除 */;
-				/* TODO 迁移: PopupAnimation 已删除 */;
+				/* Migration note: AllowsTransparency 已删除 */;
+				/* Migration note: PopupAnimation 已删除 */;
 				popup.PlacementTarget = parentButton;
 				popup.Opened += delegate
 				{
@@ -274,7 +274,7 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		// TODO 迁移：WPF UIElement 返回类型 → Avalonia Control（Children.Add 需要 Control）。
+		// Migration note：WPF UIElement 返回类型 → Avalonia Control（Children.Add 需要 Control）。
 		private global::Avalonia.Controls.Control CreateParentButton(RepositoryUserControl repositoryUserControl, Sha parent, Action action)
 		{
 			return global::ForkPlus.UI.WpfCompat.StyleCompat.WithStyle(new AdvancedTooltipButton(repositoryUserControl, parent, action)
@@ -395,7 +395,7 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-                        window.SetOwnerCompat(global::Avalonia.Controls.TopLevel.GetTopLevel(this) as global::Avalonia.Controls.Window); // TODO 迁移：TopLevel → Window（SetOwnerCompat 需要）。
+                        window.SetOwnerCompat(global::Avalonia.Controls.TopLevel.GetTopLevel(this) as global::Avalonia.Controls.Window); // Migration note：TopLevel → Window（SetOwnerCompat 需要）。
 			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
 			window.Show();
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)

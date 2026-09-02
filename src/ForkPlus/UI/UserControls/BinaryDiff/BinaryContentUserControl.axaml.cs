@@ -144,11 +144,11 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				{
 					ShowLfsImageButton.Collapse();
 				}
-				if (!CancelLfsButton.IsVisible) // TODO 迁移：WPF Visibility != 0（非 Visible）→ !IsVisible。
+				if (!CancelLfsButton.IsVisible) // Migration note：WPF Visibility != 0（非 Visible）→ !IsVisible。
 				{
 					CancelLfsButton.Show();
 				}
-				if (!LfsProgressBar.IsVisible) // TODO 迁移：WPF Visibility != 0（非 Visible）→ !IsVisible。
+				if (!LfsProgressBar.IsVisible) // Migration note：WPF Visibility != 0（非 Visible）→ !IsVisible。
 				{
 					LfsProgressBar.Show();
 				}
@@ -177,7 +177,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			global::Avalonia.Media.Imaging.Bitmap bitmapSource = BinaryDiffUserControl.CreateBitmapSource(memoryStream);
 			long length = memoryStream.Length;
 			DescriprionTextBlock.Text = GetImageDescription(bitmapSource, length);
-			// TODO 迁移：WPF BitmapSource.PixelHeight → Avalonia Bitmap.PixelSize.Height。
+			// Migration note：WPF BitmapSource.PixelHeight → Avalonia Bitmap.PixelSize.Height。
 					double num = ((double?)bitmapSource?.PixelSize.Height) ?? 0.0;
 			Image.Source = bitmapSource;
 			Image.Height = num;

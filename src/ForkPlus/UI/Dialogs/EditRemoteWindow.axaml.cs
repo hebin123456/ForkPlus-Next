@@ -311,7 +311,7 @@ namespace ForkPlus.UI.Dialogs
 					StatusImage.Show();
 					if (!result.Succeeded)
 					{
-						StatusImage.Source = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(ForkPlusDialogWindow.WarningIcon)); // TODO 迁移：WPF BitmapImage(Uri) → Avalonia Bitmap + AssetLoader。
+						StatusImage.Source = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(ForkPlusDialogWindow.WarningIcon)); // Migration note：WPF BitmapImage(Uri) → Avalonia Bitmap + AssetLoader。
 						if (result.Error is GitCommandError.CallbackUnknownError callbackUnknownError)
 						{
 							if (callbackUnknownError.FullOutput.Contains("Permission denied (publickey)"))
@@ -335,7 +335,7 @@ namespace ForkPlus.UI.Dialogs
 					}
 					else
 					{
-						StatusImage.Source = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(ForkPlusDialogWindow.SuccessIcon)); // TODO 迁移：WPF BitmapImage(Uri) → Avalonia Bitmap + AssetLoader。
+						StatusImage.Source = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(ForkPlusDialogWindow.SuccessIcon)); // Migration note：WPF BitmapImage(Uri) → Avalonia Bitmap + AssetLoader。
 						StatusTextBlock.Show();
 						StatusTextBlock.Text = PreferencesLocalization.Current("Connection succeeded");
 					}

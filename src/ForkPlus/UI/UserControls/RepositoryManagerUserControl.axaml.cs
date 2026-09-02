@@ -18,6 +18,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -71,11 +72,20 @@ namespace ForkPlus.UI.UserControls
 			_root.Children.Add(_recent);
 			_root.Children.Add(_repositories);
 			RepositoriesTreeView.RootItem = _root;
+			RepositoriesTreeView.SizeChanged += delegate
+			{
+				ScheduleStretchRepositoryTreeItems();
+			};
+			RepositoriesTreeView.LayoutUpdated += delegate
+			{
+				StretchRepositoryTreeItems();
+			};
 			ApplyLocalization();
 			Refresh(restoreSelection: false);
 			base.Loaded += delegate
 			{
 				RestoreTreeViewColumnWidth();
+				ScheduleStretchRepositoryTreeItems();
 				if (_recent.Children.Count > 0)
 				{
 					SelectFirstRecent();
@@ -107,7 +117,8 @@ namespace ForkPlus.UI.UserControls
 					Commands.RemoveRepository.Execute(this, SelectedItems);
 				}
 			}));
-			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(RepositoriesTreeView,RepositoriesListBox_ContextMenuOpening);
+			RepositoriesTreeView.ContextRequested += (_, e) => e.Handled = true;
+			RepositoriesTreeView.AddHandler(InputElement.PointerPressedEvent, new EventHandler<PointerPressedEventArgs>(RepositoriesTreeView_ContextMenuPointerPressed), global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
 			WeakEventManager<NotificationCenter, EventArgs<string>>.AddHandler(NotificationCenter.Current, "RepositoryNameChanged", RepositoryNameChanged);
 			WeakEventManager<NotificationCenter, EventArgs<RepositoryManager.Repository>>.AddHandler(NotificationCenter.Current, "RepositoryColorChanged", RepositoryColorChanged);
 			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "RepositoryManagerRepositoriesUpdated", RepositoriesChanged);
@@ -147,10 +158,36 @@ namespace ForkPlus.UI.UserControls
 			CreateRecentRepositories(_recent);
 			CreateRepositoryItems(_repositories);
 			RepositoriesTreeView.SetExpandedItems(ForkPlusSettings.Default.RepositoryManagerTreeViewExpandedItems);
+			ScheduleStretchRepositoryTreeItems();
 			_handleExpandEvents = true;
 			if (restoreSelection && repositoryManagerRepositoryItem != null)
 			{
 				SelectRepositoryItemWithPath(repositoryManagerRepositoryItem.Path, RepositoriesTreeView.RootItem);
+			}
+		}
+
+		private void ScheduleStretchRepositoryTreeItems()
+		{
+			Dispatcher.UIThread.Post(StretchRepositoryTreeItems, DispatcherPriority.Background);
+		}
+
+		private void StretchRepositoryTreeItems()
+		{
+			double width = Math.Max(0.0, RepositoriesTreeView.Bounds.Width - 4.0);
+			if (width <= 0.0)
+			{
+				return;
+			}
+			foreach (TreeViewControlItem item in RepositoriesTreeView.GetVisualDescendants().OfType<TreeViewControlItem>())
+			{
+				if (Math.Abs(item.MinWidth - width) > 0.5)
+				{
+					item.MinWidth = width;
+				}
+				if (double.IsNaN(item.Width) || Math.Abs(item.Width - width) > 0.5)
+				{
+					item.Width = width;
+				}
 			}
 		}
 
@@ -328,31 +365,91 @@ namespace ForkPlus.UI.UserControls
 
 		private void RepositoriesListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			RepositoryManagerTreeViewItem[] array = ClickedItems(RepositoriesTreeView);
-			if (array.ContainsItem((RepositoryManagerTreeViewItem x) => x is RepositoryManagerSectionItem repositoryManagerSectionItem && repositoryManagerSectionItem == _recent))
+			Point point;
+			if (!TrySelectContextMenuTarget(e.Source, e.TryGetPosition(RepositoriesTreeView, out point) ? point : (Point?)null) || !SetRepositoriesContextMenuItems())
 			{
 				e.Handled = true;
 				RepositoriesTreeView.ContextMenu.Close();
 			}
-			else
+		}
+
+		private void RepositoriesTreeView_ContextMenuPointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			if (!e.GetCurrentPoint(RepositoriesTreeView).Properties.IsRightButtonPressed)
 			{
-				RepositoriesTreeView.ContextMenu.SetItems(CreateRepositoryContextMenuItems(array));
+				return;
 			}
+
+			e.Handled = true;
+			RepositoriesTreeView.ContextMenu?.Close();
+			if (!TrySelectContextMenuTarget(e.Source, e.GetPosition(RepositoriesTreeView)) || !SetRepositoriesContextMenuItems())
+			{
+				RepositoriesTreeView.ContextMenu?.Close();
+				return;
+			}
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(RepositoriesTreeView.ContextMenu, RepositoriesTreeView);
+			RepositoriesTreeView.ContextMenu.Open();
+		}
+
+		private bool TrySelectContextMenuTarget(object source, Point? position)
+		{
+			TreeViewControlItem container = null;
+			for (global::Avalonia.Visual current = source as global::Avalonia.Visual; current != null; current = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(current))
+			{
+				if (current is TreeViewControlItem treeViewControlItem)
+				{
+					container = treeViewControlItem;
+					break;
+				}
+			}
+			if (container == null && position.HasValue)
+			{
+				container = RepositoriesTreeView.GetContainerAtPoint<TreeViewControlItem>(position.Value);
+			}
+			if (container?.Node is not RepositoryManagerTreeViewItem item)
+			{
+				return false;
+			}
+
+			RepositoriesTreeView.LastClickedItem = item;
+			if (!RepositoriesTreeView.SelectedItems.Contains(item))
+			{
+				RepositoriesTreeView.SelectedItems.Clear();
+				RepositoriesTreeView.SelectedItems.Add(item);
+				RepositoriesTreeView.SelectedItem = item;
+			}
+			return true;
+		}
+
+		private bool SetRepositoriesContextMenuItems()
+		{
+			RepositoryManagerTreeViewItem[] array = ClickedItems(RepositoriesTreeView);
+			if (array.Length == 0 || array.ContainsItem((RepositoryManagerTreeViewItem x) => x is RepositoryManagerSectionItem repositoryManagerSectionItem && repositoryManagerSectionItem == _recent))
+			{
+				return false;
+			}
+
+			RepositoriesTreeView.ContextMenu.SetItems(CreateRepositoryContextMenuItems(array));
+			return RepositoriesTreeView.ContextMenu.Items.Count > 0;
 		}
 
 		private void RepositoriesListBox_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
+			TrySelectContextMenuTarget(e.Source, e.GetPosition(RepositoriesTreeView));
 			MultiselectionTreeViewItem lastClickedItem = RepositoriesTreeView.LastClickedItem;
 			if (lastClickedItem is RepositoryManagerRepositoryItem repositoryManagerRepositoryItem)
 			{
+				e.Handled = true;
 				Commands.OpenRepository.Execute(repositoryManagerRepositoryItem.Repository);
 			}
 			else if (lastClickedItem is RepositoryManagerRepositoryFolderItem repositoryManagerRepositoryFolderItem)
 			{
+				e.Handled = true;
 				repositoryManagerRepositoryFolderItem.IsExpanded = !repositoryManagerRepositoryFolderItem.IsExpanded;
 			}
 			else if (lastClickedItem is RepositoryManagerSectionItem repositoryManagerSectionItem)
 			{
+				e.Handled = true;
 				repositoryManagerSectionItem.IsExpanded = !repositoryManagerSectionItem.IsExpanded;
 			}
 		}

@@ -22,14 +22,14 @@ namespace ForkPlus.UI.Dialogs
 			: base(adornedElement)
 		{
 			_initialPosition = position;
-			// TODO 迁移：WPF VisualBrush(visual) 在 Avalonia 12.1 为 Avalonia.Media.VisualBrush(Visual)，
+			// Migration note：WPF VisualBrush(visual) 在 Avalonia 12.1 为 Avalonia.Media.VisualBrush(Visual)，
 			// 反编译产物里误写成不存在的 Avalonia.Media.ImmutableBrush。
 			Brush[] visualBrushes = listBoxItems.Map((ListBoxItem x) => new global::Avalonia.Media.VisualBrush(x)
 			{
 				Opacity = 0.4
 			});
 			_visualBrushes = visualBrushes;
-			// TODO 迁移：Avalonia ListBoxItem 无 ActualHeight，等价取 Bounds.Height。
+			// Migration note：Avalonia ListBoxItem 无 ActualHeight，等价取 Bounds.Height。
 			_visualBrushYOffset = listBoxItems.FirstItem()?.Bounds.Height ?? 0.0;
 			base.IsHitTestVisible = false;
 		}

@@ -31,7 +31,7 @@ namespace ForkPlus.UI.Controls
 
 		public CommandHyperlink(RepositoryUserControl repositoryUserControl, Sha sha, string text, Action action)
 		{
-			// TODO 迁移：WPF Hyperlink(Run) 内联元素；Avalonia HyperlinkButton 无 (Run) 构造，
+			// Migration note：WPF Hyperlink(Run) 内联元素；Avalonia HyperlinkButton 无 (Run) 构造，
 			// 改为 Content = 文本（由 BugtrackerHyperlinkStyle 提供超链外观）。
 			Content = text;
 			_action = action;
@@ -41,7 +41,7 @@ namespace ForkPlus.UI.Controls
 			_closePopupTimer.Interval = TimeSpan.FromMilliseconds(100.0);
 			_showPopupTimer.Tick += _showPopupTimer_Tick;
 			_closePopupTimer.Tick += _closePopupTimer_Tick;
-			// TODO 迁移：WPF `Style = ... as Style`；资源实为 ControlTheme，经 StyleCompat 挂 Theme（base 不能作参数）。
+			// Migration note：WPF `Style = ... as Style`；资源实为 ControlTheme，经 StyleCompat 挂 Theme（base 不能作参数）。
 			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(this, Application.Current.TryFindResource("BugtrackerHyperlinkStyle"));
 			base.Click += CommandHyperlink_Click;
 			base.PointerEntered += delegate(object s, global::Avalonia.Input.PointerEventArgs e)
@@ -106,7 +106,7 @@ namespace ForkPlus.UI.Controls
 			{
 				return null;
 			}
-			// TODO 迁移：WPF Popup 的 StaysOpen/AllowsTransparency/PopupAnimation(Fade) 在 Avalonia 无对应属性：
+			// Migration note：WPF Popup 的 StaysOpen/AllowsTransparency/PopupAnimation(Fade) 在 Avalonia 无对应属性：
 			// StaysOpen=true 近似为 IsLightDismissEnabled=false（不因点击外部自动关闭，关闭仍由定时器/点击逻辑控制）；
 			// AllowsTransparency / PopupAnimation(Fade) 的透明与淡入动画暂不可用。
 			Popup obj = new Popup
@@ -116,10 +116,10 @@ namespace ForkPlus.UI.Controls
 				IsLightDismissEnabled = false,
 				PlacementTarget = placementTarget
 			};
-			// TODO 迁移：WPF 用 Hyperlink 的 ElementStart/ElementEnd GetCharacterRect 求内联文本在 TextBlock 内的矩形；
+			// Migration note：WPF 用 Hyperlink 的 ElementStart/ElementEnd GetCharacterRect 求内联文本在 TextBlock 内的矩形；
 			// Avalonia 中本控件是 HyperlinkButton（包在 InlineUIContainer 里），改用 TranslatePoint 把自身 Bounds 映射到
 			// placementTarget(TextBlock) 坐标系，再水平平移半宽以复刻 WPF 的 placementRectangle.X += Width/2 定位。
-			Point? topLeft = this.TranslatePoint(new Point(0.0, 0.0), placementTarget); // TODO 迁移：扩展方法需显式 this 接收者
+			Point? topLeft = this.TranslatePoint(new Point(0.0, 0.0), placementTarget); // Migration note：扩展方法需显式 this 接收者
 			Rect placementRectangle = new Rect(topLeft ?? new Point(0.0, 0.0), Bounds.Size);
 			placementRectangle = placementRectangle.WithX(placementRectangle.X + placementRectangle.Width / 2.0);
 			obj.PlacementRect = placementRectangle;

@@ -109,15 +109,20 @@ namespace ForkPlus.UI.Controls
 
 		public event EventHandler ClearButtonClicked;
 
+		public event EventHandler EnterPressed;
+
 		public FilterTextBox()
 		{
 			base.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Down)
 				{
-					_dropdownButton.IsChecked = true;
+					if (_dropdownButton != null)
+					{
+						_dropdownButton.IsChecked = true;
+					}
 				}
-			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
 			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Escape && !string.IsNullOrEmpty(base.Text))
@@ -130,6 +135,26 @@ namespace ForkPlus.UI.Controls
 			{
 				this.FilterRequestChanged?.Invoke(this, EventArgs.Empty);
 			};
+		}
+
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			if (HandleEnterKey(e))
+			{
+				return;
+			}
+			base.OnKeyDown(e);
+		}
+
+		private bool HandleEnterKey(KeyEventArgs e)
+		{
+			if (e.Key != Key.Return && e.Key != Key.Enter)
+			{
+				return false;
+			}
+			e.Handled = true;
+			EnterPressed?.Invoke(this, EventArgs.Empty);
+			return true;
 		}
 
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
@@ -184,11 +209,25 @@ namespace ForkPlus.UI.Controls
 		{
 			if (AnimationPlaceholder != null)
 			{
-				if (SlidingPanelHelper.ShowPanel(AnimationPlaceholder, _translateTransform, FilterTextBoxAnimationHeight))
+				bool changed;
+				if (_translateTransform == null)
+				{
+					changed = AnimationPlaceholder.Height != FilterTextBoxAnimationHeight;
+					AnimationPlaceholder.Height = FilterTextBoxAnimationHeight;
+					Opacity = 1.0;
+				}
+				else
+				{
+					changed = SlidingPanelHelper.ShowPanel(AnimationPlaceholder, _translateTransform, FilterTextBoxAnimationHeight);
+				}
+				if (changed)
 				{
 					Clear();
 				}
-				UpdateOpacity(0.0, 1.0, ShowAnimationDuration);
+				if (_translateTransform != null)
+				{
+					UpdateOpacity(0.0, 1.0, ShowAnimationDuration);
+				}
 				FocusAndSelectAllText();
 				IsAnimationPlaceholderVisible = true;
 			}
@@ -199,8 +238,16 @@ namespace ForkPlus.UI.Controls
 			if (AnimationPlaceholder != null && IsAnimationPlaceholderVisible)
 			{
 				Clear();
-				SlidingPanelHelper.HidePanel(AnimationPlaceholder, _translateTransform, FilterTextBoxAnimationHeight);
-				UpdateOpacity(1.0, 0.0, HideAnimationDuration);
+				if (_translateTransform == null)
+				{
+					AnimationPlaceholder.Height = 0.0;
+					Opacity = 0.0;
+				}
+				else
+				{
+					SlidingPanelHelper.HidePanel(AnimationPlaceholder, _translateTransform, FilterTextBoxAnimationHeight);
+					UpdateOpacity(1.0, 0.0, HideAnimationDuration);
+				}
 				IsAnimationPlaceholderVisible = false;
 			}
 		}

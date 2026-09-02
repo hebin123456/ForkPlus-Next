@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Controls
 	// (total contributions / longest streak / most active day).
 	public class ContributionHeatmap : Grid
 	{
-		// TODO 迁移修复：原 Register 未挂 changed 回调（wpf2avalonia 丢失 PropertyMetadata 的
+		// Migration note修复：原 Register 未挂 changed 回调（wpf2avalonia 丢失 PropertyMetadata 的
 		// PropertyChangedCallback），OnCommitsByDateChanged 成死代码 → CommitsByDate 赋值后
 		// RebuildCells 永不执行 → 统计页热力图只有 Less/More 图例、53x7 网格全空（实测）。
 		// 改走 WpfPropertyCompat.Register 挂回调。

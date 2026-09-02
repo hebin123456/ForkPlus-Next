@@ -22,6 +22,8 @@ namespace ForkPlus.UI.Dialogs
 			_gitModule = gitModule;
 			_repositoryData = repositoryData;
 			base.ShowLogo = false;
+			// 仓库设置窗口不需要顶部标题区域；该标题会覆盖通用按钮/内容区域。
+			base.ShowHeader = false;
 			InitializeComponent();
 			base.ShowCancelButton = false;
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Close");

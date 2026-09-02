@@ -217,7 +217,7 @@ namespace ForkPlus.UI.UserControls
 
 		public void RefreshWorkspacesButton()
 		{
-			WorkspacesToolbarDropdownButton.Title = Preferences.PreferencesLocalization.Translate(ForkPlusSettings.Default.Workspaces.ActiveWorkspace.Name.Split(Consts.Chars.Slash).LastItem(), ForkPlusSettings.Default.UiLanguage);
+			WorkspacesToolbarDropdownButton.Title = ForkPlusSettings.Default.Workspaces.ActiveWorkspace.Name.Split(Consts.Chars.Slash).LastItem();
 		}
 
 		public void ApplyLocalization()
@@ -275,7 +275,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshBadgePosition(global::Avalonia.Controls.Control badge, global::Avalonia.Controls.Control button)
 		{
-			Point point = button.TranslatePoint(new Point(0.0, 0.0), BadgesCanvas) ?? new Point(0.0, 0.0); // TODO 迁移：Avalonia TranslatePoint 返回 Point?。
+			Point point = button.TranslatePoint(new Point(0.0, 0.0), BadgesCanvas) ?? new Point(0.0, 0.0); // Migration note：Avalonia TranslatePoint 返回 Point?。
 			Canvas.SetLeft(badge, point.X + button.Bounds.Width - 10.0);
 			Canvas.SetTop(badge, point.Y - 2.0);
 		}
@@ -588,26 +588,21 @@ namespace ForkPlus.UI.UserControls
 		customColorsItem.Click += delegate
 		{
 			var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog();
-			dialog.SetOwnerAndCenter(global::Avalonia.Controls.TopLevel.GetTopLevel(this) as global::Avalonia.Controls.Window); // TODO 迁移：WPF { Owner=TopLevel } → 链式扩展。
+			dialog.SetOwnerAndCenter(global::Avalonia.Controls.TopLevel.GetTopLevel(this) as global::Avalonia.Controls.Window); // Migration note：WPF { Owner=TopLevel } → 链式扩展。
 			dialog.ShowDialog();
 			// 对话框关闭后刷新主题菜单（IsChecked 状态可能因 OK/Cancel 变化）
 			InitializeAppearanceToolBarButtonContextMenu();
 		};
 		contextMenu.Items.Add(customColorsItem);
-			contextMenu.Items.Add(new Separator
-			{
-
-				Margin = new Thickness(-30.0, 0.0, 0.0, 0.0)
-			});
+			// WPF 版用负 Margin 让分隔线“向左延伸”；Avalonia 下会被菜单边框裁剪导致看不到。
+			// 这里用普通 Separator，保证三段分组（Theme / Language / Commit List Layout）有清晰分隔。
+			contextMenu.Items.Add(new Separator());
 			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Language", language)));
 			foreach (Preferences.PreferencesLocalization.LanguageOption languageOption in Preferences.PreferencesLocalization.GetLanguages())
 			{
 				AddLanguageMenuItem(contextMenu.Items, languageOption.Code, languageOption.DisplayName);
 			}
-			contextMenu.Items.Add(new Separator
-			{
-				Margin = new Thickness(-30.0, 0.0, 0.0, 0.0)
-			});
+			contextMenu.Items.Add(new Separator());
 			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Commit List Layout", language)));
 			ClosableTabItem activeTab = _mainWindow.TabManager.ActiveTab;
 			bool isEnabled = _mainWindow?.TabManager.ActiveRepositoryUserControl != null;
@@ -625,6 +620,7 @@ namespace ForkPlus.UI.UserControls
 			menuItem4.IsChecked = ForkPlusSettings.Default.RevisionListOrientation == RevisionListOrientation.Vertical;
 			menuItem4.IsEnabled = isEnabled;
 			contextMenu.Items.Add(menuItem4);
+			contextMenu.AttachCloseOnLeafItemClick();
 		}
 
 		private static void AddLanguageMenuItem(ItemCollection items, string language, string title)
@@ -956,6 +952,7 @@ namespace ForkPlus.UI.UserControls
 				MainWindow.Commands.ShowConfigureWorkspacesWindow.Execute();
 			});
 			contextMenu.Items.Add(newItem);
+			contextMenu.AttachCloseOnLeafItemClick();
 		}
 
 		private static void AddWorkspaceItem(ItemCollection menuItems, string[] path, int pathIndex, Workspace workspace, bool isActive)
@@ -972,7 +969,10 @@ namespace ForkPlus.UI.UserControls
 			};
 			menuItem.Click += delegate
 			{
-				MainWindow.Commands.SwitchWorkspace.Execute(workspace);
+				if (!isActive)
+				{
+					MainWindow.Commands.SwitchWorkspace.Execute(workspace);
+				}
 			};
 			menuItem.IsChecked = isActive;
 			menuItems.Add(menuItem);

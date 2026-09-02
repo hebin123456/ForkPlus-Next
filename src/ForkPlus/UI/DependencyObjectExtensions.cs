@@ -11,7 +11,7 @@ namespace ForkPlus.UI
 		[Null]
 		public static T GetParent<T>(this global::Avalonia.Visual _this) where T : global::Avalonia.AvaloniaObject
 		{
-			// TODO 迁移：WPF DependencyObject 可视树遍历 → Avalonia Visual（GetVisualParent 需要 Visual）。
+			// Migration note：WPF DependencyObject 可视树遍历 → Avalonia Visual（GetVisualParent 需要 Visual）。
 			global::Avalonia.Visual dependencyObject = _this;
 			while (dependencyObject != null && !(dependencyObject is T))
 			{

@@ -21,6 +21,11 @@ namespace ForkPlus.UI.Controls.Editor
 
 		public CodeEditor()
 		{
+			object codeEditorTheme = Application.Current?.TryFindResource(typeof(CodeEditor));
+			if (codeEditorTheme != null)
+			{
+				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(this, codeEditorTheme);
+			}
 			base.Options.InheritWordWrapIndentation = false;
 			base.Options.EnableHyperlinks = false;
 			base.Options.EnableEmailHyperlinks = false;

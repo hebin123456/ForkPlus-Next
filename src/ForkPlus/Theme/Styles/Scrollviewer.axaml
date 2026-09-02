@@ -36,6 +36,7 @@
   <ControlTheme x:Key="ScrollBarThumbVertical" TargetType="Thumb">
     
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
+    <Setter Property="MinHeight" Value="60" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Thumb">
@@ -58,6 +59,7 @@
   <ControlTheme x:Key="ScrollBarThumbHorizontal" TargetType="Thumb">
     
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
+    <Setter Property="MinWidth" Value="60" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Thumb">
@@ -79,7 +81,6 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="VerticalScrollBarStyle" TargetType="ScrollBar">
 
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -98,14 +99,14 @@
             <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
               <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
             </RepeatButton>
-            <Track IsDirectionReversed="true" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
-<!-- TODO 迁移：WPF Track.Resources 块（Avalonia 无 SystemParameters 键）。原始片段：
-              <Track.Resources>
-                <ResourceDictionary>
-                  <sys:Double x:Key="VerticalScrollBarButtonHeightKey">60</sys:Double>
-                </ResourceDictionary>
-              </Track.Resources>-->
-
+            <Track IsDirectionReversed="true"
+                   Grid.Row="1"
+                   Margin="0,0,0,0"
+                   Minimum="{TemplateBinding Minimum}"
+                   Maximum="{TemplateBinding Maximum}"
+                   Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                   ViewportSize="{TemplateBinding ViewportSize}"
+                   x:Name="PART_Track">
               <Track.DecreaseButton>
                 <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
               </Track.DecreaseButton>
@@ -127,7 +128,6 @@
     
   
     <Style Selector="^:horizontal">
-<!-- TODO 迁移：WPF Setter Property=Width Value=Auto 已删（Avalonia double 不接受 Auto） -->
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Height" Value="13" />
         <Setter Property="MinHeight" Value="13" />
@@ -142,13 +142,17 @@
                   <ColumnDefinition Width="10" />
                 </Grid.ColumnDefinitions>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
-                <!-- TODO 迁移（根因）：WPF 水平滚动条用 PART_LineLeftButton/PART_LineRightButton；
-                     Avalonia ScrollBar 不分方向，一律查找 PART_LineUpButton(=左)/PART_LineDownButton(=右)
-                     并挂 SmallDecrement/SmallIncrement。原名找不到部件 → 箭头按钮不可点击。 -->
+                <!-- Avalonia uses PART_LineUpButton/PART_LineDownButton for horizontal arrows too. -->
                 <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
                 </RepeatButton>
-                <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
+                <Track Grid.Column="1"
+                       Margin="0,0,0,0"
+                       Minimum="{TemplateBinding Minimum}"
+                       Maximum="{TemplateBinding Maximum}"
+                       Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       ViewportSize="{TemplateBinding ViewportSize}"
+                       x:Name="PART_Track">
                   <Track.DecreaseButton>
                     <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
                   </Track.DecreaseButton>
@@ -163,42 +167,6 @@
                   <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
                 </RepeatButton>
               </Grid>
-              <!-- TODO 迁移：WPF ControlTemplate.Triggers 块注释化（Avalonia 无触发器，视觉状态需用样式选择器/伪类实现：:pointerover/:pressed/:disabled/:focus/:selected 等）。
-                原始片段：<ControlTemplate.Triggers>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition SourceName="PART_LineRightButton" Property="IsMouseOver" Value="true" />
-                    <Condition SourceName="PART_LineRightButton" Property="IsPressed" Value="true" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ArrowRight" Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
-                </MultiTrigger>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition SourceName="PART_LineLeftButton" Property="IsMouseOver" Value="true" />
-                    <Condition SourceName="PART_LineLeftButton" Property="IsPressed" Value="true" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ArrowLeft" Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
-                </MultiTrigger>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition SourceName="PART_LineRightButton" Property="IsMouseOver" Value="true" />
-                    <Condition SourceName="PART_LineRightButton" Property="IsPressed" Value="false" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ArrowRight" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
-                </MultiTrigger>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition SourceName="PART_LineLeftButton" Property="IsMouseOver" Value="true" />
-                    <Condition SourceName="PART_LineLeftButton" Property="IsPressed" Value="false" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ArrowLeft" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
-                </MultiTrigger>
-                <Trigger Property="UIElement.IsEnabled" Value="false">
-                  <Setter TargetName="ArrowLeft" Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
-                  <Setter TargetName="ArrowRight" Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
-                </Trigger>
-              </ControlTemplate.Triggers> -->
-
             </ControlTemplate>
           </Setter.Value>
         </Setter>
@@ -209,7 +177,6 @@
     <Style Selector="^:pointerover:pressed /template/ Path#ArrowTop">
         <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
     </Style>
-    <!-- TODO 迁移（根因）：水平模板箭头 Path 名为 ArrowLeft/ArrowRight（原迁移漏了对应视觉状态样式） -->
     <Style Selector="^:pointerover:pressed /template/ Path#ArrowLeft">
         <Setter Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
     </Style>
@@ -242,7 +209,6 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="HorizontalScrollBarStyle" TargetType="ScrollBar">
 
-<!-- TODO 迁移：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="Background" Value="{DynamicResource ScrollBar.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ScrollBar.Static.Border}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -261,7 +227,14 @@
             <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
               <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
             </RepeatButton>
-            <Track IsDirectionReversed="true" Grid.Row="1" Margin="0,0,0,0" x:Name="PART_Track">
+            <Track IsDirectionReversed="true"
+                   Grid.Row="1"
+                   Margin="0,0,0,0"
+                   Minimum="{TemplateBinding Minimum}"
+                   Maximum="{TemplateBinding Maximum}"
+                   Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                   ViewportSize="{TemplateBinding ViewportSize}"
+                   x:Name="PART_Track">
               <Track.DecreaseButton>
                 <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
               </Track.DecreaseButton>
@@ -283,7 +256,6 @@
     
   
     <Style Selector="^:horizontal">
-<!-- TODO 迁移：WPF Setter Property=Width Value=Auto 已删（Avalonia double 不接受 Auto） -->
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Height" Value="13" />
         <Setter Property="MinHeight" Value="13" />
@@ -298,11 +270,17 @@
                   <ColumnDefinition Width="10" />
                 </Grid.ColumnDefinitions>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
-                <!-- TODO 迁移（根因）：同上，Avalonia 水平滚动条箭头部件名必须是 PART_LineUp/DownButton。 -->
+                <!-- Avalonia uses PART_LineUpButton/PART_LineDownButton for horizontal arrows too. -->
                 <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
                   <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
                 </RepeatButton>
-                <Track Grid.Column="1" Margin="0,0,0,0" x:Name="PART_Track">
+                <Track Grid.Column="1"
+                       Margin="0,0,0,0"
+                       Minimum="{TemplateBinding Minimum}"
+                       Maximum="{TemplateBinding Maximum}"
+                       Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       ViewportSize="{TemplateBinding ViewportSize}"
+                       x:Name="PART_Track">
                   <Track.DecreaseButton>
                     <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
                   </Track.DecreaseButton>
@@ -317,42 +295,6 @@
                   <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
                 </RepeatButton>
               </Grid>
-              <!-- TODO 迁移：WPF ControlTemplate.Triggers 块注释化（Avalonia 无触发器，视觉状态需用样式选择器/伪类实现：:pointerover/:pressed/:disabled/:focus/:selected 等）。
-                原始片段：<ControlTemplate.Triggers>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition SourceName="PART_LineRightButton" Property="IsMouseOver" Value="true" />
-                    <Condition SourceName="PART_LineRightButton" Property="IsPressed" Value="true" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ArrowRight" Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
-                </MultiTrigger>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition SourceName="PART_LineLeftButton" Property="IsMouseOver" Value="true" />
-                    <Condition SourceName="PART_LineLeftButton" Property="IsPressed" Value="true" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ArrowLeft" Value="{DynamicResource ScrollBar.Pressed.Glyph}" Property="Fill" />
-                </MultiTrigger>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition SourceName="PART_LineRightButton" Property="IsMouseOver" Value="true" />
-                    <Condition SourceName="PART_LineRightButton" Property="IsPressed" Value="false" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ArrowRight" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
-                </MultiTrigger>
-                <MultiTrigger>
-                  <MultiTrigger.Conditions>
-                    <Condition SourceName="PART_LineLeftButton" Property="IsMouseOver" Value="true" />
-                    <Condition SourceName="PART_LineLeftButton" Property="IsPressed" Value="false" />
-                  </MultiTrigger.Conditions>
-                  <Setter TargetName="ArrowLeft" Value="{DynamicResource ScrollBar.MouseOver.Glyph}" Property="Fill" />
-                </MultiTrigger>
-                <Trigger Property="UIElement.IsEnabled" Value="false">
-                  <Setter TargetName="ArrowLeft" Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
-                  <Setter TargetName="ArrowRight" Value="{DynamicResource ScrollBar.Disabled.Glyph}" Property="Fill" />
-                </Trigger>
-              </ControlTemplate.Triggers> -->
-
             </ControlTemplate>
           </Setter.Value>
         </Setter>
@@ -390,17 +332,32 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Rectangle Grid.Row="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" Grid.Column="1" x:Name="Corner" />
-            <ScrollContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{x:Null}" CanVerticallyScroll="False" CanHorizontallyScroll="False" x:Name="PART_ScrollContentPresenter" />
-            <ScrollBar Grid.Row="0" Minimum="0" Grid.Column="1" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" x:Name="PART_VerticalScrollBar" Theme="{DynamicResource VerticalScrollBarStyle}"> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
-              <ScrollBar.Value>
-                <Binding Path="VerticalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-              </ScrollBar.Value>
-            </ScrollBar>
-            <ScrollBar Grid.Row="1" Orientation="Horizontal" Minimum="0" Grid.Column="0" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" x:Name="PART_HorizontalScrollBar" Theme="{DynamicResource HorizontalScrollBarStyle}"> <!-- TODO 迁移：WPF Visibility={TemplateBinding ScrollViewer.Computed*} 已删（Avalonia 无 Computed*ScrollBarVisibility，滚动条显隐自管） -->
-              <ScrollBar.Value>
-                <Binding Path="HorizontalOffset" Mode="OneWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
-              </ScrollBar.Value>
-            </ScrollBar>
+            <!-- 关键修复：
+                 1) CanVerticallyScroll/CanHorizontallyScroll 必须允许滚动，否则滚轮/拖动都无效
+                 2) 不要手动给 PART_ScrollBar 绑定 Value/Maximum/ViewportSize；
+                    让 Avalonia ScrollViewer 自己把 Offset/Viewport 与 PART_* 连接起来，
+                    否则容易出现 thumb 长度错误或拖动不反写 Offset 的“假滚动条” -->
+            <ScrollContentPresenter Grid.Row="0"
+                                    Margin="{TemplateBinding Padding}"
+                                    Grid.Column="0"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{x:Null}"
+                                    CanVerticallyScroll="True"
+                                    CanHorizontallyScroll="True"
+                                    x:Name="PART_ScrollContentPresenter" />
+            <ScrollBar Grid.Row="0"
+                       Grid.Column="1"
+                       Cursor="Arrow"
+                       AutomationProperties.AutomationId="VerticalScrollBar"
+                       x:Name="PART_VerticalScrollBar"
+                       Theme="{DynamicResource VerticalScrollBarStyle}" />
+            <ScrollBar Grid.Row="1"
+                       Orientation="Horizontal"
+                       Grid.Column="0"
+                       Cursor="Arrow"
+                       AutomationProperties.AutomationId="HorizontalScrollBar"
+                       x:Name="PART_HorizontalScrollBar"
+                       Theme="{DynamicResource HorizontalScrollBarStyle}" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>

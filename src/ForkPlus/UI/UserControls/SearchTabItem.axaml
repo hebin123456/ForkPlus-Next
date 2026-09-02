@@ -1,5 +1,5 @@
 <TabItem Margin="10" Padding="0" xmlns:local="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.SearchTabItem" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
-  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
        Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
        搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
   <TabItem.DataTemplates>
@@ -34,7 +34,7 @@
         
       
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>
@@ -77,7 +77,7 @@
         
       
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>
@@ -117,7 +117,7 @@
       </DockPanel>
     </Grid>
     <Grid Grid.Row="1">
-      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Toggle" Margin="0" x:Name="TreeView" Theme="{DynamicResource SideBarSearchMultiselectionTreeViewStyle}">
+      <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Multiple" Margin="0" x:Name="TreeView" Theme="{DynamicResource SideBarSearchMultiselectionTreeViewStyle}">
         <controls:MultiselectionTreeView.ItemTemplate>
           <DataTemplate>
             <ContentControl>

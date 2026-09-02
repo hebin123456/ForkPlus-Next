@@ -17,7 +17,7 @@
 
       <!-- 导出区 -->
       <TextBlock Grid.Row="1" Text="Export" FontWeight="Medium" Margin="0,0,0,4">
-<!-- TODO 迁移：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
         <TextBlock.Style>
           <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
         </TextBlock.Style>
@@ -31,7 +31,7 @@
 
       <!-- 导入区 -->
       <TextBlock Grid.Row="5" Text="Import" FontWeight="Medium" Margin="0,0,0,4">
-<!-- TODO 迁移：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+<!-- Migration note：WPF TextBlock.Style 块注释化（TextBlock 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
         <TextBlock.Style>
           <DynamicResource ResourceKey="SettingsHeaderTextBlockStyle" />
         </TextBlock.Style>

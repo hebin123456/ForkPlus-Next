@@ -20,7 +20,7 @@ namespace ForkPlus.UI.Controls
 		{
 			return false;
 		}
-		// TODO 迁移：Avalonia MultiBinding 子绑定未解析时传 Avalonia.UnsetValueType（WPF 传 null），
+		// Migration note：Avalonia MultiBinding 子绑定未解析时传 Avalonia.UnsetValueType（WPF 传 null），
 		// 模板初始化期必然发生，强转 SolidColorBrush 抛 InvalidCastException。
 		object brushVal = values[0];
 		SolidColorBrush solidColorBrush = brushVal as SolidColorBrush;

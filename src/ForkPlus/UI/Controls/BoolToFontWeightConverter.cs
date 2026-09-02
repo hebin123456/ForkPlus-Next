@@ -6,7 +6,7 @@ using Avalonia.Media;
 namespace ForkPlus.UI.Controls
 {
 	/// <summary>
-	/// TODO 迁移：WPF DataTrigger 触发 FontWeight=Bold 无模板级等价物
+	/// Migration note：WPF DataTrigger 触发 FontWeight=Bold 无模板级等价物
 	/// （IsActive 加粗当前分支徽章等场景）。本转换器把 bool 映射为
 	/// Bold/Normal（false 时可用 ConverterParameter="Invert" 反转语义），
 	/// 配合普通 Binding 替代 DataTrigger 的外观 Setter。

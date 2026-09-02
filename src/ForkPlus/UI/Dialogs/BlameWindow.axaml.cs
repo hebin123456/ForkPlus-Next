@@ -102,19 +102,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			get
 			{
-				if (VisualTreeHelper.GetChildrenCount(BlameListBox) <= 0)
-				{
-					return null;
-				}
-				if (!(VisualTreeHelper.GetChild(BlameListBox, 0) is Border reference))
-				{
-					return null;
-				}
-				if (!(VisualTreeHelper.GetChild(reference, 0) is ScrollViewer result))
-				{
-					return null;
-				}
-				return result;
+				return ScrollViewerHelper.FindScrollViewer(BlameListBox);
 			}
 		}
 
@@ -148,7 +136,7 @@ namespace ForkPlus.UI.Dialogs
 			base.Activated += BlameWindow_Activated;
 		}
 
-		// TODO 迁移（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
+		// Migration note（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
 		// 窗口位置从未恢复）。改 OnOpened override（CustomWindow 已提供 OnOpened 虚链）。
 		protected override void OnOpened(EventArgs e)
 		{
@@ -156,7 +144,7 @@ namespace ForkPlus.UI.Dialogs
 			this.SetWindowLocationState(ForkPlusSettings.Default.BlameWindowLocationState);
 		}
 
-		// TODO 迁移：CustomWindow.OnLocationChanged 为 protected virtual（由 Window.PositionChanged 派发），
+		// Migration note：CustomWindow.OnLocationChanged 为 protected virtual（由 Window.PositionChanged 派发），
 		// WPF 原代码漏写 override 导致只是隐藏而非重写，这里补上 override 恢复"移动窗口即保存位置"语义。
 		protected override void OnLocationChanged(EventArgs e)
 		{
@@ -428,7 +416,7 @@ namespace ForkPlus.UI.Dialogs
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			base.OnPointerPressed(e);
-			// TODO 迁移：Avalonia PointerPressedEventArgs 无 ChangedButton，
+			// Migration note：Avalonia PointerPressedEventArgs 无 ChangedButton，
 			// 用 GetCurrentPoint(this).Properties.IsXButton1/2Pressed 判断按下的鼠标侧键。
 			global::Avalonia.Input.PointerPointProperties properties = e.GetCurrentPoint(this).Properties;
 			if (properties.IsXButton1Pressed)
@@ -446,9 +434,9 @@ namespace ForkPlus.UI.Dialogs
 		private void RevisionListScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
 		{
 			double verticalOffset = e.OffsetDelta.Y;
-			// TODO 迁移：SplitTextDiffControl.VerticalOffset 在 Avalonia 版为只读，
+			// Migration note：SplitTextDiffControl.VerticalOffset 在 Avalonia 版为只读，
 			// 改调其 ScrollToVerticalOffset（行为与原赋值一致）。
-			// TODO 迁移：SplitTextDiffControl 自带 ScrollToVerticalOffset，无需 ScrollViewer 扩展。
+			// Migration note：SplitTextDiffControl 自带 ScrollToVerticalOffset，无需 ScrollViewer 扩展。
                         TextDiffControl.ScrollToVerticalOffset(verticalOffset);
 		}
 
@@ -485,7 +473,7 @@ namespace ForkPlus.UI.Dialogs
 		private void RevisionsListBoxItem_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
 			e.Handled = true;
-			// TODO 迁移：WPF ItemsControl.ContainerFromElement(itemsControl, element) 双参静态方法
+			// Migration note：WPF ItemsControl.ContainerFromElement(itemsControl, element) 双参静态方法
 			// 在 Avalonia 无对应，改用 WpfCompat 的单参扩展（沿可视树向上找已生成的条目容器）。
 			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) is ListBoxItem { DataContext: BlameItemViewModel dataContext })
 			{
@@ -545,7 +533,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ScrollTo(double verticalOffset)
 		{
-			// TODO 迁移：Avalonia ScrollViewer 无 ScrollToVerticalOffset 方法，
+			// Migration note：Avalonia ScrollViewer 无 ScrollToVerticalOffset 方法，
 			// 用 WpfCompat 的 ScrollToVerticalOffsetCompat（内部设置 Offset）。
 			RevisionListScrollViewer?.ScrollToVerticalOffsetCompat(verticalOffset);
 		}

@@ -37,13 +37,14 @@ namespace ForkPlus.UI.QuickLaunch
 				base.Title = PreferencesLocalization.Current("Quick Launch");
 				return;
 			}
-			this.SetOwnerCompat(MainWindow.Instance); // TODO 迁移：扩展方法不能 base. 调用
+			this.SetOwnerCompat(MainWindow.Instance); // Migration note：扩展方法不能 base. 调用
 			_showCheckout = showCheckout;
 			_refreshCommandListAction = new DelayedAction<bool>(RefreshCommandList, 0.1);
 			base.Loaded += delegate
 			{
 				_refreshCommandListAction.InvokeNow(parameter: false);
 			};
+			AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent, QuickLaunchWindow_PreviewKeyDown, global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
 			base.Deactivated += delegate
 			{
 				base.Dispatcher.Post(delegate
@@ -79,7 +80,21 @@ namespace ForkPlus.UI.QuickLaunch
 			});
 		}
 
+		private void QuickLaunchWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			HandleNavigationKey(e);
+		}
+
 		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			HandleNavigationKey(e);
+			if (!e.Handled)
+			{
+				base.OnKeyDown(e);
+			}
+		}
+
+		private void HandleNavigationKey(KeyEventArgs e)
 		{
 			if (e.Key == Key.Escape)
 			{
@@ -107,11 +122,22 @@ namespace ForkPlus.UI.QuickLaunch
 					return;
 				}
 			}
-			base.OnKeyDown(e);
 		}
 
-		private void RepositoriesListBox_MouseUp(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		private void RepositoriesListBox_PointerReleased(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
+			if (e.InitialPressMouseButton != MouseButton.Left)
+			{
+				return;
+			}
+			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) is not ListBoxItem { DataContext: CommandProviderItem item })
+			{
+				return;
+			}
+			if (item is HeaderCommandProviderItem)
+			{
+				return;
+			}
 			SubmitSelectedItem();
 		}
 

@@ -1,6 +1,6 @@
 // WPF → Avalonia 迁移兼容层（ForkPlus-Next 人工收尾部分）
 // 说明：以下类型在 WPF 中存在、Avalonia 12 无对应物，按"最小可用"原则重建。
-// 每一处都有 TODO 迁移标记，后续应逐步替换为 Avalonia 原生实现。
+// 每一处都有 Migration note标记，后续应逐步替换为 Avalonia 原生实现。
 
 using System;
 using System.Collections.Generic;
@@ -67,7 +67,7 @@ namespace ForkPlus.UI.WpfCompat
     /// WPF DataObject.AddPastingHandler 的等价安装器。
     /// 以隧道方式截获 Ctrl+V / Shift+Ins，读剪贴板后回调处理器；
     /// 处理器可改写文本（写回 DataObject）或 CancelCommand 接管粘贴。
-    /// TODO 迁移：Avalonia TextBox 无原生粘贴拦截事件，此为行为近似实现。
+    /// Migration note：Avalonia TextBox 无原生粘贴拦截事件，此为行为近似实现。
     /// </summary>
     public static class PasteGuard
     {
@@ -186,7 +186,7 @@ namespace ForkPlus.UI.WpfCompat
     {
         public static object ConvertFromString(string s)
         {
-            // TODO 迁移：WPF 允许省略 # 前缀（6/8 位十六进制直接解析）；Avalonia Color.Parse
+            // Migration note：WPF 允许省略 # 前缀（6/8 位十六进制直接解析）；Avalonia Color.Parse
             // 必须带 #。原实现对已带 # 的串再前置 # 会得到 "##54A353"（FormatException）。
             s = s.Trim();
             if (!s.StartsWith("#") && (s.Length == 6 || s.Length == 8))
@@ -199,7 +199,7 @@ namespace ForkPlus.UI.WpfCompat
 
     /// <summary>
     /// WPF ListCollectionView shim：支持 Filter + Refresh 的可绑定集合视图。
-    /// TODO 迁移：WPF 的 ItemsControl 接受任意 IEnumerable 视图（Reset 通知即可）；
+    /// Migration note：WPF 的 ItemsControl 接受任意 IEnumerable 视图（Reset 通知即可）；
     /// Avalonia 的 ItemsSourceView 契约是"实现了 INotifyCollectionChanged 就必须实现 IList"，
     /// 否则抛 ArgumentException: Collection implements INotifyCollectionChanged but not IList
     /// （统计窗口 CodeLinesRefListBox.ItemsSource 实测崩溃）。因此本 shim 物化过滤结果为
@@ -320,7 +320,7 @@ namespace ForkPlus.UI.WpfCompat
     /// <summary>
     /// 按键路由器：把 WPF Window.CommandBindings 的语义搬到 Avalonia。
     /// 在 TopLevel 上以隧道方式监听 KeyDown，匹配已注册手势后执行绑定。
-    /// TODO 迁移：长期应改为 Avalonia HotKey / KeyBinding 原生方案。
+    /// Migration note：长期应改为 Avalonia HotKey / KeyBinding 原生方案。
     /// </summary>
     public static class CommandRouter
     {
@@ -446,7 +446,7 @@ namespace ForkPlus.UI.WpfCompat
 
         private AdornerLayer()
         {
-            IsHitTestVisible = false;
+            IsHitTestVisible = true;
             ZIndex = 4096;
         }
 
@@ -455,13 +455,14 @@ namespace ForkPlus.UI.WpfCompat
             if (visual == null) return null;
             var tl = TopLevel.GetTopLevel(visual);
             if (tl == null) return null;
-            var layer = _layers.GetOrCreateValue(tl);
+            var layer = _layers.GetValue(tl, _ => new AdornerLayer());
             if (layer.Parent == null)
             {
                 // 把 TopLevel 的内容包进 Grid，再叠加装饰层
                 if (tl is ContentControl cc && cc.Content != null && !(cc.Content is Grid g && g.Tag == layer))
                 {
                     var old = cc.Content;
+                    cc.Content = null;
                     var grid = new Grid { Tag = layer };
                     if (old is Control oldCtl)
                     {
@@ -508,10 +509,20 @@ namespace ForkPlus.UI.WpfCompat
             {
                 if (adorned == null || adorner == null) continue;
                 var origin = adorned.TranslatePoint(new Point(), this) ?? new Point();
-                adorner.SetValue(LeftProperty, origin.X);
-                adorner.SetValue(TopProperty, origin.Y);
                 var size = adorned.Bounds.Size;
                 if (adorner is Adorner a && a.AdornedElement is Visual av) size = av.Bounds.Size;
+                if (adorner.Tag is Point offset)
+                {
+                    adorner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                    size = adorner.DesiredSize;
+                    adorner.SetValue(LeftProperty, origin.X + offset.X);
+                    adorner.SetValue(TopProperty, origin.Y + offset.Y);
+                }
+                else
+                {
+                    adorner.SetValue(LeftProperty, origin.X);
+                    adorner.SetValue(TopProperty, origin.Y);
+                }
                 adorner.Width = size.Width;
                 adorner.Height = size.Height;
             }

@@ -32,7 +32,7 @@ namespace ForkPlus.UI.Controls
 
 		public DateRangeButton()
 		{
-			global::ForkPlus.UI.WpfCompat.Events.AddChecked(this, delegate // TODO 迁移：base 不能作为独立参数
+			global::ForkPlus.UI.WpfCompat.Events.AddChecked(this, delegate // Migration note：base 不能作为独立参数
 			{
 				CreateCalendarPopup(this);
 			});
@@ -44,8 +44,8 @@ namespace ForkPlus.UI.Controls
 			popup.HorizontalOffset = -100.0;
 			popup.VerticalOffset = 0.0;
 			popup.IsLightDismissEnabled= (!false);
-			/* TODO 迁移: AllowsTransparency 已删除 */;
-			/* TODO 迁移: PopupAnimation 已删除 */;
+			/* Migration note: AllowsTransparency 已删除 */;
+			/* Migration note: PopupAnimation 已删除 */;
 			popup.PlacementTarget = this;
 			popup.Opened += delegate
 			{

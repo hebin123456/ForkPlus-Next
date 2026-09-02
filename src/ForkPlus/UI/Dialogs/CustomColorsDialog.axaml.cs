@@ -275,7 +275,7 @@ namespace ForkPlus.UI.Dialogs
 		private void UpdateHueIndicator(double h)
 		{
 			double y = (h / 360.0) * 160;
-			// TODO 迁移：Avalonia Line 无 Y1/Y2，只有 StartPoint/EndPoint；
+			// Migration note：Avalonia Line 无 Y1/Y2，只有 StartPoint/EndPoint；
 			// X 坐标沿用 axaml 中的定义（0 与 20，与 X1/X2 对应）。
 			HueIndicator.StartPoint = new Point(HueIndicator.StartPoint.X, y);
 			HueIndicator.EndPoint = new Point(HueIndicator.EndPoint.X, y);
@@ -285,14 +285,17 @@ namespace ForkPlus.UI.Dialogs
 		private void HsvCanvas_MouseDown(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			_isDraggingHsv = true;
-			HsvCanvas.CaptureMouse();
+			e.Pointer.Capture(HsvCanvas);
 			UpdateHsvFromMouse(e.GetPosition(HsvCanvas));
 		}
 
 		private void HsvCanvas_MouseUp(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
 			_isDraggingHsv = false;
-			HsvCanvas.ReleaseMouseCapture();
+			if (e.Pointer.Captured == HsvCanvas)
+			{
+				e.Pointer.Capture(null);
+			}
 		}
 
 		private void HsvCanvas_MouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
@@ -324,14 +327,17 @@ namespace ForkPlus.UI.Dialogs
 		private void HueCanvas_MouseDown(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			_isDraggingHue = true;
-			HueCanvas.CaptureMouse();
+			e.Pointer.Capture(HueCanvas);
 			UpdateHueFromMouse(e.GetPosition(HueCanvas));
 		}
 
 		private void HueCanvas_MouseUp(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
 			_isDraggingHue = false;
-			HueCanvas.ReleaseMouseCapture();
+			if (e.Pointer.Captured == HueCanvas)
+			{
+				e.Pointer.Capture(null);
+			}
 		}
 
 		private void HueCanvas_MouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
@@ -361,7 +367,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private double GetHueFromIndicator()
 		{
-			// TODO 迁移：Avalonia Line 无 Y1，用 StartPoint.Y 读取指示器位置。
+			// Migration note：Avalonia Line 无 Y1，用 StartPoint.Y 读取指示器位置。
 			return (HueIndicator.StartPoint.Y / 160) * 360;
 		}
 
@@ -512,7 +518,7 @@ namespace ForkPlus.UI.Dialogs
 			return;
 		}
 
-		// TODO 迁移：WPF Microsoft.Win32.SaveFileDialog 在 Avalonia 无对应（StorageProvider 为异步 API，
+		// Migration note：WPF Microsoft.Win32.SaveFileDialog 在 Avalonia 无对应（StorageProvider 为异步 API，
 		// 会把整条同步调用链异步化）；改用仓库内同步 Win32 封装 OpenDialog.SelectFileSaveLocation
 		// （仅支持单过滤器 *.json；非 Windows 平台返回 false 视为取消）。
 		string defaultFileName = "ForkPlus-Colors-" + ForkPlusSettings.Default.Theme.SkinName() + ".json";
@@ -571,7 +577,7 @@ namespace ForkPlus.UI.Dialogs
 		// 关闭 Popup 避免遮挡 OpenFileDialog
 		ColorPickerPopup.IsOpen = false;
 
-		// TODO 迁移：WPF Microsoft.Win32.OpenFileDialog 在 Avalonia 无对应；
+		// Migration note：WPF Microsoft.Win32.OpenFileDialog 在 Avalonia 无对应；
 		// 改用仓库内同步 Win32 封装 OpenDialog.SelectFile（单过滤器 *.json，
 		// 非 Windows 平台返回 false 视为取消，CheckFileExists 由 Win32 FOS_FILEMUSTEXIST 承担）。
 		if (!OpenDialog.SelectFile(this, PreferencesLocalization.Translate("Import Colors", lang), null, "JSON", "*.json", out string importPath))
@@ -971,7 +977,7 @@ namespace ForkPlus.UI.Dialogs
 				get
 				{
 					try { return new SolidColorBrush((Color)ColorConverter.ConvertFromString(HexValue)); }
-					// TODO 迁移：Avalonia Brushes.White 返回 IImmutableSolidColorBrush，不能隐式转 Brush，
+					// Migration note：Avalonia Brushes.White 返回 IImmutableSolidColorBrush，不能隐式转 Brush，
 					// 用 new SolidColorBrush(Colors.White) 等价替换。
 					catch { return new SolidColorBrush(Colors.White); }
 				}

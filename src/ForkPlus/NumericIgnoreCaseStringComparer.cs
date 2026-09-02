@@ -12,7 +12,7 @@ namespace ForkPlus
 
 		public override int Compare(string x, string y)
 		{
-			// TODO 迁移：StrCmpLogicalW（shlwapi.dll）是 Windows 专属"逻辑排序"
+			// Migration note：StrCmpLogicalW（shlwapi.dll）是 Windows 专属"逻辑排序"
 			// （数字段按数值比较："2" < "10"）。Linux/macOS 无该库，P/Invoke 直接抛
 			// DllNotFoundException（主窗口 RepositoryManager 排序崩溃实证）。
 			// Unix 用纯托管等价实现，Windows 保持原生调用（行为一致）。
@@ -24,7 +24,7 @@ namespace ForkPlus
 		}
 
 		/// <summary>
-		/// TODO 迁移：StrCmpLogicalW 的托管等价实现：大小写不敏感 + 数字段按数值比较。
+		/// Migration note：StrCmpLogicalW 的托管等价实现：大小写不敏感 + 数字段按数值比较。
 		/// 语义对齐 Windows 行为：逐段比较，数字段按 ulong 数值（前导零不参与大小，
 		/// 数值相等时短段在前），文本段 OrdinalIgnoreCase。
 		/// NaturalStringComparer（引用排序等场景）在 Unix 上复用本实现。

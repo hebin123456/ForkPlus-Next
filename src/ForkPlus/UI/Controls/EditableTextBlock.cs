@@ -10,7 +10,7 @@ using Avalonia.Styling;
 
 namespace ForkPlus.UI.Controls
 {
-	// TODO 迁移：WPF Control 自带 Padding/FontSize/FontWeight/Foreground 等属性并支持 ControlTheme 的
+	// Migration note：WPF Control 自带 Padding/FontSize/FontWeight/Foreground 等属性并支持 ControlTheme 的
 	// Template Setter；Avalonia 把这些属性下放到 TemplatedControl，故基类由 Control 改为 TemplatedControl
 	//（Commonresources.axaml 的 ControlTheme 正是给本控件设置 Template 并 TemplateBinding Padding）。
 	public class EditableTextBlock : TemplatedControl
@@ -53,10 +53,11 @@ namespace ForkPlus.UI.Controls
 			{
 				HideEditor();
 			}
-			// TODO 迁移：AdornerLayer 与 Avalonia.Controls.Primitives.AdornerLayer 二义性，显式用 WpfCompat 版本。
+			// Migration note：AdornerLayer 与 Avalonia.Controls.Primitives.AdornerLayer 二义性，显式用 WpfCompat 版本。
 			global::ForkPlus.UI.WpfCompat.AdornerLayer adornerLayer = global::ForkPlus.UI.WpfCompat.AdornerLayer.GetAdornerLayer(this);
 			if (adornerLayer == null)
 			{
+				SetCurrentValue(IsInEditModeProperty, false);
 				return;
 			}
 			_adorner = new CustomAdorner(this, centeredHorizontally);
@@ -81,6 +82,18 @@ namespace ForkPlus.UI.Controls
 		private TextBox CreateAdornerTextBox(string text, Action<bool, string> editedCallback)
 		{
 			TextBox textBox = new TextBox();
+			bool isFinished = false;
+			void Finish(bool success)
+			{
+				if (isFinished)
+				{
+					return;
+				}
+				isFinished = true;
+				string newText = textBox.Text;
+				HideEditor();
+				editedCallback(success, newText);
+			}
 			textBox.HorizontalAlignment = base.HorizontalAlignment;
 			textBox.VerticalAlignment = base.VerticalAlignment;
 			textBox.MaxWidth = base.MaxWidth;
@@ -88,6 +101,10 @@ namespace ForkPlus.UI.Controls
 			textBox.Padding = base.Padding;
 			textBox.Margin = new Thickness(-3.0, 1.0, 0.0, 0.0);
 			textBox.FontSize = base.FontSize;
+			textBox.Background = global::ForkPlus.UI.Theme.BackgroundBrush;
+			textBox.Foreground = global::ForkPlus.UI.Theme.LabelBrush;
+			textBox.BorderBrush = global::ForkPlus.UI.Theme.SystemAccentBrush;
+			textBox.BorderThickness = new Thickness(1.0);
 			textBox.Text = text;
 			textBox.SelectAll();
 			textBox.LayoutUpdated += delegate
@@ -96,23 +113,26 @@ namespace ForkPlus.UI.Controls
 			};
 			textBox.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
-				if (e.Key == Key.Return)
+				if (e.Key == Key.Escape)
 				{
 					e.Handled = true;
-					editedCallback(arg1: true, textBox.Text);
-				}
-				else if (e.Key == Key.Escape)
-				{
-					e.Handled = true;
-					editedCallback(arg1: false, textBox.Text);
+					Finish(success: false);
 				}
 			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
-			// TODO 迁移：Avalonia TextBox 无 LostKeyboardFocus（WPF 键盘焦点事件），等价用 LostFocus。
+			textBox.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
+			{
+				if (e.Key == Key.Return || e.Key == Key.Enter)
+				{
+					e.Handled = true;
+					Finish(success: true);
+				}
+			},global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+			// Migration note：Avalonia TextBox 无 LostKeyboardFocus（WPF 键盘焦点事件），等价用 LostFocus。
 			textBox.LostFocus += delegate
 			{
 				if (IsInEditMode)
 				{
-					editedCallback(arg1: true, textBox.Text);
+					Finish(success: true);
 				}
 			};
 			return textBox;

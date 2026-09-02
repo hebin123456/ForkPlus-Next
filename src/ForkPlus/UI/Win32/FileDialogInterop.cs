@@ -1,6 +1,6 @@
 // Win32 IFileDialog COM 互操作：替代 WindowsAPICodePack（其强依赖 WPF 已隔离）。
 // 保持同步对话框 API（ForkPlus 的调用链均为同步），Windows 之外平台返回取消。
-// TODO 迁移：跨平台时改用 Avalonia StorageProvider（需要把调用链异步化）。
+// Migration note：跨平台时改用 Avalonia StorageProvider（需要把调用链异步化）。
 
 using System;
 using System.Runtime.InteropServices;

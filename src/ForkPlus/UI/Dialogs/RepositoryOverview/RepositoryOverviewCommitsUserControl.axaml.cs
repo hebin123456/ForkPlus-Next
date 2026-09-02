@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup;
 using ForkPlus.Git;
+using ForkPlus.UI;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
@@ -23,6 +24,11 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 		public RepositoryOverviewCommitsUserControl()
 		{
 			InitializeComponent();
+			RevisionsListBox.AddHandler(
+				InputElement.PointerPressedEvent,
+				new EventHandler<PointerPressedEventArgs>(RevisionsListBox_ContextMenuPointerPressed),
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+				handledEventsToo: true);
 		}
 
 		public void Initialize(RepositoryUserControl repositoryUserControl)
@@ -39,7 +45,7 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 		private void RevisionsListBoxItem_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
 			e.Handled = true;
-			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: RepositoryOverviewCommitViewModel dataContext } && RepositoryUserControl != null)
+			if ((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* Migration note：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: RepositoryOverviewCommitViewModel dataContext } && RepositoryUserControl != null)
 			{
 				GitModule gitModule = RepositoryUserControl.GitModule;
 				if (gitModule != null)
@@ -51,36 +57,73 @@ namespace ForkPlus.UI.Dialogs.RepositoryOverview
 
 		private void RevisionsListBox_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (!((sender as ListBox)?.ContainerFromElement(e.Source as global::Avalonia.Visual) /* TODO 迁移：WPF 双参静态方法 → 扩展方法实例调用 */ is ListBoxItem { DataContext: var dataContext }))
+			if (OpenContextMenuForItem(e.Source, null))
+			{
+				e.Handled = true;
+			}
+			else
+			{
+				RevisionsListBox.ContextMenu?.Close();
+				e.Handled = true;
+			}
+		}
+
+		private void RevisionsListBox_ContextMenuPointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			PointerPointProperties properties = e.GetCurrentPoint(RevisionsListBox).Properties;
+			if (!properties.IsRightButtonPressed && properties.PointerUpdateKind != PointerUpdateKind.RightButtonPressed)
 			{
 				return;
 			}
-			RepositoryOverviewCommitViewModel item = dataContext as RepositoryOverviewCommitViewModel;
-			if (item == null)
+			e.Handled = true;
+			RevisionsListBox.ContextMenu?.Close();
+			if (!OpenContextMenuForItem(e.Source, e.GetPosition(RevisionsListBox)))
 			{
-				return;
+				RevisionsListBox.ContextMenu?.Close();
 			}
+		}
+
+		private bool OpenContextMenuForItem(object source, Point? position)
+		{
+			ListBoxItem container = RevisionsListBox.ContainerFromElement(source as global::Avalonia.Visual) as ListBoxItem;
+			if (container == null && position.HasValue)
+			{
+				container = RevisionsListBox.GetContainerAtPoint<ListBoxItem>(position.Value);
+			}
+			if (container?.DataContext is not RepositoryOverviewCommitViewModel item)
+			{
+				return false;
+			}
+			RevisionsListBox.SelectedItem = item;
+			RevisionsListBox.SelectedIndex = RevisionsListBox.Items.IndexOf(item);
+			container.IsSelected = true;
+			container.InvalidateVisual();
 			GitModule gitModule = RepositoryUserControl.GitModule;
-			if (gitModule != null)
+			if (gitModule == null)
 			{
-				List<Control> list = new List<Control>();
-				MenuItem item2 = RepositoryUserControl.Commands.ShowRevisionInSeparateWindow.CreateMenuItem(delegate
-				{
-					RevisionDiffTarget.Revision target = new RevisionDiffTarget.Revision(item.Sha);
-					RepositoryUserControl.Commands.ShowRevisionInSeparateWindow.Execute(RepositoryUserControl, target, _filepath);
-				}, isEnabled: true, showShortcut: false);
-				list.Add(item2);
-				MenuItem menuItem = new MenuItem();
-				menuItem.Header = PreferencesLocalization.MenuHeader("Reveal in ForkPlus");
-				menuItem.Click += delegate
-				{
-					RevealRevision(gitModule, item.Sha, _filepath);
-				};
-				list.Add(menuItem);
-				list.Add(new Separator());
-				list.AddRange(CreateRevisionContextMenuItems(item.Revision));
-				RevisionsListBox.ContextMenu.SetItems(list);
+				return false;
 			}
+			List<Control> list = new List<Control>();
+			MenuItem item2 = RepositoryUserControl.Commands.ShowRevisionInSeparateWindow.CreateMenuItem(delegate
+			{
+				RevisionDiffTarget.Revision target = new RevisionDiffTarget.Revision(item.Sha);
+				RepositoryUserControl.Commands.ShowRevisionInSeparateWindow.Execute(RepositoryUserControl, target, _filepath);
+			}, isEnabled: true, showShortcut: false);
+			list.Add(item2);
+			MenuItem menuItem = new MenuItem();
+			menuItem.Header = PreferencesLocalization.MenuHeader("Reveal in ForkPlus");
+			menuItem.Click += delegate
+			{
+				RevealRevision(gitModule, item.Sha, _filepath);
+			};
+			list.Add(menuItem);
+			list.Add(new Separator());
+			list.AddRange(CreateRevisionContextMenuItems(item.Revision));
+			RevisionsListBox.ContextMenu.PlacementTarget = RevisionsListBox;
+			RevisionsListBox.ContextMenu.SetItems(list);
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(RevisionsListBox.ContextMenu, RevisionsListBox);
+			RevisionsListBox.ContextMenu.Open();
+			return true;
 		}
 
 		private void RevealRevision(GitModule gitModule, Sha sha, string filePath)

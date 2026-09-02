@@ -22,7 +22,7 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isBusyIndicatorVisible;
 
-             // TODO 迁移：TranslateTransform 非 StyledElement，NameGenerator 不生成字段，
+             // Migration note：TranslateTransform 非 StyledElement，NameGenerator 不生成字段，
              // 手动声明（字段名与类型同名，C# "Color Color" 规则下成员访问优先）。
              internal global::Avalonia.Media.TranslateTransform TranslateTransform;
 
@@ -63,6 +63,8 @@ namespace ForkPlus.UI.UserControls
 
 		public event EventHandler JumpToNextSearchResult;
 
+		public event EventHandler SearchSubmitted;
+
 		public event EventHandler Closed;
 
 		public RevisionSearchPanelUserControl()
@@ -78,6 +80,10 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (e.Key == Key.Return || e.Key == Key.F3)
 				{
+					if (e.Key == Key.Return)
+					{
+						this.SearchSubmitted?.Invoke(this, EventArgs.Empty);
+					}
 					if (KeyboardHelper.IsShiftDown)
 					{
 						this.JumpToPreviousSearchResult?.Invoke(this, EventArgs.Empty);

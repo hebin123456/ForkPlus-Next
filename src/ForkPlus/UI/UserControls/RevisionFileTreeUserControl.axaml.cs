@@ -14,14 +14,22 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.CustomCommands;
+using ForkPlus.UI.Helpers;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.UserControls
 {
 	public partial class RevisionFileTreeUserControl : UserControl
 	{
 		private Sha? _sha;
+
+		private int _treeRequestId;
+
+		private int _contentRequestId;
+
+		private bool _isRefreshingTree;
 
 		public RevisionDetailsUserControl RevisionDetailsUserControl { get; set; }
 
@@ -58,6 +66,11 @@ namespace ForkPlus.UI.UserControls
 					RepositoryUserControl.Commands.CopyAbsoluteFilePaths.Execute(RevisionDetailsUserControl.GitModule, new string[1] { revisionFileTreeViewItem.FileTreeItem.FilePath });
 				}
 			}));
+			FilesTreeView.AddHandler(
+				InputElement.PointerPressedEvent,
+				new EventHandler<PointerPressedEventArgs>(FilesTreeView_ContextMenuPointerPressed),
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+				handledEventsToo: true);
 		}
 
 		private void FilesTreeView_SelectedItemChanged(object sender, SelectionChangedEventArgs e)
@@ -77,7 +90,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void FilesTreeView_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
 		{
-			ListBoxItem listBoxItem = (e.Source as global::Avalonia.Visual)?.GetParent<ListBoxItem>() /* TODO 迁移：Visual 扩展需 Visual 接收者 */;
+			ListBoxItem listBoxItem = (e.Source as global::Avalonia.Visual)?.GetParent<ListBoxItem>() /* Migration note：Visual 扩展需 Visual 接收者 */;
 			if (listBoxItem != null && FilesTreeView.ItemFromContainer(listBoxItem) is RevisionFileTreeViewItem revisionFileTreeViewItem)
 			{
 				revisionFileTreeViewItem.IsExpanded = !revisionFileTreeViewItem.IsExpanded;
@@ -107,75 +120,81 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			Sha sha = sha2.GetValueOrDefault();
+			int requestId = ++_contentRequestId;
 			FileContentControl.Content = null;
-			Task<GitCommandResult<Content>> task = new Task<GitCommandResult<Content>>(() => new GetFileContentGitCommand().Execute(gitModule, sha, fileTreeItem.FileTreeItem.FilePath));
-			task.ContinueWith(delegate(Task<GitCommandResult<Content>> getFileContentTask)
+			Task.Run(() => new GetFileContentGitCommand().Execute(gitModule, sha, fileTreeItem.FileTreeItem.FilePath)).ContinueWith(delegate(Task<GitCommandResult<Content>> getFileContentTask)
 			{
-				if (FilesTreeView.SelectedItems.Count > 0 && FilesTreeView.SelectedItems[0] == fileTreeItem)
+				Dispatcher.UIThread.Post(delegate
 				{
-					FileContentControl.Content = getFileContentTask.Result;
-				}
-			}, TaskScheduler.FromCurrentSynchronizationContext());
-			task.Start();
+					if (getFileContentTask.IsFaulted || getFileContentTask.IsCanceled || requestId != _contentRequestId)
+					{
+						return;
+					}
+					if (FilesTreeView.SelectedItems.Count > 0 && FilesTreeView.SelectedItems[0] == fileTreeItem)
+					{
+						FileContentControl.Content = getFileContentTask.Result;
+					}
+				});
+			});
 		}
 
 		public void Refresh(Sha sha)
 		{
 			_sha = sha;
+			int requestId = ++_treeRequestId;
+			_isRefreshingTree = true;
 			GitModule gitModule = RevisionDetailsUserControl.GitModule;
 			RepositoryUserControl repositoryUserControl = RevisionDetailsUserControl.RepositoryUserControl;
 			FileContentControl.RepositoryUserControl = repositoryUserControl;
 			FileContentControl.Content = null;
 			Sha shaValue = sha;
-			// 异步执行 `git ls-tree` 避免阻塞 UI 线程，完成后回到 UI 线程构建树。
-			Task<GitCommandResult<FileTreeItem[]>> task = new Task<GitCommandResult<FileTreeItem[]>>(() => new GetRevisionFileTreeGitCommand().Execute(gitModule, "", shaValue));
-			task.ContinueWith(delegate(Task<GitCommandResult<FileTreeItem[]>> treeTask)
+			Task.Run(() => new GetRevisionFileTreeGitCommand().Execute(gitModule, "", shaValue)).ContinueWith(delegate(Task<GitCommandResult<FileTreeItem[]>> treeTask)
 			{
-				if (treeTask.IsFaulted || treeTask.IsCanceled)
+				Dispatcher.UIThread.Post(delegate
 				{
-					return;
-				}
-				GitCommandResult<FileTreeItem[]> gitCommandResult = treeTask.Result;
-				if (!gitCommandResult.Succeeded)
-				{
-					return;
-				}
-				// 期间若已切换到其它 revision，丢弃本次结果。
-				if (!_sha.HasValue || _sha.GetValueOrDefault() != shaValue)
-				{
-					return;
-				}
-				RevisionFileTreeViewItem revisionFileTreeViewItem = new RevisionFileTreeViewItem(null, null);
-				FileTreeItem[] result = gitCommandResult.Result;
-				foreach (FileTreeItem fileTreeItem in result)
-				{
-					revisionFileTreeViewItem.Children.Add(new RevisionFileTreeViewItem(gitModule, fileTreeItem));
-				}
-				RevisionFileTreeViewItem obj = FilesTreeView.SelectedItem as RevisionFileTreeViewItem;
-				FilesTreeView.RootItem = revisionFileTreeViewItem;
-				string text = obj?.FileTreeItem.FilePath;
-				if (text != null)
-				{
-					string[] pathComponents = text.Split('/');
-					Expand(pathComponents, FilesTreeView.RootItem.Children);
-				}
-				// 若有待展开的文件路径（来自 ShowRevisionDetails），现在 RootItem 已就绪，执行展开。
-				if (_pendingFilePath != null)
-				{
-					string[] pathComponents = _pendingFilePath.Split('/');
-					Expand(pathComponents, FilesTreeView.RootItem.Children);
+					if (requestId != _treeRequestId)
+					{
+						return;
+					}
+					_isRefreshingTree = false;
+					if (treeTask.IsFaulted || treeTask.IsCanceled)
+					{
+						return;
+					}
+					GitCommandResult<FileTreeItem[]> gitCommandResult = treeTask.Result;
+					if (!gitCommandResult.Succeeded)
+					{
+						return;
+					}
+					// 期间若已切换到其它 revision，丢弃本次结果。
+					if (!_sha.HasValue || _sha.GetValueOrDefault() != shaValue)
+					{
+						return;
+					}
+					RevisionFileTreeViewItem revisionFileTreeViewItem = new RevisionFileTreeViewItem(null, null);
+					FileTreeItem[] result = gitCommandResult.Result;
+					foreach (FileTreeItem fileTreeItem in result)
+					{
+						revisionFileTreeViewItem.Children.Add(new RevisionFileTreeViewItem(gitModule, fileTreeItem));
+					}
+					RevisionFileTreeViewItem obj = FilesTreeView.SelectedItem as RevisionFileTreeViewItem;
+					FilesTreeView.RootItem = revisionFileTreeViewItem;
+					string text = _pendingFilePath ?? obj?.FileTreeItem?.FilePath;
 					_pendingFilePath = null;
-				}
-			}, TaskScheduler.FromCurrentSynchronizationContext());
-			task.Start();
+					if (text != null)
+					{
+						string[] pathComponents = text.Split('/');
+						Expand(pathComponents, FilesTreeView.RootItem.Children);
+					}
+				});
+			});
 		}
 
 		private string _pendingFilePath;
 
 		public void ShowRevisionDetails(string filePath)
 		{
-			// RootItem 可能尚未就绪（Refresh 是异步的），保存路径等异步回调完成后展开。
-			if (FilesTreeView.RootItem == null)
+			if (_isRefreshingTree || FilesTreeView.RootItem == null)
 			{
 				_pendingFilePath = filePath;
 				return;
@@ -186,10 +205,37 @@ namespace ForkPlus.UI.UserControls
 
 		private void FilesTreeView_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
-			if (!(FilesTreeView.SelectedItem is RevisionFileTreeViewItem revisionFileTreeViewItem))
+			Point point;
+			Point? position = e.TryGetPosition(FilesTreeView, out point) ? point : null;
+			if (OpenFileTreeContextMenu(e.Source, position))
 			{
 				e.Handled = true;
 				return;
+			}
+			e.Handled = true;
+			FilesTreeView.ContextMenu?.Close();
+		}
+
+		private void FilesTreeView_ContextMenuPointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			PointerPointProperties properties = e.GetCurrentPoint(FilesTreeView).Properties;
+			if (!properties.IsRightButtonPressed && properties.PointerUpdateKind != PointerUpdateKind.RightButtonPressed)
+			{
+				return;
+			}
+			e.Handled = true;
+			FilesTreeView.ContextMenu?.Close();
+			if (!OpenFileTreeContextMenu(e.Source, e.GetPosition(FilesTreeView)))
+			{
+				FilesTreeView.ContextMenu?.Close();
+			}
+		}
+
+		private bool OpenFileTreeContextMenu(object source, Point? position)
+		{
+			if (!TrySelectContextMenuTarget(source, position) || FilesTreeView.SelectedItem is not RevisionFileTreeViewItem revisionFileTreeViewItem)
+			{
+				return false;
 			}
 			RepositoryUserControl repositoryUserControl = RevisionDetailsUserControl.RepositoryUserControl;
 			if (repositoryUserControl != null)
@@ -204,13 +250,16 @@ namespace ForkPlus.UI.UserControls
 						if (sha.HasValue)
 						{
 							Sha valueOrDefault = sha.GetValueOrDefault();
+							FilesTreeView.ContextMenu.PlacementTarget = FilesTreeView;
 							FilesTreeView.ContextMenu.SetItems(CreateFileTreeViewContextMenuItems(repositoryUserControl, repositoryData, gitModule, valueOrDefault, revisionFileTreeViewItem.FileTreeItem));
-							return;
+							global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(FilesTreeView.ContextMenu, FilesTreeView);
+							FilesTreeView.ContextMenu.Open();
+							return FilesTreeView.ContextMenu.Items.Count > 0;
 						}
 					}
 				}
 			}
-			e.Handled = true;
+			return false;
 		}
 
 		private void Expand(string[] pathComponents, MultiselectionTreeViewItemCollection items)
@@ -232,12 +281,48 @@ namespace ForkPlus.UI.UserControls
 					else
 					{
 						UpdateFileDetails(revisionFileTreeViewItem);
+						FilesTreeView.SelectedItems.Clear();
+						FilesTreeView.SelectedItems.Add(revisionFileTreeViewItem);
 						FilesTreeView.SelectedItem = revisionFileTreeViewItem;
 						FilesTreeView.ScrollIntoView(revisionFileTreeViewItem);
 					}
 					break;
 				}
 			}
+		}
+
+		private bool TrySelectContextMenuTarget(object source, Point? position)
+		{
+			TreeViewControlItem container = FindVisualAncestorOrSelf<TreeViewControlItem>(source as global::Avalonia.Visual);
+			if (container == null && position.HasValue)
+			{
+				container = FilesTreeView.GetContainerAtPoint<TreeViewControlItem>(position.Value);
+			}
+			if (container?.DataContext is not RevisionFileTreeViewItem item || item.FileTreeItem == null)
+			{
+				return false;
+			}
+			if (!item.IsSelected)
+			{
+				FilesTreeView.SelectedItems.Clear();
+				FilesTreeView.SelectedItems.Add(item);
+				FilesTreeView.SelectedItem = item;
+				container.IsSelected = true;
+				container.InvalidateVisual();
+			}
+			return true;
+		}
+
+		private static T FindVisualAncestorOrSelf<T>(global::Avalonia.Visual visual) where T : class
+		{
+			for (global::Avalonia.Visual current = visual; current != null; current = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(current))
+			{
+				if (current is T match)
+				{
+					return match;
+				}
+			}
+			return null;
 		}
 
 		private static IEnumerable<Control> CreateFileTreeViewContextMenuItems(RepositoryUserControl repositoryUserControl, RepositoryData repositoryData, GitModule gitModule, Sha sha, FileTreeItem fileTreeItem)

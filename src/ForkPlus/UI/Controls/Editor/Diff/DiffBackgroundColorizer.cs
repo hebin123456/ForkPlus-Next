@@ -35,7 +35,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			HighlightingSource[] highlightingSource = HighlightingSource;
 			foreach (HighlightingSource highlightingSource2 in highlightingSource)
 			{
-				// TODO 迁移：WPF Rect.X/Y/Width/Height 可变属性 → Avalonia Rect 是不可变结构体，需整体重建。
+				// Migration note：WPF Rect.X/Y/Width/Height 可变属性 → Avalonia Rect 是不可变结构体，需整体重建。
 			IBrush highlightBrush = highlightingSource2.HighlightingType.GetHighlightBrush(theme);
 				if (highlightingSource2.HighlightingType == HighlightingType.ExactAdd || highlightingSource2.HighlightingType == HighlightingType.ExactRemove)
 				{
@@ -56,7 +56,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 				}
 				foreach (Rect item in BackgroundGeometryBuilder.GetRectsForSegment(textView, _fullWidthSegment, extendToFullWidthAtLineEnd: true))
 				{
-					// TODO 迁移：WPF Rect 属性赋值 → Avalonia Rect 不可变，new Rect(x, y, w, h)。
+					// Migration note：WPF Rect 属性赋值 → Avalonia Rect 不可变，new Rect(x, y, w, h)。
 				_rectangle = new Rect(0.0, item.Top, textView.Bounds.Width + textView.ScrollOffset.X, item.Height);
 				drawingContext.DrawRectangle(highlightBrush, null, _rectangle);
 				}

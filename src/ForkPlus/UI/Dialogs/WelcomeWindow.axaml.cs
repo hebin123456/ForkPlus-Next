@@ -50,7 +50,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.ShowLogo = false;
 			InitializeComponent();
-			// TODO 迁移：WPF 构造期 TitleTextBlock 已就绪可直接改属性；Avalonia 12 的 chrome
+			// Migration note：WPF 构造期 TitleTextBlock 已就绪可直接改属性；Avalonia 12 的 chrome
 			// 延迟初始化，改走 CustomizeTitleTextBlock pending 机制（构造期安全）。
 			CustomizeTitleTextBlock(delegate(TextBlock t)
 			{
@@ -90,7 +90,7 @@ namespace ForkPlus.UI.Dialogs
 				if (!gitCommandResult.Succeeded)
 				{
 					new ErrorWindow(null, gitCommandResult.Error).ShowDialog();
-					// TODO 迁移：与 App.DoShutdown 同因——启动期直接 Lifetime.Shutdown 会关闭
+					// Migration note：与 App.DoShutdown 同因——启动期直接 Lifetime.Shutdown 会关闭
 					// Dispatcher，MainLoop 内的 PushFrame 抛 "Dispatcher shut down"；改为 Post 延迟。
 					global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
 					{

@@ -11,7 +11,6 @@ using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
-using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.UserControls;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
@@ -38,18 +37,16 @@ namespace ForkPlus.UI.Dialogs
 			base.CancelButtonTitle = Translate("Close");
 			base.ShowSubmitButton = false;
 			base.ShowWarningIcon = true;
-			MessageEditor.Options.EnableHyperlinks = true;
-			MessageEditor.Options.RequireControlModifierForHyperlinkClick = false;
-			MessageEditor.WordWrap = true;
-			MessageEditor.TextArea.TextView.LineTransformers.Add(new GitOutputColorizer());
-			RefreshTheme();
+			// TextBox 方案：确保 Git 错误内容始终可读（不依赖 AvaloniaEdit 主题/模板）。
 		}
 
 		public ErrorWindow(string message)
 			: this()
 		{
-			MessageEditor.Text = message;
-			MessageEditor.ScrollToEnd();
+			// 兜底：某些调用点可能传入空字符串，导致“Git Error”窗口内容全空（用户反馈）。
+			// 至少给出一个可诊断的提示，避免看起来像 UI 渲染失败。
+			MessageTextBox.Text = string.IsNullOrWhiteSpace(message) ? "[No error output captured]" : message;
+			try { MessageTextBox.CaretIndex = MessageTextBox.Text?.Length ?? 0; } catch { }
 		}
 
 		public ErrorWindow([Null] RepositoryUserControl repositoryUserControl, GitCommandError gitCommandError)
@@ -140,8 +137,24 @@ namespace ForkPlus.UI.Dialogs
 			{
 				text = gitCommandError.FriendlyDescription;
 			}
-			MessageEditor.Text = text;
-			MessageEditor.ScrollToEnd();
+			// 兜底：gitError.FullOutput/StdErr 为空时 FriendlyDescription 也会为空，
+			// 造成“Git Error”窗口完全没有内容。
+			if (string.IsNullOrWhiteSpace(text))
+			{
+				if (gitCommandError is GitCommandError.GitError ge)
+				{
+					text =
+						(!string.IsNullOrWhiteSpace(ge.FullOutput) ? ge.FullOutput :
+						(!string.IsNullOrWhiteSpace(ge.Stderr) ? ge.Stderr : null));
+				}
+			}
+			if (string.IsNullOrWhiteSpace(text))
+			{
+				// 最后的诊断信息：至少告诉用户错误类型，方便继续排查上游“输出未捕获”的问题。
+				text = "[No error output captured]\n" + gitCommandError?.GetType()?.FullName;
+			}
+			MessageTextBox.Text = text;
+			try { MessageTextBox.CaretIndex = MessageTextBox.Text?.Length ?? 0; } catch { }
 		}
 
 		private void FirstButton_Click(object sender, RoutedEventArgs e)
@@ -199,11 +212,6 @@ namespace ForkPlus.UI.Dialogs
 				}
 				Close();
 			}
-		}
-
-		private void RefreshTheme()
-		{
-			MessageEditor.TextArea.TextView.LinkTextForegroundBrush = Application.Current.TryFindResource("CodeEditorLinkForeground") as Brush;
 		}
 
 		private static void OpenCredentialManager()

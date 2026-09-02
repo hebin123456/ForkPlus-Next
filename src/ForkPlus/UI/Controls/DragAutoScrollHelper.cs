@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Input;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI.Controls
 {
@@ -22,7 +23,7 @@ namespace ForkPlus.UI.Controls
 		public DragAutoScrollHelper(ItemsControl control)
 		{
 			_control = control;
-			// TODO 迁移：WPF 拖放事件属性（DragOver/DragLeave/Drop）→ Avalonia DragDrop 静态路由事件订阅。
+			// Migration note：WPF 拖放事件属性（DragOver/DragLeave/Drop）→ Avalonia DragDrop 静态路由事件订阅。
 			global::Avalonia.Input.DragDrop.AddDragOverHandler(_control, OnDragOver);
 			global::Avalonia.Input.DragDrop.AddDragLeaveHandler(_control, OnDragLeave);
 			global::Avalonia.Input.DragDrop.AddDropHandler(_control, OnDrop);
@@ -94,15 +95,7 @@ namespace ForkPlus.UI.Controls
 
 		private ScrollViewer GetScrollViewer()
 		{
-			if (VisualTreeHelper.GetChildrenCount(_control) == 0)
-			{
-				return null;
-			}
-			if (!(VisualTreeHelper.GetChild(_control, 0) is Border reference))
-			{
-				return null;
-			}
-			return VisualTreeHelper.GetChild(reference, 0) as ScrollViewer;
+			return ScrollViewerHelper.FindScrollViewer(_control);
 		}
 	}
 }

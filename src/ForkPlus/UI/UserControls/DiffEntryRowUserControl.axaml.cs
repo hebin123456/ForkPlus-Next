@@ -77,11 +77,11 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (DiffContentHost.IsVisible == true)
 			{
-				DiffContentHost.BringIntoView(); // TODO 迁移：WPF BringIntoView → BringIntoViewCompat 扩展。
+				DiffContentHost.BringIntoView(); // Migration note：WPF BringIntoView → BringIntoViewCompat 扩展。
 			}
 			else
 			{
-				this.BringIntoView(); // TODO 迁移：扩展方法不可裸调用，需显式 this 接收者。
+				this.BringIntoView(); // Migration note：扩展方法不可裸调用，需显式 this 接收者。
 			}
 		}
 
@@ -102,7 +102,7 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			if ((e.Source as global::Avalonia.Visual)?.GetParent<Border>() /* TODO 迁移：Visual 扩展需 Visual 接收者 */ == DiffContentHost)
+			if ((e.Source as global::Avalonia.Visual)?.GetParent<Border>() /* Migration note：Visual 扩展需 Visual 接收者 */ == DiffContentHost)
 			{
 				return;
 			}

@@ -82,7 +82,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			OverlayImage.NewOpacity = Slider.Value;
 		}
 
-		private void RefreshLfsLabel(global::Avalonia.Controls.Control lfsLabel, global::Avalonia.Controls.Control notLfsLabel, ImageData imageData) // TODO 迁移：WPF Label → XAML 已改 TextBlock/ContentControl，签名放宽为 Control。
+		private void RefreshLfsLabel(global::Avalonia.Controls.Control lfsLabel, global::Avalonia.Controls.Control notLfsLabel, ImageData imageData) // Migration note：WPF Label → XAML 已改 TextBlock/ContentControl，签名放宽为 Control。
 		{
 			if (imageData.IsLfs)
 			{
@@ -102,7 +102,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		// TODO 迁移：WPF Slider.ValueChanged 是 RoutedPropertyChangedEventHandler<double>，
+		// Migration note：WPF Slider.ValueChanged 是 RoutedPropertyChangedEventHandler<double>，
 		// Avalonia RangeBase.ValueChanged 是 EventHandler<RangeBaseValueChangedEventArgs>。
 		private void Slider_ValueChanged(object sender, global::Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
 		{

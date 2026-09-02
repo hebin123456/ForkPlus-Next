@@ -51,7 +51,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private readonly ChangedFile _changedFile;
 
-		// TODO 迁移：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
+		// Migration note：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
 		// ColumnDefinition 非 StyledElement，手动声明（构造函数里按结构索引赋值）。
 		internal global::Avalonia.Controls.ColumnDefinition MergeCodeEditorMiddleColumn;
 
@@ -112,7 +112,7 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowHeader = false;
 			base.ShowLogo = false;
 			InitializeComponent();
-			// TODO 迁移：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
+			// Migration note：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
 			// ColumnDefinition 非 StyledElement，按 XAML 结构索引取列定义。
 			MergeCodeEditorMiddleColumn = ((global::Avalonia.Controls.Grid)MergeCodeEditorContainer.Child).ColumnDefinitions[1];
 			TopCheckBoxMiddleColumn = ((global::Avalonia.Controls.Grid)((global::Avalonia.Controls.DockPanel)AllRemoteCheckBox.Parent).Parent).ColumnDefinitions[1];
@@ -210,7 +210,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		// TODO 迁移（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
+		// Migration note（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
 		// 窗口位置从未恢复）。改 OnOpened override（CustomWindow 已提供 OnOpened 虚链）。
 		protected override void OnOpened(EventArgs e)
 		{
@@ -218,7 +218,7 @@ namespace ForkPlus.UI.Dialogs
 			this.SetWindowLocationState(ForkPlusSettings.Default.SideBySideMergeWindowLocationState);
 		}
 
-		// TODO 迁移（根因）：原为非 override 的隐藏方法，CustomWindow.PositionChanged 的
+		// Migration note（根因）：原为非 override 的隐藏方法，CustomWindow.PositionChanged 的
 		// 虚分发永远到不了这里（移动窗口保存位置从未执行）。改 override 接入分发链。
 		protected override void OnLocationChanged(EventArgs e)
 		{

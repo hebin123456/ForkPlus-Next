@@ -58,10 +58,10 @@
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
             <DockPanel>
               <ToggleButton ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" DockPanel.Dock="Top" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}" FontStyle="{TemplateBinding FontStyle}" FontStretch="{TemplateBinding FontStretch}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" Margin="0" MinWidth="0" MinHeight="0" Padding="{TemplateBinding Padding}" Theme="{StaticResource ExpanderDownHeaderStyle}">
-<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
                 <ToggleButton.IsChecked>
-                  <Binding Path="IsExpanded"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
+                  <Binding Path="IsExpanded" Mode="TwoWay"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
                 </ToggleButton.IsChecked>
               </ToggleButton>
               <ContentPresenter DockPanel.Dock="Bottom" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" x:Name="ExpandSite" IsVisible="False" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>

@@ -56,7 +56,7 @@
         </DockPanel.Children>
       </DockPanel>
       <Border Grid.Row="1" HorizontalAlignment="Center">
-<!-- TODO 迁移：WPF Border.Style 块注释化（Border 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
+<!-- Migration note：WPF Border.Style 块注释化（Border 非 TemplatedControl，Avalonia 无 Style 属性）。原始片段：
         <Border.Style>
           <DynamicResource ResourceKey="BinaryDiffShadowBorder" />
         </Border.Style>

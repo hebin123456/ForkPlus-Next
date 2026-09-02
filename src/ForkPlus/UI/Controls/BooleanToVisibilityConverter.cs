@@ -10,7 +10,7 @@ using Avalonia.Data.Converters;
 namespace ForkPlus.UI.Controls
 {
 	/// <summary>
-	/// TODO 迁移：WPF 内置 System.Windows.Controls.BooleanToVisibilityConverter 的等价实现。
+	/// Migration note：WPF 内置 System.Windows.Controls.BooleanToVisibilityConverter 的等价实现。
 	/// WPF 里该转换器全局可用（bool → Visibility.Visible/Collapsed），Avalonia 无内置；
 	/// ExternalToolsUserControl / MergeConflictUserControl / CustomCommandsUserControl 的
 	/// StaticResource 引用曾因缺失此类在构造时抛 KeyNotFoundException（2026-08-30 偏好设置

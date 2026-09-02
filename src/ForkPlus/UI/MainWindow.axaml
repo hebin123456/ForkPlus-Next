@@ -16,7 +16,7 @@
                       <DockPanel>
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                           <ToggleButton ToolTip.Tip="Notifications" x:Name="Part_NotificationManagerToggleButton" Theme="{DynamicResource WindowRoundedToggleButton}">
-<!-- TODO 迁移：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF ToggleButton.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
                             <Image Source="{DynamicResource NotificationIcon}" Height="16" Width="16" VerticalAlignment="Center" />
                           </ToggleButton>
@@ -56,7 +56,7 @@
                       </DockPanel>
                     </Border>
                     <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
-    <!-- TODO 迁移：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
+    <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
                   </Grid>
                 </Border>
               </Border>
@@ -73,7 +73,7 @@
     </Grid.RowDefinitions>
     <userControls:ToolbarUserControl Grid.Row="0" x:Name="Toolbar" />
     <controls:ClosableTabControl Grid.Row="1" x:Name="TabControl">
-<!-- TODO 迁移：WPF controls:ClosableTabControl.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF controls:ClosableTabControl.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
     </controls:ClosableTabControl>
   </Grid>

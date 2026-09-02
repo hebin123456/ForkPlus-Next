@@ -16,7 +16,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public CustomCommandCheckBox(CustomCommandUI.Control.CheckBox checkBox)
 		{
-			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
+			// Migration note：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			_checkBox = checkBox;
 			base.Content = checkBox.Title;
 			base.IsChecked = checkBox.DefaultValue;

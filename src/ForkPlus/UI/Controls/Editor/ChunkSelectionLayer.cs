@@ -59,6 +59,8 @@ namespace ForkPlus.UI.Controls.Editor
 			public ButtonsAdorner(global::Avalonia.Input.InputElement adornernedElement)
 				: base(adornernedElement)
 			{
+				IsHitTestVisible = true;
+				Tag = new Point();
 			}
 
 			protected override Visual GetVisualChild(int index)
@@ -102,6 +104,12 @@ namespace ForkPlus.UI.Controls.Editor
 		private AdornerLayer _adornerLayer;
 
 		private readonly CodeEditor _textEditor;
+
+		private Point? _lastPointerPosition;
+
+		private Point? _lastAdornerOffset;
+
+		private bool _adornerUpdatePending;
 
 		protected Brush ChunkBackgroundBrush;
 
@@ -148,10 +156,10 @@ namespace ForkPlus.UI.Controls.Editor
 			_textEditor.PointerMoved += TextEditor_MouseMove;
 			_textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
 			_textEditor.TextChanged += TextEditor_TextChanged;
-			// TODO 迁移：WPF IsVisibleChanged 事件 → Avalonia 用 Visual.IsVisibleProperty 属性变更可观察流。
+			// Migration note：WPF IsVisibleChanged 事件 → Avalonia 用 Visual.IsVisibleProperty 属性变更可观察流。
 			_textEditor.GetPropertyChangedObservable(global::Avalonia.Visual.IsVisibleProperty).Subscribe(delegate(global::Avalonia.AvaloniaPropertyChangedEventArgs e) { TextEditor_IsVisibleChanged(_textEditor, e); });
 			RefreshBrush();
-			// TODO 迁移：WPF WeakEventManagerBase<TMgr,TSrc>.AddListener → AvaloniaEdit 12 的 4 泛型 AddHandler(source, handler)。
+			// Migration note：WPF WeakEventManagerBase<TMgr,TSrc>.AddListener → AvaloniaEdit 12 的 4 泛型 AddHandler(source, handler)。
 			AvaloniaEdit.Rendering.TextViewWeakEventManager.ScrollOffsetChanged.AddHandler(_textEditor.TextArea.TextView, TextView_ScrollOffsetChanged);
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 		}
@@ -192,7 +200,7 @@ namespace ForkPlus.UI.Controls.Editor
 			}
 			Rect valueOrDefault = rectForChunk.GetValueOrDefault();
 			DrawBorder(valueOrDefault, drawingContext);
-			// TODO 迁移：WPF Viewport.Height → AvaloniaEdit TextEditor.ViewportHeight（double 属性）。
+			// Migration note：WPF Viewport.Height → AvaloniaEdit TextEditor.ViewportHeight（double 属性）。
 			if (_textEditor.ViewportHeight > _textEditor.ExtentHeight)
 			{
 				if (_textEditor.TextArea.TextView.ScrollOffset.Y > 0.0)
@@ -215,7 +223,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 		protected virtual void InvalidateAdornerVisibility()
 		{
-			if (_activeChunk != null || _textEditor.TextArea.Selection.Length > 0)
+			if (_activeChunk != null)
 			{
 				ShowChunkAdorner(0.0);
 			}
@@ -250,7 +258,13 @@ namespace ForkPlus.UI.Controls.Editor
 			}
 			_adorner.Child.Measure(new Size(1000.0, 22.0));
 			double width = _adorner.Child.DesiredSize.Width;
-			_adorner.Margin = new Thickness(num3 - width, top, 0.0, 0.0);
+			Point offset = new Point(num3 - width, top);
+			if (_lastAdornerOffset != offset)
+			{
+				_lastAdornerOffset = offset;
+				_adorner.Tag = offset;
+				QueueAdornerLayerUpdate();
+			}
 		}
 
 		protected void RemoveChunkAdorner()
@@ -261,11 +275,28 @@ namespace ForkPlus.UI.Controls.Editor
 				_adornerLayer?.Remove(_adorner);
 				_adornerLayer = null;
 				_adorner = null;
+				_lastAdornerOffset = null;
+				_adornerUpdatePending = false;
 			}
+		}
+
+		private void QueueAdornerLayerUpdate()
+		{
+			if (_adornerLayer == null || _adornerUpdatePending)
+			{
+				return;
+			}
+			_adornerUpdatePending = true;
+			global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+			{
+				_adornerUpdatePending = false;
+				_adornerLayer?.Update();
+			}, Avalonia.Threading.DispatcherPriority.Background);
 		}
 
 		private void TextEditor_MouseEnter(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
+			_lastPointerPosition = e.GetPosition(_textEditor);
 			RefreshActiveChunk();
 		}
 
@@ -280,12 +311,13 @@ namespace ForkPlus.UI.Controls.Editor
 					ActiveChunk = null;
 				}
 			}
+			_lastPointerPosition = null;
 		}
 
 		private void TextEditor_MouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
+			_lastPointerPosition = e.GetPosition(_textEditor);
 			RefreshActiveChunk();
-			e.Handled = true;
 		}
 
 		private void TextEditor_TextChanged(object sender, EventArgs e)
@@ -349,7 +381,6 @@ namespace ForkPlus.UI.Controls.Editor
 			}
 			Rect rect = new Rect(0.0, num, _textEditor.Bounds.Width, num2);
 			DrawBorder(rect, drawingContext);
-			ShowChunkAdorner(num + _textEditor.SearchBarHeight);
 		}
 
 		protected virtual void DrawBorder(Rect rect, DrawingContext drawingContext)
@@ -400,7 +431,11 @@ namespace ForkPlus.UI.Controls.Editor
 		[Null]
 		protected TChunk GetChunkUnderMousePointer()
 		{
-			Point position = Mouse.GetPosition(_textEditor);
+			if (!_lastPointerPosition.HasValue)
+			{
+				return null;
+			}
+			Point position = _lastPointerPosition.GetValueOrDefault();
 			if (VisualTreeHelper.HitTest(_textEditor, position) == null)
 			{
 				return null;

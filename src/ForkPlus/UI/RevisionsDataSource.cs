@@ -861,7 +861,7 @@ namespace ForkPlus.UI
 			throw new NotImplementedException();
 		}
 
-		// TODO 迁移：WPF 版返回 _decoratedRevisions.GetEnumerator()（仅"已物化"行，Reload 后为空）。
+		// Migration note：WPF 版返回 _decoratedRevisions.GetEnumerator()（仅"已物化"行，Reload 后为空）。
 		// WPF ItemContainerGenerator 生成容器走 Count + IList 索引器（GetDecoratedRevisionAtRow 惰性物化），
 		// 枚举器从不参与容器生成 → 空枚举器在 WPF 下无影响（潜伏契约违背：Count=1 但枚举 0 项）。
 		// Avalonia 12 PanelContainerGenerator.OnItemsChanged 的 Reset 分支改用 foreach 枚举 ItemsView

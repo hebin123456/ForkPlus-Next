@@ -31,7 +31,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private int _lineNumberLength = 2;
 
-		// TODO 迁移：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 实例字段，
+		// Migration note：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 实例字段，
 		// AvaloniaEdit 侧无此基类，在此补声明（CreateFormattedText 使用）。
 		private Typeface typeface = _typeface;
 		private double emSize = 11.0;
@@ -112,7 +112,7 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private FormattedText CreateFormattedText(string text)
 		{
-			// TODO 迁移：Avalonia FormattedText 无 pixelsPerDip 参数（6 参构造）
+			// Migration note：Avalonia FormattedText 无 pixelsPerDip 参数（6 参构造）
 			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush);
 		}
 	}

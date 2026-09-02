@@ -145,6 +145,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_leftDiffCodeEditor.Sync(_rightDiffCodeEditor);
 			_leftDiffCodeEditor.ContextMenu = new ContextMenu();
 			_rightDiffCodeEditor.ContextMenu = new ContextMenu();
+			_leftDiffCodeEditor.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
+			_leftDiffCodeEditor.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Stretch;
+			_rightDiffCodeEditor.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
+			_rightDiffCodeEditor.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Stretch;
 			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(_leftDiffCodeEditor,delegate
 			{
 				_leftDiffCodeEditor.ContextMenu.Items.Clear();

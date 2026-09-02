@@ -7,7 +7,7 @@ namespace ForkPlus.UI.Controls
 {
 	internal class HighlightableTextBlock : TextBlock
 	{
-		// TODO 迁移：WPF DependencyProperty → Avalonia StyledProperty。
+		// Migration note：WPF DependencyProperty → Avalonia StyledProperty。
 		// 原转换用 RegisterAttached<..., AvaloniaObject, ...>（附加属性形式），XAML 属性元素语法
 		// <controls:HighlightableTextBlock.HighlightString><Binding/></...> 无法解析（AVLN3000），
 		// 改为普通 Register 使其成为可绑定 StyledProperty。

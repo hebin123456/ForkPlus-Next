@@ -140,7 +140,7 @@ namespace ForkPlus.UI.Dialogs
 			if (gitCommandResult.Result == ValidateSshKeyShellCommand.Result.IncorrectPassphrase)
 			{
 				return new SshPassphraseWindow(keyName, keyPath)
-					.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault(); // TODO 迁移：WPF { Owner=this } → 链式扩展。
+					.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault(); // Migration note：WPF { Owner=this } → 链式扩展。
 			}
 			return false;
 		}

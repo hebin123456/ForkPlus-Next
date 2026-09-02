@@ -63,7 +63,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private void LongOperationWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			Dispatcher.Post(new Action(async delegate // TODO 迁移：Avalonia Dispatcher.Post(Action, priority) 参数顺序与 WPF BeginInvoke 相反。
+			Dispatcher.Post(new Action(async delegate // Migration note：Avalonia Dispatcher.Post(Action, priority) 参数顺序与 WPF BeginInvoke 相反。
 		{
 				try
 				{

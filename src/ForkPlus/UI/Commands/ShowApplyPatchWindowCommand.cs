@@ -16,13 +16,13 @@ namespace ForkPlus.UI.Commands
 		public void Execute(RepositoryUserControl repositoryUserControl, string patchPath)
 		{
 			ApplyPatchWindow applyPatchDialog = new ApplyPatchWindow(repositoryUserControl, patchPath);
-			ShowDialog(repositoryUserControl, applyPatchDialog); // TODO 迁移：静态方法不能 this. 调用
+			ShowDialog(repositoryUserControl, applyPatchDialog); // Migration note：静态方法不能 this. 调用
 		}
 
 		public void Execute(RepositoryUserControl repositoryUserControl, byte[] patchData)
 		{
 			ApplyPatchWindow applyPatchDialog = new ApplyPatchWindow(repositoryUserControl, patchData);
-			ShowDialog(repositoryUserControl, applyPatchDialog); // TODO 迁移：静态方法不能 this. 调用
+			ShowDialog(repositoryUserControl, applyPatchDialog); // Migration note：静态方法不能 this. 调用
 		}
 
 		private static void ShowDialog(RepositoryUserControl repositoryUserControl, ApplyPatchWindow applyPatchDialog)

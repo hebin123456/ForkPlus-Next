@@ -96,7 +96,7 @@ namespace ForkPlus.UI
                 private static bool ShowOpen(Window parent, string title, string initialDirectory, bool folderPicker,
                         (string name, string spec)[] filters, out string path)
                 {
-                        // TODO 迁移：跨平台化——Windows 保留 Win32 COM IFileDialog（与 WPF 原版行为一致），
+                        // Migration note：跨平台化——Windows 保留 Win32 COM IFileDialog（与 WPF 原版行为一致），
                         // Linux/macOS 走 Avalonia StorageProvider（此前非 Windows 静默返回 false，
                         // 导致 Kali/macOS 上"初始化新仓库/克隆/打开仓库"等所有文件选择功能无反应）。
                         bool result;

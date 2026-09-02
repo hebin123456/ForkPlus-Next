@@ -8,7 +8,7 @@ namespace ForkPlus.UI.Controls
 {
 	/// <summary>
 	/// 可选中文本的 TextBlock。
-	/// TODO 迁移：原 WPF 实现通过反射调用 PresentationFramework 内部 TextEditor
+	/// Migration note：原 WPF 实现通过反射调用 PresentationFramework 内部 TextEditor
 	/// （System.Windows.Documents.TextEditor.RegisterCommandHandlers + TextBlock.TextContainer）
 	/// 让 TextBlock 支持选择/复制。Avalonia 无这些内部类型，Type.GetType 返回 null，
 	/// 静态构造函数直接 NRE 崩溃（打开仓库页签时 EnsureLayoutInitialized → CommitUserControl
@@ -20,7 +20,7 @@ namespace ForkPlus.UI.Controls
 	{
 		public SelectableTextBlock()
 		{
-			// TODO 迁移：WPF FocusableProperty.OverrideMetadata(default true) → 构造函数 Focusable = true；
+			// Migration note：WPF FocusableProperty.OverrideMetadata(default true) → 构造函数 Focusable = true；
 			// FocusVisualStyle 在 Avalonia 无对应（焦点视觉由主题伪类承担），移除。
 			Focusable = true;
 		}

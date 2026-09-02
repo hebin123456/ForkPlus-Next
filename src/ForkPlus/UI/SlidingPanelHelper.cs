@@ -14,11 +14,15 @@ namespace ForkPlus.UI
 
 		public static bool ShowPanel(Grid placeholder, TranslateTransform transform, double height)
 		{
+			if (placeholder == null || transform == null)
+			{
+				return false;
+			}
 			if (transform.Y == 0.0 && placeholder.Height == height)
 			{
 				return false;
 			}
-			// TODO 迁移：WPF DoubleAnimation(from, to, duration) 三参构造在 Avalonia/WpfCompat shim 中
+			// Migration note：WPF DoubleAnimation(from, to, duration) 三参构造在 Avalonia/WpfCompat shim 中
 			// 不存在（CS1729），改用对象初始化器设置 From/To/Duration（Duration 支持 TimeSpan 隐式转换）。
 			DoubleAnimation doubleAnimation = new DoubleAnimation
 			{
@@ -47,9 +51,13 @@ namespace ForkPlus.UI
 
 		public static void HidePanel(Grid placeholder, TranslateTransform transform, double height)
 		{
+			if (placeholder == null || transform == null)
+			{
+				return;
+			}
 			if (transform.Y != 0.0 - height || placeholder.Height != 0.0)
 			{
-				// TODO 迁移：同上，DoubleAnimation 三参构造 → 对象初始化器（CS1729）。
+				// Migration note：同上，DoubleAnimation 三参构造 → 对象初始化器（CS1729）。
 				DoubleAnimation doubleAnimation = new DoubleAnimation
 				{
 					From = 0.0,

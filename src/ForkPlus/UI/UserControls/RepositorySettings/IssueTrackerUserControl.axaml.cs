@@ -181,7 +181,7 @@ namespace ForkPlus.UI.UserControls.RepositorySettings
 		private void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (BugTrackerRulesListBox.SelectedItem is BugtrackerRuleViewModel item && new MessageBoxWindow(Translate("Do you want to remove the selected issue tracker rule?"), Translate("You can't undo this action"), Translate("Remove"), Translate("Cancel"), showCancelButton: true, 580.0)
-                                .SetOwnerAndCenter(_parentWindow).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
+                                .SetOwnerAndCenter(_parentWindow).ShowDialog().GetValueOrDefault()) // Migration note：WPF { Owner=.., WindowStartupLocation=CenterOwner } → 链式扩展。
 			{
 				_saveRequired = true;
 				int num = _bugtrackers.IndexOf(item) - 1;

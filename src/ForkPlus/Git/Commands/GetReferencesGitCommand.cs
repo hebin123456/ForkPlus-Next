@@ -33,7 +33,7 @@ namespace ForkPlus.Git.Commands
 				(string[], string[]) result2 = symrefs.Result;
 			string[] item = result2.Item1;
 			string[] item2 = result2.Item2;
-			// TODO 迁移：Linux 上 bt_get_references 缺 HEAD symref（见 BtReferencesExtensions.EnsureHeadSymref），
+			// Migration note：Linux 上 bt_get_references 缺 HEAD symref（见 BtReferencesExtensions.EnsureHeadSymref），
 			// 补齐后 ReferenceStorage.New 才能推导出 ActiveBranchIndex（当前分支 IsActive）。
 			(item, item2) = BtReferencesExtensions.EnsureHeadSymref(gitModule.GitDir(), item, item2);
 			ReferenceStorage.UpstreamTrackingReference[] array = gitConfig.ReadUpstreams();

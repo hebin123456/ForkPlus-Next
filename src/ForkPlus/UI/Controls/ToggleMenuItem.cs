@@ -8,10 +8,13 @@ namespace ForkPlus.UI.Controls
 {
 	public class ToggleMenuItem : MenuItem
 	{
+		protected override Type StyleKeyOverride => typeof(MenuItem);
+
 		public ToggleMenuItem(string title, Action clickHandler, bool isChecked, Image icon = null)
 		{
 			base.Header = PreferencesLocalization.Current(title);
 			base.IsChecked = isChecked;
+			base.ToggleType = MenuItemToggleType.CheckBox;
 			base.Icon = CloneIcon(icon);
 			base.Click += delegate
 			{
@@ -34,7 +37,7 @@ namespace ForkPlus.UI.Controls
 				Stretch = icon.Stretch,
 				HorizontalAlignment = icon.HorizontalAlignment,
 				VerticalAlignment = icon.VerticalAlignment
-				// TODO 迁移：WPF Image.SnapsToDevicePixels 在 Avalonia 无对应（位图渲染由布局取整保证），移除。
+				// Migration note：WPF Image.SnapsToDevicePixels 在 Avalonia 无对应（位图渲染由布局取整保证），移除。
 			};
 		}
 	}

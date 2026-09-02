@@ -19,6 +19,7 @@ using ForkPlus.UI.Dialogs;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -88,16 +89,8 @@ namespace ForkPlus.UI.UserControls
 			RestoreFileListColumnWidth();
 			base.Loaded += delegate
 			{
-				FileDiffControl.RepositoryUserControl = RevisionDetailsUserControl.RepositoryUserControl;
+				RefreshFileDiffControlTarget();
 				FileDiffControl.Content = null;
-				if (RevisionDetailsUserControl.Mode == RevisionDetailsUserControlMode.DetachedWindow || RevisionDetailsUserControl.Mode == RevisionDetailsUserControlMode.AiReview)
-				{
-					FileDiffControl.Target = FileDiffControlTarget.RevisionWindow;
-				}
-				else
-				{
-					FileDiffControl.Target = FileDiffControlTarget.Revision;
-				}
 			};
 			base.KeyDown += delegate(object s, KeyEventArgs e)
 			{
@@ -197,6 +190,7 @@ namespace ForkPlus.UI.UserControls
 		public void Refresh(RevisionDiffTarget target, [Null] string fileToSelect)
 		{
 			_target = target;
+			RefreshFileDiffControlTarget();
 			_changedFiles = RevisionDetailsUserControl.FullRevisionDetails.ChangedFiles;
 			UpdateFileList(fileToSelect);
 		}
@@ -459,6 +453,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void UpdateDiff(ChangedFile changedFile)
 		{
+			RefreshFileDiffControlTarget();
 			if (changedFile == null || changedFile.IsDirectory)
 			{
 				FileDiffControl.Content = null;
@@ -481,24 +476,41 @@ namespace ForkPlus.UI.UserControls
 			bool ignoreWhitespaces = ForkPlusSettings.Default.DiffIgnoreWhitespaces;
 			bool showEntireFile = DiffShowEntireFile;
 			ChangedFile capturedFile = changedFile;
-			// 异步执行 diff 计算，避免大文件 diff 阻塞 UI 线程。
-			Task<GitCommandResult<DiffContent>> task = new Task<GitCommandResult<DiffContent>>(() => new GetRevisionFileChangesGitCommand().Execute(gitModule, target, capturedFile, contextSize, tabWidth, ignoreWhitespaces, showEntireFile));
-			task.ContinueWith(delegate(Task<GitCommandResult<DiffContent>> diffTask)
+			Task.Run(() => new GetRevisionFileChangesGitCommand().Execute(gitModule, target, capturedFile, contextSize, tabWidth, ignoreWhitespaces, showEntireFile)).ContinueWith(delegate(Task<GitCommandResult<DiffContent>> diffTask)
 			{
-				if (diffTask.IsFaulted || diffTask.IsCanceled)
+				Dispatcher.UIThread.Post(delegate
 				{
-					return;
-				}
-				// 期间若又切换了文件或 target，丢弃本次过期结果。
-				if (requestId != _diffRequestId)
-				{
-					return;
-				}
-				GitCommandResult<DiffContent> gitCommandResult = diffTask.Result;
-				FileDiffControl.Content = gitCommandResult;
-				_diffPopupWindow?.UpdateDiff(gitCommandResult);
-			}, TaskScheduler.FromCurrentSynchronizationContext());
-			task.Start();
+					if (diffTask.IsFaulted || diffTask.IsCanceled)
+					{
+						return;
+					}
+					// 期间若又切换了文件或 target，丢弃本次过期结果。
+					if (requestId != _diffRequestId)
+					{
+						return;
+					}
+					GitCommandResult<DiffContent> gitCommandResult = diffTask.Result;
+					FileDiffControl.Content = gitCommandResult;
+					_diffPopupWindow?.UpdateDiff(gitCommandResult);
+				});
+			});
+		}
+
+		private void RefreshFileDiffControlTarget()
+		{
+			if (RevisionDetailsUserControl?.RepositoryUserControl == null)
+			{
+				return;
+			}
+			FileDiffControl.RepositoryUserControl = RevisionDetailsUserControl.RepositoryUserControl;
+			if (RevisionDetailsUserControl.Mode == RevisionDetailsUserControlMode.DetachedWindow || RevisionDetailsUserControl.Mode == RevisionDetailsUserControlMode.AiReview)
+			{
+				FileDiffControl.Target = FileDiffControlTarget.RevisionWindow;
+			}
+			else
+			{
+				FileDiffControl.Target = FileDiffControlTarget.Revision;
+			}
 		}
 
 		private void UpdateFilter(string filterString)
@@ -591,6 +603,7 @@ namespace ForkPlus.UI.UserControls
 			MenuItem menuItem = new MenuItem();
 			menuItem.Header = Preferences.PreferencesLocalization.MenuHeader("View as Tree");
 			menuItem.IsChecked = fileListMode == FileListMode.Tree;
+			menuItem.ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 			menuItem.Click += delegate
 			{
 				ForkPlusSettings.Default.FileListMode = FileListMode.Tree;
@@ -601,6 +614,7 @@ namespace ForkPlus.UI.UserControls
 			MenuItem menuItem2 = new MenuItem();
 			menuItem2.Header = Preferences.PreferencesLocalization.MenuHeader("View as List");
 			menuItem2.IsChecked = fileListMode == FileListMode.List;
+			menuItem2.ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 			menuItem2.Click += delegate
 			{
 				ForkPlusSettings.Default.FileListMode = FileListMode.List;
@@ -611,6 +625,7 @@ namespace ForkPlus.UI.UserControls
 			MenuItem menuItem3 = new MenuItem();
 			menuItem3.Header = Preferences.PreferencesLocalization.MenuHeader("View as Combined List");
 			menuItem3.IsChecked = fileListMode == FileListMode.CombinedList;
+			menuItem3.ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox;
 			menuItem3.Click += delegate
 			{
 				ForkPlusSettings.Default.FileListMode = FileListMode.CombinedList;

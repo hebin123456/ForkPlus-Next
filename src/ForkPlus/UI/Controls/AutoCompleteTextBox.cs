@@ -125,7 +125,7 @@ namespace ForkPlus.UI.Controls
 			{
 				_listBox = new ListBox();
 {				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(_listBox, Application.Current.TryFindResource("AutoCompleteListBoxStyle"));
-}				_listBox.ItemTemplate = Application.Current.TryFindResource("AutocompleteListBoxItemTemplate") as global::Avalonia.Controls.Templates.IDataTemplate; // TODO 迁移：WPF DataTemplate → Avalonia IDataTemplate
+}				_listBox.ItemTemplate = Application.Current.TryFindResource("AutocompleteListBoxItemTemplate") as global::Avalonia.Controls.Templates.IDataTemplate; // Migration note：WPF DataTemplate → Avalonia IDataTemplate
 				_listBox.MinWidth = 216.0;
 				_listBox.PointerReleased += delegate
 				{
@@ -140,11 +140,11 @@ namespace ForkPlus.UI.Controls
 			{
 				_listBox.Items.Add(newItem);
 			}
-			// TODO 迁移：WPF TextBox.GetRectFromCharacterIndex（第 N 个字符的客户区矩形）Avalonia 无对应，
+			// Migration note：WPF TextBox.GetRectFromCharacterIndex（第 N 个字符的客户区矩形）Avalonia 无对应，
 			// 近似取本控件 Bounds 左上角，下拉框出现在文本框下方。
 			Rect rectFromCharacterIndex = new Rect(0.0, Bounds.Height, 0.0, 0.0);
 			int num = 8;
-			// TODO 迁移：WPF Popup.PlacementRectangle → Avalonia Popup.PlacementRect（可空 Rect）。
+			// Migration note：WPF Popup.PlacementRectangle → Avalonia Popup.PlacementRect（可空 Rect）。
 			_popup.PlacementRect = new Rect(new Point(rectFromCharacterIndex.X - (double)num, rectFromCharacterIndex.Y), rectFromCharacterIndex.Size);
 			_popup.PlacementTarget = this;
 			_popup.IsOpen = true;

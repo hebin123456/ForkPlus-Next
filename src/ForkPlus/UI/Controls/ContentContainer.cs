@@ -7,7 +7,7 @@ namespace ForkPlus.UI.Controls
 {
 	public class ContentContainer : Grid
 	{
-		private global::Avalonia.Controls.Control _childControl; // TODO 迁移：WPF UIElement → Avalonia Control（Children.Remove/TryAddChild 需 Control）
+		private global::Avalonia.Controls.Control _childControl; // Migration note：WPF UIElement → Avalonia Control（Children.Remove/TryAddChild 需 Control）
 
 		public void ShowControl(global::Avalonia.Controls.Control control)
 		{

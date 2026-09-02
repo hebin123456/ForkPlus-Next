@@ -38,7 +38,7 @@ namespace ForkPlus.UI.Controls.Editor
 		private static readonly Brush SyntaxVariableBrush = Freeze(new SolidColorBrush(Color.FromRgb(104, 72, 186)));
 		private static readonly Brush SyntaxValueBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
 		private static readonly Brush SyntaxNumberBrush = Freeze(new SolidColorBrush(Color.FromRgb(7, 89, 212)));
-		// TODO 迁移：Avalonia 的 Brushes.Transparent 是 IImmutableSolidColorBrush（非 Brush 派生），
+		// Migration note：Avalonia 的 Brushes.Transparent 是 IImmutableSolidColorBrush（非 Brush 派生），
 		// 本文件按 WPF 语义统一返回 Brush，故用 SolidColorBrush(透明色) 替代。
 		private static readonly Brush TransparentBrush = Freeze(new SolidColorBrush(Color.FromArgb(0, 0, 0, 0)));
 

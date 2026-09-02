@@ -20,7 +20,9 @@ namespace ForkPlus.UI
 	[global::Avalonia.Controls.Metadata.TemplatePartAttribute(Name = "PART_WindowHeader", Type = typeof(global::Avalonia.Controls.Control))]
 	public class CustomWindow : Window
 	{
-		// TODO 迁移（根因修复）：Avalonia 的 implicit ControlTheme 查找用 StyleKey（Window 基类
+		private const double DragRegionHeightWhenHeaderHidden = 32.0;
+
+		// Migration note（根因修复）：Avalonia 的 implicit ControlTheme 查找用 StyleKey（Window 基类
 		// StyleKeyOverride=typeof(Window)），而 Window.axaml 的 ControlTheme key 是 {x:Type ui:CustomWindow}，
 		// 二者不匹配导致隐式主题永不应用、模板退化为 ContentControl 默认 FuncControlTemplate
 		// （PART_MainMenu 等模板部件全部找不到 → ForkWindow_Loaded NRE）。
@@ -39,7 +41,7 @@ namespace ForkPlus.UI
 
 		protected const string PartNameMaximizeButton = "PART_MaximizeButton";
 
-		// TODO 迁移：字段类型从 AvaloniaProperty 收紧为 StyledProperty<T>（XAML 编译器要求 typed property，
+		// Migration note：字段类型从 AvaloniaProperty 收紧为 StyledProperty<T>（XAML 编译器要求 typed property，
 		// 否则 TemplateBinding ui:CustomWindow.Xxx 报 "doesn't inherit from AvaloniaProperty<T>"）。
 		public static readonly global::Avalonia.StyledProperty<double> HeaderHeightProperty;
 
@@ -80,6 +82,7 @@ namespace ForkPlus.UI
 		protected override void OnOpened(EventArgs e)
 		{
 			base.OnOpened(e);
+			global::ForkPlus.UI.WpfCompat.Keyboard.InstallGlobalKeyTracking(this);
 			if (!_locationChangedHooked)
 			{
 				_locationChangedHooked = true;
@@ -87,6 +90,52 @@ namespace ForkPlus.UI
 				{
 					OnLocationChanged(EventArgs.Empty);
 				};
+			}
+
+			// 批量修复：弹窗/子窗口默认居中到 owner 所在屏幕（或主窗口所在屏幕）。
+			// 许多窗口仍以 WPF 风格调用 ShowDialog()（无 owner/StartupLocation），Avalonia 下会出现不居中。
+			TryCenterOnOpened();
+		}
+
+		private void TryCenterOnOpened()
+		{
+			// 主窗口不自动重定位
+			if (this is MainWindow)
+			{
+				return;
+			}
+
+			// 只有显式要求居中时才干预位置（保持其它窗口按系统默认/用户拖拽的位置打开）。
+			if (WindowStartupLocation != global::Avalonia.Controls.WindowStartupLocation.CenterOwner
+				&& WindowStartupLocation != global::Avalonia.Controls.WindowStartupLocation.CenterScreen)
+			{
+				return;
+			}
+
+			try
+			{
+				Window owner = global::ForkPlus.UI.WpfCompat.WindowOwnerCompat.TryGetOwner(this)
+					?? global::ForkPlus.UI.WpfCompat.WpfApp.ActiveWindow(this)
+					?? global::ForkPlus.UI.WpfCompat.WpfApp.MainWindow;
+
+				var screen = owner?.Screens?.ScreenFromWindow(owner)
+					?? Screens?.ScreenFromWindow(this)
+					?? Screens?.Primary;
+				if (screen == null)
+				{
+					return;
+				}
+
+				var wa = screen.WorkingArea;
+				int wPx = (int)global::System.Math.Max(1, global::System.Math.Round(ClientSize.Width * screen.Scaling));
+				int hPx = (int)global::System.Math.Max(1, global::System.Math.Round(ClientSize.Height * screen.Scaling));
+				Position = new global::Avalonia.PixelPoint(
+					wa.X + global::System.Math.Max(0, (wa.Width - wPx) / 2),
+					wa.Y + global::System.Math.Max(0, (wa.Height - hPx) / 2));
+			}
+			catch
+			{
+				// 定位失败不影响显示
 			}
 		}
 
@@ -172,36 +221,35 @@ namespace ForkPlus.UI
 		{
 			get
 			{
-				Thickness windowResizeBorderThickness = WindowLocationStateExtensions.WindowResizeBorderThickness;
-				if (WindowLocationStateExtensions.AutoHideEnabled())
-				{
-					return new Thickness(0.0 - windowResizeBorderThickness.Left, 0.0 - windowResizeBorderThickness.Top, 0.0 - windowResizeBorderThickness.Right, 0.0 - windowResizeBorderThickness.Bottom);
-				}
-				return windowResizeBorderThickness;
+				return new Thickness(0.0);
 			}
 		}
 
 		static CustomWindow()
 		{
-			// TODO 迁移：WPF DependencyProperty.Register + PropertyMetadata → WpfPropertyCompat.Register（Avalonia StyledProperty）。
+			// Migration note：WPF DependencyProperty.Register + PropertyMetadata → WpfPropertyCompat.Register（Avalonia StyledProperty）。
 			HeaderHeightProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, double>("HeaderHeight", 22.0);
 			ShowHeaderProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, bool>("ShowHeader", true, (owner, e) => OnShowHeaderChanged(owner, e));
 			HideMinimizeMaximizeButtonsProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, bool>("HideMinimizeMaximizeButtons", false);
 			IsTitleVisibleProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, bool>("IsTitleVisible", false);
 			WindowResizeBorderThicknessProperty = global::ForkPlus.UI.WpfCompat.WpfPropertyCompat.Register<CustomWindow, global::Avalonia.Thickness>("WindowResizeBorderThickness", default(global::Avalonia.Thickness));
-			// TODO 迁移：WPF DefaultStyleKeyProperty.OverrideMetadata 在 Avalonia 由 ControlTheme 接管，移除。
+			// Migration note：WPF DefaultStyleKeyProperty.OverrideMetadata 在 Avalonia 由 ControlTheme 接管，移除。
 		}
 
 		public CustomWindow()
 		{
-			// TODO 迁移（根因）：WPF WindowChrome 借 WM_NCCALCSIZE 自绘标题栏；Avalonia 12 对应
+			// Migration note（根因）：WPF WindowChrome 借 WM_NCCALCSIZE 自绘标题栏；Avalonia 12 对应
 			// ExtendClientAreaToDecorationsHint——客户区延伸进装饰区，系统标题栏不再渲染
 			// （Win32 走 DwmExtendFrameIntoClientArea + NCRP_ENABLED，原生边框/阴影/缩放保留）。
 			// 修复"皮肤外还有系统原生窗口（含最小化/最大化/关闭）"。
 			// TitleBarHeightHint=-1：按 OS 默认标题栏高度扩展（完全覆盖原生标题栏区域）。
-			ExtendClientAreaToDecorationsHint = true;
-			ExtendClientAreaTitleBarHeightHint = -1;
-			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
+			//
+			// BorderOnly 会保留 Win32/DWM 的透明 resize frame，最大化时看起来像外面还套一圈。
+			// 改为 None 后完全由应用模板绘制窗口外观，缩放由 OnWindowPointerPressedForMoveDrag 自行接管。
+			SystemDecorations = WindowDecorations.None;
+			ExtendClientAreaToDecorationsHint = false;
+			ExtendClientAreaTitleBarHeightHint = 0;
+			// Migration note：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			if (IsDesignMode)
 			{
 				_tempWindowResizeBorderThickness = new Thickness(6.0);
@@ -211,7 +259,7 @@ namespace ForkPlus.UI
 			WindowChrome windowChrome = new WindowChrome
 			{
 				CornerRadius = 0.0,
-				GlassFrameThickness = new Thickness(0.0, 0.0, 0.0, 1.0),
+				GlassFrameThickness = new Thickness(0.0),
 				UseAeroCaptionButtons = false
 			};
 			Binding binding = new Binding("HeaderHeight")
@@ -222,6 +270,125 @@ namespace ForkPlus.UI
 			WindowChrome.SetWindowChrome(this, windowChrome);
 			_tempWindowResizeBorderThickness = WindowResizeBorderThickness;
 			base.Loaded += Window_Loaded;
+
+			// 批量修复：当窗口自定义标题栏被隐藏时，仍允许拖动窗口（按原版系统标题栏体验）。
+			AddHandler(global::Avalonia.Input.InputElement.PointerPressedEvent,
+				OnWindowPointerPressedForMoveDrag,
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
+		}
+
+		private void OnWindowPointerPressedForMoveDrag(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			if (IsDesignMode)
+			{
+				return;
+			}
+
+			if (TryBeginResizeDrag(e))
+			{
+				return;
+			}
+
+			// 有标题栏时由 PART_WindowHeader 负责拖动；这里只处理“标题栏隐藏”的窗口。
+			if (ShowHeader)
+			{
+				return;
+			}
+
+			// 只在顶部一小段区域允许拖动，避免影响主体交互（列表选择/文本编辑等）。
+			Point pt = e.GetPosition(this);
+			if (pt.Y > DragRegionHeightWhenHeaderHidden)
+			{
+				return;
+			}
+
+			// 点击交互控件（按钮/输入框/列表等）不启动拖动。
+			if (e.Source is global::Avalonia.Visual source && IsInteractiveChromeElement(source))
+			{
+				return;
+			}
+
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+			{
+				try
+				{
+					BeginMoveDrag(e);
+				}
+				catch (global::System.InvalidOperationException)
+				{
+					// 窗口尚未显示等边缘状态：忽略
+				}
+			}
+		}
+
+		private bool TryBeginResizeDrag(global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			if (!CanResize || base.WindowState != global::Avalonia.Controls.WindowState.Normal)
+			{
+				return false;
+			}
+			if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+			{
+				return false;
+			}
+
+			const double ResizeGripThickness = 6.0;
+			Point point = e.GetPosition(this);
+			double width = Bounds.Width;
+			double height = Bounds.Height;
+			bool left = point.X <= ResizeGripThickness;
+			bool right = point.X >= width - ResizeGripThickness;
+			bool top = point.Y <= ResizeGripThickness;
+			bool bottom = point.Y >= height - ResizeGripThickness;
+			if (!left && !right && !top && !bottom)
+			{
+				return false;
+			}
+
+			global::Avalonia.Controls.WindowEdge edge;
+			if (top && left)
+			{
+				edge = global::Avalonia.Controls.WindowEdge.NorthWest;
+			}
+			else if (top && right)
+			{
+				edge = global::Avalonia.Controls.WindowEdge.NorthEast;
+			}
+			else if (bottom && left)
+			{
+				edge = global::Avalonia.Controls.WindowEdge.SouthWest;
+			}
+			else if (bottom && right)
+			{
+				edge = global::Avalonia.Controls.WindowEdge.SouthEast;
+			}
+			else if (left)
+			{
+				edge = global::Avalonia.Controls.WindowEdge.West;
+			}
+			else if (right)
+			{
+				edge = global::Avalonia.Controls.WindowEdge.East;
+			}
+			else if (top)
+			{
+				edge = global::Avalonia.Controls.WindowEdge.North;
+			}
+			else
+			{
+				edge = global::Avalonia.Controls.WindowEdge.South;
+			}
+
+			try
+			{
+				BeginResizeDrag(edge, e);
+				e.Handled = true;
+				return true;
+			}
+			catch (global::System.InvalidOperationException)
+			{
+				return false;
+			}
 		}
 
 		protected void OnContentRendered(EventArgs e)
@@ -232,7 +399,7 @@ namespace ForkPlus.UI
 			}
 		}
 
-		// TODO 迁移（根因）：WPF Window.StateChanged 事件 / OnStateChanged 虚方法在 Avalonia 无直接
+		// Migration note（根因）：WPF Window.StateChanged 事件 / OnStateChanged 虚方法在 Avalonia 无直接
 		// 对应（无 StateChanged 事件）。原 protected void OnStateChanged 无人调用（死代码），导致
 		// 最大化/还原按钮可见性切换、最大化边框厚度调整全部失效。现通过 OnPropertyChanged
 		// 监听 WindowStateProperty 转发，并改为 virtual 供子类（MainWindow 等）override。
@@ -277,7 +444,7 @@ namespace ForkPlus.UI
 			AdjustButtonsVisibilityToWindowState();
 		}
 
-		// TODO 迁移（根因）：WPF 模板按钮用 Command="{x:Static SystemCommands.XxxWindowCommand}" +
+		// Migration note（根因）：WPF 模板按钮用 Command="{x:Static SystemCommands.XxxWindowCommand}" +
 		// Window.CommandBindings 路由；Avalonia 无 CommandBindings 路由（CommandRouter 只管键盘手势），
 		// 模板按钮又不携带 Command → 最小化/最大化/还原/关闭全部失灵。改为代码后置直接挂 Click。
 		private void WireChromeEvents()
@@ -351,7 +518,7 @@ namespace ForkPlus.UI
 			Close();
 		}
 
-		// TODO 迁移（根因）：WPF WindowChrome.CaptionHeight 区域原生支持拖动/双击最大化；
+		// Migration note（根因）：WPF WindowChrome.CaptionHeight 区域原生支持拖动/双击最大化；
 		// Avalonia ExtendClientArea 后整个窗口都是客户区，需自实现标题栏交互。
 		// Button/Menu 等控件会吃掉 PointerPressed（Handled），事件不再冒泡到标题栏，
 		// 因此点按钮/菜单不会误触发拖动。
@@ -361,7 +528,8 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			if (!CanResize)
+			// 标题栏区域包含菜单/按钮等交互控件时，不要启动窗口拖动，否则会导致菜单点击无响应。
+			if (e.Source is global::Avalonia.Visual source && IsInteractiveChromeElement(source))
 			{
 				return;
 			}
@@ -404,7 +572,17 @@ namespace ForkPlus.UI
 		{
 			for (global::Avalonia.Visual current = visual; current != null; current = current.GetVisualParent())
 			{
-				if (current is Button || current is global::Avalonia.Controls.MenuItem || current is global::Avalonia.Controls.Menu || current is global::Avalonia.Controls.TextBox)
+				if (current is Button
+					|| current is global::Avalonia.Controls.Primitives.ToggleButton
+					|| current is global::Avalonia.Controls.MenuItem
+					|| current is global::Avalonia.Controls.Menu
+					|| current is global::Avalonia.Controls.TextBox
+					|| current is global::Avalonia.Controls.ComboBox
+					|| current is global::Avalonia.Controls.ListBox
+					|| current is global::Avalonia.Controls.ListBoxItem
+					|| current is global::Avalonia.Controls.Primitives.ScrollBar
+					|| current is global::Avalonia.Controls.ScrollViewer
+					|| current is global::Avalonia.Controls.Slider)
 				{
 					return true;
 				}
@@ -418,7 +596,7 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			// TODO 迁移：WPF HwndSource.AddHook(WM_NCCALCSIZE 等自绘 chrome 钩子)为 Win32 专用，
+			// Migration note：WPF HwndSource.AddHook(WM_NCCALCSIZE 等自绘 chrome 钩子)为 Win32 专用，
 			// Avalonia 由 SystemDecorations/ExtendClientAreaChromeIntoTitleBar 替代，暂 no-op 保留 HwndSourceHook 方法。
 		}
 
@@ -428,7 +606,7 @@ namespace ForkPlus.UI
 			{
 				return;
 			}
-			// TODO 迁移（根因）：原 WPF SystemCommands 的 CommandBinding 路由在 Avalonia 无对应
+			// Migration note（根因）：原 WPF SystemCommands 的 CommandBinding 路由在 Avalonia 无对应
 			// （CommandRouter 只派发键盘手势，SystemCommands shim 不带手势，绑定永不触发），
 			// 窗口按钮改为 OnApplyTemplate 里直接挂 Click（见 WireChromeEvents），此处删除死代码。
 			_tempWindowState = base.WindowState;

@@ -33,7 +33,7 @@ namespace ForkPlus.Git
 
 		private static global::Avalonia.Media.IImage Freeze(global::Avalonia.Media.IImage source)
 		{
-			// TODO 迁移：WPF Freezable.CanFreeze/Freeze 在 Avalonia 无对应（Bitmap 天然不可变），直接返回。
+			// Migration note：WPF Freezable.CanFreeze/Freeze 在 Avalonia 无对应（Bitmap 天然不可变），直接返回。
 			return source;
 		}
 

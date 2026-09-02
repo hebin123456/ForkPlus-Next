@@ -9,6 +9,7 @@ using ForkPlus.Accounts;
 using ForkPlus.UI.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -49,10 +50,20 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			FallbackUserControl.Hide();
-			AvatarImage.Url = _account.AvatarUrl;
+			Account account = _account;
+			string avatarUrl = account.AvatarUrl;
+			AvatarImage.Url = null;
+			Dispatcher.UIThread.Post(delegate
+			{
+				if (_account == account)
+				{
+					AvatarImage.Url = avatarUrl;
+				}
+			}, DispatcherPriority.Background);
 			HeaderUserNameTextBlock.Text = _account.Username;
-			HeaderProfileUrlHyperlink.NavigateUri = new Uri(_account.ServerUrl);
-			HeaderProfileUrlTextBlock.Text = _account.ServerUrl;
+			string serverUrl = _account.ServerUrl ?? "";
+			HeaderProfileUrlHyperlink.NavigateUri = Uri.TryCreate(serverUrl, UriKind.Absolute, out Uri uri) ? uri : null;
+			HeaderProfileUrlTextBlock.Text = serverUrl;
 			if (AccountDetailsTabControl.SelectedItem is AccountTabItem)
 			{
 				AccountTabItem.Refresh(_account);

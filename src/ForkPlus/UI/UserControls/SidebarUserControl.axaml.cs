@@ -129,8 +129,9 @@ namespace ForkPlus.UI.UserControls
 			SearchTabItem.Initialize(repositoryUserControl);
 			ServiceTabItem.Initialize(repositoryUserControl);
 			WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ReferenceSortOrderChanged", ReferenceSortOrderChanged);
-			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuOpeningHandler(SidebarTreeView,SidebarTreeView_ContextMenuOpening);
-			SidebarTreeView.AddHandler(global::Avalonia.Controls.Button.ClickEvent, new EventHandler<RoutedEventArgs>(SidebarTreeView_ButtonClick)); // TODO 迁移：ButtonBase 在 Primitives 命名空间。
+			SidebarTreeView.ContextRequested += (_, e) => e.Handled = true;
+			SidebarTreeView.AddHandler(global::Avalonia.Input.InputElement.PointerPressedEvent, new EventHandler<global::Avalonia.Input.PointerPressedEventArgs>(SidebarTreeView_ContextMenuPointerPressed), global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
+			SidebarTreeView.AddHandler(global::Avalonia.Controls.Button.ClickEvent, new EventHandler<RoutedEventArgs>(SidebarTreeView_ButtonClick)); // Migration note：ButtonBase 在 Primitives 命名空间。
 			SidebarTreeView.SelectionChanged += SidebarTreeView_SelectionChanged;
 			SidebarTreeView.PointerPressed += SidebarTreeView_MouseDown;
 			SidebarTreeView.DoubleTapped += SidebarTreeView_MouseDoubleClick;
@@ -345,7 +346,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void TruncateSidebarItem_RequestNavigate(object sender, RequestNavigateEventArgs e)
 		{
-			// TODO 迁移：WPF FrameworkContentElement → Avalonia Control（HyperlinkButton 承载内联超链接）。
+			// Migration note：WPF FrameworkContentElement → Avalonia Control（HyperlinkButton 承载内联超链接）。
 			if ((sender as global::Avalonia.Controls.Control)?.DataContext is TruncateSidebarItem { Parent: FolderSidebarItem parent })
 			{
 				ToggleTruncate(parent);
@@ -447,14 +448,17 @@ namespace ForkPlus.UI.UserControls
 			menuItem.IsEnabled = !flag;
 			menuItem.Click += delegate
 			{
-				RepositoryNameTextBlock.ShowEditor(RepositoryUserControl.RepositoryName, delegate(bool success, string newName)
+				// 等菜单先关闭，再进入内联编辑，避免 ContextMenu 收焦点把编辑框立刻关掉。
+				Dispatcher.UIThread.Post(delegate
 				{
-					RepositoryNameTextBlock.HideEditor();
-					if (success)
+					RepositoryNameTextBlock.ShowEditor(RepositoryUserControl.RepositoryName, delegate(bool success, string newName)
 					{
-						RenameRepository(newName);
-					}
-				});
+						if (success)
+						{
+							RenameRepository(newName);
+						}
+					});
+				}, DispatcherPriority.Background);
 			};
 			obj.Items.Add(menuItem);
 			obj.Items.Add(new Separator());
@@ -469,8 +473,9 @@ namespace ForkPlus.UI.UserControls
 			string text = RepositoryUserControl?.GitModule.Path;
 			if (text != null)
 			{
-				RepositoryManager.Instance.RenameRepository(text, newName);
-				NotificationCenter.Current.RaiseRepositoryNameChanged(this, text);
+				string normalizedPath = PathHelper.Normalize(text);
+				RepositoryManager.Instance.RenameRepository(normalizedPath, newName);
+				NotificationCenter.Current.RaiseRepositoryNameChanged(this, normalizedPath);
 				RepositoryManager.Instance.Save();
 			}
 		}
@@ -497,14 +502,14 @@ namespace ForkPlus.UI.UserControls
 			{
 				if (target is LocalBranch destinationBranch)
 				{
-					SidebarTreeView.ContextMenu.RenderTransform = // TODO 迁移: LayoutTransform→RenderTransform 布局语义近似
+					SidebarTreeView.ContextMenu.RenderTransform = // Migration note: LayoutTransform→RenderTransform 布局语义近似
 global::ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateLocalBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch, sourceBranch));
 					SidebarTreeView.ContextMenu.Open();
 				}
 				else if (target is RemoteBranch destinationBranch2 && sourceBranch is LocalBranch sourceBranch2)
 				{
-					SidebarTreeView.ContextMenu.RenderTransform = // TODO 迁移: LayoutTransform→RenderTransform 布局语义近似
+					SidebarTreeView.ContextMenu.RenderTransform = // Migration note: LayoutTransform→RenderTransform 布局语义近似
 global::ForkPlus.UI.Theme.LayoutScaleTransform;
 					SidebarTreeView.ContextMenu.SetItems(CreateRemoteBranchDropContextMenuItems(repositoryUserControl, gitModule, destinationBranch2, sourceBranch2));
 					SidebarTreeView.ContextMenu.Open();
@@ -609,27 +614,97 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 
 		private void SidebarTreeView_ContextMenuOpening(object sender, global::Avalonia.Input.ContextRequestedEventArgs e)
 		{
+			if (!TrySelectContextMenuTarget(e) || !SetSidebarTreeViewContextMenuItems())
+			{
+				e.Handled = true;
+				SidebarTreeView.ContextMenu.Close();
+			}
+		}
+
+		private void SidebarTreeView_ContextMenuPointerPressed(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			if (!IsRightButtonPress(e))
+			{
+				return;
+			}
+
+			e.Handled = true;
+			SidebarTreeView.ContextMenu?.Close();
+			if (!TrySelectContextMenuTarget(e.Source, e.GetPosition(SidebarTreeView)))
+			{
+				SidebarTreeView.ContextMenu?.Close();
+				return;
+			}
+			if (IsStashesContextMenuTarget())
+			{
+				SuppressNativeSidebarContextMenuForCurrentInput();
+				return;
+			}
+			if (!SetSidebarTreeViewContextMenuItems())
+			{
+				SidebarTreeView.ContextMenu?.Close();
+				return;
+			}
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(SidebarTreeView.ContextMenu, SidebarTreeView);
+			SidebarTreeView.ContextMenu.Open();
+		}
+
+		private bool IsStashesContextMenuTarget()
+		{
+			if (SidebarTreeView.LastClickedItem is StashSidebarItem)
+			{
+				return true;
+			}
+			if (SidebarTreeView.LastClickedItem == _stashes)
+			{
+				return true;
+			}
+			return SidebarTreeView.LastClickedItem?.ParentItem == _stashes;
+		}
+
+		private void SuppressNativeSidebarContextMenuForCurrentInput()
+		{
+			ContextMenu contextMenu = SidebarTreeView.ContextMenu;
+			if (contextMenu == null)
+			{
+				return;
+			}
+			contextMenu.Items.Clear();
+			contextMenu.Close();
+			SidebarTreeView.ContextMenu = null;
+			Dispatcher.UIThread.Post(delegate
+			{
+				if (SidebarTreeView.ContextMenu == null)
+				{
+					SidebarTreeView.ContextMenu = contextMenu;
+				}
+			}, DispatcherPriority.Background);
+		}
+
+		private bool SetSidebarTreeViewContextMenuItems()
+		{
+			SidebarTreeView.ContextMenu.Items.Clear();
 			RepositoryUserControl repositoryUserControl = RepositoryUserControl;
 			if (repositoryUserControl == null)
 			{
-				return;
+				return false;
 			}
 			GitModule gitModule = RepositoryUserControl.GitModule;
 			if (gitModule == null)
 			{
-				return;
+				return false;
 			}
 			CommitGraphCache commitGraphCache = RepositoryUserControl.CommitGraphCache;
 			if (commitGraphCache == null)
 			{
-				return;
+				return false;
 			}
 			SubmodulesToUpdate submodulesToUpdate = RepositoryUserControl.SubmodulesToUpdate();
 			SidebarItem[] source = ClickedItems(SidebarTreeView);
 			SidebarItem sidebarItem = source.FirstItem();
 			if (sidebarItem == null)
 			{
-				return;
+				return false;
 			}
 			if (sidebarItem is ReferenceSidebarItem)
 			{
@@ -654,14 +729,12 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 				else
 				{
 					Log.Warn("Unknown reference type in menu item");
-					e.Handled = true;
-					SidebarTreeView.ContextMenu.Close();
+					return false;
 				}
 			}
 			else if (sidebarItem is StashSidebarItem)
 			{
-				StashRevision[] stashes = source.CompactMap((SidebarItem x) => (x as StashSidebarItem)?.Stash);
-				SidebarTreeView.ContextMenu.SetItems(CreateStashContextMenuItems(repositoryUserControl, stashes));
+				return false;
 			}
 			else if (sidebarItem is RemoteSidebarItem remoteSidebarItem)
 			{
@@ -688,29 +761,70 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 				{
 				case SidebarGroupItem.Group.Branches:
 					SidebarTreeView.ContextMenu.SetItems(CreateBranchesSidebarItemGroupMenuItems(repositoryUserControl));
-					return;
+					return true;
 				case SidebarGroupItem.Group.Tags:
 					SidebarTreeView.ContextMenu.SetItems(CreateTagsSidebarItemGroupMenuItems(repositoryUserControl));
-					return;
+					return true;
 				case SidebarGroupItem.Group.Remotes:
 					SidebarTreeView.ContextMenu.SetItems(CreateRemoteSidebarItemGroupMenuItems(repositoryUserControl, gitModule));
-					return;
+					return true;
 				case SidebarGroupItem.Group.Submodules:
 					SidebarTreeView.ContextMenu.SetItems(CreateSubmoduleSidebarItemGroupMenuItems(repositoryUserControl, gitModule, _repositoryData.Submodules.Items, submodulesToUpdate));
-					return;
+					return true;
 				case SidebarGroupItem.Group.Worktrees:
 					SidebarTreeView.ContextMenu.SetItems(CreateWorktreesSidebarItemGroupMenuItems(repositoryUserControl));
-					return;
+					return true;
 				}
 				Log.Warn("Unknown sidebar group type in menu item");
-				e.Handled = true;
-				SidebarTreeView.ContextMenu.Close();
+				return false;
 			}
 			else
 			{
-				e.Handled = true;
-				SidebarTreeView.ContextMenu.Close();
+				return false;
 			}
+			return SidebarTreeView.ContextMenu.Items.Count > 0;
+		}
+
+		private bool TrySelectContextMenuTarget(global::Avalonia.Input.ContextRequestedEventArgs e)
+		{
+			Point point;
+			return TrySelectContextMenuTarget(e.Source, e.TryGetPosition(SidebarTreeView, out point) ? point : (Point?)null);
+		}
+
+		private bool TrySelectContextMenuTarget(object source, Point? position)
+		{
+			TreeViewControlItem container = null;
+			for (global::Avalonia.Visual current = source as global::Avalonia.Visual; current != null; current = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(current))
+			{
+				if (current is TreeViewControlItem treeViewControlItem)
+				{
+					container = treeViewControlItem;
+					break;
+				}
+			}
+			if (container == null && position.HasValue)
+			{
+				container = SidebarTreeView.GetContainerAtPoint<TreeViewControlItem>(position.Value);
+			}
+			if (container?.Node is not SidebarItem sidebarItem)
+			{
+				return false;
+			}
+
+			SidebarTreeView.LastClickedItem = sidebarItem;
+			if (!SidebarTreeView.SelectedItems.Contains(sidebarItem))
+			{
+				SidebarTreeView.SelectedItems.Clear();
+				SidebarTreeView.SelectedItems.Add(sidebarItem);
+				SidebarTreeView.SelectedItem = sidebarItem;
+			}
+			return true;
+		}
+
+		private bool IsRightButtonPress(global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			global::Avalonia.Input.PointerPointProperties properties = e.GetCurrentPoint(SidebarTreeView).Properties;
+			return properties.IsRightButtonPressed || properties.PointerUpdateKind == global::Avalonia.Input.PointerUpdateKind.RightButtonPressed;
 		}
 
 		private IEnumerable<Control> CreateBranchesSidebarItemGroupMenuItems(RepositoryUserControl repositoryUserControl)
@@ -1295,13 +1409,23 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 				// 第一个 "_" 会被吞掉（其后字符作 Alt 快捷键）。远端名含 "_" 也会丢失，故转义为 "__"。
 				Header = EscapeMenuHeader(remoteName)
 			};
-			// 应用可搜索子菜单模板（置顶搜索框 + 可滚动分支列表）
-			// TODO 迁移：资源是 ControlTheme，(Style) 强转会 InvalidCastException；改 object 经 StyleCompat 挂 Theme。
-			object searchableStyle = Application.Current.TryFindResource("SearchableSubmenuMenuItem");
-			if (searchableStyle != null)
+			List<MenuItem> branchItems = new List<MenuItem>();
+			PlaceholderTextBox searchBox = new PlaceholderTextBox
 			{
-				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(groupItem, searchableStyle);
-			}
+				Placeholder = Preferences.PreferencesLocalization.Current("Search"),
+				Icon = Application.Current?.TryFindResource("SearchOnIcon") as global::Avalonia.Media.IImage,
+				MinWidth = 220,
+				Margin = new Thickness(4, 3, 4, 3),
+				Padding = new Thickness(4, 2, 4, 2),
+				Tag = branchItems
+			};
+			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(searchBox, Application.Current?.TryFindResource("SearchPanelPlaceholderTextBox"));
+			searchBox.TextChanged += SearchRemoteBranchesBox_TextChanged;
+			groupItem.Items.Add(new MenuItem
+			{
+				Header = searchBox,
+				StaysOpenOnClick = true
+			});
 			foreach (RemoteBranch rb in remoteBranches.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal))
 			{
 				RemoteBranch currentRemoteBranch = rb;
@@ -1320,31 +1444,32 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 				{
 					onBranchSelected?.Invoke(currentRemoteBranch);
 				};
+				branchItems.Add(branchItem);
 				groupItem.Items.Add(branchItem);
 			}
-			// 子菜单打开时，找到模板里的 PART_SearchBox，订阅文本变化做分支过滤。
-			// Popup 内容在独立视觉树，且 SubmenuOpened 触发时模板可能尚未完全生成，
-			// 因此用 Dispatcher.BeginInvoke 延迟到下一轮渲染后再查找部件。
 			groupItem.SubmenuOpened += delegate
 			{
-				groupItem.Dispatcher.Post(new Action(delegate
+				groupItem.Dispatcher.Post(delegate
 				{
-					PlaceholderTextBox searchBox = FindTemplatePart<PlaceholderTextBox>(groupItem, "PART_SearchBox");
-					if (searchBox == null)
-					{
-						return;
-					}
-					// 清空上次打开残留的搜索文本
 					searchBox.Text = string.Empty;
-					searchBox.TextChanged -= SearchBox_TextChanged;
-					searchBox.TextChanged += SearchBox_TextChanged;
-					// 把分支项缓存到 Tag，供过滤回调使用
-					searchBox.Tag = groupItem;
-					// 自动聚焦搜索框
 					searchBox.Focus();
-				}));
+				}, DispatcherPriority.Background);
 			};
 			return groupItem;
+		}
+
+		private static void SearchRemoteBranchesBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (sender is not PlaceholderTextBox searchBox || searchBox.Tag is not List<MenuItem> branchItems)
+			{
+				return;
+			}
+			string filter = (searchBox.Text ?? string.Empty).Trim();
+			foreach (MenuItem branchItem in branchItems)
+			{
+				string name = branchItem.Tag as string;
+				branchItem.IsVisible = string.IsNullOrEmpty(filter) || (name != null && name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
+			}
 		}
 
 		/// <summary>搜索框文本变化：隐藏不匹配的分支项（MenuItem.Tag 存原始分支名，含搜索文本即匹配，不区分大小写）。</summary>
@@ -1387,7 +1512,7 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 			{
 				if (searchBox.IsVisible && !searchBox.IsKeyboardFocused)
 			{
-				// TODO 迁移：WPF Keyboard.Focus(...) → Avalonia Control.Focus()（下一行已调用，移除重复）。
+				// Migration note：WPF Keyboard.Focus(...) → Avalonia Control.Focus()（下一行已调用，移除重复）。
 				searchBox.Focus();
 				// 恢复光标到末尾，避免 Focus 把光标跑到开头影响继续输入
 				searchBox.CaretIndex = searchBox.Text.Length;
@@ -2055,7 +2180,7 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 
 		private void UpdateVisibleTabs(RepositoryData repositoryData)
 		{
-			// TODO 迁移：防御 null（WPF 原版在此依赖初始化时序保证非空；Avalonia XAML populate
+			// Migration note：防御 null（WPF 原版在此依赖初始化时序保证非空；Avalonia XAML populate
 			// 期间事件可能早于数据就绪触发，见 TabControl_SelectionChanged 处注释）。
 			if (repositoryData == null)
 			{
@@ -2711,7 +2836,7 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 
 		private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			// TODO 迁移：WPF 下 TabControl 首次选卡发生在 Load 之后（命名字段已全部赋值）；
+			// Migration note：WPF 下 TabControl 首次选卡发生在 Load 之后（命名字段已全部赋值）；
 			// Avalonia 的 SelectingItemsControl 在 EndInit（XamlIlPopulate 过程中，axaml:100）就
 			// 初始化选区并触发 SelectionChanged——此时 ServiceTabItem/ServiceRadioButton 等
 			// x:Name 字段尚未赋值 → UpdateVisibleTabs 内 NRE 崩掉整个开仓链路。

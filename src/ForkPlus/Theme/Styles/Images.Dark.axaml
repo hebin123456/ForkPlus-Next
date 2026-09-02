@@ -130,6 +130,6 @@
   <wpf:BitmapImage x:Key="Remote.Github" UriSource="avares://ForkPlus/Assets/Github.png" />
   <wpf:BitmapImage x:Key="Remote.Gitlab" UriSource="avares://ForkPlus/Assets/Gitlab.png" />
   <wpf:BitmapImage x:Key="Remote.Generic" UriSource="avares://ForkPlus/Assets/Remote.png" />
-  <!-- TODO 迁移：原 WPF 工程即缺失 CommitDark.png / AzureOn.png（惰性加载掩盖），
+  <!-- Migration note：原 WPF 工程即缺失 CommitDark.png / AzureOn.png（惰性加载掩盖），
        分别映射到 RevisionDark.png / Azure.png 最接近资源。 -->
 </ResourceDictionary>

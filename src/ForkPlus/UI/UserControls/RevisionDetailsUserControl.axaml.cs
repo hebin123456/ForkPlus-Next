@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup;
@@ -59,6 +60,10 @@ namespace ForkPlus.UI.UserControls
 		public RevisionDetailsUserControl()
 		{
 			InitializeComponent();
+			string groupName = "RevisionDetailsTabs_" + GetHashCode();
+			CommitRadioButton.GroupName = groupName;
+			ChangesRadioButton.GroupName = groupName;
+			FileTreeRadioButton.GroupName = groupName;
 			RevisionDetailsHeaderUserControl.Height = 0.0;
 			SummaryUserControl.RevisionDetailsUserControl = this;
 			ChangesUserControl.RevisionDetailsUserControl = this;
@@ -104,9 +109,20 @@ namespace ForkPlus.UI.UserControls
 			RefreshLayout();
 		}
 
-		public void ShowRevisionDetails(RevisionDiffTarget target, [Null] string fileToSelect = null)
+		public void ShowRevisionDetails(RevisionDiffTarget target, [Null] string fileToSelect = null, bool selectCommitTab = false)
 		{
+			bool commitTabWasDisabled = CommitRadioButton.IsEnabled == false || FileTreeRadioButton.IsEnabled == false;
 			_target = target;
+			if (target is RevisionDiffTarget.Revision)
+			{
+				CommitRadioButton.Enable();
+				FileTreeRadioButton.Enable();
+				if ((selectCommitTab || commitTabWasDisabled) && fileToSelect == null)
+				{
+					SelectTab(RevisionDetailsTab.Commit);
+					CommitRadioButton.IsChecked = true;
+				}
+			}
 			if (target is RevisionDiffTarget.MultipleRevisions multipleRevisions)
 			{
 				string title = "Select two commits to see difference between them";
@@ -132,6 +148,10 @@ namespace ForkPlus.UI.UserControls
 
 		private void TabRadioButton_Checked(object sender, RoutedEventArgs e)
 		{
+			if (sender is RadioButton { IsChecked: not true })
+			{
+				return;
+			}
 			if (sender == CommitRadioButton)
 			{
 				SelectTab(RevisionDetailsTab.Commit);
@@ -222,6 +242,10 @@ namespace ForkPlus.UI.UserControls
 					{
 						base.Dispatcher.Post(delegate
 						{
+							if (!IsCurrentTarget(target))
+							{
+								return;
+							}
 							if (!monitor.IsCanceled)
 							{
 								_loadFullRevisionDetailsJob = null;
@@ -308,6 +332,23 @@ namespace ForkPlus.UI.UserControls
 					}
 				}
 			}, JobFlags.Hidden);
+		}
+
+		private bool IsCurrentTarget(RevisionDiffTarget target)
+		{
+			if (_target == null || target == null || _target.GetType() != target.GetType() || _target.Sha != target.Sha)
+			{
+				return false;
+			}
+			if (_target is RevisionDiffTarget.Range currentRange && target is RevisionDiffTarget.Range range)
+			{
+				return currentRange.OtherSha == range.OtherSha;
+			}
+			if (_target is RevisionDiffTarget.MultipleRevisions currentMultiple && target is RevisionDiffTarget.MultipleRevisions multiple)
+			{
+				return currentMultiple.AllShas.SequenceEqual(multiple.AllShas);
+			}
+			return true;
 		}
 
 		private void UpdateTabContent(RevisionDetailsTab tab, [Null] string fileToSelect)

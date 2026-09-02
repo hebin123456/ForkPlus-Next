@@ -105,7 +105,7 @@ namespace ForkPlus.UI
 
 		private static System.Collections.Generic.List<FilePickerFileType> BuildFileTypes((string name, string spec)[] filters)
 		{
-			// TODO 迁移：ForkPlus 的过滤串全部是单模式（如 *.exe / *.patch），逐一映射成 Patterns。
+			// Migration note：ForkPlus 的过滤串全部是单模式（如 *.exe / *.patch），逐一映射成 Patterns。
 			if (filters == null || filters.Length == 0)
 			{
 				return null;
@@ -147,7 +147,7 @@ namespace ForkPlus.UI
 			{
 				return task.Result;
 			}
-			// TODO 迁移：嵌套消息循环同步等待 async API（同 Clipboard shim）。
+			// Migration note：嵌套消息循环同步等待 async API（同 Clipboard shim）。
 			// 对话框关闭后 task 完成 → frame.Continue=false 退出循环。
 			var frame = new DispatcherFrame();
 			task.ContinueWith(_ => Dispatcher.UIThread.Post(delegate

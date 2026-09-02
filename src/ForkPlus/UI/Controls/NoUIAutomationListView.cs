@@ -5,13 +5,14 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Controls
 {
 	/// <summary>
 	/// WPF 版通过返回 StubWindowAutomationPeer 屏蔽 UI Automation 暴露（性能优化）。
 	/// Avalonia 无 FrameworkElementAutomationPeer 等价 API，已随迁移移除。
-	/// TODO 迁移：UpdateResizableColumnWidth 依赖 WPF ListView+GridView 列宽模型，
+	/// Migration note：UpdateResizableColumnWidth 依赖 WPF ListView+GridView 列宽模型，
 	/// Avalonia ListBox 无 GridView；该方法暂为 no-op，列宽自适应待重新设计。
 	/// </summary>
 	public class NoUIAutomationListView : global::Avalonia.Controls.ListBox
@@ -55,23 +56,78 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
-			IsMultiselectionInProgress = true;
-			base.SelectedItems.Clear();
+			List<int> validRows = new List<int>();
 			for (int i = 0; i < rows.Count; i++)
 			{
-				if (i == rows.Count - 1)
+				int row = rows[i];
+				if (row >= 0 && row < base.ItemCount)
 				{
-					IsMultiselectionInProgress = false;
+					validRows.Add(row);
 				}
-				base.SelectedItems.Add(base.Items[rows[i]]);
+			}
+			if (validRows.Count == 0)
+			{
+				return;
+			}
+			IsMultiselectionInProgress = true;
+			try
+			{
+				base.SelectedItems.Clear();
+				for (int i = 0; i < validRows.Count; i++)
+				{
+					object item = base.Items[validRows[i]];
+					if (!base.SelectedItems.Contains(item))
+					{
+						base.SelectedItems.Add(item);
+					}
+				}
+				base.SelectedIndex = validRows[0];
+				base.SelectedItem = base.Items[validRows[0]];
+			}
+			finally
+			{
+				IsMultiselectionInProgress = false;
 			}
 			if ((options & SelectOptions.ScrollIntoView) != 0)
 			{
-				ScrollRowIntoView(this, rows[0]);
+				ScrollRowIntoView(this, validRows[0]);
 			}
+			ApplyContainerSelection(validRows);
 			if ((options & SelectOptions.Focus) != 0)
 			{
-				SetKeyboardFocus(this, rows[0]);
+				SetKeyboardFocus(this, validRows[0]);
+			}
+		}
+
+		private void ApplyContainerSelection(IReadOnlyList<int> rows)
+		{
+			bool missingContainer = false;
+			for (int i = 0; i < rows.Count; i++)
+			{
+				int row = rows[i];
+				if (base.ContainerFromIndex(row) is ListBoxItem item)
+				{
+					item.IsSelected = true;
+					item.InvalidateVisual();
+				}
+				else
+				{
+					missingContainer = true;
+				}
+			}
+			if (missingContainer)
+			{
+				Dispatcher.UIThread.Post(delegate
+				{
+					for (int i = 0; i < rows.Count; i++)
+					{
+						if (base.ContainerFromIndex(rows[i]) is ListBoxItem item)
+						{
+							item.IsSelected = true;
+							item.InvalidateVisual();
+						}
+					}
+				}, DispatcherPriority.Background);
 			}
 		}
 
@@ -93,7 +149,7 @@ namespace ForkPlus.UI.Controls
 
 		public void UpdateResizableColumnWidth(int resizableColumnIndex)
 		{
-			// no-op：见类注释 TODO
+			// no-op：见类注释 Migration note
 		}
 	}
 }

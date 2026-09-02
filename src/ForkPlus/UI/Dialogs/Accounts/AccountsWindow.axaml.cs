@@ -13,6 +13,7 @@ using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 
 namespace ForkPlus.UI.Dialogs.Accounts
 {
@@ -27,7 +28,13 @@ namespace ForkPlus.UI.Dialogs.Accounts
 			InitializeComponent();
 			ResizeMode = ResizeMode.CanResizeWithGrip;
 			Refresh();
-			AccountsListBox.SelectedItem = _accountViewModels.FirstOrDefault();
+			Opened += delegate
+			{
+				Dispatcher.UIThread.Post(delegate
+				{
+					AccountsListBox.SelectedItem = _accountViewModels.FirstOrDefault();
+				}, DispatcherPriority.Background);
+			};
 			base.CancelButtonTitle = Translate("Close");
 			base.ShowSubmitButton = false;
 			AccountDetailsUserControl.AccountTabItem.UpdateTokenButtonClicked += AccountDetailsUserControl_UpdateTokenButtonClicked;
@@ -42,7 +49,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 		private void AddAccountButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (new AddAccountWindow()
-			.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=this } → 链式扩展。
+			.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // Migration note：WPF { Owner=this } → 链式扩展。
 		{
 			Activate();
 		}
@@ -55,7 +62,7 @@ namespace ForkPlus.UI.Dialogs.Accounts
 		{
 			Account account = (AccountsListBox.SelectedItem as AccountViewModel)?.Account;
 			if (account != null && new MessageBoxWindow(string.Format(Translate("Log out of {0}?"), account.ServerUrl), Translate("You can always log back in at any time"), Translate("Log out"), Translate("Cancel"), showCancelButton: true, 500.0)
-			.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // TODO 迁移：WPF { Owner=this } → 链式扩展。
+			.SetOwnerAndCenter(this).ShowDialog().GetValueOrDefault()) // Migration note：WPF { Owner=this } → 链式扩展。
 			{
 				AccountManager.Current.LogOut(account);
 				Refresh();

@@ -40,9 +40,7 @@ namespace ForkPlus.UI.Controls
 
 		public PlaceholderTextBox()
 		{
-			// TODO 迁移：WPF TextBox.Text 默认 ""，Avalonia 12 默认 null——全仓约 100 处
-			// `.Text.Trim()` 等 C# 调用在未输入时会 NRE（CloneWindow.TryParseUrlFromClipboard
-			// 崩溃实证）。构造期回填空串恢复 WPF 语义（Style setter 方案对构造期访问无效）。
+			// WPF TextBox.Text defaults to an empty string; keep that contract for migrated callers.
 			if (base.Text == null)
 			{
 				base.Text = string.Empty;
@@ -51,8 +49,7 @@ namespace ForkPlus.UI.Controls
 			{
 				base.ContextMenu = GetContextMenu();
 			};
-			// TODO 迁移：WPF TextBox.OnTextChanged / OnIsKeyboardFocusWithinChanged 虚方法
-			// 在 Avalonia 无对应虚方法，这里经事件/属性变更转发，保持子类 override 形态。
+			// Preserve the WPF-style override points used by derived text boxes.
 			TextChanged += delegate (object s, global::Avalonia.Controls.TextChangedEventArgs e)
 			{
 				OnTextChanged(e);
@@ -87,6 +84,7 @@ namespace ForkPlus.UI.Controls
 		{
 			ContextMenu contextMenu = new ContextMenu();
 			contextMenu.AddDefaultTextBoxMenuItems(this);
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, this);
 			return contextMenu;
 		}
 	}

@@ -79,7 +79,7 @@ namespace ForkPlus.Accounts
 
 		public NotificationManager()
 		{
-			// TODO 迁移：WPF 侧订阅 Microsoft.Toolkit.Uwp.Notifications 的 ToastNotificationManagerCompat.OnActivated，
+			// Migration note：WPF 侧订阅 Microsoft.Toolkit.Uwp.Notifications 的 ToastNotificationManagerCompat.OnActivated，
 			// 在用户点击 Toast 时回调 ToastNotificationManagerCompat_OnActivated（深链到通知窗口/AI Review 窗口）。
 			// Avalonia（跨平台）无 WinRT Toast API，项目内也无对应 shim；toast 激活回调暂缺失，
 			// 待 IToastNotificationService 增加 Activated 事件后接回（处理逻辑保留在 OnToastActivated）。
@@ -236,7 +236,7 @@ namespace ForkPlus.Accounts
 				Services.ServiceLocator.Toast.Show(xmlString);
 				return;
 			}
-			// TODO 迁移：WPF 侧在 ServiceLocator 未初始化时直接回退 WinRT
+			// Migration note：WPF 侧在 ServiceLocator 未初始化时直接回退 WinRT
 			// Windows.Data.Xml.Dom / Windows.UI.Notifications API 弹 Toast；
 			// Avalonia（跨平台，TFM 未启用 Windows）无这些命名空间，回退分支移除，仅记录日志。
 			Log.Warn("Toast notification service is not available, notification dropped");

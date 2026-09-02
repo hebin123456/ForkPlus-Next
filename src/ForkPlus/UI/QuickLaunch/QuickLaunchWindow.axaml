@@ -1,5 +1,5 @@
 <ui:CustomWindow Width="620" Height="370" ShowHeader="False" WindowStartupLocation="CenterScreen" BorderBrush="{DynamicResource WindowBorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:ForkPlus.UI.QuickLaunch" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.QuickLaunch.QuickLaunchWindow" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" CanResize="False">
-  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
        Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
        搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
   <ui:CustomWindow.DataTemplates>
@@ -35,7 +35,7 @@
         
       
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>
@@ -95,7 +95,7 @@
         
       
     <!--
-      TODO(wpf2avalonia): DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
+      WPF migration note: DataTrigger 的非 Visibility Setter（外观属性）无模板级等价物：建议在 VM 增加计算属性 + Classes 类选择器。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>
@@ -133,12 +133,12 @@
     <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style>
     <Style Selector="^:selected /template/ Border#Bd">
         <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
         <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
-<!-- TODO 迁移：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
+<!-- Migration note：Border/Grid 上 Foreground Setter 已删（Avalonia 无此属性） -->
     </Style></ControlTheme>
       
     </ResourceDictionary>
@@ -155,8 +155,8 @@
         <controls:CommandTextBox FontSize="16" BorderThickness="0" x:Name="CommandTextBox" />
       </StackPanel>
     </Border>
-    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" x:Name="RepositoriesListBox" PointerPressed="RepositoriesListBox_MouseUp" ItemContainerTheme="{DynamicResource QuickLaunchListBoxItemStyle}">
-<!-- TODO 迁移：WPF ListBox.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+    <ListBox Grid.Row="2" BorderThickness="0" SelectionMode="Single" Margin="0" x:Name="RepositoriesListBox" PointerReleased="RepositoriesListBox_PointerReleased" ItemContainerTheme="{DynamicResource QuickLaunchListBoxItemStyle}">
+<!-- Migration note：WPF ListBox.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
       <ListBox.ItemTemplate>
         <DataTemplate>

@@ -23,7 +23,7 @@ namespace ForkPlus.UI
 			Top = top;
 			Width = width;
 			Height = height;
-			WindowState = windowState; // TODO 迁移：自动转换误将属性名写成全限定类型名，恢复属性赋值。
+			WindowState = windowState; // Migration note：自动转换误将属性名写成全限定类型名，恢复属性赋值。
 		}
 	}
 }

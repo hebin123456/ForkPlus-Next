@@ -1,13 +1,13 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-<!-- TODO 迁移：WPF PopupAnimation 资源（Avalonia 无此类型）。原始片段：
+<!-- Migration note：WPF PopupAnimation 资源（Avalonia 无此类型）。原始片段：
   <PopupAnimation x:Key="MenuPopupAnimationKey">None</PopupAnimation>-->
 
   <controls:LevelToIndentationConverter x:Key="LevelToIndentation" />
   
   <controls:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
-  <!-- TODO 迁移：WPF 内置 BooleanToVisibilityConverter（Avalonia 无内置），补托管实现供 StaticResource 引用 -->
+  <!-- Migration note：WPF 内置 BooleanToVisibilityConverter（Avalonia 无内置），补托管实现供 StaticResource 引用 -->
   <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-  <!-- TODO 迁移：菜单快捷键显示本地化（KeyGesture.ToString 会显示 "Ctrl+OemComma" 枚举名） -->
+  <!-- Migration note：菜单快捷键显示本地化（KeyGesture.ToString 会显示 "Ctrl+OemComma" 枚举名） -->
   <controls:KeyGestureTextConverter x:Key="KeyGestureTextConverter" />
   <ControlTheme x:Key="{x:Type editor:CodeEditor}" TargetType="editor:CodeEditor">
     <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
@@ -53,7 +53,7 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     </Style></ControlTheme>
   <!--
-      TODO(wpf2avalonia): 焦点视觉样式 FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      WPF migration note: 焦点视觉样式 FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
       原始片段：
       <Style x:Key="FocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
           <Setter Property="Template">
@@ -66,7 +66,7 @@
         </Style>
     -->
   <!--
-      TODO(wpf2avalonia): 焦点视觉样式 OptionMarkFocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      WPF migration note: 焦点视觉样式 OptionMarkFocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
       原始片段：
       <Style x:Key="OptionMarkFocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
           <Setter Property="Template">
@@ -156,7 +156,7 @@
         <ControlTemplate TargetType="controls:CommandTextBox">
           <DockPanel>
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" x:Name="PART_LabelsStackPanel" />
-            <!-- TODO 迁移：TextBox 子类必须有 PART_TextPresenter 模板部件（AVLN2205），
+            <!-- Migration note：TextBox 子类必须有 PART_TextPresenter 模板部件（AVLN2205），
                  CommandTextBox 的文本显示实际由内嵌 PlaceholderTextBox 承担，此处放隐藏占位部件。 -->
             <TextPresenter x:Name="PART_TextPresenter" IsVisible="False" />
             <controls:PlaceholderTextBox Margin="2,0,0,0" BorderThickness="{TemplateBinding BorderThickness}" FontSize="{TemplateBinding FontSize}" Placeholder="Command" x:Name="PART_PlaceholderTextBox">
@@ -178,7 +178,7 @@
   </ControlTheme>
   <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
     
-<!-- TODO 迁移：WPF Setter Property=HasDropShadow 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF Setter Property=HasDropShadow 已删（Avalonia 该类型无此属性） -->
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Foreground" Value="{DynamicResource LabelBrush}" />
@@ -196,12 +196,12 @@
       </Setter.Value>
     </Setter>
   
-<!-- TODO 迁移：WPF 选择器 ^[HasDropShadow=True] 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[HasDropShadow=True] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[HasDropShadow=True]">
         <Setter Property="Margin" Value="10" />
     </Style>-->
 
-<!-- TODO 迁移：WPF 选择器 ^[HasDropShadow=True] /template/ Border#Border 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[HasDropShadow=True] /template/ Border#Border 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[HasDropShadow=True] /template/ Border#Border">
         <Setter Property="Effect">
                 <Setter.Value>

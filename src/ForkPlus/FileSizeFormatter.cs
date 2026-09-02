@@ -10,7 +10,7 @@ namespace ForkPlus
 
 		public static string Format(long fileSize)
 		{
-			// TODO 迁移：StrFormatByteSize（shlwapi.dll）是 Windows 专属。Linux/macOS 无该库，
+			// Migration note：StrFormatByteSize（shlwapi.dll）是 Windows 专属。Linux/macOS 无该库，
 			// P/Invoke 抛 DllNotFoundException——BinaryContentUserControl（二进制差异视图）、
 			// FileHelper、GitLfsProgressHandler（LFS 进度）三条路径都会崩。
 			// Unix 用托管等价实现：1024 进制、3 位有效数字（<10 保留 2 位小数、<100 保留 1 位、

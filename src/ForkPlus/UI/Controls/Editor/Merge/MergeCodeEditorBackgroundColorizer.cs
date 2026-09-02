@@ -105,7 +105,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 			}
 		}
 
-		// TODO 迁移：GetHighlightBrush 返回 IBrush，参数类型从 Brush 改为 IBrush。
+		// Migration note：GetHighlightBrush 返回 IBrush，参数类型从 Brush 改为 IBrush。
 			private static void DrawRectangle(DrawingContext context, TextView textView, ISegment range, IBrush brush)
 		{
 			foreach (Rect item in BackgroundGeometryBuilder.GetRectsForSegment(textView, range, extendToFullWidthAtLineEnd: true))

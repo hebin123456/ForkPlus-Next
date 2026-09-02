@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Controls.Editor
 			e.Handled = true;
 			if (_weakEditor.TryGetTarget(out var target))
 			{
-				// TODO 迁移：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器需 rootVisual 等复杂参数，
+				// Migration note：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器需 rootVisual 等复杂参数，
 				// 直接复用原事件参数（先复位 Handled 再转发，保持“子级已处理、编辑器继续滚动”的语义）。
 				e.Handled = false;
 				target.TextArea.TextView.RaiseEvent(e);

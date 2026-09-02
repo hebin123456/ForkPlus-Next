@@ -1,7 +1,7 @@
 // WPF → Avalonia 迁移兼容层：WPF ListView.GridView 占位 shim。
 // Avalonia 12 无 GridView/列宽 API；迁移期保住调用面（列宽调参 no-op），
 // XAML 侧的列布局已由 Grid 模板承担。
-// TODO 迁移：接入 Avalonia TableView 后用原生列宽替换本 shim。
+// Migration note：接入 Avalonia TableView 后用原生列宽替换本 shim。
 
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace ForkPlus.UI.WpfCompat
     {
         public object ContainerStyle { get; set; }
         public object Content { get; set; }
-        /// <summary>TODO 迁移：WPF GridViewColumnHeader.Column（所属列）。迁移期记账占位。</summary>
+        /// <summary>Migration note：WPF GridViewColumnHeader.Column（所属列）。迁移期记账占位。</summary>
         public GridViewColumn Column { get; set; }
     }
 

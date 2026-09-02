@@ -286,7 +286,12 @@ namespace ForkPlus.UI.Controls
 					{
 						c.EditorContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
 						{
-							DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor;
+							DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor ?? s as DiffCodeEditor;
+							if (diffCodeEditor == null)
+							{
+								e.Handled = true;
+								return;
+							}
 							ContextMenu contextMenu = diffCodeEditor.ContextMenu;
 							contextMenu.Items.Clear();
 							Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor, contextMenu, changedFile.Path);
@@ -1042,7 +1047,7 @@ namespace ForkPlus.UI.Controls
 			if (sender is TextDiffControl && !e.Handled)
 			{
 				e.Handled = true;
-				// TODO 迁移：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器参数复杂，复用原事件参数转发到父级。
+				// Migration note：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器参数复杂，复用原事件参数转发到父级。
 				global::Avalonia.Controls.Control parent = ((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control;
 				if (parent != null)
 				{
@@ -1058,7 +1063,7 @@ namespace ForkPlus.UI.Controls
 			if (sender is NoUIAutomationListView && !e.Handled)
 			{
 				e.Handled = true;
-				// TODO 迁移：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器参数复杂，复用原事件参数转发到父级。
+				// Migration note：WPF new MouseWheelEventArgs(...) 转发 → Avalonia 12 构造器参数复杂，复用原事件参数转发到父级。
 				global::Avalonia.Controls.Control parent = ((global::Avalonia.Controls.Control)sender).Parent as global::Avalonia.Controls.Control;
 				if (parent != null)
 				{

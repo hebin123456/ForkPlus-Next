@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
-// TODO 迁移：ContentPresenter / ScrollContentPresenter 在 Avalonia 位于 Controls.Presenters
+// Migration note：ContentPresenter / ScrollContentPresenter 在 Avalonia 位于 Controls.Presenters
 //（WPF 在 Controls.Primitives），此处补 using 以修复 CS0246。
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
@@ -332,7 +332,7 @@ namespace ForkPlus
 		if (IsDebug)
 		{
 			LogManager.Configuration = new DebugLoggingConfiguration();
-			// TODO 迁移：Avalonia 无 PresentationTraceSources/DataBindingSource（WPF 绑定跟踪管道）；
+			// Migration note：Avalonia 无 PresentationTraceSources/DataBindingSource（WPF 绑定跟踪管道）；
 			// 绑定错误改由 DebugLoggingConfiguration 记录，BindingErrorTraceListener 不再挂接到 TraceSource。
 		}
 		else
@@ -344,7 +344,7 @@ namespace ForkPlus
 		_askPassIpcServer = new IpcServer(NamedPipeHelper.AskPassPipeName, AskPassIpcMessageHandler);
 		_defaultIpcServer = new IpcServer(NamedPipeHelper.DefaultPipeName, DefaultIpcMessageHandler);
 		HandleCommandLineArguments();
-		// TODO 迁移：App 类有自定义构造函数，Avalonia XAML 编译器要求显式调用
+		// Migration note：App 类有自定义构造函数，Avalonia XAML 编译器要求显式调用
 		// AvaloniaXamlLoader.Load(this)（否则 AVLN3000）；构建时该调用会被 IL 重写
 		// 替换为编译好的资源填充（App.axaml 的 MergedDictionaries/Styles）。
 		AvaloniaXamlLoader.Load(this);
@@ -352,7 +352,7 @@ namespace ForkPlus
 
 	private void RegisterGlobalExceptionLogging()
 	{
-		// TODO 迁移：Avalonia Application 无 DispatcherUnhandledException 事件，
+		// Migration note：Avalonia Application 无 DispatcherUnhandledException 事件，
 		// 等价物是 Dispatcher.UIThread.UnhandledException（参数同为 DispatcherUnhandledExceptionEventArgs）。
 		Avalonia.Threading.Dispatcher.UIThread.UnhandledException += App_DispatcherUnhandledException;
 		AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -417,7 +417,7 @@ namespace ForkPlus
 
 		private static void RegisterScrollViewerContentTemplateGuard()
 		{
-			// TODO 迁移：WPF 侧通过 OverrideMetadata 拦截 ScrollViewer/ScrollContentPresenter 的
+			// Migration note：WPF 侧通过 OverrideMetadata 拦截 ScrollViewer/ScrollContentPresenter 的
 			// ContentTemplate 赋值来规避绑定报错；Avalonia 无 OverrideMetadata，且 ScrollViewer 模板
 			// 机制不同，此防御逻辑整体降级为 no-op（相关诊断代码保留在 DescribeScrollContentPresenters）。
 		}
@@ -441,7 +441,7 @@ namespace ForkPlus
 			parts.Add("DataContext=" + (frameworkElement.DataContext?.GetType().FullName ?? "<null>"));
 			parts.Add("TemplatedParent=" + VisualTreeAttachmentHelper.Describe(frameworkElement.TemplatedParent));
 		}
-		// TODO 迁移：WPF FrameworkContentElement 分支删除——Avalonia 无 ContentElement 体系，
+		// Migration note：WPF FrameworkContentElement 分支删除——Avalonia 无 ContentElement 体系，
 		// 输入元素全部是 Control，上面的 Control 分支已覆盖。
 		return string.Join(", ", parts);
 	}
@@ -472,7 +472,7 @@ namespace ForkPlus
 			{
 				return null;
 			}
-			// TODO 迁移：Avalonia 逻辑父 = StyledElement.Parent（WpfCompat LogicalTreeHelper 垫片），
+			// Migration note：Avalonia 逻辑父 = StyledElement.Parent（WpfCompat LogicalTreeHelper 垫片），
 			// 视觉父 = VisualExtensions.GetVisualParent(Visual)，两者都要求目标类型，故先做模式匹配。
 			if (child is global::Avalonia.StyledElement styledElement)
 			{
@@ -510,7 +510,7 @@ namespace ForkPlus
 		{
 			return;
 		}
-		// TODO 迁移：WPF 该诊断同时走 Visual / Visual3D 两棵树；Avalonia 只有 Visual 一棵视觉树，
+		// Migration note：WPF 该诊断同时走 Visual / Visual3D 两棵树；Avalonia 只有 Visual 一棵视觉树，
 		// 且 VisualTreeHelper.GetChild/GetChildrenCount 只接受 Visual，非 Visual 的 AvaloniaObject 直接跳过。
 		if (!(item is global::Avalonia.Visual visual))
 		{
@@ -561,7 +561,7 @@ namespace ForkPlus
 			Brush brush = solidColorBrush;
 			if (IsSystemAccentBrushEnabled())
 			{
-				// TODO 迁移：WPF SystemParameters.WindowGlassBrush（标题栏 DWM 强调色画刷）在 Avalonia 无公开等价物，
+				// Migration note：WPF SystemParameters.WindowGlassBrush（标题栏 DWM 强调色画刷）在 Avalonia 无公开等价物，
 				// 且 WpfCompat 的 SystemParameters shim 未提供该成员；这里降级为资源里的 SystemAccentBrush
 				// （由 ForkPlus.UI.Theme.Refresh 依据系统强调色填充；启动早期可能取不到，则回退默认边框画刷）。
 				Brush systemAccentBrush = global::ForkPlus.UI.Theme.FindBrush("SystemAccentBrush");
@@ -573,7 +573,7 @@ namespace ForkPlus
 			if (brush != _windowBorderBrush)
 			{
 				_windowBorderBrush = brush;
-				// TODO 迁移：WPF Brush.Freeze()（把画刷冻结为不可变以提升共享性能）在 Avalonia 无对应方法；
+				// Migration note：WPF Brush.Freeze()（把画刷冻结为不可变以提升共享性能）在 Avalonia 无对应方法；
 				// Avalonia 用 ImmutableBrush 体系表达不可变，直接引用共享即可，故删除 Freeze 调用。
 				ResourceDictionary resourceDictionary = new ResourceDictionary();
 				resourceDictionary.Add("WindowBorderBrush", _windowBorderBrush);
@@ -587,7 +587,7 @@ namespace ForkPlus
 			}
 		}
 
-		// TODO 迁移：WPF App.OnStartup(StartupEventArgs) 由 Application.Startup 事件驱动；
+		// Migration note：WPF App.OnStartup(StartupEventArgs) 由 Application.Startup 事件驱动；
 		// Avalonia 无该事件，启动入口是 OnFrameworkInitializationCompleted()（见文件末尾重写），
 		// 主体逻辑保留在 RunStartup() 中由其调用。
 		private void RunStartup()
@@ -613,7 +613,7 @@ namespace ForkPlus
 			else if (IsDebug || InitializeForkInstance())
 			{
 				ConfigureThreadPool();
-				// TODO 迁移：WPF new MainWindow().Show()；Avalonia 需同时把主窗口赋给
+				// Migration note：WPF new MainWindow().Show()；Avalonia 需同时把主窗口赋给
 				// IClassicDesktopStyleApplicationLifetime.MainWindow（lifetime 主窗口跟踪，
 				// WpfApp.MainWindow / 关闭逻辑都依赖它）。
 				MainWindow mainWindow = new MainWindow();
@@ -626,7 +626,7 @@ namespace ForkPlus
 		}
 
 		// ===== 主题字典（Generic.{Skin}.axaml）加载/查找辅助 =====
-		// TODO 迁移：WPF 用 new ResourceDictionary { Source = new Uri("/ForkPlus;component/Theme/Generic.x.axaml") }
+		// Migration note：WPF 用 new ResourceDictionary { Source = new Uri("/ForkPlus;component/Theme/Generic.x.axaml") }
 		// 合并外部主题字典、用 rd.Source 反查；Avalonia 的 ResourceDictionary 没有 Source，
 		// 等价做法是 ResourceInclude(baseUri) { Source = avares URI } 放进 MergedDictionaries，
 		// 反查时遍历 MergedDictionaries（IList<IResourceProvider>）按 ResourceInclude.Source 匹配。
@@ -778,7 +778,7 @@ namespace ForkPlus
 		try
 		{
 			// 找到当前的 Generic.{Skin}.axaml 字典（ResourceInclude 且 Source 匹配 avares://ForkPlus/Theme/Generic.*.axaml）
-			// TODO 迁移：原 WPF 代码 foreach(ResourceDictionary rd in MergedDictionaries) + rd.Source 在
+			// Migration note：原 WPF 代码 foreach(ResourceDictionary rd in MergedDictionaries) + rd.Source 在
 			// Avalonia 报 CS1061（MergedDictionaries 元素是 IResourceProvider，且 ResourceDictionary 无 Source）；
 			// 改为 FindThemeResourceInclude()：遍历并按 ResourceInclude.Source 识别主题字典。
 			ResourceInclude oldThemeInclude = FindThemeResourceInclude();
@@ -919,7 +919,7 @@ namespace ForkPlus
 			}
 		}
 
-		// TODO 迁移：WPF App.OnExit(ExitEventArgs) 由 Application.Exit 事件驱动；
+		// Migration note：WPF App.OnExit(ExitEventArgs) 由 Application.Exit 事件驱动；
 		// Avalonia 挂 IClassicDesktopStyleApplicationLifetime.ShutdownRequested（见文件末尾）。
 		private void RunExit()
 		{
@@ -930,7 +930,7 @@ namespace ForkPlus
 
 		private void DoShutdown()
 	{
-		// TODO 迁移：WPF Application.Shutdown() 在 Startup 事件里调用合法（消息循环已运行）；
+		// Migration note：WPF Application.Shutdown() 在 Startup 事件里调用合法（消息循环已运行）；
 		// Avalonia 12 的 OnFrameworkInitializationCompleted 发生在 lifetime.Start 进
 		// MainLoop 之前，此刻直接 Lifetime.Shutdown 会关闭 Dispatcher，随后的
 		// Dispatcher.UIThread.MainLoop 抛 "InvalidOperationException: Dispatcher shut down"
@@ -950,7 +950,7 @@ namespace ForkPlus
 				string environmentVariable = Environment.GetEnvironmentVariable(Consts.ForkPlus.GitInstanceEnvVariable);
 				if (environmentVariable != null)
 				{
-					// TODO 迁移：git 二进制名跨平台（Unix 无 .exe）。变量可能直接指向 git 路径或其所在目录。
+					// Migration note：git 二进制名跨平台（Unix 无 .exe）。变量可能直接指向 git 路径或其所在目录。
 					if (SystemEnvironment.IsGitExecutable(environmentVariable) && File.Exists(environmentVariable))
 					{
 						return environmentVariable;
@@ -960,7 +960,7 @@ namespace ForkPlus
 					{
 						return text;
 					}
-					// TODO 迁移：Unix 上 git 通常在目录本身（/usr/bin 形式传入时下面直接拼名字）。
+					// Migration note：Unix 上 git 通常在目录本身（/usr/bin 形式传入时下面直接拼名字）。
 					string text2 = Path.Combine(environmentVariable, SystemEnvironment.GitExecutableName);
 					if (File.Exists(text2))
 					{
@@ -976,7 +976,7 @@ namespace ForkPlus
 
 		private static string GetForkGitInstancePath()
 		{
-			// TODO 迁移：git 二进制名跨平台。
+			// Migration note：git 二进制名跨平台。
 			return Path.Combine(ForkDirectoryPath, "gitInstance", "2.50.1", "bin", SystemEnvironment.GitExecutableName);
 		}
 
@@ -1148,7 +1148,7 @@ namespace ForkPlus
 
 		private static bool IsSystemAccentBrushEnabled()
 		{
-			// TODO 迁移：WPF 下 Windows 注册表恒可用；非 Windows（Linux/macOS）Registry.CurrentUser
+			// Migration note：WPF 下 Windows 注册表恒可用；非 Windows（Linux/macOS）Registry.CurrentUser
 			// 不可用（返回 null / 抛异常），原代码无 try-catch 会 NRE。语义上"系统强调色边框"
 			// 仅 Windows DWM 有效，非 Windows 平台直接返回 false（与 GetSystemTheme 的防御模式一致）。
 			try
@@ -1213,7 +1213,7 @@ namespace ForkPlus
 				return -1;
 			}
 		}
-        // TODO 迁移：WPF Application 的 Startup/Exit 生命周期事件在 Avalonia 不存在。
+        // Migration note：WPF Application 的 Startup/Exit 生命周期事件在 Avalonia 不存在。
         // 启动入口 = OnFrameworkInitializationCompleted（RunStartup 即原 OnStartup 主体：
         // ServiceLocator/主题/边框画刷/首选项订阅/git 实例校验/主窗口显示）；
         // 退出 = desktop.ShutdownRequested（RunExit 即原 OnExit 主体：保存设置 + 释放 IPC）。

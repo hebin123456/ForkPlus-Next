@@ -82,7 +82,7 @@
             <controls:MultiselectionTreeView Grid.Row="1" SelectionMode="Toggle" x:Name="SidebarTreeView" Theme="{DynamicResource SideBarMultiselectionTreeViewStyle}">
               <controls:MultiselectionTreeView.ItemTemplate>
                 <DataTemplate>
-                  <ContentControl>
+                  <ContentControl HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                     <ContentControl.Content>
                       <Binding />
                     </ContentControl.Content>

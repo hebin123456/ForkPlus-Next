@@ -260,7 +260,7 @@ namespace ForkPlus.Git.Commands
 			}
 			ulong hash = out_result.hash;
 			Bt.bt_release_references(ref out_result);
-			// TODO 迁移：native biturbo 在 Linux 上 bt_get_references 不返回 "HEAD" symref
+			// Migration note：native biturbo 在 Linux 上 bt_get_references 不返回 "HEAD" symref
 			// （实测仅返回 refs/remotes/origin/HEAD；Windows 原版返回 HEAD）。缺失导致
 			// ReferenceStorage.New 里 text=null → ActiveBranchIndex=null → 本地分支
 			// IsActive 恒 false：侧栏当前分支不加粗、不显示 ActiveBranch 对勾图标、
@@ -344,7 +344,7 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
-		/// <summary>TODO 迁移：HEAD symref 兜底已上移到 BtReferencesExtensions.EnsureHeadSymref（两个命令共用）。</summary>
+		/// <summary>Migration note：HEAD symref 兜底已上移到 BtReferencesExtensions.EnsureHeadSymref（两个命令共用）。</summary>
 
 		private static GitCommandResult<DateTime[]> GetCommitterDates(GitModule gitModule, Sha[] shas, CommitGraphCache commitGraphCache)
 		{

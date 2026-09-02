@@ -87,21 +87,17 @@ namespace ForkPlus.UI.Controls
 				Diff diff2 = parsedDiffContent.Diff;
 				if (diff2 == null)
 				{
-					ShowSubView(delegate
+					if (changedFile.ChangeType == ChangeType.Unchanged)
 					{
-						TextDiffControl textDiffControl = new TextDiffControl(base.Target);
-						if (base.SubControlMode)
-						{
-							textDiffControl.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
-							textDiffControl.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,base.DiffCodeEditor_PreviewMouseWheel,global::Avalonia.Interactivity.RoutingStrategies.Tunnel);
-						}
-						textDiffControl.PositionCache = _positionCache;
-						return textDiffControl;
-					}, delegate(TextDiffControl c, FileControlHeaderUserControl h)
+						base.UpdateView(loadLargeDiff);
+						return;
+					}
+					ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
 					{
-						c.SetDiff(diff2, parsedDiffContent.TabWidth, parsedDiffContent.EntireFile, DiffLocation.Revision);
-						ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
+						h.Collapse();
+						c.FallbackMessage = PreferencesLocalization.Current("File has no changes");
 					});
+					return;
 				}
 				else if (diff2.Type == Diff.FileType.Text)
 				{
@@ -174,7 +170,12 @@ namespace ForkPlus.UI.Controls
 						c.IsNewOrUntracked = !changedFile.Tracked || changedFile.New;
 						c.EditorContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
 						{
-							DiffCodeEditor diffCodeEditor2 = e.Source as DiffCodeEditor;
+							DiffCodeEditor diffCodeEditor2 = e.Source as DiffCodeEditor ?? s as DiffCodeEditor;
+							if (diffCodeEditor2 == null)
+							{
+								e.Handled = true;
+								return;
+							}
 							ContextMenu contextMenu2 = diffCodeEditor2.ContextMenu;
 							contextMenu2.Items.Clear();
 							FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor2, contextMenu2, changedFile.Path);
@@ -202,9 +203,19 @@ namespace ForkPlus.UI.Controls
 				GitCommandResult<Patch> gitCommandResult = FileDiffControl.Parser.Parse(textContent.Text);
 				if (!gitCommandResult.Succeeded)
 				{
+					ShowErrorView(gitCommandResult.Error);
 					return;
 				}
 				Diff diff = gitCommandResult.Result.Diffs.FirstItem();
+				if (diff == null)
+				{
+					ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
+					{
+						h.Collapse();
+						c.FallbackMessage = PreferencesLocalization.Current("File has no changes");
+					});
+					return;
+				}
 				if (!loadLargeDiff && diff != null && (textContent.Text.Length > base.MaxDiffSize || diff.IsMinified))
 				{
 					ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
@@ -247,7 +258,12 @@ namespace ForkPlus.UI.Controls
 					c.IsNewOrUntracked = !changedFile.Tracked || changedFile.New;
 					c.EditorContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
 					{
-						DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor;
+						DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor ?? s as DiffCodeEditor;
+						if (diffCodeEditor == null)
+						{
+							e.Handled = true;
+							return;
+						}
 						ContextMenu contextMenu = diffCodeEditor.ContextMenu;
 						contextMenu.Items.Clear();
 						FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor, contextMenu, changedFile.Path);

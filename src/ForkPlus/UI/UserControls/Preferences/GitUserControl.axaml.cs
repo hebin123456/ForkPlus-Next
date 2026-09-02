@@ -138,7 +138,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 					new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find git instance at: '{0}'", gitExecutablePath)).ShowDialog();
 					return false;
 				}
-				// TODO 迁移：git 二进制名跨平台（原 "git.exe" 硬编码在 Unix 永远 false）。
+				// Migration note：git 二进制名跨平台（原 "git.exe" 硬编码在 Unix 永远 false）。
 				if (!SystemEnvironment.IsGitExecutable(gitExecutablePath))
 				{
 					new ErrorWindow(PreferencesLocalization.FormatCurrent("Invalid git binary: '{0}'", gitExecutablePath)).ShowDialog();
@@ -147,7 +147,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 				string directoryName = Path.GetDirectoryName(gitExecutablePath);
 				if (Directory.Exists(directoryName))
 				{
-					// TODO 迁移：bash/sh 配套校验跨平台。Windows Git-for-Windows 布局在 git 同目录
+					// Migration note：bash/sh 配套校验跨平台。Windows Git-for-Windows 布局在 git 同目录
 					// 提供 bash.exe/sh.exe；Unix 上 bash/sh 通常在系统目录而非 git 同目录，
 					// 故 Unix 下同目录不存在时回退系统 PATH 探测。
 					bool isUnix = !OperatingSystem.IsWindows();
@@ -193,7 +193,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 	private bool _isRefreshingGitMm;
 
-		// TODO 迁移：RefreshGitInstanceComboBox 程序化设置 SelectedItem 会触发
+		// Migration note：RefreshGitInstanceComboBox 程序化设置 SelectedItem 会触发
 		// SelectionChanged → WarnIfGitVersionUnsupported，导致每次打开偏好设置都弹一次
 		// 版本警告（启动时 GitVersionChecker 已弹过，重复噪音）。刷新期间抑制。
 		private bool _suppressVersionWarning;

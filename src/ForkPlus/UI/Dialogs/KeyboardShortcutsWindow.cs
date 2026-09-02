@@ -95,6 +95,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.Title = PreferencesLocalization.Current("Keyboard Shortcuts");
 			base.ShowLogo = false;
+			// 这是“只读信息”窗口：按原版语义只需要一个 Close（Cancel）按钮，不需要 Submit。
+			base.ShowSubmitButton = false;
+			base.ShowCancelButton = true;
 			base.Width = 720.0;
 			base.Height = 620.0;
 			base.SizeToContent = global::Avalonia.Controls.SizeToContent.Manual;
@@ -118,8 +121,9 @@ namespace ForkPlus.UI.Dialogs
 		{
 			base.DialogTitle = Translate("Keyboard Shortcuts");
 			base.DialogDescription = Translate("Available keyboard shortcuts");
-			base.SubmitButtonTitle = Translate("Close");
-			base.ShowCancelButton = false;
+			base.CancelButtonTitle = Translate("Close");
+			base.ShowSubmitButton = false;
+			base.ShowCancelButton = true;
 		}
 
 		private static Grid CreateContent()
@@ -128,13 +132,17 @@ namespace ForkPlus.UI.Dialogs
 			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0.0) });
 			grid.ColumnDefinitions.Add(new ColumnDefinition());
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-			grid.RowDefinitions.Add(new RowDefinition());
+			// 中间区域必须是 *，否则 ScrollViewer 可能被 Auto 行撑开导致无法滚动。
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
 			ScrollViewer scrollViewer = new ScrollViewer
 			{
-				HorizontalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
-				VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+				HorizontalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+				VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Visible,
+				HorizontalAlignment = HorizontalAlignment.Stretch,
+				VerticalAlignment = VerticalAlignment.Stretch,
+				Focusable = true,
 				Margin = new Thickness(0.0, 4.0, 0.0, 0.0)
 			};
 			StackPanel stackPanel = new StackPanel();

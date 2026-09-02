@@ -31,19 +31,21 @@ namespace ForkPlus.UI.Dialogs
 			{
 				base.OnPointerPressed(e);
 			}
-			if (Mouse.LeftButton == MouseButtonState.Pressed)
+			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_dragStartPoint = e.GetPosition(null);
-				this.CaptureMouse();
+				e.Pointer.Capture(this);
 			}
 		}
 
 		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
-			this.ReleaseMouseCapture();
+			if (e.Pointer.Captured == this)
+			{
+				e.Pointer.Capture(null);
+			}
 			if (_wasSelected)
 			{
-				// TODO 迁移：WPF 抬起时补调 base.OnMouseLeftButtonDown(e) 维持选中；Avalonia 显式保持选中。
 				IsSelected = true;
 			}
 		}
@@ -56,7 +58,7 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (!this.IsPointerCaptured()) // TODO 迁移：WPF UIElement.IsPointerCaptured 属性 → InputCompat 扩展
+			if (e.Pointer.Captured != this)
 			{
 				return;
 			}

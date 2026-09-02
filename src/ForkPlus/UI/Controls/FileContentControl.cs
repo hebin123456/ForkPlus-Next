@@ -52,7 +52,10 @@ namespace ForkPlus.UI.Controls
 			{
 				Height = GridLength.Auto
 			});
-			base.RowDefinitions.Add(new RowDefinition());
+			base.RowDefinitions.Add(new RowDefinition
+			{
+				Height = new GridLength(1.0, GridUnitType.Star)
+			});
 			Header = new FileControlHeaderUserControl();
 			Header.Height = 18.0;
 			Header.SetValue(Grid.RowProperty, 0);

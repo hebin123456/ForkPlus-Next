@@ -2,16 +2,25 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <StreamGeometry x:Key="OptionMarkGeomentry">F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z</StreamGeometry>
+      <controls:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter" />
       <ControlTheme x:Key="ItemContainerStyle" TargetType="controls:DragAndDropListViewItem" BasedOn="{StaticResource ListViewItemGridViewStyle}">
         
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
-<!-- TODO 迁移：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
-    <!-- TODO 迁移：WPF EventSetter 已删（事件在 code-behind 中 AddHandler/+= 接线） -->
+        <Setter Property="FontWeight" Value="{Binding IsHead, Converter={StaticResource BoolToFontWeightConverter}}" />
+<!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
+    <!-- Migration note：WPF EventSetter 已删（事件在 code-behind 中 AddHandler/+= 接线） -->
+        <Style Selector="^:selected /template/ Border#Bd">
+          <Setter Value="{DynamicResource Item.SelectedActive.Background}" Property="Background" />
+          <Setter Value="{DynamicResource Item.SelectedActive.Border}" Property="BorderBrush" />
+        </Style>
+        <Style Selector="^:selected">
+          <Setter Value="{DynamicResource ForegroundBrush.Light}" Property="Foreground" />
+        </Style>
     <!--
-      TODO(wpf2avalonia): Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
       原始片段：
       <DataTrigger Value="True" xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>
@@ -21,7 +30,7 @@
                 </DataTrigger>
     -->
     <!--
-      TODO(wpf2avalonia): Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
+      WPF migration note: Style 内 DataTrigger（DataContext 属性条件）无选择器等价物：建议 VM 计算布尔属性 + Classes，或属性匹配器 [Prop=值]。
       原始片段：
       <DataTrigger Value="False" xmlns="https://github.com/avaloniaui">
                   <DataTrigger.Binding>
@@ -31,7 +40,7 @@
                 </DataTrigger>
     --></ControlTheme>
       <!--
-      TODO(wpf2avalonia): <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
+      WPF migration note: <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
       原始片段：
       <GridView x:Key="SingleRowGridView" ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
               <GridViewColumn>
@@ -207,7 +216,7 @@
             </GridView>
     -->
       <!--
-      TODO(wpf2avalonia): <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
+      WPF migration note: <GridView>（WPF ListView 列视图体系）在 Avalonia 核心无等价物，已移除；多列列表请用 ListBox + DataTemplate（Grid 列布局）重建，列头用 Grid 手工实现（或引入 Avalonia.Controls.DataGrid 包）。
       原始片段：
       <GridView x:Key="DoubleRowGridView" ColumnHeaderContainerStyle="{DynamicResource GridViewColumnHeaderStyle}" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
               <GridViewColumn>
@@ -376,7 +385,7 @@
             </GridView>
     -->
       <!-- ===================== 修订列表行模板（WPF GridView CellTemplate 重建） =====================
-           TODO(wpf2avalonia)：WPF SingleRowGridView/DoubleRowGridView（ListView.View 列视图）在 Avalonia
+           WPF migration note：WPF SingleRowGridView/DoubleRowGridView（ListView.View 列视图）在 Avalonia
            核心无等价物，此处按原 CellTemplate 内容重建为 Grid 列布局的 DataTemplate，
            由 code-behind RefreshRevisionListViewTemplate() 按可用宽度切换 ItemTemplate。
            原 DataTemplate.Triggers（IsParentSelected 传递 / IsSearchMatch 高亮 / IsReachable 灰字）
@@ -524,7 +533,7 @@
               <controls:RevisionSubjectTextField.HighlightString>
                 <Binding Path="SubjectSearchString" />
               </controls:RevisionSubjectTextField.HighlightString>
-              <!-- TODO 迁移：WPF ToolTip 属性绑定已删（Avalonia 为 ToolTip.Tip 附加属性，行内提示非必需） -->
+              <!-- Migration note：WPF ToolTip 属性绑定已删（Avalonia 为 ToolTip.Tip 附加属性，行内提示非必需） -->
               <controls:RevisionSubjectTextField.HasBody>
                 <Binding Path="HasBody" />
               </controls:RevisionSubjectTextField.HasBody>
@@ -541,7 +550,7 @@
       <RowDefinition />
     </Grid.RowDefinitions>
     <Grid Grid.Row="0" x:Name="SearchPanelPlaceholder" />
-    <controls:DragAndDropListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" Grid.Row="1" BorderThickness="0" SelectionMode="Toggle" Margin="0,0,0,0" x:Name="RevisionListView" DoubleTapped="RevisionListView_MouseDoubleClick" Theme="{DynamicResource ListViewWithGridViewStyle}" ItemContainerTheme="{DynamicResource ItemContainerStyle}" ItemTemplate="{StaticResource SingleRowRevisionTemplate}">
+    <controls:DragAndDropListView SizeChanged="RevisionListView_SizeChanged" SelectionChanged="RevisionListView_SelectionChanged" ContextRequested="RevisionListView_ContextMenuOpening" Grid.Row="1" BorderThickness="0" SelectionMode="Multiple" Margin="0,0,0,0" x:Name="RevisionListView" DoubleTapped="RevisionListView_MouseDoubleClick" Theme="{DynamicResource ListViewWithGridViewStyle}" ItemContainerTheme="{DynamicResource ItemContainerStyle}" ItemTemplate="{StaticResource SingleRowRevisionTemplate}">
       <controls:DragAndDropListView.ContextMenu>
         <ContextMenu />
       </controls:DragAndDropListView.ContextMenu>

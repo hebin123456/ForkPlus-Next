@@ -61,6 +61,17 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # OxyPlot.Avalonia 从仓库内置 src/ThirdParty 迁移为仓库外本地源码引用
+      # （ForkPlus.csproj: ..\..\..\oxyplot-avalonia\Source\OxyPlot.Avalonia）。
+      # csproj 引用路径相对 $GITHUB_WORKSPACE 的上一级目录，故 clone 到 ../oxyplot-avalonia。
+      # 官方 oxyplot/oxyplot-avalonia 源码随主工程一起按 Avalonia 12 编译，无需单独发版。
+      - name: Clone OxyPlot.Avalonia source
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
+          test -f ../oxyplot-avalonia/Source/OxyPlot.Avalonia/OxyPlot.Avalonia.csproj \
+            || { echo "OxyPlot.Avalonia.csproj not found after clone"; exit 1; }
+
       # TODO 迁移（CI）：native 库下载走显式 step 而非只靠 csproj 的 RestoreBiturbo Target
       # —— macOS runner 上该 MSBuild Exec 未产出 dylib（Linux/Windows 均正常，minimal
       # verbosity 下 Exec stdout 也不进日志，无从诊断），改为 workflow 显式 curl：

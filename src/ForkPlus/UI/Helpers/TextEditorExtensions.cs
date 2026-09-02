@@ -7,7 +7,7 @@ namespace ForkPlus.UI.Helpers
 {
 	internal static class TextEditorExtensions
 	{
-		// TODO 迁移：WPF 经 IScrollInfo 读滚动区；AvaloniaEdit TextView 实现 IScrollable
+		// Migration note：WPF 经 IScrollInfo 读滚动区；AvaloniaEdit TextView 实现 IScrollable
 		//（Extent/Viewport 为 Size），去掉 WPF IScrollInfo 转型直接读属性。
 		public static bool IsVerticalOffsetWithinDocumentArea(this TextEditor textEditor, double offset)
 		{

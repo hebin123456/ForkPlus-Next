@@ -18,13 +18,18 @@ namespace ForkPlus.UI.Controls
 
 		public FileControlHeaderUserControl Header { get; }
 
+		public global::Avalonia.Controls.Control CurrentSubView => _subView;
+
 		public DiffControlContainer()
 		{
 			base.RowDefinitions.Add(new RowDefinition
 			{
 				Height = GridLength.Auto
 			});
-			base.RowDefinitions.Add(new RowDefinition());
+			base.RowDefinitions.Add(new RowDefinition
+			{
+				Height = new GridLength(1.0, GridUnitType.Star)
+			});
 			Header = new FileControlHeaderUserControl();
 			Header.Height = 18.0;
 			Header.SetValue(Grid.RowProperty, 0);

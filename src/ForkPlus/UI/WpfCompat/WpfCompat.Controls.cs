@@ -1,6 +1,6 @@
 // WPF → Avalonia 迁移兼容层 第二部分：控件/输入/系统级 shim 与扩展
 // 全部通过 ForkPlus.csproj 的 <Using Include="ForkPlus.UI.WpfCompat" /> 全局引入，
-// 迁移期尽量少改业务代码；每处均带 TODO 迁移标记，后续替换为原生实现。
+// 迁移期尽量少改业务代码；每处均带 Migration note标记，后续替换为原生实现。
 
 using System;
 using System.Collections.Generic;
@@ -49,19 +49,78 @@ namespace ForkPlus.UI.WpfCompat
     /// WPF Window.ShowDialog()（无参、阻塞、返回 bool?）的同步等价物。
     /// Avalonia 的 ShowDialog 是 async + 必须传 owner；这里用 Dispatcher.PushFrame
     /// 跑嵌套消息循环 —— 与 WPF ShowDialog 的实现方式一致（模态期间 UI 线程继续泵消息）。
-    /// TODO 迁移：新代码请直接用 await ShowDialog(owner)。
+    /// Migration note：新代码请直接用 await ShowDialog(owner)。
     /// </summary>
     public static class WindowDialogCompat
     {
         // WPF ComponentDispatcher.IsThreadModal 近似：记录经本 shim ShowDialog 打开的窗口。
         private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Window, object> _modalWindows = new();
 
-        // TODO 迁移：启动期代理 owner 全局复用。此前每对话框各建各关，对话框关闭后应用
+        // Migration note：启动期代理 owner 全局复用。此前每对话框各建各关，对话框关闭后应用
         // 0 窗口，ClassicDesktopStyleApplicationLifetime 的 OnLastWindowClose 立即开始
         // Shutdown → 后续对话框（如 WelcomeWindow）PushFrame 抛
         // "InvalidOperationException: Dispatcher shut down"（首启流程实证）。
         // 改为单例复用：真窗口（MainWindow）出现且可见时才关闭代理（TryCloseProxyOwner）。
         private static Window _proxyOwner;
+
+        private static Avalonia.Platform.Screen GetPreferredScreen()
+        {
+            // 优先用主窗口所在屏幕（双屏时主窗口不在主屏的常见场景），否则退回 Primary。
+            var mw = WpfApp.MainWindow;
+            if (mw != null && mw.IsVisible)
+            {
+                var s = mw.Screens?.ScreenFromWindow(mw);
+                if (s != null) return s;
+            }
+            var any = WpfApp.Windows.FirstOrDefault(w => w != null && w.IsVisible);
+            return any?.Screens?.ScreenFromWindow(any) ?? any?.Screens?.Primary;
+        }
+
+        private static void CenterToScreen(Window w, Avalonia.Platform.Screen screen)
+        {
+            if (w == null || screen == null) return;
+            var wa = screen.WorkingArea;
+            // Window.Position 使用物理像素；WorkingArea 也是物理像素。
+            // 尺寸在 Opened 之前可能不准确：这里只做一个“尽量居中”的初始值。
+            int widthPx = 1;
+            int heightPx = 1;
+            try
+            {
+                // 优先用显式 Width/Height（DIP）估算像素；否则用 1x1（代理 owner）。
+                if (!double.IsNaN(w.Width) && w.Width > 0) widthPx = (int)Math.Max(1, Math.Round(w.Width * screen.Scaling));
+                if (!double.IsNaN(w.Height) && w.Height > 0) heightPx = (int)Math.Max(1, Math.Round(w.Height * screen.Scaling));
+            }
+            catch { }
+            w.Position = new global::Avalonia.PixelPoint(
+                wa.X + Math.Max(0, (wa.Width - widthPx) / 2),
+                wa.Y + Math.Max(0, (wa.Height - heightPx) / 2));
+        }
+
+        private static void CenterToOwnerScreenOnOpened(Window dialog, Window owner)
+        {
+            if (dialog == null) return;
+            void Handler(object s, EventArgs e)
+            {
+                dialog.Opened -= Handler;
+                try
+                {
+                    var screen = owner?.Screens?.ScreenFromWindow(owner) ?? owner?.Screens?.Primary ?? dialog.Screens?.Primary;
+                    if (screen == null) return;
+                    var wa = screen.WorkingArea;
+                    // Opened 后 ClientSize 已稳定（DIP），换算为物理像素再居中。
+                    int wPx = (int)Math.Max(1, Math.Round(dialog.ClientSize.Width * screen.Scaling));
+                    int hPx = (int)Math.Max(1, Math.Round(dialog.ClientSize.Height * screen.Scaling));
+                    dialog.Position = new global::Avalonia.PixelPoint(
+                        wa.X + Math.Max(0, (wa.Width - wPx) / 2),
+                        wa.Y + Math.Max(0, (wa.Height - hPx) / 2));
+                }
+                catch
+                {
+                    // 定位失败不影响对话框显示
+                }
+            }
+            dialog.Opened += Handler;
+        }
 
         private static Window GetOrCreateProxyOwner()
         {
@@ -77,14 +136,8 @@ namespace ForkPlus.UI.WpfCompat
                     CanResize = false,
                     Title = string.Empty,
                 };
-                // 居中定位：让 CenterOwner 的对话框出现在屏幕中央而非 (0,0)
-                var screen = _proxyOwner.Screens?.Primary;
-                if (screen != null)
-                {
-                    var wa = screen.WorkingArea;
-                    _proxyOwner.Position = new global::Avalonia.PixelPoint(
-                        wa.X + (wa.Width - 1) / 2, wa.Y + (wa.Height - 1) / 2);
-                }
+                // 居中定位：代理 owner 放到“主窗口所在屏幕”的中心，避免双屏时弹窗跑到另一块屏幕。
+                CenterToScreen(_proxyOwner, GetPreferredScreen() ?? _proxyOwner.Screens?.Primary);
                 _proxyOwner.Show();
             }
             return _proxyOwner;
@@ -115,7 +168,7 @@ namespace ForkPlus.UI.WpfCompat
             var owner = WindowOwnerCompat.TryGetOwner(self) ?? WpfApp.ActiveWindow(self);
             if (owner == null)
             {
-                // TODO 迁移：WPF ShowDialog() 无 owner 也能模态阻塞（如启动期 ConfigureGitInstanceWindow）；
+                // Migration note：WPF ShowDialog() 无 owner 也能模态阻塞（如启动期 ConfigureGitInstanceWindow）；
                 // Avalonia 12 的 ShowDialog(owner) 强制要求 owner，且 owner 必须 IsVisible=true
                 // （否则 InvalidOperationException: Cannot show window with non-visible owner）。
                 // 方案：复用全局 1x1 全透明代理窗口做 owner，保持模态语义（见 GetOrCreateProxyOwner）。
@@ -126,6 +179,9 @@ namespace ForkPlus.UI.WpfCompat
                 // 有真实 owner：代理已无用，顺手清理
                 TryCloseProxyOwner();
             }
+            // 无论窗口自身 StartupLocation 是 CenterScreen/CenterOwner，都强制把对话框居中到 owner 所在屏幕。
+            // 这能修复双屏时“弹窗跑到另一块屏幕”的问题（常见于主窗口不在 Primary screen）。
+            CenterToOwnerScreenOnOpened(self, owner);
             _modalWindows.Remove(self);
             _modalWindows.Add(self, new object());
             Task<bool?> task = self.ShowDialog<bool?>(owner);
@@ -250,18 +306,34 @@ namespace ForkPlus.UI.WpfCompat
 
     /// <summary>
     /// WPF System.Windows.Input.Keyboard 静态类 shim。
-    /// FocusedElement 经任意窗口的 FocusManager 查询；Modifiers TODO：Avalonia 无全局
-    /// 键盘状态查询，当前返回基于最近一次 KeyDown 记录的值（由 PasteGuard 等安装点维护）。
+    /// FocusedElement 经任意窗口的 FocusManager 查询；按键状态由已打开 TopLevel 的 KeyDown/KeyUp 维护。
     /// </summary>
     public static class Keyboard
     {
-        // 全局记录最近一次 KeyDown 的修饰键（由 InstallGlobalKeyTracking 挂接）
+        private static readonly HashSet<TopLevel> _trackedTopLevels = new();
+        private static readonly HashSet<Key> _downKeys = new();
         private static ModifierKeys _lastModifiers = ModifierKeys.None;
 
         public static void InstallGlobalKeyTracking(TopLevel topLevel)
         {
-            topLevel.AddHandler(InputElement.KeyDownEvent, (s, e) =>
-                _lastModifiers = (ModifierKeys)(int)e.KeyModifiers, RoutingStrategies.Tunnel);
+            if (topLevel == null || !_trackedTopLevels.Add(topLevel))
+            {
+                return;
+            }
+
+            topLevel.AddHandler(InputElement.KeyDownEvent, (_, e) =>
+            {
+                _downKeys.Add(e.Key);
+                _lastModifiers = (ModifierKeys)(int)e.KeyModifiers;
+                AddModifierKeys(_lastModifiers);
+            }, RoutingStrategies.Tunnel);
+
+            topLevel.AddHandler(InputElement.KeyUpEvent, (_, e) =>
+            {
+                _downKeys.Remove(e.Key);
+                _lastModifiers = (ModifierKeys)(int)e.KeyModifiers;
+                RemoveModifierKey(e.Key);
+            }, RoutingStrategies.Tunnel);
         }
 
         public static InputElement FocusedElement
@@ -278,7 +350,85 @@ namespace ForkPlus.UI.WpfCompat
 
         public static ModifierKeys Modifiers => _lastModifiers;
 
-        public static bool IsKeyDown(Key key) => false; // TODO 迁移：Avalonia 无全局按键状态
+        public static bool IsKeyDown(Key key)
+        {
+            if (_downKeys.Contains(key))
+            {
+                return true;
+            }
+
+            return key switch
+            {
+                Key.LeftCtrl or Key.RightCtrl => _lastModifiers.HasFlag(ModifierKeys.Control),
+                Key.LeftShift or Key.RightShift => _lastModifiers.HasFlag(ModifierKeys.Shift),
+                Key.LeftAlt or Key.RightAlt => _lastModifiers.HasFlag(ModifierKeys.Alt),
+                Key.LWin or Key.RWin => _lastModifiers.HasFlag(ModifierKeys.Windows),
+                _ => false
+            };
+        }
+
+        private static void AddModifierKeys(ModifierKeys modifiers)
+        {
+            if (modifiers.HasFlag(ModifierKeys.Control))
+            {
+                _downKeys.Add(Key.LeftCtrl);
+                _downKeys.Add(Key.RightCtrl);
+            }
+            if (modifiers.HasFlag(ModifierKeys.Shift))
+            {
+                _downKeys.Add(Key.LeftShift);
+                _downKeys.Add(Key.RightShift);
+            }
+            if (modifiers.HasFlag(ModifierKeys.Alt))
+            {
+                _downKeys.Add(Key.LeftAlt);
+                _downKeys.Add(Key.RightAlt);
+            }
+            if (modifiers.HasFlag(ModifierKeys.Windows))
+            {
+                _downKeys.Add(Key.LWin);
+                _downKeys.Add(Key.RWin);
+            }
+        }
+
+        private static void RemoveModifierKey(Key key)
+        {
+            switch (key)
+            {
+                case Key.LeftCtrl:
+                case Key.RightCtrl:
+                    if (!_lastModifiers.HasFlag(ModifierKeys.Control))
+                    {
+                        _downKeys.Remove(Key.LeftCtrl);
+                        _downKeys.Remove(Key.RightCtrl);
+                    }
+                    break;
+                case Key.LeftShift:
+                case Key.RightShift:
+                    if (!_lastModifiers.HasFlag(ModifierKeys.Shift))
+                    {
+                        _downKeys.Remove(Key.LeftShift);
+                        _downKeys.Remove(Key.RightShift);
+                    }
+                    break;
+                case Key.LeftAlt:
+                case Key.RightAlt:
+                    if (!_lastModifiers.HasFlag(ModifierKeys.Alt))
+                    {
+                        _downKeys.Remove(Key.LeftAlt);
+                        _downKeys.Remove(Key.RightAlt);
+                    }
+                    break;
+                case Key.LWin:
+                case Key.RWin:
+                    if (!_lastModifiers.HasFlag(ModifierKeys.Windows))
+                    {
+                        _downKeys.Remove(Key.LWin);
+                        _downKeys.Remove(Key.RWin);
+                    }
+                    break;
+            }
+        }
     }
 
     /// <summary>WPF System.Windows.Input.MouseButtonState。</summary>
@@ -290,7 +440,7 @@ namespace ForkPlus.UI.WpfCompat
 
     /// <summary>
     /// WPF System.Windows.Input.Mouse 静态类 shim。
-    /// TODO 迁移：Avalonia 无全局鼠标位置查询，GetPosition 返回 (0,0)，需按事件参数逐点改造。
+    /// Migration note：Avalonia 无全局鼠标位置查询，GetPosition 返回 (0,0)，需按事件参数逐点改造。
     /// </summary>
     public static class Mouse
     {
@@ -341,7 +491,7 @@ namespace ForkPlus.UI.WpfCompat
         public static Visual HitTest(Visual visual, Point point)
             => visual.GetVisualAt(point);
 
-        /// <summary>WPF VisualTreeHelper.GetDpi。TODO 迁移：取控件实际 DPI（当前恒 1.0）。</summary>
+        /// <summary>WPF VisualTreeHelper.GetDpi。Migration note：取控件实际 DPI（当前恒 1.0）。</summary>
         public static DpiScale GetDpi(Visual visual)
         {
             var tl = visual as TopLevel ?? TopLevel.GetTopLevel(visual);
@@ -418,7 +568,7 @@ namespace ForkPlus.UI.WpfCompat
 
         private static T Wait<T>(Task<T> task)
         {
-            // TODO 迁移：GetClipboard() 无窗口时返回 null → task 为 null，WPF 下 Clipboard 独立于窗口，
+            // Migration note：GetClipboard() 无窗口时返回 null → task 为 null，WPF 下 Clipboard 独立于窗口，
             // 这里防御 null（启动早期/窗口关闭后调用剪贴板不再 NRE）。
             if (task == null) return default;
             if (task.IsCompleted) return task.Result;
@@ -448,7 +598,7 @@ namespace ForkPlus.UI.WpfCompat
                 SetText(text);
                 return;
             }
-            // TODO 迁移：Avalonia 剪贴板仅支持文本/文件/位图；Serializable 等二进制格式
+            // Migration note：Avalonia 剪贴板仅支持文本/文件/位图；Serializable 等二进制格式
             // 先存进程内直通表保证本进程粘贴可用，同时降级写文本格式。
             RuntimePayload[format] = value;
             if (value is byte[] bytes && format == WpfDataFormats.Serializable)
@@ -471,7 +621,7 @@ namespace ForkPlus.UI.WpfCompat
 
         public static void SetFileDropList(System.Collections.IList files)
         {
-            // TODO 迁移：文件列表写入剪贴板需要 IStorageItem，暂按文件名文本降级
+            // Migration note：文件列表写入剪贴板需要 IStorageItem，暂按文件名文本降级
             var text = string.Join(Environment.NewLine, files?.Cast<object>() ?? Enumerable.Empty<object>());
             if (text.Length > 0) SetText(text);
         }
@@ -600,7 +750,7 @@ namespace ForkPlus.UI.WpfCompat
 
         /// <summary>
         /// WPF FrameworkElement.SetResourceReference(prop, key)。
-        /// TODO 迁移：当前为一次性解析赋值，不随主题切换动态更新；
+        /// Migration note：当前为一次性解析赋值，不随主题切换动态更新；
         /// 如需动态更新可改绑 element.GetResourceObservable(key)（内部 API，需反射）。
         /// </summary>
         public static void SetResourceReference(this AvaloniaObject obj, AvaloniaProperty property, object key)
@@ -636,18 +786,133 @@ namespace ForkPlus.UI.WpfCompat
 
     public static class ContextMenuCompat
     {
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ContextMenu, AutoDismissState> AutoDismissStates = new();
+
+        private sealed class AutoDismissState
+        {
+            private readonly ContextMenu _contextMenu;
+            private Window _ownerWindow;
+            private EventHandler _ownerWindowDeactivatedHandler;
+            private EventHandler<PointerPressedEventArgs> _ownerWindowPointerPressedHandler;
+            private EventHandler<PointerReleasedEventArgs> _ownerWindowPointerReleasedHandler;
+            private bool _ignoreNextLeftPointerRelease;
+
+            public AutoDismissState(ContextMenu contextMenu)
+            {
+                _contextMenu = contextMenu;
+            }
+
+            public Control OwnerControl { get; set; }
+
+            public bool IsHooked { get; set; }
+
+            public void AttachForOpen()
+            {
+                Detach();
+
+                Control ownerControl = OwnerControl ?? _contextMenu.PlacementTarget as Control;
+                _ownerWindow = TopLevel.GetTopLevel(ownerControl) as Window;
+                if (_ownerWindow == null)
+                {
+                    return;
+                }
+
+                _ownerWindowDeactivatedHandler = (_, _) => _contextMenu.Close();
+                _ownerWindowPointerPressedHandler = (_, _) => _contextMenu.Close();
+                _ignoreNextLeftPointerRelease = true;
+                _ownerWindowPointerReleasedHandler = (_, e) =>
+                {
+                    if (e.InitialPressMouseButton == MouseButton.Left)
+                    {
+                        if (_ignoreNextLeftPointerRelease)
+                        {
+                            _ignoreNextLeftPointerRelease = false;
+                            return;
+                        }
+                        _contextMenu.Close();
+                    }
+                };
+                _ownerWindow.Deactivated += _ownerWindowDeactivatedHandler;
+                _ownerWindow.AddHandler(InputElement.PointerPressedEvent, _ownerWindowPointerPressedHandler, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+                _ownerWindow.AddHandler(InputElement.PointerReleasedEvent, _ownerWindowPointerReleasedHandler, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+            }
+
+            public void Detach()
+            {
+                if (_ownerWindow != null && _ownerWindowDeactivatedHandler != null)
+                {
+                    _ownerWindow.Deactivated -= _ownerWindowDeactivatedHandler;
+                }
+                if (_ownerWindow != null && _ownerWindowPointerPressedHandler != null)
+                {
+                    _ownerWindow.RemoveHandler(InputElement.PointerPressedEvent, _ownerWindowPointerPressedHandler);
+                }
+                if (_ownerWindow != null && _ownerWindowPointerReleasedHandler != null)
+                {
+                    _ownerWindow.RemoveHandler(InputElement.PointerReleasedEvent, _ownerWindowPointerReleasedHandler);
+                }
+                _ownerWindow = null;
+                _ownerWindowDeactivatedHandler = null;
+                _ownerWindowPointerPressedHandler = null;
+                _ownerWindowPointerReleasedHandler = null;
+                _ignoreNextLeftPointerRelease = false;
+            }
+        }
+
+        public static void AttachAutoDismiss(ContextMenu contextMenu, Control ownerControl)
+        {
+            if (contextMenu == null)
+            {
+                return;
+            }
+
+            AutoDismissState state = AutoDismissStates.GetValue(contextMenu, menu => new AutoDismissState(menu));
+            state.OwnerControl = ownerControl ?? state.OwnerControl;
+            if (state.IsHooked)
+            {
+                return;
+            }
+
+            contextMenu.Opened += (_, _) =>
+            {
+                // ContextRequested/Open can occur during the same pointer route that opened the menu.
+                // Delay arming outside-click dismissal so the opening click does not immediately close it.
+                Dispatcher.UIThread.Post(state.AttachForOpen, DispatcherPriority.Background);
+            };
+            contextMenu.Closed += (_, _) => state.Detach();
+            state.IsHooked = true;
+        }
+
         /// <summary>
         /// WPF control.ContextMenuOpening += (s, ContextMenuEventArgs e) 的安装器。
-        /// Avalonia 12 无该路由事件，改挂 ContextMenu.Opening（CancelEventHandler）
-        /// 并适配为 WpfCompat.ContextMenuEventArgs。
+        /// Avalonia 的 ContextMenu.Opening 不携带原始右键命中信息；依赖鼠标坐标/Source
+        /// 选中条目的菜单必须挂 Control.ContextRequested，才能在菜单打开前正确填充内容。
         /// 注：只保留 EventHandler&lt;ContextMenuEventArgs&gt; 一个签名（lambda 与方法组都适用，
         /// 避免与 ContextMenuEventHandler 重载产生二义性）。
         /// </summary>
         public static void AddContextMenuOpeningHandler(this Control control,
             EventHandler<ContextMenuEventArgs> handler)
         {
-            if (control?.ContextMenu == null) return; // TODO 迁移：XAML 需先给控件配 ContextMenu
-            control.ContextMenu.Opening += (s, e) => handler(control, new ContextMenuEventArgs());
+            if (control?.ContextMenu == null) return; // Migration note：XAML 需先给控件配 ContextMenu
+            AttachAutoDismiss(control.ContextMenu, control);
+            control.ContextRequested += (s, e) =>
+            {
+                ContextMenuEventArgs args = new ContextMenuEventArgs
+                {
+                    TargetElement = e.Source,
+                    Source = control
+                };
+                handler(control, args);
+                if (!args.Handled && control.ContextMenu?.Items.Count == 0)
+                {
+                    args.Handled = true;
+                    control.ContextMenu.Close();
+                }
+                if (args.Handled)
+                {
+                    e.Handled = true;
+                }
+            };
         }
 
         /// <summary>WPF control.ContextMenuClosing += ... 的安装器（挂 ContextMenu.Closing）。</summary>
@@ -655,6 +920,7 @@ namespace ForkPlus.UI.WpfCompat
             EventHandler<ContextMenuEventArgs> handler)
         {
             if (control?.ContextMenu == null) return;
+            AttachAutoDismiss(control.ContextMenu, control);
             control.ContextMenu.Closing += (s, e) => handler(control, new ContextMenuEventArgs());
         }
 
@@ -662,14 +928,14 @@ namespace ForkPlus.UI.WpfCompat
         public static void RemoveContextMenuOpeningHandler(this Control control,
             EventHandler<ContextMenuEventArgs> handler)
         {
-            // TODO 迁移：Add 侧目前为匿名 lambda 转发，无法精确反注册；先记录避免编译错误。
+            // Migration note：Add 侧目前为匿名 lambda 转发，无法精确反注册；先记录避免编译错误。
         }
 
         /// <summary>WPF control.ContextMenuClosing -= H。</summary>
         public static void RemoveContextMenuClosingHandler(this Control control,
             EventHandler<ContextMenuEventArgs> handler)
         {
-            // TODO 迁移：同上，暂无法精确反注册。
+            // Migration note：同上，暂无法精确反注册。
         }
     }
 
@@ -688,7 +954,7 @@ namespace ForkPlus.UI.WpfCompat
             element.Styles.Clear();
             switch (style)
             {
-                // TODO 迁移：主题资源（x:Key 的 Style）迁移后全部是 ControlTheme（WPF Style 的 Avalonia 对应物），
+                // Migration note：主题资源（x:Key 的 Style）迁移后全部是 ControlTheme（WPF Style 的 Avalonia 对应物），
                 // 与 Style 互不继承但都实现 IStyle。ControlTheme 塞进 Styles 集合不会生效，
                 // 必须挂到 TemplatedControl.Theme（等价 XAML 里 Theme="{...}" 引用）。
                 case ControlTheme ct:

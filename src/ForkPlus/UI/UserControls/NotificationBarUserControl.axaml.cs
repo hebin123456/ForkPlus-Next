@@ -362,7 +362,7 @@ namespace ForkPlus.UI.UserControls
 			});
 		}
 
-		// TODO 迁移：WPF 中 CommandHyperlink 派生自 Hyperlink（Inline），可直接加入 TextBlock.Inlines；
+		// Migration note：WPF 中 CommandHyperlink 派生自 Hyperlink（Inline），可直接加入 TextBlock.Inlines；
 		// Avalonia 侧 CommandHyperlink 已是 HyperlinkButton（Control），需包一层 InlineUIContainer 才能内联进文本流，
 		// 各处 list.Add(new CommandHyperlink(...)) 均已按此方式包装。
 		private void ShowNotificationBar(IEnumerable<Inline> inlines)

@@ -22,7 +22,7 @@
       <Border Grid.Row="0" Grid.Column="1" Margin="8,6,0,2" MinHeight="100" BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}">
         <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
           <ItemsControl Background="{DynamicResource TextBox.Static.Background}" x:Name="TagsItemsControl">
-<!-- TODO 迁移：WPF ItemsControl.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
+<!-- Migration note：WPF ItemsControl.FocusVisualStyle 块已删（Avalonia 无 FocusVisualStyle） -->
 
             <ItemsControl.ItemTemplate>
               <DataTemplate>

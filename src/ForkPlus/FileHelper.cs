@@ -85,7 +85,7 @@ namespace ForkPlus
 
 		public static void OpenInWindowsExplorer(string absolutePath)
 		{
-			// TODO 迁移：跨平台文件管理器定位。原 Windows 专用 explorer.exe /select 在
+			// Migration note：跨平台文件管理器定位。原 Windows 专用 explorer.exe /select 在
 			// Unix 上静默失败（Process.Start 抛 Win32Exception 被下方 catch 吞掉）。
 			// - macOS: open -R（Reveal in Finder，等价 /select 选中文件）
 			// - Linux: xdg-open 父目录（org.freedesktop.FileManager1.ShowItems 依赖桌面环境，
@@ -127,7 +127,7 @@ namespace ForkPlus
 			}
 			try
 			{
-				// TODO 迁移：原子写跨平台。原 Windows 专用 MoveFileEx(ReplaceExisting) P/Invoke
+				// Migration note：原子写跨平台。原 Windows 专用 MoveFileEx(ReplaceExisting) P/Invoke
 				// 在 Linux/macOS 抛 DllNotFoundException（Kernel32.dll 不存在），settings.json
 				// 等所有原子写全失败。Unix 用 File.Replace（rename(2) 同语义：原子覆盖）。
 				if (OperatingSystem.IsWindows())

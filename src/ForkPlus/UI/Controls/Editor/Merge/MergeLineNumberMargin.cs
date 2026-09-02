@@ -45,7 +45,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		private Dictionary<int, int> _lineNumbers = new Dictionary<int, int>();
 
-		// TODO 迁移：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段补声明
+		// Migration note：WPF 原基类（AvalonEdit TextEditorMargin 系）的 typeface/emSize 字段补声明
 
 		private Typeface typeface = _typeface;
 
@@ -55,7 +55,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		public MergeLineNumberMargin(MergeCodeEditor editor)
 		{
 			_editor = editor;
-			// TODO 迁移：WPF 原基类的 typeface/emSize 字段在此补声明
+			// Migration note：WPF 原基类的 typeface/emSize 字段在此补声明
 			this.typeface = _typeface;
 			emSize = 11.0;
 			RefreshPen();
@@ -296,7 +296,7 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 		return c.HasValue ? new SolidColorBrush(c.Value) : null;
 	}
 
-		// TODO 迁移：WPF Brush → Avalonia IBrush（FormattedText.Foreground 接受 IBrush）。
+		// Migration note：WPF Brush → Avalonia IBrush（FormattedText.Foreground 接受 IBrush）。
                 private FormattedText CreateFormattedText(string text, IBrush brush)
 		{
 			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, brush);

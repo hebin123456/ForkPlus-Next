@@ -134,6 +134,11 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				RaiseEditorContextMenuOpening(this, e);
 			};
+			if (_child is Control childControl)
+			{
+				childControl.HorizontalAlignment = HorizontalAlignment.Stretch;
+				childControl.VerticalAlignment = VerticalAlignment.Stretch;
+			}
 			if (!VisualTreeAttachmentHelper.TryAddChild(this, _child as Grid, GetType().Name + ".Child"))
 			{
 				_child = null;

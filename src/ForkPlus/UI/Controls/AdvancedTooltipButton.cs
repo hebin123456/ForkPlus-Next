@@ -95,7 +95,7 @@ namespace ForkPlus.UI.Controls
 			{
 				HorizontalOffset = 0.0,
 				VerticalOffset = -4.0,
-				// TODO 迁移：WPF Popup.StaysOpen=true / AllowsTransparency / PopupAnimation
+				// Migration note：WPF Popup.StaysOpen=true / AllowsTransparency / PopupAnimation
 				// 在 Avalonia 无对应（默认即常驻、始终透明渲染、无内置动画），移除。
 				PlacementTarget = this
 			};

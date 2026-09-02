@@ -196,7 +196,7 @@
                   </DockPanel>
                 </Border>
                 <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
-    <!-- TODO 迁移：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
+    <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
             </Border>
           </Border>
@@ -205,7 +205,7 @@
       </Setter.Value>
     </Setter>
   
-<!-- TODO 迁移：WPF 选择器 ^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip">
         <Setter Property="IsVisible" Value="True" />
     </Style>-->
@@ -252,7 +252,7 @@
                   </DockPanel>
                 </Border>
                 <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
-    <!-- TODO 迁移：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
+    <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
             </Border>
           </Border>
@@ -261,7 +261,7 @@
       </Setter.Value>
     </Setter>
   
-<!-- TODO 迁移：WPF 选择器 ^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip">
         <Setter Property="IsVisible" Value="True" />
     </Style>-->

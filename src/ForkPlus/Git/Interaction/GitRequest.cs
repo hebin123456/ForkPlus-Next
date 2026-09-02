@@ -211,7 +211,7 @@ namespace ForkPlus.Git.Interaction
 						}
 						string text = process.StandardOutput.ReadToEnd();
 					task.Wait();
-					// TODO 迁移：Unix 上 ReadToEnd 返回（EOF）≠ 进程已退出，此刻读 ExitCode 抛
+					// Migration note：Unix 上 ReadToEnd 返回（EOF）≠ 进程已退出，此刻读 ExitCode 抛
 					// InvalidOperationException: Process must exit before requested information
 					// can be determined（首启 SetGlobalUserIdentity 全失败实证）。管道已读完，
 					// WaitForExit 不会死锁。Windows 上同样安全（幂等）。
@@ -273,7 +273,7 @@ namespace ForkPlus.Git.Interaction
 						monitor.AppendOutputLine(text);
 						monitor.AppendOutputLine(error);
 					}
-					// TODO 迁移：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
+					// Migration note：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
 					process.WaitForExit();
 					if (process.ExitCode != 0 && !silent)
 						{
@@ -357,7 +357,7 @@ namespace ForkPlus.Git.Interaction
 					task2.Wait();
 					string stdout = outputSb.ToString();
 					string text = errorSb.ToString();
-					// TODO 迁移：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
+					// Migration note：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
 					process.WaitForExit();
 					if (process.ExitCode != 0)
 					{
@@ -434,7 +434,7 @@ namespace ForkPlus.Git.Interaction
 						task2.Start();
 					task.Wait();
 					task2.Wait();
-					// TODO 迁移：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
+					// Migration note：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
 					process.WaitForExit();
 					if (process.ExitCode != 0)
 					{
@@ -494,7 +494,7 @@ namespace ForkPlus.Git.Interaction
 						}
 						process.StandardOutput.BaseStream.CopyTo(memoryStream);
 					task.Wait();
-					// TODO 迁移：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
+					// Migration note：同上，Unix EOF≠退出，WaitForExit 后再读 ExitCode。
 					process.WaitForExit();
 					if (process.ExitCode != 0 && !silent)
 					{

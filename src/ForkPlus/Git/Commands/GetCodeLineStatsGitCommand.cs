@@ -19,7 +19,7 @@ namespace ForkPlus.Git.Commands
 	public class GetCodeLineStatsGitCommand
 	{
 		/// <summary>tokei 可执行文件名（与 ForkPlus 同目录，由构建期 RestoreTokei 拉取）。
-		/// TODO 迁移：原版硬编码 "tokei.exe"（Windows-only）。tokei 上游按平台发布产物：
+		/// Migration note：原版硬编码 "tokei.exe"（Windows-only）。tokei 上游按平台发布产物：
 		/// Windows 是 tokei.exe，Linux/macOS 是无扩展名的 tokei——Unix 下找 "tokei.exe" 恒落空，
 		/// 统计页在三平台构建里只有 Windows 能用。按当前平台取名。</summary>
 		private static readonly string TokeiExeName = OperatingSystem.IsWindows() ? "tokei.exe" : "tokei";
@@ -48,7 +48,7 @@ namespace ForkPlus.Git.Commands
 		}
 
 		/// <summary>Unix 下确保 tokei 有可执行位（best-effort）。
-		/// TODO 迁移：MSBuild Copy / tar 打包 / 用户手动解压任何一环都可能丢权限位，
+		/// Migration note：MSBuild Copy / tar 打包 / 用户手动解压任何一环都可能丢权限位，
 		/// spawn 无执行位的文件会报 Permission denied。Windows 无此概念，直接跳过。
 		/// 失败只记日志不阻断——spawn 自身失败时会有更具体的错误返回 UI。</summary>
 		private static void EnsureExecutableBit(string tokeiPath)

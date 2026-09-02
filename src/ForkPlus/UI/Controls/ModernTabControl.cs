@@ -20,7 +20,7 @@ namespace ForkPlus.UI.Controls
 
 		private double _indicatorWidth;
 
-		// TODO 迁移：WPF `OnSelectionChanged` 是框架调用的虚方法重写（TabControl 基类回调）。
+		// Migration note：WPF `OnSelectionChanged` 是框架调用的虚方法重写（TabControl 基类回调）。
 		// 实证 Avalonia 12 的 SelectingItemsControl/TabControl **没有**该虚方法
 		// （写 `protected override` 报 CS0115 no suitable method found to override），
 		// 转换工具丢掉 `override` 后成方法隐藏 → 死代码，指示条（PART_IndicatorBorder 下划线）
@@ -53,7 +53,7 @@ namespace ForkPlus.UI.Controls
 
 		protected void OnSelectionChanged(SelectionChangedEventArgs e)
 		{
-			// TODO 迁移：WPF 原版此处 `e.Handled = true` 位于 base.OnSelectionChanged(e)（同步
+			// Migration note：WPF 原版此处 `e.Handled = true` 位于 base.OnSelectionChanged(e)（同步
 			// RaiseEvent，全部处理器已跑完）之后，实际不影响该次广播，仅语义残留；Avalonia 的
 			// EventRoute 里 Handled=true 会跳过同元素后续订阅者（EventRoute.cs 实证：
 			// `!e.Handled || entry.HandledEventsToo`），保留会吞掉 ServiceTabItem 等 XAML

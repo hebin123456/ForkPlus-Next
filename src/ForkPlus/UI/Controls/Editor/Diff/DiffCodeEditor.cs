@@ -74,7 +74,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public DiffCodeEditor(DiffViewMode diffViewMode)
 		{
-			// TODO 迁移：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
+			// Migration note：WPF SetResourceReference(StyleProperty, type) 隐式样式已由 Avalonia ControlTheme 接管，移除调用。;
 			DiffViewMode = diffViewMode;
 			_backgroundColorizer = new DiffBackgroundColorizer();
 			base.TextArea.TextView.BackgroundRenderers.Add(_backgroundColorizer);

@@ -116,7 +116,7 @@
       </Setter.Value>
     </Setter>
   
-<!-- TODO 迁移：WPF 选择器 ^[IsDefaulted=true] /template/ Border#Border 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[IsDefaulted=true] /template/ Border#Border 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsDefaulted=true] /template/ Border#Border">
         <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
     </Style>-->
@@ -162,7 +162,7 @@
         <Setter Value="{DynamicResource Button.Disabled.Border}" Property="BorderBrush" />
     </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type controls:DropDownButton}" TargetType="controls:DropDownButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
   </ControlTheme>
   <ControlTheme x:Key="{x:Type editorControl:FloatingButton}" TargetType="editorControl:FloatingButton" BasedOn="{StaticResource {x:Type Button}}">
     <Setter Property="Margin" Value="2,2,2,2" />
@@ -275,7 +275,7 @@
         <Setter Property="Opacity" Value="0.6" />
     </Style></ControlTheme>
   <ControlTheme x:Key="ToolbarDropdownButton" TargetType="controls:ToolbarDropDownButton" BasedOn="{StaticResource ToolbarToggleButton}">
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="controls:ToolbarDropDownButton">
@@ -315,7 +315,7 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="StashToolbarDropdownButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToolbarToggleButton}">
     <Setter Property="CornerRadius" Value="0,3,3,0" />
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     
   
     <Style Selector="^:pointerover">
@@ -324,7 +324,7 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="BranchToolbarDropdownButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToolbarToggleButton}">
     <Setter Property="CornerRadius" Value="0,3,3,0" />
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     
   
     <Style Selector="^:pointerover">
@@ -340,7 +340,7 @@
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <!-- TODO 迁移：原重复 VerticalContentAlignment setter 已删（Avalonia 12 重复 setter 抛异常） -->
+    <!-- Migration note：原重复 VerticalContentAlignment setter 已删（Avalonia 12 重复 setter 抛异常） -->
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="RadioButton">
@@ -393,7 +393,7 @@
         <Setter Value="{DynamicResource TabItem.Disabled.Foreground}" Property="Foreground" />
     </Style></ControlTheme>
   <!--
-      TODO(wpf2avalonia): 焦点视觉样式 RadioButton.FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      WPF migration note: 焦点视觉样式 RadioButton.FocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
       原始片段：
       <Style x:Key="RadioButton.FocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
           <Setter Property="Template">
@@ -406,7 +406,7 @@
         </Style>
     -->
   <!--
-      TODO(wpf2avalonia): 焦点视觉样式 RadioButton.OptionMarkFocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
+      WPF migration note: 焦点视觉样式 RadioButton.OptionMarkFocusVisual 已移除（Avalonia 无 FocusVisualStyle 机制，焦点视觉由主题内部处理；所有引用点已随 FocusVisualStyle 属性删除）。
       原始片段：
       <Style x:Key="RadioButton.OptionMarkFocusVisual" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="https://github.com/avaloniaui">
           <Setter Property="Template">
@@ -445,7 +445,7 @@
       </Setter.Value>
     </Setter>
   
-<!-- TODO 迁移：WPF 选择器 ^[HasContent=true] 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[HasContent=true] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[HasContent=true]">
         <Setter Property="Padding" Value="6,-1,0,0" />
     </Style>-->
@@ -509,6 +509,10 @@
         <Setter Value="{DynamicResource Button.Pressed.Background}" Property="Background" />
         <Setter Value="{DynamicResource Button.Pressed.Border}" Property="BorderBrush" />
     </Style>
+    <Style Selector="^:checked /template/ Border#border">
+        <Setter Value="{DynamicResource Button.Pressed.Background}" Property="Background" />
+        <Setter Value="{DynamicResource Button.Pressed.Border}" Property="BorderBrush" />
+    </Style>
     <Style Selector="^:disabled /template/ Border#border">
         <Setter Property="Opacity" Value="0.4" />
         <Setter Property="Background" Value="#00FFFFFF" />
@@ -563,7 +567,7 @@
       </Setter.Value>
     </Setter>
   
-<!-- TODO 迁移：WPF 选择器 ^[IsDefaulted=true] /template/ Border#border 无对应 Avalonia 属性，样式块注释化。原始片段：
+<!-- Migration note：WPF 选择器 ^[IsDefaulted=true] /template/ Border#border 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsDefaulted=true] /template/ Border#border">
         <Setter Value="{DynamicResource AccentBrush}" Property="BorderBrush" />
     </Style>-->
@@ -636,7 +640,7 @@
   
     <Style Selector="^:pointerover /template/ TextBlock#textBlock">
         <Setter Value="{DynamicResource AccentBrush}" Property="Foreground" />
-<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style>
     <Style Selector="^:pointerover">
         <Setter Property="Cursor" Value="Hand" />
@@ -659,7 +663,7 @@
   
     <Style Selector="^:pointerover /template/ TextBlock#textBlock">
         <Setter Value="{DynamicResource AccentBrush}" Property="Foreground" />
-<!-- TODO 迁移：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
+<!-- Migration note：WPF Setter Property=TextDecorations 已删（Avalonia 该类型无此属性） -->
     </Style>
     <Style Selector="^:pointerover">
         <Setter Property="Cursor" Value="Hand" />
@@ -669,7 +673,7 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="LfsTextButtonStyle" TargetType="Button" BasedOn="{StaticResource TextButtonStyle}">
     
-<!-- TODO 迁移：WPF Setter Property=Height Value=Auto 已删（Avalonia double 不接受 Auto） -->
+<!-- Migration note：WPF Setter Property=Height Value=Auto 已删（Avalonia double 不接受 Auto） -->
     <Setter Property="FontSize" Value="13" />
   </ControlTheme>
   <ControlTheme x:Key="LfsImageButtonStyle" TargetType="Button" BasedOn="{StaticResource TransparentButtonStyle}">
@@ -713,7 +717,7 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
     <Setter Property="Focusable" Value="False" />
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="Padding" Value="0" />
     <Setter Property="CornerRadius" Value="3,3,3,3" />
     <Setter Property="Template">
@@ -762,7 +766,7 @@
     <Setter Property="FontSize" Value="16" />
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="Focusable" Value="False" />
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="Padding" Value="6,0,4,0" />
     <Setter Property="Template">
       <Setter.Value>
@@ -794,7 +798,7 @@
     <Setter Property="Foreground" Value="{DynamicResource Button.Foreground}" />
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
     <Setter Property="Focusable" Value="false" />
-<!-- TODO 迁移：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
+<!-- Migration note：WPF Setter Property=ClickMode 已删（Avalonia 无该属性/值） -->
     <Setter Property="Padding" Value="0" />
     <Setter Property="BorderThickness" Value="0,1,1,1" />
     <Setter Property="CornerRadius" Value="0,3,3,0" />

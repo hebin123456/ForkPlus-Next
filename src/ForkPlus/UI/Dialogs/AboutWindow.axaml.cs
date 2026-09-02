@@ -18,6 +18,9 @@ namespace ForkPlus.UI.Dialogs
 		public AboutWindow()
 		{
 			base.ShowLogo = false;
+			// WPF 原版 AboutWindow 首行 RowDefinition Height=0，从而隐藏 ForkPlusDialogWindow 的 Header 区。
+			// Avalonia 下 0 高度行可能仍会溢出渲染，为保持与原版一致，直接禁用 Header。
+			base.ShowHeader = false;
 			base.ShowFooter = false;
 			InitializeComponent();
 			string title = Translate("About " + App.AppName);

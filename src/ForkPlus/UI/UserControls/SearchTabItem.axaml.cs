@@ -19,7 +19,7 @@ namespace ForkPlus.UI.UserControls
 {
 	public partial class SearchTabItem : TabItem, ForkPlus.UI.ILocalizableControl
 	{
-		// TODO 迁移：WPF 隐式样式查找会沿基类链找到 {x:Type TabItem} 隐式样式；
+		// Migration note：WPF 隐式样式查找会沿基类链找到 {x:Type TabItem} 隐式样式；
 		// Avalonia 12 的 ControlTheme 按 StyleKey（默认=具体类型）精确匹配，TabItem 子类
 		// 匹配不到 → 回落 ContentControl 主题（PART_ContentPresenter），导致侧栏 TabItem
 		// 在 headerPanel 里渲染整个 Content（搜索框/服务页平铺进头部，布局全乱）。
@@ -62,13 +62,9 @@ namespace ForkPlus.UI.UserControls
 			FilterTextBox.FilterRequestChanged += FilterTextBox_FilterRequestChanged;
 			FilterTextBox.DropdownContextMenuOpened += FilterTextBox_DropdownContextMenuOpened;
 			FilterTextBox.ClearButtonClicked += FilterTextBox_ClearButtonClicked;
-			FilterTextBox.KeyDown += delegate(object s, KeyEventArgs e)
+			FilterTextBox.EnterPressed += delegate
 			{
-				if (e.Key == Key.Return)
-				{
-					this.SearchQueryChanged?.Invoke(this, EventArgs.Empty);
-					AddSearchQueryToRecent(SearchQuery);
-				}
+				Search();
 			};
 			TreeView.KeyDown += delegate(object s, KeyEventArgs e)
 			{
@@ -219,6 +215,12 @@ namespace ForkPlus.UI.UserControls
 		private void FilterTextBox_FilterRequestChanged(object sender, EventArgs e)
 		{
 			RefreshBusyIndicator();
+		}
+
+		private void Search()
+		{
+			this.SearchQueryChanged?.Invoke(this, EventArgs.Empty);
+			AddSearchQueryToRecent(SearchQuery);
 		}
 
 		private void FilterTextBox_ClearButtonClicked(object sender, EventArgs e)

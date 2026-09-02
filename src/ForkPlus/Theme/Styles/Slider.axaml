@@ -17,7 +17,7 @@
       <Ellipse Width="11" Height="11" VerticalAlignment="Center" Stretch="Fill" StrokeThickness="1" Fill="{DynamicResource SliderThumb.Static.Background}" Stroke="{DynamicResource SliderThumb.Static.Border}" x:Name="grip" />
     </Grid>
     <!--
-      TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
+      WPF migration note: ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
       原始片段：
       <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
             <Trigger Property="UIElement.IsMouseOver" Value="true">
@@ -57,7 +57,7 @@
       </Grid>
     </Border>
     <!--
-      TODO(wpf2avalonia): ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
+      WPF migration note: ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
       原始片段：
       <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
             <Trigger Property="Slider.IsSelectionRangeEnabled" Value="true">

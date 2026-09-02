@@ -50,6 +50,12 @@ namespace ForkPlus.UI.UserControls
 
 		private Job _activeSidebarSearchJob;
 
+		private Window _contextMenuOwnerWindow;
+
+		private EventHandler _contextMenuOwnerDeactivatedHandler;
+
+		private EventHandler<PointerPressedEventArgs> _contextMenuOwnerPointerPressedHandler;
+
 		public RepositoryUserControl RepositoryUserControl { get; private set; }
 
 		public SearchTabItem SidebarSearchTabItem { get; private set; }
@@ -70,13 +76,28 @@ namespace ForkPlus.UI.UserControls
 
 		public void UpdateRepositoryData(RepositoryData repositoryData)
 		{
-			RevisionListView.SelectedIndex = -1;
+			ClearRevisionListSelection();
 			RevisionsDataSource.Reload(RepositoryUserControl.JobQueue, repositoryData.RevisionStorage, repositoryData.Stashes, repositoryData.References, repositoryData.Remotes, repositoryData.Worktrees, repositoryData.ShowStashesInRevisionList, repositoryData.Reflog, repositoryData.CollapseState, repositoryData.UserColors, RepositoryUserControl.GitModule);
+		}
+
+		private void ClearRevisionListSelection()
+		{
+			RevisionListView.IsMultiselectionInProgress = true;
+			try
+			{
+				RevisionListView.SelectedItems.Clear();
+				RevisionListView.SelectedItem = null;
+				RevisionListView.SelectedIndex = -1;
+			}
+			finally
+			{
+				RevisionListView.IsMultiselectionInProgress = false;
+			}
 		}
 
 		static RevisionListViewUserControl()
 		{
-			// TODO 迁移：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
+			// Migration note：WPF TabNavigationProperty.OverrideMetadata(Local) → 改构造函数 KeyboardNavigation.SetTabNavigation(this, Local)（Avalonia OverrideMetadata 为私有）。
 		}
 
 		public RevisionListViewUserControl()
@@ -84,6 +105,10 @@ namespace ForkPlus.UI.UserControls
 			InitializeComponent();
 			_refreshContextSearch = new DelayedAction<string>(RefreshContextSearch, 0.1);
 			RevisionSearchPanelUserControl.SearchQueryChanged += RevisionSearchPanelUserControl_SearchQueryChanged;
+			RevisionSearchPanelUserControl.SearchSubmitted += delegate
+			{
+				_refreshContextSearch.InvokeNow(RevisionSearchPanelUserControl.SearchString);
+			};
 			RevisionSearchPanelUserControl.JumpToPreviousSearchResult += delegate
 			{
 				JumpToPreviousContextSearchResult();
@@ -96,6 +121,16 @@ namespace ForkPlus.UI.UserControls
 			RevisionListView.ItemsSource = RevisionsDataSource;
 			DragAndDropListView revisionListView = RevisionListView;
 			revisionListView.ItemDrag = (EventHandler<EventArgs>)Delegate.Combine(revisionListView.ItemDrag, new EventHandler<EventArgs>(ValidateDrag));
+			RevisionListView.AddHandler(DragDrop.DropEvent, RevisionListView_Drop);
+			RevisionListView.LayoutUpdated += delegate
+			{
+				StretchRevisionListItems();
+			};
+			RevisionListView.AddHandler(
+				InputElement.PointerPressedEvent,
+				new EventHandler<PointerPressedEventArgs>(RevisionListView_ContextMenuPointerPressed),
+				global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+				handledEventsToo: true);
 			base.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if ((e.Key == Key.F3 || (e.Key == Key.F && KeyboardHelper.IsCtrlDown)) && !KeyboardHelper.IsShiftDown)
@@ -211,11 +246,11 @@ namespace ForkPlus.UI.UserControls
 
 		public Sha? GetBottomShaInViewPort()
 		{
-			if (VisualTreeHelper.GetChildrenCount(RevisionListView) == 0)
+			ScrollViewer scrollViewer = ScrollViewerHelper.FindScrollViewer(RevisionListView);
+			if (scrollViewer == null)
 			{
 				return null;
 			}
-			ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(RevisionListView, 0), 0);
 			int num = (int)(scrollViewer.Offset.Y + scrollViewer.Viewport.Height) - 1;
 			if (num < 0 || num >= RevisionsDataSource.Count)
 			{
@@ -250,6 +285,7 @@ namespace ForkPlus.UI.UserControls
 		public void Select(IReadOnlyList<int> rows)
 		{
 			RevisionListView.Select(rows, NoUIAutomationListView.SelectOptions.ScrollIntoView);
+			NotifySelectionChangedFromCurrentItems();
 		}
 
 		public bool Select(RevisionSelector select, NoUIAutomationListView.SelectOptions selectOptions, int fallbackRow = -1)
@@ -261,6 +297,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					int valueOrDefault = headRow.GetValueOrDefault();
 					RevisionListView.Select(valueOrDefault, selectOptions);
+					NotifySelectionChangedFromCurrentItems();
 					return true;
 				}
 			}
@@ -276,15 +313,17 @@ namespace ForkPlus.UI.UserControls
 						list.Add(valueOrDefault2);
 					}
 				}
-				RevisionListView.Select(list, selectOptions);
 				if (list.Count > 0)
 				{
+					RevisionListView.Select(list, selectOptions);
+					NotifySelectionChangedFromCurrentItems();
 					return true;
 				}
 			}
 			if (fallbackRow != -1 && RevisionsDataSource.Count > fallbackRow)
 			{
 				RevisionListView.Select(fallbackRow, selectOptions);
+				NotifySelectionChangedFromCurrentItems();
 				return true;
 			}
 			return false;
@@ -339,6 +378,27 @@ namespace ForkPlus.UI.UserControls
 		{
 			RefreshRevisionListViewTemplate();
 			RevisionListView.UpdateResizableColumnWidth(0);
+			StretchRevisionListItems();
+		}
+
+		private void StretchRevisionListItems()
+		{
+			double width = Math.Max(0.0, RevisionListView.Bounds.Width - 8.0);
+			if (width <= 0.0)
+			{
+				return;
+			}
+			foreach (DragAndDropListViewItem item in global::Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(RevisionListView).OfType<DragAndDropListViewItem>())
+			{
+				if (double.IsNaN(item.Width) || Math.Abs(item.Width - width) > 0.5)
+				{
+					item.Width = width;
+				}
+				if (Math.Abs(item.MinWidth - width) > 0.5)
+				{
+					item.MinWidth = width;
+				}
+			}
 		}
 
 		private void RevisionListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -348,10 +408,15 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			e.Handled = true;
-			if (e.AddedItems.Count <= 0 && e.RemovedItems.Count <= 0)
+			if (e.AddedItems.Count <= 0 && e.RemovedItems.Count <= 0 && RevisionListView.SelectedItems.Count == 0 && RevisionListView.SelectedItem == null)
 			{
 				return;
 			}
+			NotifySelectionChangedFromCurrentItems();
+		}
+
+		private void NotifySelectionChangedFromCurrentItems()
+		{
 			DecoratedRevision[] array = new DecoratedRevision[RevisionListView.SelectedItems.Count];
 			for (int i = 0; i < RevisionListView.SelectedItems.Count; i++)
 			{
@@ -361,6 +426,14 @@ namespace ForkPlus.UI.UserControls
 					return;
 				}
 				array[i] = decoratedRevision;
+			}
+			if (array.Length == 0 && RevisionListView.SelectedItem is DecoratedRevision selectedRevision)
+			{
+				array = new DecoratedRevision[1] { selectedRevision };
+			}
+			if (array.Length == 0)
+			{
+				return;
 			}
 			if (array.Length == 2)
 			{
@@ -407,57 +480,151 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (sender is ListBox listBox)
 			{
-				RepositoryUserControl repositoryUserControl = RepositoryUserControl;
-				if (repositoryUserControl != null)
+				Point point;
+				Point? position = e.TryGetPosition(listBox, out point) ? point : null;
+				if (TrySelectContextMenuTarget(listBox, e.Source, position) && OpenRevisionContextMenu(listBox, e.Source))
 				{
-					GitModule gitModule = RepositoryUserControl.GitModule;
-					if (gitModule != null)
-					{
-						RepositoryData repositoryData = RepositoryUserControl.RepositoryData;
-						if (repositoryData != null)
-						{
-							CommitGraphCache commitGraphCache = RepositoryUserControl.CommitGraphCache;
-							if (commitGraphCache != null)
-							{
-								DecoratedRevision[] array = listBox.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
-								if (e.Source is GraphCellView { DataContext: DecoratedRevision dataContext } && dataContext.GetParents().Length > 1)
-								{
-									listBox.ContextMenu.SetItems(CreateCollapseContextMenu(dataContext));
-									return;
-								}
-								if (array.AllItems((DecoratedRevision x) => x.IsStash()))
-								{
-									StashRevision[] stashes = array.Map((DecoratedRevision x) => x.AsStashRevision());
-									listBox.ContextMenu.SetItems(CreateStashContextMenuItems(repositoryUserControl, stashes));
-									return;
-								}
-								DecoratedRevision decoratedRevision = array.SingleItem();
-								if (decoratedRevision != null)
-								{
-									listBox.ContextMenu.SetItems(CreateRevisionContextMenuItems(repositoryUserControl, gitModule, repositoryData, decoratedRevision, commitGraphCache));
-									return;
-								}
-								if (array.Length > 1)
-								{
-									listBox.ContextMenu.SetItems(CreateMultipleRevisionsContextMenuItems(repositoryUserControl, gitModule, repositoryData, array));
-									return;
-								}
-								e.Handled = true;
-								RevisionListView.ContextMenu.Close();
-								return;
-							}
-						}
-					}
+					e.Handled = true;
+					return;
 				}
 			}
 			e.Handled = true;
 			RevisionListView.ContextMenu.Close();
 		}
 
-		[Null]
-			private Branch GetClickedBranch(global::Avalonia.Input.TappedEventArgs args) // TODO 迁移：双击事件改为 TappedEventArgs。
+		private void RevisionListView_ContextMenuPointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			PointerPointProperties properties = e.GetCurrentPoint(RevisionListView).Properties;
+			if (!properties.IsRightButtonPressed && properties.PointerUpdateKind != PointerUpdateKind.RightButtonPressed)
 			{
-				// TODO 迁移：WPF DependencyObject 可视树遍历 → Avalonia Visual。
+				return;
+			}
+
+			e.Handled = true;
+			RevisionListView.ContextMenu?.Close();
+			if (!TrySelectContextMenuTarget(RevisionListView, e.Source, e.GetPosition(RevisionListView)) || !OpenRevisionContextMenu(RevisionListView, e.Source))
+			{
+				RevisionListView.ContextMenu?.Close();
+			}
+		}
+
+		private bool OpenRevisionContextMenu(ListBox listBox, object source)
+		{
+			AttachContextMenuDismissBehavior(listBox.ContextMenu);
+			RepositoryUserControl repositoryUserControl = RepositoryUserControl;
+			GitModule gitModule = RepositoryUserControl?.GitModule;
+			RepositoryData repositoryData = RepositoryUserControl?.RepositoryData;
+			CommitGraphCache commitGraphCache = RepositoryUserControl?.CommitGraphCache;
+			if (repositoryUserControl == null || gitModule == null || repositoryData == null || commitGraphCache == null)
+			{
+				return false;
+			}
+
+			GraphCellView graphCellView = FindVisualAncestorOrSelf<GraphCellView>(source as global::Avalonia.Visual);
+			if (graphCellView?.DataContext is DecoratedRevision graphRevision && graphRevision.GetParents().Length > 1)
+			{
+				ShowRevisionContextMenu(listBox, CreateCollapseContextMenu(graphRevision));
+				return true;
+			}
+
+			DecoratedRevision[] selectedRevisions = listBox.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
+			if (selectedRevisions.AllItems((DecoratedRevision x) => x.IsStash()))
+			{
+				StashRevision[] stashes = selectedRevisions.Map((DecoratedRevision x) => x.AsStashRevision());
+				ShowRevisionContextMenu(listBox, CreateStashContextMenuItems(repositoryUserControl, stashes));
+				return true;
+			}
+
+			DecoratedRevision decoratedRevision = selectedRevisions.SingleItem();
+			if (decoratedRevision != null)
+			{
+				ShowRevisionContextMenu(listBox, CreateRevisionContextMenuItems(repositoryUserControl, gitModule, repositoryData, decoratedRevision, commitGraphCache));
+				return true;
+			}
+
+			if (selectedRevisions.Length > 1)
+			{
+				ShowRevisionContextMenu(listBox, CreateMultipleRevisionsContextMenuItems(repositoryUserControl, gitModule, repositoryData, selectedRevisions));
+				return true;
+			}
+
+			return false;
+		}
+
+		private void ShowRevisionContextMenu(ListBox listBox, IEnumerable<Control> items)
+		{
+			ContextMenu contextMenu = listBox.ContextMenu;
+			if (contextMenu == null)
+			{
+				return;
+			}
+			contextMenu.PlacementTarget = listBox;
+			contextMenu.SetItems(items);
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, listBox);
+			contextMenu.Open();
+		}
+
+		private void AttachContextMenuDismissBehavior(ContextMenu contextMenu)
+		{
+			if (contextMenu == null)
+			{
+				return;
+			}
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, RevisionListView);
+
+			_contextMenuOwnerWindow = TopLevel.GetTopLevel(this) as Window;
+			if (_contextMenuOwnerWindow != null)
+			{
+				_contextMenuOwnerDeactivatedHandler ??= (_, _) =>
+				{
+					if (contextMenu.IsOpen)
+					{
+						contextMenu.Close();
+					}
+				};
+				_contextMenuOwnerWindow.Deactivated -= _contextMenuOwnerDeactivatedHandler;
+				_contextMenuOwnerWindow.Deactivated += _contextMenuOwnerDeactivatedHandler;
+
+				_contextMenuOwnerPointerPressedHandler ??= (_, _) =>
+				{
+					if (contextMenu.IsOpen)
+					{
+						contextMenu.Close();
+					}
+				};
+				_contextMenuOwnerWindow.RemoveHandler(global::Avalonia.Input.InputElement.PointerPressedEvent, _contextMenuOwnerPointerPressedHandler);
+				_contextMenuOwnerWindow.AddHandler(
+					global::Avalonia.Input.InputElement.PointerPressedEvent,
+					_contextMenuOwnerPointerPressedHandler,
+					global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+					handledEventsToo: true);
+			}
+
+			contextMenu.Closed -= ContextMenu_Closed;
+			contextMenu.Closed += ContextMenu_Closed;
+		}
+
+		private void ContextMenu_Closed(object sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+		{
+			if (sender is ContextMenu contextMenu)
+			{
+				contextMenu.Closed -= ContextMenu_Closed;
+			}
+			if (_contextMenuOwnerWindow != null && _contextMenuOwnerDeactivatedHandler != null)
+			{
+				_contextMenuOwnerWindow.Deactivated -= _contextMenuOwnerDeactivatedHandler;
+			}
+			if (_contextMenuOwnerWindow != null && _contextMenuOwnerPointerPressedHandler != null)
+			{
+				_contextMenuOwnerWindow.RemoveHandler(global::Avalonia.Input.InputElement.PointerPressedEvent, _contextMenuOwnerPointerPressedHandler);
+			}
+			_contextMenuOwnerWindow = null;
+		}
+
+		[Null]
+			private Branch GetClickedBranch(global::Avalonia.Input.TappedEventArgs args) // Migration note：双击事件改为 TappedEventArgs。
+			{
+				// Migration note：WPF DependencyObject 可视树遍历 → Avalonia Visual。
 				// WPF 中分支名是 Run 元素（Run.DataContext = BranchViewModel）；Avalonia 的 Run 不是 Visual，
 				// 命中源是包含它的 TextBlock，改为检查遍历元素的 DataContext 是否为 BranchViewModel。
 				global::Avalonia.Visual dependencyObject = args.Source as global::Avalonia.Visual;
@@ -468,7 +635,7 @@ namespace ForkPlus.UI.UserControls
 						return branchViewModel.Reference as Branch;
 					}
 					dependencyObject = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(dependencyObject);
-					if (dependencyObject is global::Avalonia.Controls.Presenters.ContentPresenter { DataContext: BranchViewModel dataContext }) // TODO 迁移：ContentPresenter 在 Presenters 命名空间。
+					if (dependencyObject is global::Avalonia.Controls.Presenters.ContentPresenter { DataContext: BranchViewModel dataContext }) // Migration note：ContentPresenter 在 Presenters 命名空间。
 					{
 						return dataContext.Reference as Branch;
 					}
@@ -529,7 +696,7 @@ namespace ForkPlus.UI.UserControls
 		private void RefreshRevisionListViewTemplate()
 	{
 		double num = 500.0;
-		// TODO 迁移：WPF ListView.View=GridView（宽→SingleRow / 窄→DoubleRow）在 Avalonia 无列视图体系，
+		// Migration note：WPF ListView.View=GridView（宽→SingleRow / 窄→DoubleRow）在 Avalonia 无列视图体系，
 		// 改为切换 ListBox.ItemTemplate（模板在 axaml Resources 重建，见 SingleRowRevisionTemplate/DoubleRowRevisionTemplate）。
 		bool useSingleRow = ForkPlusSettings.Default.RevisionListOrientation == RevisionListOrientation.Horizontal || RevisionListView.GetAvailableWidth() > num;
 		string resourceKey = useSingleRow ? "SingleRowRevisionTemplate" : "DoubleRowRevisionTemplate";
@@ -609,6 +776,53 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 			e.Handled = true;
+		}
+
+		private bool TrySelectContextMenuTarget(ListBox listBox, object source, Point? position)
+		{
+			ListBoxItem container = FindVisualAncestorOrSelf<ListBoxItem>(source as global::Avalonia.Visual);
+			if (container == null && position.HasValue)
+			{
+				container = listBox.GetContainerAtPoint<ListBoxItem>(position.Value);
+			}
+			if (container?.DataContext is not DecoratedRevision revision)
+			{
+				return false;
+			}
+			DecoratedRevision[] selectedRevisions = listBox.SelectedItems.CompactMap((object x) => x as DecoratedRevision);
+			if (container.IsSelected && selectedRevisions.Contains(revision))
+			{
+				return true;
+			}
+			listBox.SelectedItems.Clear();
+			listBox.SelectedItems.Add(revision);
+			listBox.SelectedItem = revision;
+			listBox.SelectedIndex = revision.Row;
+			container.IsSelected = true;
+			container.InvalidateVisual();
+			return true;
+		}
+
+		private static T FindVisualAncestorOrSelf<T>(global::Avalonia.Visual visual) where T : class
+		{
+			for (global::Avalonia.Visual current = visual; current != null; current = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(current))
+			{
+				if (current is T match)
+				{
+					return match;
+				}
+			}
+			return null;
+		}
+
+		private void RevisionListView_Drop(object sender, DragEventArgs e)
+		{
+			DragAndDropListViewItem item = e.Source as DragAndDropListViewItem
+				?? (e.Source as global::Avalonia.Visual)?.GetParent<DragAndDropListViewItem>();
+			if (item != null)
+			{
+				RevisionListViewItem_Drop(item, e);
+			}
 		}
 
 		private IEnumerable<Control> CreateMultipleRevisionsContextMenuItems(RepositoryUserControl repositoryUserControl, GitModule gitModule, RepositoryData repositoryData, DecoratedRevision[] selectedRevisions)

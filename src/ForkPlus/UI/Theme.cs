@@ -219,7 +219,7 @@ namespace ForkPlus.UI
 
 		public static global::Avalonia.Media.IImage FindImage(string resourceKey)
                 {
-                        // TODO 迁移：WPF ImageSource → Avalonia IImage（资源里的位图对象）。
+                        // Migration note：WPF ImageSource → Avalonia IImage（资源里的位图对象）。
                         return (global::Avalonia.Application.Current != null && global::Avalonia.Application.Current.TryGetResource(resourceKey, global::Avalonia.Application.Current.ActualThemeVariant, out var __res0) ? __res0 as global::Avalonia.Media.IImage : null);
                 }
 
@@ -235,7 +235,7 @@ namespace ForkPlus.UI
 
 		public static global::Avalonia.Styling.IStyle FindStyle(string resourceKey)
 		{
-			// TODO 迁移：主题资源（x:Key 的 Style）迁移后全部是 ControlTheme，与 Style 互不继承，
+			// Migration note：主题资源（x:Key 的 Style）迁移后全部是 ControlTheme，与 Style 互不继承，
 			// 原 `as Style` 恒得 null（运行时 ControlTheme 再被 Styles.Add(null) 炸 NRE）。
 			// 返回 IStyle（ControlTheme/Style 公共接口）；ControlTheme 消费方须经 StyleCompat.SetStyle
 			// 挂到 TemplatedControl.Theme。

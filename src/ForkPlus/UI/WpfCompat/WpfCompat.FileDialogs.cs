@@ -1,7 +1,6 @@
 // WPF → Avalonia 迁移兼容层：Microsoft.Win32.OpenFileDialog / SaveFileDialog shim。
-// WPF ShowDialog() 同步返回 bool?；Avalonia StorageProvider 是异步 API，
+// WPF ShowDialog() 同步返回 bool?；Avalonia StorageProvider 是异步 API。
 // 这里用阻塞等待包装，保持迁移期调用形状不变。
-// TODO 迁移：正式实现请改为 async/await 并直接使用 IStorageProvider。
 
 using System;
 using System.Collections.Generic;
@@ -20,7 +19,6 @@ namespace Microsoft.Win32
         public bool CheckFileExists { get; set; }
         public bool Multiselect { get; set; }
         public string FileName { get; set; } = "";
-        /// <summary>TODO 迁移：WPF InitialDirectory → Avalonia SuggestedStartLocation（需要 IStorageFolder）。</summary>
         public string InitialDirectory { get; set; }
 
         /// <summary>解析 WPF "Name (*.ext)|*.ext" 过滤串为 Avalonia FileType 列表。</summary>
@@ -48,6 +46,37 @@ namespace Microsoft.Win32
                 : null;
 
         internal static T BlockingWait<T>(Task<T> task) => task.GetAwaiter().GetResult();
+
+        internal static global::Avalonia.Platform.Storage.IStorageFolder TryGetStartLocation(Window owner, string initialDirectory, string fileName)
+        {
+            string startPath = null;
+            if (!string.IsNullOrWhiteSpace(initialDirectory) && System.IO.Directory.Exists(initialDirectory))
+            {
+                startPath = initialDirectory;
+            }
+            else if (!string.IsNullOrWhiteSpace(fileName))
+            {
+                string directory = System.IO.Path.GetDirectoryName(fileName);
+                if (!string.IsNullOrWhiteSpace(directory) && System.IO.Directory.Exists(directory))
+                {
+                    startPath = directory;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(startPath))
+            {
+                return null;
+            }
+
+            try
+            {
+                return BlockingWait(owner.StorageProvider.TryGetFolderFromPathAsync(startPath));
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 
     /// <summary>WPF Microsoft.Win32.OpenFileDialog shim（Avalonia StorageProvider）。</summary>
@@ -63,9 +92,9 @@ namespace Microsoft.Win32
             {
                 Title = Title,
                 AllowMultiple = Multiselect,
-                FileTypeFilter = ParseFilter()
+                FileTypeFilter = ParseFilter(),
+                SuggestedStartLocation = TryGetStartLocation(owner, InitialDirectory, FileName)
             };
-            // TODO 迁移：WPF CheckFileExists 由 Avalonia 文件选择器内建保证。
             var files = BlockingWait(owner.StorageProvider.OpenFilePickerAsync(pickerOptions));
             var list = files?.ToList();
             if (list == null || list.Count == 0) return false;
@@ -89,10 +118,10 @@ namespace Microsoft.Win32
             {
                 Title = Title,
                 SuggestedFileName = suggestName,
-                FileTypeChoices = ParseFilter()
-                // TODO 迁移：Avalonia 12 FilePickerSaveOptions 无 ShowOverwriteConfirmation，覆盖确认由系统选择器承担。
+                FileTypeChoices = ParseFilter(),
+                ShowOverwritePrompt = OverwritePrompt,
+                SuggestedStartLocation = TryGetStartLocation(owner, InitialDirectory, FileName)
             };
-            // TODO 迁移：WPF InitialDirectory 由 SuggestedStartLocation 承担，当前从 FileName 推导。
             var file = BlockingWait(owner.StorageProvider.SaveFilePickerAsync(options));
             if (file == null) return false;
             FileName = file.TryGetLocalPath() ?? file.Name;

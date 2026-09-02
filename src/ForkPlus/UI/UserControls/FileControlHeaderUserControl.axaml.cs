@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using ForkPlus.UI.WpfCompat;
 using System.ComponentModel;
 using System.IO;
@@ -19,6 +20,8 @@ namespace ForkPlus.UI.UserControls
 	public partial class FileControlHeaderUserControl : UserControl, ForkPlus.UI.ILocalizableControl
 	{
 		private bool _highlightPixelsToggleButtonEnabled;
+
+		private static readonly object SettingsSaveLock = new object();
 
 		public static readonly global::Avalonia.StyledProperty<string> FilePathProperty =
     global::Avalonia.AvaloniaProperty.Register<FileControlHeaderUserControl, string>("FilePath");
@@ -240,6 +243,10 @@ namespace ForkPlus.UI.UserControls
 			{
 				return null;
 			}
+			if (fileDiffControl.CurrentSubView is TextDiffControl currentTextDiffControl)
+			{
+				return currentTextDiffControl;
+			}
 			TextDiffControl[] array = fileDiffControl.Children.CompactMap((object x) => x as TextDiffControl);
 			if (array.Length != 0)
 			{
@@ -266,6 +273,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			bool valueOrDefault = IgnoreWhitespacesToggleButton.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.DiffIgnoreWhitespaces = valueOrDefault;
+			SaveSettingsAsync();
 			NotificationCenter.Current.RaiseDiffIgnoreWhitespacesChanged(this, valueOrDefault);
 		}
 
@@ -273,6 +281,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			bool valueOrDefault = ShowHiddenSymbolsToggleButton.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.DiffShowHiddenSymbols = valueOrDefault;
+			SaveSettingsAsync();
 			NotificationCenter.Current.RaiseDiffShowHiddenSymbolsChanged(this, valueOrDefault);
 		}
 
@@ -280,6 +289,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			bool valueOrDefault = WordWrapToggleButton.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.DiffWordWrap = valueOrDefault;
+			SaveSettingsAsync();
 			NotificationCenter.Current.RaiseDiffWordWrapChanged(this, valueOrDefault);
 		}
 
@@ -287,12 +297,14 @@ namespace ForkPlus.UI.UserControls
 		{
 			bool valueOrDefault = ShowEntireFileToggleButton.IsChecked.GetValueOrDefault();
 			DiffShowEntireFile = valueOrDefault;
+			SaveSettingsAsync();
 			NotificationCenter.Current.RaiseDiffShowEntireFileChanged(this, valueOrDefault);
 		}
 
 		private void DiffLayoutModeToggleButton_Click(object sender, RoutedEventArgs e)
 		{
 			DiffLayoutMode newValue = (DiffLayoutMode = (DiffLayoutModeToggleButton.IsChecked.GetValueOrDefault() ? DiffLayoutMode.SideBySide : DiffLayoutMode.Split));
+			SaveSettingsAsync();
 			NotificationCenter.Current.RaiseDiffLayoutModeChanged(this, newValue);
 		}
 
@@ -300,29 +312,37 @@ namespace ForkPlus.UI.UserControls
 		{
 			bool valueOrDefault = HighlightPixelsToggleButton.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.ImageDiffHighlightPixels = valueOrDefault;
+			SaveSettingsAsync();
 			NotificationCenter.Current.RaiseImageDiffHighlightPixelsChanged(this, valueOrDefault);
 		}
 
 		private void UpdateIgnoreWhiteSpacesToggleButtonState()
 		{
-			IgnoreWhitespacesToggleButton.IsChecked = ForkPlusSettings.Default.DiffIgnoreWhitespaces;
+			bool isChecked = ForkPlusSettings.Default.DiffIgnoreWhitespaces;
+			IgnoreWhitespacesToggleButton.IsChecked = isChecked;
+			SetToggleImageResource(IgnoreWhitespacesImage, isChecked, "IgnoreWhiteSpacesOnIcon", "IgnoreWhiteSpacesIcon");
 		}
 
 		private void UpdateShowHiddenSymbolsToggleButtonState()
 		{
-			ShowHiddenSymbolsToggleButton.IsChecked = ForkPlusSettings.Default.DiffShowHiddenSymbols;
+			bool isChecked = ForkPlusSettings.Default.DiffShowHiddenSymbols;
+			ShowHiddenSymbolsToggleButton.IsChecked = isChecked;
+			SetToggleImageResource(ShowHiddenSymbolsImage, isChecked, "ShowHiddenSymbolsOnIcon", "ShowHiddenSymbolsIcon");
 		}
 
 		private void UpdateWordWrapToggleButtonState()
 		{
 			if (DiffLayoutMode == DiffLayoutMode.Split)
 			{
-				WordWrapToggleButton.IsChecked = ForkPlusSettings.Default.DiffWordWrap;
+				bool isChecked = ForkPlusSettings.Default.DiffWordWrap;
+				WordWrapToggleButton.IsChecked = isChecked;
+				SetToggleImageResource(WordWrapImage, isChecked, "WordWrapOnIcon", "WordWrapIcon");
 				WordWrapToggleButton.Enable();
 			}
 			else
 			{
 				WordWrapToggleButton.IsChecked = false;
+				SetToggleImageResource(WordWrapImage, isChecked: false, "WordWrapOnIcon", "WordWrapIcon");
 				WordWrapToggleButton.Disable();
 			}
 		}
@@ -335,6 +355,7 @@ namespace ForkPlus.UI.UserControls
 				bool valueOrDefault = diffShowEntireFile.GetValueOrDefault();
 				ShowEntireFileToggleButton.IsEnabled = true;
 				ShowEntireFileToggleButton.IsChecked = valueOrDefault;
+				SetToggleImageResource(ShowEntireFileImage, valueOrDefault, "ShowEntireFileOnIcon", "ShowEntireFileIcon");
 				DecreaseNumberOfVisibleLinesButton.IsEnabled = !valueOrDefault;
 				IncreaseNumberOfVisibleLinesButton.IsEnabled = !valueOrDefault;
 			}
@@ -343,6 +364,7 @@ namespace ForkPlus.UI.UserControls
 				ShowEntireFileToggleButton.IsEnabled = false;
 				DecreaseNumberOfVisibleLinesButton.IsEnabled = false;
 				IncreaseNumberOfVisibleLinesButton.IsEnabled = false;
+				SetToggleImageResource(ShowEntireFileImage, isChecked: false, "ShowEntireFileOnIcon", "ShowEntireFileIcon");
 			}
 		}
 
@@ -351,11 +373,13 @@ namespace ForkPlus.UI.UserControls
 			if (DiffLayoutMode == DiffLayoutMode.SideBySide)
 			{
 				DiffLayoutModeToggleButton.IsChecked = true;
+				SetToggleImageResource(DiffLayoutModeImage, isChecked: true, "SideBySideOnIcon", "SideBySideIcon");
 				global::Avalonia.Controls.ToolTip.SetTip(DiffLayoutModeToggleButton,Translate("Split diff"));
 			}
 			else
 			{
 				DiffLayoutModeToggleButton.IsChecked = false;
+				SetToggleImageResource(DiffLayoutModeImage, isChecked: false, "SideBySideOnIcon", "SideBySideIcon");
 				global::Avalonia.Controls.ToolTip.SetTip(DiffLayoutModeToggleButton,Translate("Side by side diff"));
 			}
 		}
@@ -365,13 +389,32 @@ namespace ForkPlus.UI.UserControls
 			if (HighlightPixelsToggleButtonEnabled)
 			{
 				HighlightPixelsToggleButton.Enable();
-				HighlightPixelsToggleButton.IsChecked = ForkPlusSettings.Default.ImageDiffHighlightPixels;
+				bool isChecked = ForkPlusSettings.Default.ImageDiffHighlightPixels;
+				HighlightPixelsToggleButton.IsChecked = isChecked;
+				SetToggleImageResource(HighlightPixelsImage, isChecked, "HighlightPixelsOnIcon", "HighlightPixelsIcon");
 			}
 			else
 			{
 				HighlightPixelsToggleButton.Disable();
 				HighlightPixelsToggleButton.IsChecked = false;
+				SetToggleImageResource(HighlightPixelsImage, isChecked: false, "HighlightPixelsOnIcon", "HighlightPixelsIcon");
 			}
+		}
+
+		private static void SetToggleImageResource(Image image, bool isChecked, string checkedResourceKey, string uncheckedResourceKey)
+		{
+			image.SetResourceReference(Image.SourceProperty, isChecked ? checkedResourceKey : uncheckedResourceKey);
+		}
+
+		private static void SaveSettingsAsync()
+		{
+			Task.Run(delegate
+			{
+				lock (SettingsSaveLock)
+				{
+					ForkPlusSettings.Default.Save();
+				}
+			});
 		}
 
 		private void RefreshToolbarLayout(FileControlHeaderMode mode)

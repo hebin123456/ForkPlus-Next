@@ -21,7 +21,7 @@ namespace ForkPlus.UI.Commands
 			})
 		};
 
-		// TODO 迁移：平台化文案（macOS 期望 Finder 措辞）。
+		// Migration note：平台化文案（macOS 期望 Finder 措辞）。
 		public string Title => OperatingSystem.IsMacOS() ? "Open in Finder" : (OperatingSystem.IsWindows() ? "Open In File Explorer" : "Open in File Manager");
 
 		public KeyGesture Shortcut { get; } = new KeyGesture(Key.O, global::Avalonia.Input.KeyModifiers.Alt | global::Avalonia.Input.KeyModifiers.Control);

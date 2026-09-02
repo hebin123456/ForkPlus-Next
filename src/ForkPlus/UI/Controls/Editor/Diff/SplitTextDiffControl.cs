@@ -86,6 +86,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public SplitTextDiffControl()
 		{
+			_editor.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
+			_editor.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Stretch;
 			base.Children.Add(_editor);
 			_editor.ContextMenu = new ContextMenu();
 			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AddContextMenuClosingHandler(_editor,delegate

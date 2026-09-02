@@ -89,7 +89,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		public void SetContent(global::Avalonia.Media.Imaging.Bitmap oldImageSource, global::Avalonia.Media.Imaging.Bitmap newImageSource, [Null] global::Avalonia.Media.Imaging.Bitmap diffImageSource)
 	{
-		// TODO 迁移：WPF Control.Background 在 Avalonia 的 Control 基类不存在（且原码从未渲染它，属死代码），移除。
+		// Migration note：WPF Control.Background 在 Avalonia 的 Control 基类不存在（且原码从未渲染它，属死代码），移除。
 		_oldImageSource = oldImageSource;
 		_newImageSource = newImageSource;
 		_diffImageSource = diffImageSource;
@@ -143,7 +143,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 					break;
 				}
 			}
-			// TODO 迁移：WPF Push/Pop 配对 → Avalonia Push* 返回 struct PushedState，
+			// Migration note：WPF Push/Pop 配对 → Avalonia Push* 返回 struct PushedState，
 		// 不能与 null 组成条件表达式；default(PushedState).Dispose() 是判空安全的空操作，用它替代 null 分支。
 		// PushClip(RectangleGeometry) → PushGeometryClip(Geometry)。
 		using (rectangleGeometry != null ? drawingContext.PushGeometryClip(rectangleGeometry) : default(global::Avalonia.Media.DrawingContext.PushedState))

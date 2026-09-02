@@ -10,7 +10,7 @@
           <ControlTemplate TargetType="TabItem">
             <Grid Margin="0,0,2,0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="templateRoot">
               <Border CornerRadius="4,4,0,0" BorderThickness="1,1,1,0" BorderBrush="{DynamicResource ClosableTabItem.Static.Border}" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="Bd" />
-              <!-- TODO 迁移：WPF ContentSource="Header" → 显式绑定 Header（TabItem 标签头） -->
+              <!-- Migration note：WPF ContentSource="Header" → 显式绑定 Header（TabItem 标签头） -->
               <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" TextElement.FontWeight="Medium" TextElement.Foreground="{DynamicResource TabItem.Static.Foreground}" VerticalAlignment="Center" x:Name="contentPresenter" Content="{TemplateBinding Header}"/>
             </Grid>
             
@@ -37,7 +37,7 @@
         <Setter Property="Foreground" Value="{DynamicResource TabItem.Disabled.Foreground}" />
     </Style></ControlTheme>
     <ControlTheme x:Key="GitMmSubrepoTabControlStyle" TargetType="controls:ModernTabControl" BasedOn="{StaticResource {x:Type controls:ModernTabControl}}">
-<!-- TODO 迁移：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
+<!-- Migration note：WPF Style.Resources 块（Avalonia Style 无 Resources 属性）。原始片段：
       <Style.Resources>
         <ResourceDictionary>
           <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem" BasedOn="{StaticResource GitMmSubrepoTabItemStyle}" />

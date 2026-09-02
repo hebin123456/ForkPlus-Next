@@ -15,7 +15,7 @@ namespace ForkPlus.UI.Controls
 
 		public TextField()
 		{
-			// TODO 迁移：WPF 版 DependencyProperty.Register 带 PropertyChangedCallback → RefreshInlines，
+			// Migration note：WPF 版 DependencyProperty.Register 带 PropertyChangedCallback → RefreshInlines，
 			// 转换丢了回调 → Inlines 永不填充 → TextBlock 空白（提交主题不渲染，实证见 MIGRATION.md 运行时修复链 4）。
 			// GetObservable 订阅时立即触发一次 + 绑定赋值后再触发，补回整条触发链。
 			this.GetObservable(StringValueProperty).Subscribe(new global::Avalonia.Reactive.AnonymousObserver<string>(delegate
@@ -28,7 +28,7 @@ namespace ForkPlus.UI.Controls
 			}));
 		}
 
-		// TODO 迁移：WPF DependencyProperty → Avalonia StyledProperty。
+		// Migration note：WPF DependencyProperty → Avalonia StyledProperty。
 		// 原转换用 RegisterAttached<..., AvaloniaObject, ...>（附加属性形式），XAML 属性元素语法
 		// <controls:TextField.StringValue><Binding/></...> 无法解析，改为普通 Register。
 		public static readonly global::Avalonia.StyledProperty<string> StringValueProperty =

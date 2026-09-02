@@ -129,7 +129,7 @@ namespace ForkPlus.UI.Commands
 				{
 					return false;
 				}
-				// TODO 迁移：AssocQueryString（Shlwapi.dll）是 Windows 专属的 shell 关联查询，
+				// Migration note：AssocQueryString（Shlwapi.dll）是 Windows 专属的 shell 关联查询，
 				// Unix 上抛 DllNotFoundException（被 catch 吞掉后命令静默不可用）。
 				// Unix 退化为探测 xdg-open（xdg-open 在 PATH 即视为有默认编辑器，
 				// 实际打开由 Process.Start(UseShellExecute=true) 走 xdg-open 关联）。

@@ -13,10 +13,10 @@ namespace ForkPlus.UI.Controls
 	public class FilePathTextBlock : SelectableTextBlock
 	{
 		public static readonly global::Avalonia.StyledProperty<string> FilePathProperty =
-    global::Avalonia.AvaloniaProperty.RegisterAttached<FilePathTextBlock, global::Avalonia.AvaloniaObject, string>("FilePath");
+    global::Avalonia.AvaloniaProperty.Register<FilePathTextBlock, string>("FilePath");
 
 		public static readonly global::Avalonia.StyledProperty<string> OldFilePathProperty =
-    global::Avalonia.AvaloniaProperty.RegisterAttached<FilePathTextBlock, global::Avalonia.AvaloniaObject, string>("OldFilePath");
+    global::Avalonia.AvaloniaProperty.Register<FilePathTextBlock, string>("OldFilePath");
 
 		private Brush _labelBrush;
 
@@ -55,6 +55,15 @@ namespace ForkPlus.UI.Controls
 				global::Avalonia.Controls.ToolTip.SetTip(this, (TextIsTrimmed() ? GetToolTipText() : null));
 			};
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+		}
+
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			if (change.Property == FilePathProperty || change.Property == OldFilePathProperty)
+			{
+				Refresh();
+			}
 		}
 
 		private void Refresh()
@@ -118,7 +127,7 @@ namespace ForkPlus.UI.Controls
 			{
 				return false;
 			}
-			double num = panel.Bounds.Width; // TODO 迁移：WPF Panel.ActualWidth → Avalonia Panel.Bounds.Width
+			double num = panel.Bounds.Width; // Migration note：WPF Panel.ActualWidth → Avalonia Panel.Bounds.Width
 			foreach (global::Avalonia.Controls.Control child in panel.Children)
 			{
 				if (child != this)

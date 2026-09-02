@@ -57,6 +57,7 @@ namespace ForkPlus.UI.Controls
 				base.Text = WrapString(base.Text, width);
 			};
 			contextMenu.Items.Add(menuItem);
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, this);
 			return contextMenu;
 		}
 

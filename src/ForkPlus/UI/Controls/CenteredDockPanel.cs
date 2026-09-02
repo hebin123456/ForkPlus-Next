@@ -10,10 +10,10 @@ namespace ForkPlus.UI.Controls
 	{
 		private Size[] _sizes;
 
-		// TODO 迁移：WPF UIElementCollection/InternalChildren → Avalonia Panel.Children（Controls 集合，元素类型 Control）。
+		// Migration note：WPF UIElementCollection/InternalChildren → Avalonia Panel.Children（Controls 集合，元素类型 Control）。
 		protected override Size MeasureOverride(Size constraint)
 		{
-			global::Avalonia.Controls.Controls internalChildren = base.Children; // TODO 迁移：Controls 与命名空间 ForkPlus.UI.Controls 冲突，用全限定名
+			global::Avalonia.Controls.Controls internalChildren = base.Children; // Migration note：Controls 与命名空间 ForkPlus.UI.Controls 冲突，用全限定名
 			double val = 0.0;
 			double val2 = 0.0;
 			double num = 0.0;
@@ -53,11 +53,11 @@ namespace ForkPlus.UI.Controls
 			return new Size(val, val2);
 		}
 
-		// TODO 迁移：WPF Rect 为可变结构（finalRect.X = ... 直接赋值），
+		// Migration note：WPF Rect 为可变结构（finalRect.X = ... 直接赋值），
 		// Avalonia Rect 不可变，改用局部变量累积后 new Rect(...) 重建。
 		protected override Size ArrangeOverride(Size arrangeSize)
 		{
-			global::Avalonia.Controls.Controls internalChildren = base.Children; // TODO 迁移：Controls 与命名空间 ForkPlus.UI.Controls 冲突，用全限定名
+			global::Avalonia.Controls.Controls internalChildren = base.Children; // Migration note：Controls 与命名空间 ForkPlus.UI.Controls 冲突，用全限定名
 			int count = internalChildren.Count;
 			int num = count - (base.LastChildFill ? 1 : 0);
 			double num2 = 0.0;

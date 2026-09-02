@@ -1,12 +1,12 @@
 <UserControl xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.MergeConflictUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Resources>
     <ResourceDictionary>
-      <!-- TODO 迁移：WPF 内置 BooleanToVisibilityConverter 需本地注册（Avalonia 无内置且
+      <!-- Migration note：WPF 内置 BooleanToVisibilityConverter 需本地注册（Avalonia 无内置且
            StaticResource 顶层 UserControl 实例化时只查本地资源链；缺失会在本控件构造时崩溃） -->
       <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </ResourceDictionary>
   </UserControl.Resources>
-  <!-- TODO 迁移：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
+  <!-- Migration note：原 WPF x:Key="{DataTemplateKey {x:Type T}}" 按类型隐式查找，
        Avalonia 12 无此机制（ContentPresenter 只走逻辑树 Control.DataTemplates，不查资源字典），
        搬到根元素 DataTemplates 集合恢复按 DataType 匹配 -->
   <UserControl.DataTemplates>

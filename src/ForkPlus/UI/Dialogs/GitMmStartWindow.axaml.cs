@@ -166,7 +166,7 @@ namespace ForkPlus.UI.Dialogs
 					{
 						Text = subrepo.Name
 					},
-					ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox, // TODO 迁移：WPF IsCheckable → Avalonia ToggleType。
+					ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox, // Migration note：WPF IsCheckable → Avalonia ToggleType。
 					IsChecked = _selectedSubrepoPaths.Contains(subrepo.Path),
 					StaysOpenOnClick = true
 				};
@@ -188,6 +188,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			SubreposDropDownButton.ContextMenu = contextMenu;
 			contextMenu.PlacementTarget = SubreposDropDownButton;
+			global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, SubreposDropDownButton);
 			contextMenu.Open();
 		}
 

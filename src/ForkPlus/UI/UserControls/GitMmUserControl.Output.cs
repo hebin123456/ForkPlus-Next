@@ -44,7 +44,7 @@ namespace ForkPlus.UI.UserControls
 	{
 		public string Text { get; }
 
-		// TODO 迁移：WPF Brush → Avalonia IBrush（Brushes.* 在 Avalonia 12 返回 IImmutableSolidColorBrush）
+		// Migration note：WPF Brush → Avalonia IBrush（Brushes.* 在 Avalonia 12 返回 IImmutableSolidColorBrush）
 		public IBrush Foreground { get; }
 
 		public OutputSegment(string text, [Null] IBrush foreground)
@@ -98,7 +98,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			if (Dispatcher.CheckAccess())
 			{
-				// TODO 迁移：Avalonia TextBox 无 FlowDocument，改为纯文本清空
+				// Migration note：Avalonia TextBox 无 FlowDocument，改为纯文本清空
 				OutputTextBox.Clear();
 				_outputLineCount = 0;
 				return;
@@ -127,7 +127,7 @@ namespace ForkPlus.UI.UserControls
 		}
 		if (lines.Count > 0)
 		{
-			// TODO 迁移：WPF TextBox.ScrollToEnd() 在 Avalonia TextBox 上不存在，
+			// Migration note：WPF TextBox.ScrollToEnd() 在 Avalonia TextBox 上不存在，
 			// 改为找模板里的 ScrollViewer 调 ScrollToEnd()（语义等价）。
 			ScrollViewer outputScroller = OutputTextBox.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
 			if (outputScroller != null)
@@ -139,10 +139,10 @@ namespace ForkPlus.UI.UserControls
 
 	private void AppendOutputLine(string text)
 	{
-		// TODO 迁移：Avalonia TextBox 无 FlowDocument/彩色 Run，
+		// Migration note：Avalonia TextBox 无 FlowDocument/彩色 Run，
 		// 富文本降级为纯文本追加（保留 ANSI 去除与行数上限逻辑）。
 		string plain = _outputLineCount < RichOutputLineLimit ? StripAnsiEscapes(CollectInlineText(text)) : StripAnsiEscapes(text ?? "");
-		// TODO 迁移：WPF TextBox.AppendText 在 Avalonia 不存在，改为拼接 Text 并把光标移到末尾。
+		// Migration note：WPF TextBox.AppendText 在 Avalonia 不存在，改为拼接 Text 并把光标移到末尾。
 		OutputTextBox.Text = (OutputTextBox.Text ?? "") + plain + Environment.NewLine;
 		OutputTextBox.CaretIndex = OutputTextBox.Text.Length;
 		_outputLineCount++;
@@ -168,7 +168,7 @@ namespace ForkPlus.UI.UserControls
 	/// <summary>原 WPF TextBox.LineCount 的等价实现（Avalonia TextBox 无该属性，按换行符统计）。</summary>
 	private int GetOutputTextBoxLineCount()
 	{
-		// TODO 迁移：WPF TextBox.LineCount → 统计 Text 中的行数（尾部空行不计）。
+		// Migration note：WPF TextBox.LineCount → 统计 Text 中的行数（尾部空行不计）。
 		string text = OutputTextBox.Text;
 		if (string.IsNullOrEmpty(text))
 		{
@@ -210,7 +210,7 @@ namespace ForkPlus.UI.UserControls
 			string url = TrimUrl(match.Value, out trailingText);
 			if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
 			{
-				// TODO 迁移：WPF Hyperlink(Run) 是 Inline；Avalonia 无此 Inline，
+				// Migration note：WPF Hyperlink(Run) 是 Inline；Avalonia 无此 Inline，
 				// 改用 HyperlinkButton（默认构造 + Content/NavigateUri），可加入 InlineCollection。
 				global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton
 				{
@@ -252,7 +252,7 @@ namespace ForkPlus.UI.UserControls
 		private static IEnumerable<OutputSegment> ParseAnsiSegments(string text)
 	{
 		int index = 0;
-		// TODO 迁移：Brush → IBrush（Avalonia 12 的 Brushes.* 返回 IImmutableSolidColorBrush）
+		// Migration note：Brush → IBrush（Avalonia 12 的 Brushes.* 返回 IImmutableSolidColorBrush）
 		IBrush foreground = null;
 			foreach (Match match in AnsiSgrRegex.Matches(text))
 			{
@@ -283,7 +283,7 @@ namespace ForkPlus.UI.UserControls
 		{
 			return null;
 		}
-		// TODO 迁移：Brush → IBrush（Avalonia 12 的 Brushes.* 颜色表返回 IImmutableSolidColorBrush）
+		// Migration note：Brush → IBrush（Avalonia 12 的 Brushes.* 颜色表返回 IImmutableSolidColorBrush）
 		IBrush foreground = currentForeground;
 			foreach (string part in sgr.Split(';'))
 			{

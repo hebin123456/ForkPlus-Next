@@ -8,6 +8,7 @@ using Avalonia.Markup;
 using Avalonia.Media;
 using global::Avalonia.Animation;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ForkPlus.Git;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
@@ -34,7 +35,13 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _isJobManagerPopopOpen;
 
-		// TODO 迁移：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
+		private Window _activityManagerOwnerWindow;
+
+		private EventHandler _activityManagerOwnerDeactivatedHandler;
+
+		private EventHandler<PointerPressedEventArgs> _activityManagerOwnerPointerPressedHandler;
+
+		// Migration note：Avalonia NameGenerator 只为 StyledElement 生成 x:Name 字段，
 		// TranslateTransform 非 StyledElement，手动声明并从 TitleContainer.RenderTransform 取值。
 		internal global::Avalonia.Media.TranslateTransform TitleContainerTranslateTransform;
 
@@ -51,14 +58,17 @@ namespace ForkPlus.UI.UserControls
 			_refreshTimer.Start();
 			ActivityManagerPopup.Opened += delegate
 			{
-				/* TODO 迁移: PopupAnimation 已删除 */;
+				/* Migration note: PopupAnimation 已删除 */;
 				ShowActivityManagerToggleButton.Disable();
+				CenterActivityManagerPopup();
+				AttachActivityManagerPopupAutoDismiss();
 				ActivityManagerUserControl.Start();
 				_isJobManagerPopopOpen = true;
 			};
 			ActivityManagerPopup.Closed += delegate
 			{
-				/* TODO 迁移: PopupAnimation 已删除 */;
+				/* Migration note: PopupAnimation 已删除 */;
+				DetachActivityManagerPopupAutoDismiss();
 				ShowActivityManagerToggleButton.Enable();
 				ActivityManagerUserControl.Stop();
 				_isJobManagerPopopOpen = false;
@@ -71,6 +81,106 @@ namespace ForkPlus.UI.UserControls
 			{
 				_hovered = false;
 			};
+		}
+
+		private void CenterActivityManagerPopup()
+		{
+			// 让活动管理器弹层在主窗口中水平居中（原版 WPF 行为），避免依赖固定 HorizontalOffset。
+			global::Avalonia.Controls.TopLevel tl = global::Avalonia.Controls.TopLevel.GetTopLevel(this);
+			if (tl == null)
+			{
+				return;
+			}
+			ActivityManagerPopup.PlacementTarget = ShowActivityManagerToggleButton;
+			ActivityManagerPopup.Placement = PlacementMode.Top;
+
+			// Popup 内容需要先完成一次布局才能拿到 Bounds；因此用 Dispatcher.Post 在下一帧计算。
+			Dispatcher.UIThread.Post(delegate
+			{
+				if (!ActivityManagerPopup.IsOpen)
+				{
+					return;
+				}
+				Point toggleTopLeft = ShowActivityManagerToggleButton.TranslatePoint(new Point(0.0, 0.0), tl) ?? new Point(0.0, 0.0);
+				double popupWidth = ActivityManagerUserControl.Bounds.Width;
+				if (popupWidth <= 0.0)
+				{
+					// 退化：ActivityManagerUserControl 内部 Border 约 1024 宽 + 外边距
+					popupWidth = 1044.0;
+				}
+				double windowCenter = tl.Bounds.Width / 2.0;
+				double toggleCenter = toggleTopLeft.X + ShowActivityManagerToggleButton.Bounds.Width / 2.0;
+				ActivityManagerPopup.HorizontalOffset = windowCenter - toggleCenter;
+				ActivityManagerPopup.VerticalOffset = -6.0;
+			}, DispatcherPriority.Loaded);
+		}
+
+		private void AttachActivityManagerPopupAutoDismiss()
+		{
+			DetachActivityManagerPopupAutoDismiss();
+			_activityManagerOwnerWindow = TopLevel.GetTopLevel(this) as Window;
+			if (_activityManagerOwnerWindow == null)
+			{
+				return;
+			}
+
+			_activityManagerOwnerDeactivatedHandler = (_, _) => CloseActivityManagerPopup();
+			_activityManagerOwnerPointerPressedHandler = (_, e) =>
+			{
+				if (!ActivityManagerPopup.IsOpen)
+				{
+					return;
+				}
+
+				if (IsVisualInScope(e.Source as Visual, ShowActivityManagerToggleButton) ||
+					IsVisualInScope(e.Source as Visual, ActivityManagerUserControl))
+				{
+					return;
+				}
+
+				CloseActivityManagerPopup();
+			};
+
+			_activityManagerOwnerWindow.Deactivated += _activityManagerOwnerDeactivatedHandler;
+			_activityManagerOwnerWindow.AddHandler(InputElement.PointerPressedEvent, _activityManagerOwnerPointerPressedHandler, RoutingStrategies.Tunnel);
+		}
+
+		private void DetachActivityManagerPopupAutoDismiss()
+		{
+			if (_activityManagerOwnerWindow != null && _activityManagerOwnerDeactivatedHandler != null)
+			{
+				_activityManagerOwnerWindow.Deactivated -= _activityManagerOwnerDeactivatedHandler;
+			}
+			if (_activityManagerOwnerWindow != null && _activityManagerOwnerPointerPressedHandler != null)
+			{
+				_activityManagerOwnerWindow.RemoveHandler(InputElement.PointerPressedEvent, _activityManagerOwnerPointerPressedHandler);
+			}
+			_activityManagerOwnerWindow = null;
+			_activityManagerOwnerDeactivatedHandler = null;
+			_activityManagerOwnerPointerPressedHandler = null;
+		}
+
+		private void CloseActivityManagerPopup()
+		{
+			ShowActivityManagerToggleButton.SetCurrentValue(ToggleButton.IsCheckedProperty, false);
+			ActivityManagerPopup.Close();
+		}
+
+		private static bool IsVisualInScope(Visual visual, Visual scope)
+		{
+			if (visual == null || scope == null)
+			{
+				return false;
+			}
+
+			for (Visual current = visual; current != null; current = current.GetVisualParent())
+			{
+				if (ReferenceEquals(current, scope))
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		private void _refreshTimer_Tick(object sender, EventArgs e)

@@ -13,7 +13,7 @@ namespace ForkPlus
 
 		public int Compare(string x, string y)
 		{
-			// TODO 迁移：StrCmpLogicalW（shlwapi.dll）是 Windows 专属"逻辑排序"（数字段按数值
+			// Migration note：StrCmpLogicalW（shlwapi.dll）是 Windows 专属"逻辑排序"（数字段按数值
 			// 比较："2" < "10"）。Linux/macOS 无该库，P/Invoke 直接抛 DllNotFoundException——
 			// 实证：RepositoryReferences.New 排序引用时崩溃，RefreshRepositoryData 整体失败，
 			// 主界面永久停在"加载中"（2026-08-30 fork.log 实证）。Unix 走纯托管等价实现，

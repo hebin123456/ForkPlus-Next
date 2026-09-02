@@ -28,6 +28,8 @@ namespace ForkPlus.UI.Dialogs
 
 		public static readonly Uri SuccessIcon = new Uri("avares://ForkPlus/Assets/CheckMarkStroked.png");
 
+		private Image _logoImage;
+
 		private Image _warningIcon;
 
 		private bool _showWarningIcon;
@@ -46,7 +48,7 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool? _pendingShowCancelButton;
 
-		// TODO 迁移：构造期 SetStatus/ClearStatus 的 pending 缓冲。Avalonia 下 Footer 经
+		// Migration note：构造期 SetStatus/ClearStatus 的 pending 缓冲。Avalonia 下 Footer 经
 		// Dispatcher.Post 延迟到 chrome 初始化才创建（见 OnContentChanged），而 WPF 里
 		// Style 触发器在 ctor 内即生效——子类构造函数里的 SetStatus（如
 		// ConfigureSshKeysWindow.Refresh()）直接 NRE。Footer 就绪后回放。
@@ -105,7 +107,7 @@ namespace ForkPlus.UI.Dialogs
 
 	protected TextBlock DescriptionTextBlock { get; private set; }
 
-	// TODO 迁移：WPF 中 chrome（TitleTextBlock/DescriptionTextBlock）在构造期已同步初始化，
+	// Migration note：WPF 中 chrome（TitleTextBlock/DescriptionTextBlock）在构造期已同步初始化，
 	// 子类构造函数可直接访问其属性；Avalonia 12 的 InitializeDialogChrome 延迟到
 	// Initialized/UIThread.Post 才执行，构造期访问为 null（WelcomeWindow 构造 NRE 实证）。
 	// 定制经 pending 机制在 AddDialogHeader 创建控件后应用。
@@ -161,6 +163,21 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs change)
+		{
+			base.OnPropertyChanged(change);
+			// 有些对话框只设置 Window.Title（XAML 或本地化代码），不走 DialogTitle；
+			// 为避免标题栏显示 "[Dialog Title]" 占位符，这里保持 Header 标题与 Window.Title 同步。
+			if (change.Property == TitleProperty && TitleTextBlock != null)
+			{
+				string title = base.Title;
+				if (!string.IsNullOrWhiteSpace(title))
+				{
+					TitleTextBlock.Text = title;
+				}
+			}
+		}
+
 		protected string DialogDescription
 		{
 			get
@@ -172,7 +189,10 @@ namespace ForkPlus.UI.Dialogs
 				_pendingDialogDescription = value;
 				if (DescriptionTextBlock != null)
 				{
-					DescriptionTextBlock.Text = value;
+					string text = value ?? string.Empty;
+					DescriptionTextBlock.Text = text;
+					// 没有描述时不显示占位符，直接隐藏描述行，避免出现 "[Dialog Description]".
+					DescriptionTextBlock.IsVisible = !string.IsNullOrWhiteSpace(text);
 				}
 			}
 		}
@@ -253,7 +273,7 @@ namespace ForkPlus.UI.Dialogs
 
 		protected virtual bool ApplyAutomaticLocalization => true;
 
-		// TODO 迁移：WPF ComponentDispatcher.IsThreadModal（Win32 消息循环模态标记）→
+		// Migration note：WPF ComponentDispatcher.IsThreadModal（Win32 消息循环模态标记）→
                 // WindowDialogCompat.IsShownAsDialog（本窗口是否经 ShowDialog shim 打开）。
                 private bool IsWindowModal => this.IsShownAsDialog();
 
@@ -262,7 +282,7 @@ namespace ForkPlus.UI.Dialogs
 		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
 		/// <summary>
-		/// TODO 迁移：WPF Window.OnActivated 虚方法。Avalonia 无此虚方法，
+		/// Migration note：WPF Window.OnActivated 虚方法。Avalonia 无此虚方法，
 		/// 此处在构造时订阅 Activated 事件转发到本虚方法，子类重写签名保持 WPF 形态。
 		/// </summary>
 		protected virtual void OnActivated(EventArgs e)
@@ -271,7 +291,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public ForkPlusDialogWindow(bool preventMainWindowRefresh = true)
 		{
-			// TODO 迁移：WPF Window.OverridesDefaultStyle（无默认模板）在 Avalonia 无对应概念，移除。
+			// Migration note：WPF Window.OverridesDefaultStyle（无默认模板）在 Avalonia 无对应概念，移除。
 			Activated += delegate
 			{
 				OnActivated(EventArgs.Empty);
@@ -293,7 +313,7 @@ namespace ForkPlus.UI.Dialogs
 			ResizeMode = ResizeMode.NoResize;
 			base.Initialized += ForkPlusDialogWindow_Initialized;
 			base.Loaded += ForkPlusDialogWindow_Loaded;
-			// TODO 迁移：WPF OnContentChanged override → Avalonia ContentProperty 变更订阅转发（见 OnContentChanged）。
+			// Migration note：WPF OnContentChanged override → Avalonia ContentProperty 变更订阅转发（见 OnContentChanged）。
 			PropertyChanged += delegate(object s, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
 			{
 				if (e.Property == global::Avalonia.Controls.ContentControl.ContentProperty)
@@ -301,7 +321,7 @@ namespace ForkPlus.UI.Dialogs
 					OnContentChanged(e.OldValue, e.NewValue);
 				}
 			};
-			// TODO 迁移：WPF `Style = TryFindResource(...) as Style`；资源实为 ControlTheme，
+			// Migration note：WPF `Style = TryFindResource(...) as Style`；资源实为 ControlTheme，
 			// 经 StyleCompat.SetStyle 挂 Theme（base 不能作参数，等价 this）。
 			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(this, Application.Current?.TryFindResource("ForkPlusDialogWindowStyle"));
 			if (!IsDesignMode)
@@ -313,7 +333,7 @@ namespace ForkPlus.UI.Dialogs
 		public void SetStatus(ForkPlusDialogStatus status, string message)
 		{
 			IsOperationInProgress = status == ForkPlusDialogStatus.InProgress;
-			// TODO 迁移：Footer 未创建（chrome 延迟初始化）时先缓存，AddFooter 完成后回放（WPF ctor 期 Style 即生效）。
+			// Migration note：Footer 未创建（chrome 延迟初始化）时先缓存，AddFooter 完成后回放（WPF ctor 期 Style 即生效）。
 			if (Footer == null)
 			{
 				_pendingStatus = status;
@@ -353,7 +373,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public void ClearStatus()
 		{
-			// TODO 迁移：Footer 未创建时清掉 pending 即可（None 状态无需回放）。
+			// Migration note：Footer 未创建时清掉 pending 即可（None 状态无需回放）。
 			if (Footer == null)
 			{
 				_pendingStatus = null;
@@ -401,7 +421,7 @@ namespace ForkPlus.UI.Dialogs
 			InitializeDialogChrome();
 		}
 
-		// TODO 迁移：WPF ContentControl.OnContentChanged override 在 Avalonia 无对应虚方法，
+		// Migration note：WPF ContentControl.OnContentChanged override 在 Avalonia 无对应虚方法，
 		// 由构造函数订阅 PropertyChanged（ContentProperty）转发，保持子类重写形态。
 		protected void OnContentChanged(object oldContent, object newContent)
 		{
@@ -409,7 +429,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			// TODO 迁移：WPF 中 Content 在 BAML 解析末尾（x:Name 字段已赋值后）才设置；
+			// Migration note：WPF 中 Content 在 BAML 解析末尾（x:Name 字段已赋值后）才设置；
 			// Avalonia XamlIl 在 populate 中途即设 Content，此时子类 x:Name 字段（如
 			// ConfigureGitInstanceWindow.GitPathTextBox）尚未赋值——直接初始化 chrome 会让
 			// IsSubmitAllowed 虚属性 NRE。推迟到下一帧（populate/构造函数完成后）再执行，
@@ -466,11 +486,12 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
+			string dialogDescription = _pendingDialogDescription ?? string.Empty;
 			TextBlock textBlock = new TextBlock
 			{
 				FontWeight = FontWeights.Medium,
 				FontSize = 15.0,
-				Text = "[Dialog Title]"
+				Text = (string.IsNullOrWhiteSpace(base.Title) ? "[Dialog Title]" : base.Title)
 			};
 			TextBlock textBlock2 = new TextBlock
 			{
@@ -478,7 +499,8 @@ namespace ForkPlus.UI.Dialogs
 				FontSize = 13.0,
 				Margin = new Thickness(0.0, 2.0, 0.0, 0.0),
 				Foreground = (Application.Current.TryFindResource("ForkPlusDialogDescriptionForeground") as Brush),
-				Text = "[Dialog Description]"
+				Text = dialogDescription,
+				IsVisible = !string.IsNullOrWhiteSpace(dialogDescription)
 			};
 			StackPanel stackPanel = new StackPanel();
 			stackPanel.SetValue(Grid.RowProperty, 0);
@@ -708,7 +730,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				ShowCancelButton = _pendingShowCancelButton.Value;
 			}
-			// TODO 迁移：回放构造期缓存的 SetStatus（如 ConfigureSshKeysWindow ctor 里的 Refresh）。
+			// Migration note：回放构造期缓存的 SetStatus（如 ConfigureSshKeysWindow ctor 里的 Refresh）。
 			if (_pendingStatus.HasValue)
 			{
 				ForkPlusDialogStatus pendingStatus = _pendingStatus.Value;
@@ -726,16 +748,22 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			Image image = new Image
+			if (_logoImage != null)
+			{
+				return;
+			}
+			_logoImage = new Image
 			{
 				Source = new global::Avalonia.Media.Imaging.Bitmap(global::Avalonia.Platform.AssetLoader.Open(ForkPlusLogo)),
 				Width = 64.0,
 				Height = 64.0,
 				HorizontalAlignment = HorizontalAlignment.Left,
-				VerticalAlignment = VerticalAlignment.Top
+				VerticalAlignment = VerticalAlignment.Top,
+				// 作为“底图”放在最底层：警告/错误叠加标记需要压在其上面显示。
+				ZIndex = 0
 			};
-			image.SetValue(Grid.RowSpanProperty, 2);
-			obj.Children.Add(image);
+			_logoImage.SetValue(Grid.RowSpanProperty, 2);
+			obj.Children.Add(_logoImage);
 		}
 
 		private void AddWarningIcon()
@@ -754,7 +782,9 @@ namespace ForkPlus.UI.Dialogs
 					Height = 24.0,
 					HorizontalAlignment = HorizontalAlignment.Left,
 					VerticalAlignment = VerticalAlignment.Top,
-					Margin = new Thickness(38.0, 38.0, 0.0, 0.0)
+					Margin = new Thickness(38.0, 38.0, 0.0, 0.0),
+					// 必须压在 ForkPlusLogo 之上（用户反馈：黄色感叹号被图标遮挡）。
+					ZIndex = 10
 				};
 				_warningIcon.SetValue(Grid.RowSpanProperty, 2);
 				obj.Children.Add(_warningIcon);

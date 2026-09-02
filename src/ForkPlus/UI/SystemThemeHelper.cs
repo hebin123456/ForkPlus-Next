@@ -13,7 +13,7 @@ namespace ForkPlus.UI
         /// 系统主题色读取（Avalonia 版）。
         /// 原 WPF 版走 WinRT UISettings（net10.0 下无投影）；改为
         /// Windows 上读注册表 AppsUseLightTheme + DWM ColorizationColor，
-        /// 其他平台返回中性色。TODO 迁移：跟随系统主题变化需平台各自实现。
+        /// 其他平台返回中性色。Migration note：跟随系统主题变化需平台各自实现。
         /// </summary>
         internal static class SystemThemeHelper
         {

@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Media;
+using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI
 {
@@ -93,9 +93,9 @@ namespace ForkPlus.UI
 
 		private static void ScrollRowIntoView(ListBox listBox, int row)
 		{
-			if (VisualTreeHelper.GetChildrenCount(listBox) != 0)
+			ScrollViewer scrollViewer = ScrollViewerHelper.FindScrollViewer(listBox);
+			if (scrollViewer != null)
 			{
-				ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild((Border)VisualTreeHelper.GetChild(listBox, 0), 0);
 				int num = ((row >= 1) ? (row - 1) : row);
 				if (!((double)num > scrollViewer.Offset.Y) || !((double)num < scrollViewer.Offset.Y + scrollViewer.Viewport.Height))
 				{

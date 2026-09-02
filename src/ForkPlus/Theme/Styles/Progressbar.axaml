@@ -109,7 +109,7 @@
     </Setter>
   
     <!--
-      TODO(wpf2avalonia): MultiTrigger 条件或 Setter 为空，已注释保留。
+      WPF migration note: MultiTrigger 条件或 Setter 为空，已注释保留。
       原始片段：
       <MultiTrigger xmlns="https://github.com/avaloniaui">
                     <MultiTrigger.Conditions>
@@ -124,7 +124,7 @@
                     </MultiTrigger.ExitActions>
                   </MultiTrigger>
     --></ControlTheme>
-<!-- TODO 迁移：WPF Storyboard 块注释化（Avalonia 动画须用 Style.Animations/Animation 类改写，KeyFrame 语义可用 Avalonia Animation KeyFrame + Easing 实现）。原始片段：
+<!-- Migration note：WPF Storyboard 块注释化（Avalonia 动画须用 Style.Animations/Animation 类改写，KeyFrame 语义可用 Avalonia Animation KeyFrame + Easing 实现）。原始片段：
   <Storyboard x:Key="BusyIndicatorStoryboard" BeginTime="00:00:00" RepeatBehavior="Forever">
     <DoubleAnimationUsingKeyFrames BeginTime="00:00:00">
       <EasingDoubleKeyFrame KeyTime="00:00:00.00" Value="1" />
