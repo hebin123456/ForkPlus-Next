@@ -43,9 +43,18 @@ namespace ForkPlus.Tests
 			var started = new ManualResetEvent(false);
 			var t = new Thread(delegate()
 			{
+				// SetupWithClassicDesktopLifetime（而非 SetupWithoutStarting）：挂上
+				// ClassicDesktopStyleApplicationLifetime，WpfApp.Windows / ShowDialog
+				// 兼容层依赖它取窗口列表；先启动的类创建共享 App，后启动的类直接复用，
+				// 所以每个候选启动点都必须带 lifetime。ShutdownMode 改显式关闭，防止单
+				// 个测试关掉唯一窗口时把 Dispatcher 整个 shut down。
 				AppBuilder.Configure<HeadlessTestApp>()
 					.UseHeadless(new AvaloniaHeadlessPlatformOptions())
-					.SetupWithoutStarting();
+					.SetupWithClassicDesktopLifetime(Array.Empty<string>(), delegate { });
+				if (Application.Current.ApplicationLifetime is global::Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime desktopLifetime)
+				{
+					desktopLifetime.ShutdownMode = global::Avalonia.Controls.ShutdownMode.OnExplicitShutdown;
+				}
 				started.Set();
 				Dispatcher.UIThread.MainLoop(new CancellationToken());
 			});
