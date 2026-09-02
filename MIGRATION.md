@@ -106,6 +106,22 @@ git push origin HEAD
 
 **整体进度估算（2026-08-31 更正口径）：编译/CI 层 100%（C# 与 AVLN 清零、单测 3856 全绿、三平台 CI 就位）；运行时按真机 bug 清单计——6 项已修 1 项（#1 初始化仓库链路），另 1 项部分完成（#2 对话框占位标题），其余 4 项待修**。沙箱链路（启动→开仓→列表→详情→菜单→偏好设置→侧栏→统计页图表）已通并留证，但沙箱通过 ≠ 真机可用（用户实测 Windows/Kali 均有阻断性 bug），后续进度以真机 bug 清单为准。
 
+## 运行时修复链 25（2026-09-02 本轮25：git mm 输出弹窗失焦消失 + "已展示 ××/××"点击无反应/残缺 + AI 弹窗真·跟随主窗口）
+
+1. **【已修】git mm 命令输出弹窗失焦消失（Popup → 树内覆盖层）**：
+   - 根因（Avalonia 12.1.1 Popup.Open 源码核实）：Popup 打开时订阅 owner 窗口的 `Deactivated` 与 `PlatformImpl.LostFocus` → 关闭自己（WPF `StaysOpen=False` 的行为子集），外加 `IsLightDismissEnabled=true` 的点击外部关闭。窗口切一次焦点（如点别的应用/弹别的窗）输出弹窗就没了。
+   - 修复：`GitMmUserControl.axaml` 把 `OutputPopup`（`Placement=Pointer` 的 Popup）替换为控件树内 Border 浮层 `OutputOverlayBorder`（`IsVisible` 控制、ZIndex=10、右下角浮动、阴影/圆角/标题栏 28px 分割线/UploadLinks 容器/RichTextBox 输出区结构原样保留），结构上不存在失焦/失活 dismiss 路径，仅 Command Output 按钮或新增的 × 关闭按钮关闭（覆盖层常驻需要手动关闭入口）。代码侧 `SetOutputOverlayVisible`/`IsCommandOutputCollapsed` 改读写 `IsVisible`。
+2. **【已修】"已展示 ××/××"筛选弹窗点击无反应 + 内容残缺（Popup 挂树 + 资源 shim 双根因）**：
+   - 根因 A（孤立 Popup，源码核实 Avalonia 12.1.1 `Popup.Open`）：`SubrepoFilterButton_Click` 代码构建的 Popup 从不挂逻辑树。孤立 Popup 的打开请求若 `TopLevel.GetTopLevel(target)` 为 null → 记 `_isOpenRequested` 静默 return（**IsOpen 谎报 true、Opened 永不触发、无异常无日志**——该请求仅由 `Popup.OnAttachedToVisualTree` 消费，孤立 Popup 永远等不到）；挂树失败路径全静默，用户视角就是"点了没反应"。
+   - 根因 B（资源解析 shim 断链，headless 探针实证 `attachedShim=False`）：`ResourceCompat.TryFindResource/SetResourceReference` 原走 `IResourceHost.TryGetResource` **实例方法**——Avalonia 源码中该方法只查元素自身 Resources/Styles（`return (_resources?.TryGetResource(...)) || (_styles?.TryGetResource(...))`），**不沿逻辑树上溯**，App 级资源（App.axaml 合并字典的 BackgroundBrush/BorderBrush/StageAllIcon 等）永远解析不到，连挂在显示中窗口里的元素也解析不到 → 弹出内容无背景无边框无图标（"残缺"）。此 shim 全项目 ~80 处调用（git mm 弹窗、StageFile 的 StageAll/UnstageAll 图标、StatusUserControl 分支过滤图标、KeyboardShortcutsWindow、AiDevelopmentWindow 的 SecondaryLabelBrush 等）全部受害。
+   - 修复（挂树）：`SubrepoFilterButton_Click` 里 `RootGrid.Children.Add(popup)` + `Closed` 时移除防泄漏（Popup 不占布局空间）。挂树后走窗口 OverlayLayer 正常路径（同 MenuFlyout/ComboBox），资源沿逻辑树解析。
+   - 修复（shim）：`TryFindResource(element)` 改走链式扩展 `ResourceNodeExtensions.TryFindResource`（沿 StylingParent：元素 → 逻辑树祖先 → TopLevel → GlobalStyles/Application）；`SetResourceReference` 改为"立即解析 + 订阅 `AttachedToLogicalTree`（先建后挂树的代码构建内容挂树时补解析）+ 订阅 `ResourcesChanged`（主题切换/资源字典变更重解析，同 XAML DynamicResource 事件源）"，未找到回落 `UnsetValue`。同一属性多次调用按订阅顺序推送、后 key 生效（StageFile 切图标依赖此语义）。
+3. **【已修】AI 辅助开发/AI 检视代码弹窗没跟随主窗口（"同屏"→"随窗"）**：
+   - 根因：修复链 23 的 `CenterToOwnerScreenOnOpened` 语义是"**owner 所在屏幕工作区**居中"——主窗口非最大化、不在屏幕中央时，弹窗落屏幕中央 ≠ 跟随主窗口，观感仍是"跑偏"。
+   - 修复：改为相对 **owner 窗口矩形**居中（CenterOwner 语义，owner 中心对齐弹窗中心，`VisualExtensions.PointToScreen` 显式全限定避开 InputCompat 同名 shim），并 clamp 到屏幕工作区保证完整可见；owner 最大化时中心=工作区中心与原行为一致，最小化/异常回落屏幕居中。改动点：`WpfCompat.Controls.cs` 的 `CenterToOwnerScreenOnOpened`（模态 ShowDialog 路径）与 `CustomWindow.cs` 同逻辑（非模态 ShowAtOwnerScreen 路径），AI 辅助开发/AI 检视/解释等全部受益。
+4. **验证**：新增 `ForkPlus.Tests/DetachedPopupBehaviorTests.cs`（6 个：孤立 Popup 静默失败机制、挂树 OverlayLayer 打开、生产挂树模式回归、target 摘除自动关闭、输出覆盖层失焦不消失、孤立元素资源解析为 null）+ `ForkPlus.Tests/ResourceCompatTests.cs`（6 个：挂树元素链式解析 App 级资源、孤立元素解析不到、先建后挂树补解析、挂树即解析、缺 key 回落默认、同属性 last-key-wins）；headless App 对齐真机加载 FluentTheme（无主题时 Window 模板无 PopupOverlayLayer，测试失真）。全套 **3895 测试全绿**，`dotnet build` 0 错误。两个 headless 测试类需同 `[Collection("HeadlessAvalonia")]` 串行（Assembly 级单 Application，并行会重复 SetupWithoutStarting 中止）。
+5. **教训：WPF 代码构建 Popup 迁移清单——(1) Popup 必须挂逻辑树（Children.Add/Panel 收纳）：孤立 Popup 的失败路径全部静默（IsOpen 谎报 true、无异常无日志），排查时"看起来什么都没发生"正是特征；(2) `TryFindResource/SetResourceReference` shim 必须走链式扩展而非实例 `TryGetResource`（后者只查自身）；(3) WPF `StaysOpen=False` 的 Popup 迁移若要求"常驻"应改树内覆盖层而非 Popup（Popup 天然订阅窗口失活/失焦关闭）。检查法：grep `new Popup` 后无挂树调用即是漏网；grep shim 内实现是否只有 `_resources/_styles` 自查。**
+
 ## 运行时修复链 24（2026-09-02 本轮24：AI 弹窗样式全无——WebView2 占位实现原生化，对齐 WPF 版 md-ai-output.css）
 
 1. **【已修】AI 辅助开发/AI 解释/AI 代码评审/git mm 手册弹窗内容完全没有样式（真机 bug#10）**：

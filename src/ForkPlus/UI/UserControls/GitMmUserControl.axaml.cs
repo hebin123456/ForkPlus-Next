@@ -118,8 +118,8 @@ namespace ForkPlus.UI.UserControls
 	/// <summary>v3.11.0：是否有可显示的上传链接。</summary>
 	public bool HasUploadLinks => _latestUploadLinks != null && _latestUploadLinks.Length > 0;
 
-	/// <summary>v3.11.0：输出 Popup 是否打开。</summary>
-	public bool IsOutputOverlayVisible => OutputPopup.IsOpen;
+	/// <summary>v3.11.0：输出覆盖层是否可见（本轮25：Popup → 树内 Border 覆盖层）。</summary>
+	public bool IsOutputOverlayVisible => OutputOverlayBorder.IsVisible;
 
 	/// <summary>v3.11.0：切换输出覆盖层显隐（供主 StatusUserControl 调用）。</summary>
 	public void ToggleOutputOverlay()
@@ -971,13 +971,21 @@ namespace ForkPlus.UI.UserControls
 
 	private void ToggleCommandOutputButton_Click(object sender, RoutedEventArgs e)
 	{
-		SetOutputOverlayVisible(!OutputPopup.IsOpen, save: true);
+		SetOutputOverlayVisible(!OutputOverlayBorder.IsVisible, save: true);
 	}
 
-	/// <summary>v3.11.0：控制输出 Popup 的显示/隐藏。</summary>
+	/// <summary>本轮25：输出覆盖层 × 关闭按钮。</summary>
+	private void CloseOutputOverlayButton_Click(object sender, RoutedEventArgs e)
+	{
+		SetOutputOverlayVisible(false, save: true);
+	}
+
+	/// <summary>v3.11.0：控制输出覆盖层的显示/隐藏。
+	/// 本轮25：原 Popup 实现随窗口失活/失焦自动关闭（用户观感"输出弹窗失焦消失"），
+	/// 改为控件树内 Border 覆盖层——结构上没有 dismiss 路径，仅手动关闭。</summary>
 	private void SetOutputOverlayVisible(bool visible, bool save)
 	{
-		OutputPopup.IsOpen = visible;
+		OutputOverlayBorder.IsVisible = visible;
 		if (save)
 		{
 			SaveSettings();
@@ -986,7 +994,7 @@ namespace ForkPlus.UI.UserControls
 
 	private bool IsCommandOutputCollapsed()
 	{
-		return !OutputPopup.IsOpen;
+		return !OutputOverlayBorder.IsVisible;
 	}
 
 	private double CommandOutputHeight()
@@ -1325,6 +1333,18 @@ namespace ForkPlus.UI.UserControls
 				IsLightDismissEnabled = true
 				// Migration note：WPF Popup.AllowsTransparency = true 在 Avalonia 无对应属性
 				//（Popup 永远独立分层渲染，默认支持透明），已移除。
+			};
+			// 本轮25 修复（真机 bug：点击"已展示 ××/××"无反应 + 弹出内容残缺）：
+			// 孤立 Popup（不在逻辑树中）打开走"目标窗口 OverlayLayer/平台 IPopupImpl"的
+			// 兜底路径，一旦失败抛 InvalidOperationException（被全局 UnhandledException
+			// 记日志吞掉 → 点击看起来毫无反应）；同时孤立子控件的资源解析（BackgroundBrush/
+			// BorderBrush/StageAllIcon 等主题资源）不可靠 → 弹出内容无背景无边框（"残缺"）。
+			// 挂进 RootGrid（Popup 不占布局空间）后走正常路径：资源沿逻辑树解析、
+			// 平台 popup 按主窗口创建，关闭时移除避免泄漏。
+			RootGrid.Children.Add(popup);
+			popup.Closed += delegate
+			{
+				RootGrid.Children.Remove(popup);
 			};
 			StackPanel itemsPanel = new StackPanel();
 			TextBox searchTextBox = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new TextBox

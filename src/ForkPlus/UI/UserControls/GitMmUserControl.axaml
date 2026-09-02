@@ -123,43 +123,46 @@
       </DockPanel>
     </Border>
 
-    <!-- v3.11.0：命令输出 Popup——与活动管理器相同的浮层风格
-         (Border CornerRadius=6, DropShadowEffect, BorderThickness=1, BackgroundBrush)
-         替代原底部覆盖层，不再突兀地贴在底部 -->
-    <Popup Placement="Pointer" VerticalOffset="-4" HorizontalOffset="4" x:Name="OutputPopup">
-      <Border Width="720" Height="360" MinWidth="400" MinHeight="200" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" CornerRadius="6">
-        <Border.Effect>
-          <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" OffsetY="2" />
-        </Border.Effect>
-        <Grid>
-          <Grid.RowDefinitions>
-            <RowDefinition Height="28" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-          </Grid.RowDefinitions>
+    <!-- v3.11.0：命令输出覆盖层——与活动管理器相同的浮层风格
+         (Border CornerRadius=6, DropShadowEffect, BorderThickness=1, BackgroundBrush)。
+         本轮25 修复：原 WPF 用 StaysOpen=False 的 Popup（点击外部/窗口失活即关闭），
+         用户要求输出弹窗保持显示直到手动关闭 → 改为控件树内浮动覆盖层：
+         结构上不存在失焦/失活消失路径，仅通过 Command Output 按钮或 × 按钮关闭。 -->
+    <Border Width="720" Height="360" MinWidth="400" MinHeight="200" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" CornerRadius="6" x:Name="OutputOverlayBorder" IsVisible="False" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,16" ZIndex="10">
+      <Border.Effect>
+        <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" OffsetY="2" />
+      </Border.Effect>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="28" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-          <!-- 标题栏（与 ActivityManager 一致：28px 高，底部 1px 分割线，无关闭按钮） -->
-          <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+        <!-- 标题栏（28px 高，底部 1px 分割线；本轮25 增加 × 关闭按钮——覆盖层不随失焦消失，需手动关闭入口） -->
+        <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Margin="6,0,8,0" Width="20" Height="20" Padding="0" Content="✕" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Background="Transparent" BorderThickness="0" Click="CloseOutputOverlayButton_Click" x:Name="CloseOutputOverlayButton" Theme="{DynamicResource TransparentButtonStyle}" ToolTip.Tip="Close" />
             <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.DimGray}" x:Name="OutputTitleTextBlock" />
-          </Border>
+          </DockPanel>
+        </Border>
 
-          <!-- Upload links 容器（可折叠） -->
-          <Border Grid.Row="1" Margin="8,4,8,4" Padding="8,4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" x:Name="UploadLinksContainer" IsVisible="False">
-            <DockPanel LastChildFill="True">
-              <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" Theme="{DynamicResource TextButtonStyle}" />
-              <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
-              <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled">
-                <WrapPanel x:Name="UploadLinksPanel" />
-              </ScrollViewer>
-            </DockPanel>
-          </Border>
+        <!-- Upload links 容器（可折叠） -->
+        <Border Grid.Row="1" Margin="8,4,8,4" Padding="8,4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" x:Name="UploadLinksContainer" IsVisible="False">
+          <DockPanel LastChildFill="True">
+            <Button DockPanel.Dock="Right" Margin="8,-2,0,-2" Padding="6,1" Foreground="{DynamicResource SecondaryLabelBrush}" Content="Hide" Click="HideUploadLinksButton_Click" x:Name="HideUploadLinksButton" Theme="{DynamicResource TextButtonStyle}" />
+            <TextBlock DockPanel.Dock="Left" Text="Recent Uploads:" Margin="0,1,10,1" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
+            <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+              <WrapPanel x:Name="UploadLinksPanel" />
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
 
-          <!-- RichTextBox 输出区 -->
-          <Border Grid.Row="2" BorderThickness="0" Background="{DynamicResource CodeEditorBackground}">
-            <TextBox Text="" BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
-          </Border>
-        </Grid>
-      </Border>
-    </Popup>
+        <!-- RichTextBox 输出区 -->
+        <Border Grid.Row="2" BorderThickness="0" Background="{DynamicResource CodeEditorBackground}">
+          <TextBox Text="" BorderThickness="0" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource ForegroundBrush}" Background="{DynamicResource CodeEditorBackground}" IsReadOnly="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="OutputTextBox" />
+        </Border>
+      </Grid>
+    </Border>
   </Grid>
 </UserControl>

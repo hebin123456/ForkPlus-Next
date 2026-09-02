@@ -107,15 +107,36 @@ namespace ForkPlus.UI.WpfCompat
                 dialog.Opened -= Handler;
                 try
                 {
+                    // 本轮25 修正"跟随"语义：不再做"owner 屏幕工作区居中"（主窗口非最大化、
+                    // 不在屏幕中央时，弹窗落在屏幕中央 ≠ 跟随主窗口，观感仍是"跑偏"），
+                    // 而是相对 owner 窗口矩形居中（CenterOwner 语义），并 clamp 到屏幕工作区：
+                    //   - owner 在任意屏的任意位置 → 弹窗中心对齐 owner 中心（真正跟随）；
+                    //   - owner 最大化 → 中心 = 工作区中心，与原屏幕居中一致；
+                    //   - owner 最小化/位置异常 → clamp 兜底保证弹窗完整可见。
                     var screen = owner?.Screens?.ScreenFromWindow(owner) ?? owner?.Screens?.Primary ?? dialog.Screens?.Primary;
                     if (screen == null) return;
                     var wa = screen.WorkingArea;
-                    // Opened 后 ClientSize 已稳定（DIP），换算为物理像素再居中。
+                    // Opened 后 ClientSize 已稳定（DIP），换算为物理像素。
                     int wPx = (int)Math.Max(1, Math.Round(dialog.ClientSize.Width * screen.Scaling));
                     int hPx = (int)Math.Max(1, Math.Round(dialog.ClientSize.Height * screen.Scaling));
-                    dialog.Position = new global::Avalonia.PixelPoint(
-                        wa.X + Math.Max(0, (wa.Width - wPx) / 2),
-                        wa.Y + Math.Max(0, (wa.Height - hPx) / 2));
+                    int x, y;
+                    if (owner != null && owner.WindowState != WindowState.Minimized)
+                    {
+                        // owner 窗口中心（DIP → 物理像素；显式走原生扩展——项目内 InputCompat
+                        // 有同名 PointToScreen shim（返回 DIP Point），会被优先解析导致类型错配）。
+                        PixelPoint centerPx = global::Avalonia.VisualExtensions.PointToScreen(owner, new Point(owner.Width / 2.0, owner.Height / 2.0));
+                        x = centerPx.X - wPx / 2;
+                        y = centerPx.Y - hPx / 2;
+                    }
+                    else
+                    {
+                        x = wa.X + (wa.Width - wPx) / 2;
+                        y = wa.Y + (wa.Height - hPx) / 2;
+                    }
+                    // clamp 到 owner 屏幕工作区，保证弹窗完整可见。
+                    x = (int)Math.Max(wa.X, Math.Min(x, wa.X + wa.Width - wPx));
+                    y = (int)Math.Max(wa.Y, Math.Min(y, wa.Y + wa.Height - hPx));
+                    dialog.Position = new global::Avalonia.PixelPoint(x, y);
                 }
                 catch
                 {
@@ -735,11 +756,20 @@ namespace ForkPlus.UI.WpfCompat
 
     public static class ResourceCompat
     {
-        /// <summary>WPF FrameworkElement.TryFindResource(object key)：找到返回资源，否则 null。</summary>
+        /// <summary>
+        /// WPF FrameworkElement.TryFindResource(object key)：找到返回资源，否则 null。
+        /// 本轮25 修复"弹窗残缺"根因：原实现走 IResourceHost.TryGetResource 实例方法——
+        /// 该方法只查元素自身 Resources/Styles、不沿逻辑树上溯，App 级资源
+        /// （App.axaml 合并字典里的 BackgroundBrush/BorderBrush/各 Icon）永远解析不到
+        /// （headless 探针实测：挂在已显示窗口里的元素 attachedShim=False）。
+        /// 改用链式扩展 ResourceNodeExtensions.TryFindResource（沿 StylingParent：
+        /// 元素 → 逻辑树祖先 → TopLevel → Application → 主题资源），等价 WPF 查找语义。
+        /// </summary>
         public static object TryFindResource(this StyledElement element, object key)
         {
             if (element == null || key == null) return null;
-            if (element.TryGetResource(key, element.ActualThemeVariant ?? ThemeVariant.Default, out var value))
+            if (ResourceNodeExtensions.TryFindResource(
+                    element, key, element.ActualThemeVariant ?? ThemeVariant.Default, out var value))
                 return value;
             return null;
         }
@@ -753,15 +783,32 @@ namespace ForkPlus.UI.WpfCompat
 
         /// <summary>
         /// WPF FrameworkElement.SetResourceReference(prop, key)。
-        /// Migration note：当前为一次性解析赋值，不随主题切换动态更新；
-        /// 如需动态更新可改绑 element.GetResourceObservable(key)（内部 API，需反射）。
+        /// 本轮25 修复"弹窗残缺"根因：原一次性解析赋值有两处缺陷——
+        /// (1) 走上面修复前的 TryFindResource，App 级资源拿不到（图标/背景全丢）；
+        /// (2) 代码构建的 Popup 内容"先建后挂树"（RootGrid.Children.Add 在 SetResourceReference
+        ///     之后），未挂树时链上溯不到 Application，解析注定失败。
+        /// 改用 GetResourceObservable 订阅（与 XAML DynamicResource 同一机制）：
+        /// 订阅时立即推送当前值；元素挂树（OnAttachedToLogicalTreeCore 触发
+        /// ResourcesChanged）、主题切换（ActualThemeVariantChanged）、资源字典变更时
+        /// 重新推送并更新属性；未找到推送 UnsetValue（属性回落默认值）。
+        /// 注意：同一属性多次调用时按订阅顺序推送，后调用的 key 最终生效
+        /// （StageFileUserControl 等切换图标场景依赖此语义）。
         /// </summary>
         public static void SetResourceReference(this AvaloniaObject obj, AvaloniaProperty property, object key)
         {
             if (obj is StyledElement el)
             {
-                var v = el.TryFindResource(key);
-                if (v != null) obj.SetValue(property, v);
+                void Apply()
+                {
+                    var v = el.TryFindResource(key);
+                    obj.SetValue(property, v ?? AvaloniaProperty.UnsetValue);
+                }
+                Apply();
+                // 先建后挂树（Popup 内容等代码构建场景）：挂树时资源链就绪，补一次解析。
+                el.AttachedToLogicalTree += delegate { Apply(); };
+                // 主题切换/资源字典变更沿逻辑树传播到每个元素的 ResourcesChanged，重新解析
+                //（与 XAML DynamicResource 的 GetResourceObservable 订阅机制同一事件源）。
+                el.ResourcesChanged += delegate { Apply(); };
             }
         }
     }

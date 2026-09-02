@@ -129,9 +129,23 @@ namespace ForkPlus.UI
 				var wa = screen.WorkingArea;
 				int wPx = (int)global::System.Math.Max(1, global::System.Math.Round(ClientSize.Width * screen.Scaling));
 				int hPx = (int)global::System.Math.Max(1, global::System.Math.Round(ClientSize.Height * screen.Scaling));
-				Position = new global::Avalonia.PixelPoint(
-					wa.X + global::System.Math.Max(0, (wa.Width - wPx) / 2),
-					wa.Y + global::System.Math.Max(0, (wa.Height - hPx) / 2));
+				int x, y;
+				if (owner != null && owner.WindowState != global::Avalonia.Controls.WindowState.Minimized)
+				{
+					// 本轮25：相对 owner 窗口矩形居中（真"跟随"），而非仅同屏居中。
+					// 显式走原生扩展——项目内 InputCompat 有同名 PointToScreen shim（返回 DIP Point）。
+					global::Avalonia.PixelPoint centerPx = global::Avalonia.VisualExtensions.PointToScreen(owner, new global::Avalonia.Point(owner.Width / 2.0, owner.Height / 2.0));
+					x = centerPx.X - wPx / 2;
+					y = centerPx.Y - hPx / 2;
+				}
+				else
+				{
+					x = wa.X + (wa.Width - wPx) / 2;
+					y = wa.Y + (wa.Height - hPx) / 2;
+				}
+				x = (int)global::System.Math.Max(wa.X, global::System.Math.Min(x, wa.X + wa.Width - wPx));
+				y = (int)global::System.Math.Max(wa.Y, global::System.Math.Min(y, wa.Y + wa.Height - hPx));
+				Position = new global::Avalonia.PixelPoint(x, y);
 			}
 			catch
 			{
