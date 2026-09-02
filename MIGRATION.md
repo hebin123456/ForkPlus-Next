@@ -13,12 +13,31 @@
 
 ## 环境与构建（重要）
 
+**📍 路径变更（2026-09-02 沙盒重置）：本仓库现在位于 `/data/user/work/ForkPlus-Next`**（重新克隆），旧文档里的 `/data/user/work/migration/*`（含 WpfToAvalonia / ForkPlus 源仓库 / apicheck / fixer）已全部不存在，按此对应换算。
+
 ```bash
 # dotnet 不在默认 PATH，必须先 export（沙盒环境重置后 SDK 装在 ~/.dotnet）
 export PATH="$HOME/.dotnet:$PATH"
 export DOTNET_ROOT="$HOME/.dotnet"
-# 若 ~/.dotnet 只有 sentinel 没有 binary（沙盒重置），用 /data/user/work/dotnet-install.sh 重装：
-# bash /data/user/work/dotnet-install.sh --channel 10.0 --version 10.0.400 --install-dir $HOME/.dotnet
+
+# ── SDK 重装实录（2026-09-02 实测，dotnet-install.sh 已随沙盒重置丢失）──
+# ① 中科大/南大镜像站无 dotnet 目录（404 实证），官方源直连仅 ~147KB/s；
+#    正解 = aria2 16 连接切片下载，240MB 约 15 秒（先 apt-get update &&
+#    apt-get install -y aria2 xvfb xdotool x11-utils，后三者为截图冒烟必备）：
+aria2c -x 16 -s 16 -k 8M --file-allocation=none \
+  -o dotnet-sdk-10.0.400-linux-x64.tar.gz \
+  https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.400/dotnet-sdk-10.0.400-linux-x64.tar.gz
+# ② SHA512 校验（对照官方 .sha512 文件）：
+sha512sum dotnet-sdk-10.0.400-linux-x64.tar.gz
+# ③ 解压安装：
+mkdir -p ~/.dotnet && tar -xzf dotnet-sdk-10.0.400-linux-x64.tar.gz -C ~/.dotnet
+
+# ── oxyplot-avalonia 是仓库外源码引用（csproj 的 ..\..\..\oxyplot-avalonia），沙盒重置即丢，必须重新克隆（与 build.yml 的 Clone 步骤同源）──
+git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git /data/user/work/oxyplot-avalonia
+
+# ── 环境就绪验证口径（2026-09-02 全部实证）：dotnet build 0 错误 + ForkPlus.Tests 3895 全绿 ──
+# 注意：全量 dotnet test 偶发 "Test Run Aborted"（headless Compositor 初始化与其他测试
+# 集合并行竞争；单跑该类可过、立即重跑全量即绿）。遇到先重跑一次再排查，勿误判环境损坏。
 
 # 编译主工程（在 /data/user/work/migration/ForkPlus-Next/src/ForkPlus 下）
 dotnet build --no-restore -v q -nologo 2>&1 | grep -E "error CS" | sed -E 's/ \[.*//' | sort -u
@@ -36,9 +55,9 @@ dotnet build --no-restore -v q -nologo -p:EmitCompilerGeneratedFiles=true
 git push origin HEAD
 ```
 
-- 工作目录：`/data/user/work/migration/ForkPlus-Next`（主仓库）、`/data/user/work/migration/WpfToAvalonia`（转换工具）、`/data/user/work/migration/ForkPlus`（WPF 源仓库，对照用）
-- API 查证工具：`/data/user/work/apicheck`（`dotnet run --no-build -- "类型名" [成员过滤]` 可列出 Avalonia 12 类型和成员，避免瞎猜 API）
-- 错误清单快照：`/data/user/work/errors.txt`（历史）；最新口径用上面构建命令实时生成
+- 工作目录（2026-09-02 沙盒重置后）：`/data/user/work/ForkPlus-Next`（主仓库）、`/data/user/work/oxyplot-avalonia`（图表库源码，仓库外引用）。旧的 migration/ 子目录布局（含 WpfToAvalonia 转换工具、ForkPlus WPF 源仓库对照）已不存在，需要时重新克隆
+- API 查证工具：`/data/user/work/apicheck`（已随沙盒重置丢失；需要时按"控制台工程 + 反射 dump"思路重建）
+- 错误清单快照：`/data/user/work/errors.txt`（已丢失，历史）；最新口径用上面构建命令实时生成
 
 ## 当前状态
 
