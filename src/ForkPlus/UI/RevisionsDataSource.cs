@@ -828,7 +828,9 @@ namespace ForkPlus.UI
 
 		bool IList.Contains(object value)
 		{
-			return _decoratedRevisions.ContainsItem((DecoratedRevision x) => x == value);
+			// 与 IndexOf 语义对齐（引用匹配当前已物化行）。WPF 版遍历 _decoratedRevisions
+			// 引用比较，行为等价；改为复用 IndexOf 的 O(1) 快路径。
+			return ((IList)this).IndexOf(value) >= 0;
 		}
 
 		void IList.Clear()
@@ -838,6 +840,23 @@ namespace ForkPlus.UI
 
 		int IList.IndexOf(object value)
 		{
+			// v3.12 修复（启动后底部 tab/右键菜单状态错乱）：原先恒返回 -1，违反 IList 契约。
+			// Avalonia SelectionModel 的 item→index 解析（SelectedItems.Add / SelectedItem /
+			// ScrollIntoView 等）全部依赖 IndexOf：返回 -1 时 SelectedItems.Add(item) 会产生
+			// 无法解析索引的"孤儿选中项"，后续按索引的选中（如 ApplyContainerSelection 的
+			// container.IsSelected=true）再叠加一次 → 同一项在 SelectedItems 里出现两次 →
+			// 被误判为双选（Range）→ 底部"提交/文件树"tab 变灰、右键菜单变成多选菜单，
+			// 直到用户手动点击其他行再点回才恢复。
+			// DecoratedRevision.Row 与本数据源索引 1:1（DecorateRows 按 row 递增 Add），
+			// 用 Row + 引用校验做 O(1) 精确解析；非当前实例（如 Reload 后的旧实例）返回 -1。
+			if (value is DecoratedRevision decoratedRevision)
+			{
+				int row = decoratedRevision.Row;
+				if (row >= 0 && row < _decoratedRevisions.Count && ReferenceEquals(_decoratedRevisions[row], decoratedRevision))
+				{
+					return row;
+				}
+			}
 			return -1;
 		}
 

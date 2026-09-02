@@ -435,6 +435,14 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
+			// v3.12 修复防御（同 IndexOf 修复）：同一实例在 SelectedItems 中出现两次时会被
+			// 误判为双选（Range）——底部"提交/文件树"tab 变灰、右键菜单变多选菜单。WPF 的
+			// ListBox.SelectedItems 不可能含重复项，这里按引用去重对齐该语义，把任何来源的
+			// 重复（孤儿项 + 按索引选中叠加等）限制在单选语义内。
+			if (array.Length > 1)
+			{
+				array = DistinctRevisions(array);
+			}
 			if (array.Length == 2)
 			{
 				array = SortRevisionsByRows(array);
@@ -442,6 +450,25 @@ namespace ForkPlus.UI.UserControls
 			IRoundedSelectionListBoxViewModel[] selectedItems = array;
 			selectedItems.RefreshSelectionType();
 			this.SelectionChanged?.Invoke(this, new EventArgs<DecoratedRevision[]>(array));
+		}
+
+		private static DecoratedRevision[] DistinctRevisions(DecoratedRevision[] items)
+		{
+			List<DecoratedRevision> list = new List<DecoratedRevision>(items.Length);
+			DecoratedRevision[] array = items;
+			for (int i = 0; i < array.Length; i++)
+			{
+				DecoratedRevision item = array[i];
+				if (!list.Contains(item))
+				{
+					list.Add(item);
+				}
+			}
+			if (list.Count == items.Length)
+			{
+				return items;
+			}
+			return list.ToArray();
 		}
 
 		private void RevisionListView_MouseDoubleClick(object sender, global::Avalonia.Input.TappedEventArgs e)
