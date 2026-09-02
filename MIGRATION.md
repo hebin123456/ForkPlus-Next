@@ -54,6 +54,7 @@ git push origin HEAD
 | 6 | Windows 加载 git mm 仓库直接崩溃 | ⬜ 待修（GitMmUserControl 链路，可用普通 git 仓库模拟） |
 | 7 | 加载非常卡（性能） | ✅ 本轮21 修复（提交列表等 12 处裸 ItemsPresenter 全部补虚拟化绑定） |
 | 8 | git mm 子仓标签页展示不对（竖排堆叠） | ✅ 本轮22 修复（GitMmSubrepoTabControlStyle 双缺陷：ItemsPanel 未绑 + ItemContainerTheme 丢失） |
+| 9 | AI 辅助开发/解释等弹窗跑到另一个显示器 | ✅ 本轮23 修复（非模态 Show() 窗口统一 ShowAtOwnerScreen，跟随主窗口所在屏） |
 
 **🎉 里程碑：主界面侧栏布局与原版对齐（2026-08-30 本轮13）。**（前一轮：主菜单系统完全复活——本轮6）
 - `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
@@ -103,6 +104,16 @@ git push origin HEAD
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
 **整体进度估算（2026-08-31 更正口径）：编译/CI 层 100%（C# 与 AVLN 清零、单测 3856 全绿、三平台 CI 就位）；运行时按真机 bug 清单计——6 项已修 1 项（#1 初始化仓库链路），另 1 项部分完成（#2 对话框占位标题），其余 4 项待修**。沙箱链路（启动→开仓→列表→详情→菜单→偏好设置→侧栏→统计页图表）已通并留证，但沙箱通过 ≠ 真机可用（用户实测 Windows/Kali 均有阻断性 bug），后续进度以真机 bug 清单为准。
+
+## 运行时修复链 23（2026-09-02 本轮23：多显示器弹窗乱飞——非模态窗口统一跟随主窗口所在屏幕）
+
+1. **【已修】AI 辅助开发/AI 解释等非模态弹窗跑到另一个显示器（真机 bug#9）**：
+   - 根因（WPF→Avalonia 迁移语义缺口）：WPF 非模态窗口 `{ Owner=.., WindowStartupLocation=CenterOwner }` 居中于 owner；迁移后 Avalonia 的 **CenterOwner 只在 ShowDialog(owner) 模态路径生效**，非模态 `Show()` 无定位语义——不设置时由窗口管理器随意摆放（多显示器下常落到别的屏）；`CenterScreen` 则永远居中到**主显示器**（Avalonia 语义），主窗口在副屏时弹窗同样"飞走"。项目里模态路径早已由 `WindowDialogCompat.ShowDialog()` 内置 `CenterToOwnerScreenOnOpened`（取 owner 屏幕工作区居中、DPI 物理像素换算），但非模态路径完全没有等价物。
+   - 修复：`WindowOwnerCompat`（WpfCompat.Batch2.cs）新增扩展方法 `ShowAtOwnerScreen()`——`TryGetOwner(self) ?? WpfApp.MainWindow` 定位 owner，复用（改为 internal 的）`WindowDialogCompat.CenterToOwnerScreenOnOpened` 在 Opened 后把窗口居中到 owner 屏幕工作区，再 `Show()`。
+   - 改造调用点 9 个窗口 11 处：AiDevelopmentWindow（工具栏"AI 辅助开发"）、AiTextResultWindow ×3（RevisionList 两路 + RevisionSummary 的"AI Explain/AI PR Description"）、AiCommitComposerWindow、AiCodeReviewWindow、ReflogWindow、FileHistoryWindow、RepositoryOverviewWindow、BlameWindow、RevisionDetailsWindow ×2（独立窗口显示提交）；并删除 5 个窗口构造函数里硬编码的 `CenterScreen`（AiCodeReview/FileHistory/RepositoryOverview/Blame/RevisionDetails），避免先飞主屏再被拽回。
+   - 模态弹窗（ForkPlusDialogWindow 系、AiSuggestionPreviewWindow、TagDetails、UpdateAvailable 等）走 ShowDialog 路径本来就有跟随逻辑，不动。
+2. **验证**：`dotnet build` 0 错误。
+3. **教训：WPF 非模态窗口的 Owner+CenterOwner 组合迁移清单——Avalonia 必须手动定位（ShowAtOwnerScreen），CenterScreen 在多显示器语义是"主屏"不是"主窗口所在屏"。同类症状：弹窗出现在另一块显示器。检查：grep 非模态路径的裸 `.Show()` 后无 WindowStartupLocation 处理即是漏网。**
 
 ## 运行时修复链 22（2026-09-02 本轮22：git mm 子仓标签页展示不对——竖排堆叠 + 自定义标签样式全丢）
 

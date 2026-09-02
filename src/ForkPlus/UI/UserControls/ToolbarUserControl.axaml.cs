@@ -154,7 +154,7 @@ namespace ForkPlus.UI.UserControls
 				return;
 			}
 			ForkPlus.UI.Dialogs.AiDevelopmentWindow window = new ForkPlus.UI.Dialogs.AiDevelopmentWindow(repositoryUserControl, gitModule);
-			window.Show();
+			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 			};
 			BranchToolbarButton.Click += delegate
 			{
@@ -455,7 +455,7 @@ namespace ForkPlus.UI.UserControls
 		}
 		ForkPlus.UI.Dialogs.ReflogWindow window = new ForkPlus.UI.Dialogs.ReflogWindow(repo);
 		window.SetOwnerCompat(_mainWindow);
-		window.Show();
+		window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 	}
 
 	private void RedoToolbarDropdownButtonContextMenu_Opened(object sender, RoutedEventArgs e)

@@ -96,7 +96,10 @@ namespace ForkPlus.UI.WpfCompat
                 wa.Y + Math.Max(0, (wa.Height - heightPx) / 2));
         }
 
-        private static void CenterToOwnerScreenOnOpened(Window dialog, Window owner)
+        // Migration note（可见性）：原 private，仅 ShowDialog 模态路径使用。
+        // 修复链 23 改为 internal——非模态 Show() 的窗口（AI 辅助开发/解释/审查等）
+        // 也要跟随主窗口所在屏幕，经 WindowOwnerCompat.ShowAtOwnerScreen 复用本逻辑。
+        internal static void CenterToOwnerScreenOnOpened(Window dialog, Window owner)
         {
             if (dialog == null) return;
             void Handler(object s, EventArgs e)

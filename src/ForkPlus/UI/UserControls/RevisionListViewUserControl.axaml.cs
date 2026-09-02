@@ -1570,7 +1570,7 @@ namespace ForkPlus.UI.UserControls
 			AiTextResultWindow window = new AiTextResultWindow();
 			window.SetOwnerCompat(WpfApp.MainWindow);
 			string title = PreferencesLocalization.FormatCurrent("AI PR Description: {0}", rangeLabel);
-			window.Show();
+			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
 			{
 				try
@@ -1638,7 +1638,7 @@ namespace ForkPlus.UI.UserControls
 			AiTextResultWindow window = new AiTextResultWindow();
 			window.SetOwnerCompat(WpfApp.MainWindow);
 			string title = PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
-			window.Show();
+			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
 			{
 				try

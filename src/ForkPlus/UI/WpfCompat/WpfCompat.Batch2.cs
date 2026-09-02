@@ -85,6 +85,25 @@ namespace ForkPlus.UI.WpfCompat
 
         internal static Window TryGetOwner(Window self)
             => Owners.TryGetValue(self, out var box) ? box.Value : null;
+
+        /// <summary>
+        /// Migration note：WPF 非模态窗口 { Owner=.., WindowStartupLocation=CenterOwner } 的等价物。
+        /// Avalonia 的 CenterOwner 只在 ShowDialog(owner) 模态路径生效；非模态 Show() 不定位时
+        /// 由窗口管理器随意摆放（多显示器下常落到另一块屏），CenterScreen 则永远回主屏——
+        /// 主窗口在副屏时弹窗"跑到另一个显示器"的根因。
+        /// 这里在 Show() 前订阅 Opened，把窗口居中到 owner（或主窗口）所在屏幕的工作区
+        /// （复用 WindowDialogCompat.CenterToOwnerScreenOnOpened，含 DPI 物理像素换算）。
+        /// </summary>
+        public static void ShowAtOwnerScreen(this Window self)
+        {
+            if (self == null)
+            {
+                return;
+            }
+            Window owner = TryGetOwner(self) ?? WpfApp.MainWindow;
+            WindowDialogCompat.CenterToOwnerScreenOnOpened(self, owner);
+            self.Show();
+        }
     }
 
     // ===== WPF ItemsControl.ContainerFromElement =====

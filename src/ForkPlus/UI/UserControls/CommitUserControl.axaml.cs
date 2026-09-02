@@ -2482,7 +2482,7 @@ namespace ForkPlus.UI.UserControls
 			// 至少 2 个 staged 文件才有拆分意义；只有 1 个时也允许（让 AI 生成单条 message）
 			AiCommitComposerWindow window = new AiCommitComposerWindow(GitModule, stagedFiles, AmendMode);
 			window.SetOwnerCompat(MainWindow.Instance); // Migration note：WPF { Owner=.. }（非模态 Show）→ SetOwnerCompat。
-			window.Show();
+			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 		}
 
 		private static int GetUniqueFilesCount(ChangedFile[] changedFiles)

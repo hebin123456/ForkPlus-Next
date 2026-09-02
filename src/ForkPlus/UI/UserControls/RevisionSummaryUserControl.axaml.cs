@@ -397,7 +397,7 @@ namespace ForkPlus.UI.UserControls
 			AiTextResultWindow window = new AiTextResultWindow();
                         window.SetOwnerCompat(global::Avalonia.Controls.TopLevel.GetTopLevel(this) as global::Avalonia.Controls.Window); // Migration note：TopLevel → Window（SetOwnerCompat 需要）。
 			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
-			window.Show();
+			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
 			{
 				try

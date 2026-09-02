@@ -30,7 +30,7 @@ namespace ForkPlus.UI.Commands
 		{
 			if (repositoryUserControl.RepositoryData != null)
 			{
-				new RepositoryOverviewWindow(repositoryUserControl, gitModule).Show();
+				new RepositoryOverviewWindow(repositoryUserControl, gitModule).ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
 			}
 		}
 	}

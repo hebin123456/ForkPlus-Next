@@ -112,7 +112,7 @@ namespace ForkPlus.UI.Dialogs
 			_refreshBlame = new DelayedAction<BlameArgs>(RefreshBlame);
 			base.Title = PathHelper.GetReadableFileName(filePath) + " - " + Translate("Blame");
 			base.ShowInTaskbar = true;
-			base.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterScreen;
+			// 修复链 23：删除 CenterScreen（多显示器下居中到主显示器而非主窗口所在屏；打开方用 ShowAtOwnerScreen）。
 			ResizeMode = ResizeMode.CanResizeWithGrip;
 			InitializeComponent();
 			BlameTitleTextBlock.Text = Translate("Blame");

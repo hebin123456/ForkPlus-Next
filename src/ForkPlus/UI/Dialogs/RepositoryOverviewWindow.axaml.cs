@@ -76,7 +76,7 @@ namespace ForkPlus.UI.Dialogs
 			_secondaryLabelGlyphDrawer = new TextDrawer(_typeface, 11.0, VisualTreeHelper.GetDpi(this).PixelsPerDip);
 			base.Title = string.Format(Translate("{0} - Repository Overview"), gitModule.RepositoryName);
 			base.ShowInTaskbar = true;
-			base.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterScreen;
+			// 修复链 23：删除 CenterScreen（多显示器下居中到主显示器而非主窗口所在屏；打开方用 ShowAtOwnerScreen）。
 			ResizeMode = ResizeMode.CanResizeWithGrip;
 			InitializeComponent();
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);

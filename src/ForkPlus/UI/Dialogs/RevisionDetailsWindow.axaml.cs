@@ -23,7 +23,7 @@ namespace ForkPlus.UI.Dialogs
 		public RevisionDetailsWindow()
 		{
 			base.ShowInTaskbar = true;
-			base.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterScreen;
+			// 修复链 23：删除 CenterScreen（多显示器下居中到主显示器而非主窗口所在屏；打开方用 ShowAtOwnerScreen）。
 			InitializeComponent();
 			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
 			{

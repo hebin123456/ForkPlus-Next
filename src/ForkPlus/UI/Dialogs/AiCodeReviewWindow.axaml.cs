@@ -94,7 +94,8 @@ namespace ForkPlus.UI.Dialogs
 		public AiCodeReviewWindow()
 		{
 			base.ShowInTaskbar = true;
-			base.WindowStartupLocation = global::Avalonia.Controls.WindowStartupLocation.CenterScreen;
+			// 修复链 23：删除 WindowStartupLocation=CenterScreen——多显示器下它把窗口
+			// 居中到主显示器而非主窗口所在屏（打开方改用 ShowAtOwnerScreen 定位）。
 			InitializeComponent();
 			FileReviewFileListUserControl.SelectionChanged += FileReviewFileListUserControl_SelectionChanged;
 			FileReviewGrid.SizeChanged += FileReviewGrid_SizeChanged;
