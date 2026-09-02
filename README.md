@@ -39,8 +39,7 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH 密码输入辅助程序
 │   ├── ForkPlus.RI/           # 交互式 rebase 编辑器辅助程序
-│   ├── ForkPlus.Tests/        # xUnit 单元测试
-│   └── ForkPlus.AutomationTests/  # FlaUI UI 冒烟测试
+│   └── ForkPlus.Tests/        # xUnit 单元测试（含 Avalonia.Headless UI 冒烟测试）
 ├── third_party/               # 构建期拉取的原生二进制（见下文「biturbo.dll 来源」）
 ├── gitmm/                     # git mm 工作流参考文档
 └── .github/workflows/         # GitHub Actions CI 配置
@@ -98,8 +97,7 @@ git push origin v1.7.0
 
 ## 测试
 
-- 单元测试：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
-- UI 冒烟测试：设置 `FORKPLUS_AUTOMATION_EXE` 环境变量指向已编译的 `ForkPlus.exe`，然后运行 `dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj`
+- 单元测试：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（含 Avalonia.Headless UI 冒烟测试，跨平台，随单测一起运行）
 
 ## 多语言支持
 

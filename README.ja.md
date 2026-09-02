@@ -31,8 +31,7 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH パスワード入力ヘルパー
 │   ├── ForkPlus.RI/           # インタラクティブ rebase エディタヘルパー
-│   ├── ForkPlus.Tests/        # xUnit 単体テスト
-│   └── ForkPlus.AutomationTests/  # FlaUI UI スモークテスト
+│   └── ForkPlus.Tests/        # xUnit 単体テスト（Avalonia.Headless UI スモークテストを含む）
 ├── third_party/               # アプリと共に配布されるランタイムツールとネイティブバイナリ
 ├── gitmm/                     # git mm ワークフローリファレンスドキュメント
 └── .github/workflows/         # GitHub Actions CI 設定
@@ -66,8 +65,7 @@ git push origin v1.3.0
 
 ## テスト
 
-- 単体テスト: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
-- UI スモークテスト: `FORKPLUS_AUTOMATION_EXE` 環境変数をビルド済みの `ForkPlus.exe` に設定し、`dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj` を実行
+- 単体テスト: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（クロスプラットフォーム対応の Avalonia.Headless UI スモークテストを含む）
 
 ## 多言語サポート
 

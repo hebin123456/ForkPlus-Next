@@ -31,8 +31,7 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH askpass helper
 │   ├── ForkPlus.RI/           # Interactive rebase editor helper
-│   ├── ForkPlus.Tests/        # xUnit unit tests
-│   └── ForkPlus.AutomationTests/  # FlaUI UI smoke tests
+│   └── ForkPlus.Tests/        # xUnit unit tests (incl. Avalonia.Headless UI smoke tests)
 ├── third_party/               # Runtime tools and native binaries
 ├── gitmm/                     # git mm workflow reference docs
 └── .github/workflows/         # GitHub Actions CI config
@@ -66,8 +65,7 @@ The build artifact includes `ForkPlus.exe`, all dependency DLLs, `biturbo.dll`, 
 
 ## Tests
 
-- Unit tests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
-- UI smoke tests: set `FORKPLUS_AUTOMATION_EXE` environment variable to a built `ForkPlus.exe`, then run `dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj`
+- Unit tests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (includes cross-platform Avalonia.Headless UI smoke tests, no separate Windows-only UI suite)
 
 ## Multi-language Support
 

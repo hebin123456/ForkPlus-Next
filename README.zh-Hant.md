@@ -31,8 +31,7 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH 密碼輸入輔助程式
 │   ├── ForkPlus.RI/           # 互動式 rebase 編輯器輔助程式
-│   ├── ForkPlus.Tests/        # xUnit 單元測試
-│   └── ForkPlus.AutomationTests/  # FlaUI UI 冒煙測試
+│   └── ForkPlus.Tests/        # xUnit 單元測試（含 Avalonia.Headless UI 冒煙測試）
 ├── third_party/               # 隨應用分發的執行時工具和原生二進位檔案
 ├── gitmm/                     # git mm 工作流參考文件
 └── .github/workflows/         # GitHub Actions CI 配置
@@ -66,8 +65,7 @@ git push origin v1.3.0
 
 ## 測試
 
-- 單元測試：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
-- UI 冒煙測試：設定 `FORKPLUS_AUTOMATION_EXE` 環境變數指向已編譯的 `ForkPlus.exe`，然後執行 `dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj`
+- 單元測試：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（含 Avalonia.Headless UI 冒煙測試，跨平台，隨單元測試一起執行）
 
 ## 多語言支援
 

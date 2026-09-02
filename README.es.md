@@ -31,8 +31,7 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Programa auxiliar para entrada de contraseñas Git/SSH
 │   ├── ForkPlus.RI/           # Programa auxiliar para el editor de rebase interactivo
-│   ├── ForkPlus.Tests/        # Pruebas unitarias xUnit
-│   └── ForkPlus.AutomationTests/  # Pruebas de humo de UI con FlaUI
+│   └── ForkPlus.Tests/        # Pruebas unitarias xUnit (incluye pruebas de humo de UI con Avalonia.Headless)
 ├── third_party/               # Herramientas de tiempo de ejecución y binarios nativos distribuidos con la aplicación
 ├── gitmm/                     # Documentación de referencia del flujo de trabajo git mm
 └── .github/workflows/         # Configuración de CI con GitHub Actions
@@ -66,8 +65,7 @@ El producto de compilación incluye `ForkPlus.exe`, todas las dll dependientes, 
 
 ## Pruebas
 
-- Pruebas unitarias: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
-- Pruebas de humo de UI: establezca la variable de entorno `FORKPLUS_AUTOMATION_EXE` para que apunte al `ForkPlus.exe` compilado, luego ejecute `dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj`
+- Pruebas unitarias: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (incluye pruebas de humo de UI multiplataforma con Avalonia.Headless)
 
 ## Soporte multilingüe
 

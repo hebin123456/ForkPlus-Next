@@ -31,8 +31,7 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Assistant askpass Git/SSH
 │   ├── ForkPlus.RI/           # Assistant éditeur de rebase interactif
-│   ├── ForkPlus.Tests/        # Tests unitaires xUnit
-│   └── ForkPlus.AutomationTests/  # Tests de fumée UI FlaUI
+│   └── ForkPlus.Tests/        # Tests unitaires xUnit (dont tests de fumée UI Avalonia.Headless)
 ├── third_party/               # Outils d'exécution et binaires natifs
 ├── gitmm/                     # Documentation de référence du flux de travail git mm
 └── .github/workflows/         # Configuration CI GitHub Actions
@@ -66,8 +65,7 @@ L'artefact de compilation inclut `ForkPlus.exe`, toutes les DLL de dépendance, 
 
 ## Tests
 
-- Tests unitaires : `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`
-- Tests de fumée UI : définir la variable d'environnement `FORKPLUS_AUTOMATION_EXE` sur un `ForkPlus.exe` compilé, puis exécuter `dotnet test src/ForkPlus.AutomationTests/ForkPlus.AutomationTests.csproj`
+- Tests unitaires : `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (inclut les tests de fumée UI Avalonia.Headless, multiplateformes)
 
 ## Prise en charge multilingue
 

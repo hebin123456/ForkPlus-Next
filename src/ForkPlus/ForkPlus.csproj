@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <!-- .NET 10 LTS + Windows 10 2004 (19041) 最低要求（WebView2 需要）。
-         WPF + WebView2 + FlaUI 都是 Windows-only，故用 -windows TFM；
-         暂未做跨平台 UI 迁移（A 方向），Linux/macOS 仍只跑 biturbo 冒烟测试。-->
+    <!-- .NET 10 LTS。UI 已迁移 Avalonia（跨平台），TFM 用 net10.0（不带 -windows 后缀）；
+         CI 三平台（win/linux/macos）构建，UI 冒烟测试统一走 Avalonia.Headless（跨平台，随单测跑）。-->
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>ForkPlus</AssemblyName>
     <TargetName>ForkPlus</TargetName>

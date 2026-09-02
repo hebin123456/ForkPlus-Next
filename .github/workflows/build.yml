@@ -14,8 +14,9 @@
 #   ubuntu-latest  → x64（libbiturbo.so = x86_64）
 #   macos-latest   → arm64（libbiturbo.dylib = arm64，Apple Silicon）
 #
-# 注意：解决方案里的 ForkPlus.AutomationTests（FlaUI，Windows-only）不在构建范围，
-#       只构建主工程 ForkPlus.csproj（ProjectReference 会带出 AskPass/RI）。
+# 注意：UI 冒烟测试已归一到 ForkPlus.Tests 的 Avalonia.Headless（跨平台，随单测一起跑），
+#       原 Windows-only FlaUI 套件 ForkPlus.AutomationTests 已删除（2026-09-02）。
+#       这里只构建主工程 ForkPlus.csproj（ProjectReference 会带出 AskPass/RI）。
 
 name: build
 

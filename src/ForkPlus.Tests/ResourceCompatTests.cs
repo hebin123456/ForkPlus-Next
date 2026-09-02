@@ -8,8 +8,9 @@
 // 元素 → 逻辑树祖先 → TopLevel → GlobalStyles/Application → 主题资源），
 // SetResourceReference 另订阅 AttachedToLogicalTree/ResourcesChanged 做"先建后挂树"补解析
 // 与主题切换重解析（同 XAML DynamicResource 的事件源）。
-// 注：探针资源在各测试内注册（而非 App 初始化时）——测试程序集内多个测试类共享同一
-// headless Application（先启动者胜出），初始化期注册会因 App 实例不同而丢失。
+// 注：探针资源在各测试内注册（而非 App 初始化时）——多个测试类共享 HeadlessAppBootstrap
+// 启动的同一 headless Application（真实 App，ModuleInitializer 即启动），App 初始化期
+// 注册无处下手；探针 key 与真实 App 资源 key 无冲突，每次进 Run 幂等重注册。
 using System;
 using System.Threading;
 using Avalonia;
@@ -23,48 +24,11 @@ using Xunit;
 
 namespace ForkPlus.Tests
 {
-	// 同一 Collection：与 DetachedPopupBehaviorTests 串行执行——两个类都要启动 headless
-	// Application（Assembly 级单例），并行会因重复 SetupWithoutStarting 中止测试。
+	// 同一 Collection：与其余 headless 测试类串行（共享 HeadlessAppBootstrap 启动的
+	// 真实 App；探针资源仍各测试内注册，保持测试间独立性）。
 	[Collection("HeadlessAvalonia")]
 	public class ResourceCompatTests
 	{
-		private sealed class HeadlessTestApp : Application
-		{
-			public override void OnFrameworkInitializationCompleted()
-			{
-				Styles.Add(new Avalonia.Themes.Fluent.FluentTheme());
-			}
-		}
-
-		private static void EnsureStarted()
-		{
-			if (Application.Current != null)
-			{
-				return;
-			}
-			var started = new ManualResetEvent(false);
-			var t = new Thread(delegate()
-			{
-				// SetupWithClassicDesktopLifetime（而非 SetupWithoutStarting）：挂上
-				// ClassicDesktopStyleApplicationLifetime，WpfApp.Windows / ShowDialog
-				// 兼容层依赖它取窗口列表；先启动的类创建共享 App，后启动的类直接复用，
-				// 所以每个候选启动点都必须带 lifetime。ShutdownMode 改显式关闭，防止单
-				// 个测试关掉唯一窗口时把 Dispatcher 整个 shut down。
-				AppBuilder.Configure<HeadlessTestApp>()
-					.UseHeadless(new AvaloniaHeadlessPlatformOptions())
-					.SetupWithClassicDesktopLifetime(Array.Empty<string>(), delegate { });
-				if (Application.Current.ApplicationLifetime is global::Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime desktopLifetime)
-				{
-					desktopLifetime.ShutdownMode = global::Avalonia.Controls.ShutdownMode.OnExplicitShutdown;
-				}
-				started.Set();
-				Dispatcher.UIThread.MainLoop(new CancellationToken());
-			});
-			t.IsBackground = true;
-			t.Start();
-			SpinWait.SpinUntil(delegate { return started.WaitOne(0); }, 5000);
-		}
-
 		private static void EnsureProbeResources()
 		{
 			var res = Application.Current.Resources;
@@ -74,14 +38,14 @@ namespace ForkPlus.Tests
 
 		private static T Run<T>(Func<T> func)
 		{
-			EnsureStarted();
-			return Dispatcher.UIThread.InvokeAsync(delegate
+			// 复用共享 bootstrap 的 Run（UI 线程 + 排空 job），叠加本类的探针资源注册。
+			return HeadlessAppBootstrap.Run(delegate
 			{
 				EnsureProbeResources();
 				T result = func();
 				Dispatcher.UIThread.RunJobs();
 				return result;
-			}).GetAwaiter().GetResult();
+			});
 		}
 
 		[Fact]

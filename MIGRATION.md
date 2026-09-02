@@ -49,8 +49,10 @@ git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git /data/user/w
 git config user.name "Test User" && git config user.email "test@example.com"
 
 # ── 环境就绪验证口径（2026-09-02 全部实证）：dotnet build 0 错误 + ForkPlus.Tests 全绿 ──
-# 注意：全量 dotnet test 偶发 "Test Run Aborted"（headless Compositor 初始化与其他测试
-# 集合并行竞争；单跑该类可过、立即重跑全量即绿）。遇到先重跑一次再排查，勿误判环境损坏。
+# 注意：曾偶发 "Test Run Aborted"（根因：Dispatcher.UIThread 是进程级单例、首触线程拥有，
+# 并行测试集先触碰后 headless 启动线程初始化 Compositor 即崩；各测试类 SpinUntil 超时
+# 后继续也会让 worker 抢先触碰）。已根治（2026-09-02）：HeadlessAppBootstrap 用
+# [ModuleInitializer] 在程序集加载期启动真实 App 并同步等待就绪，归属恒为 UI 线程。
 
 # 编译主工程（在 /data/user/work/ForkPlus-Next/src/ForkPlus 下）
 dotnet build --no-restore -v q -nologo 2>&1 | grep -E "error CS" | sed -E 's/ \[.*//' | sort -u
@@ -65,20 +67,22 @@ dotnet build --no-restore -v q -nologo -p:EmitCompilerGeneratedFiles=true
 
 ## GUI 调试与冒烟
 
-**首选：headless 控件级自动化（快、准、带堆栈）**——Linux 上等价于 Windows 侧
-ForkPlus.AutomationTests 的 FlaUI/UIA3 那套。in-process 驱动真实 App 资源，
-异常堆栈直接进测试输出（截图+xdotool 坐标点击复现一次崩溃要几分钟，headless 秒级）：
+**首选：headless 控件级自动化（快、准、带堆栈）**——in-process 驱动真实 App 资源，
+异常堆栈直接进测试输出（截图+xdotool 坐标点击复现一次崩溃要几分钟，headless 秒级）。
+原 Windows-only FlaUI/UIA3 套件 ForkPlus.AutomationTests 已删除（2026-09-02），
+UI 冒烟测试全部归一到此处：
 
 ```bash
 # 在 /data/user/work/ForkPlus-Next/src 下
 dotnet test ForkPlus.Tests --filter "FullyQualifiedName~MenuWindowSmokeTests" -v q --nologo
 ```
 
-参考实现 `src/ForkPlus.Tests/MenuWindowSmokeTests.cs`：继承真实 `App`（拿到全套
-App.axaml 资源，只 override 掉启动逻辑）、`SetupWithClassicDesktopLifetime` 挂
-lifetime（注意必须在 Setup 前赋值，且 `ShutdownMode` 改 `OnExplicitShutdown`，否则
-首个测试关窗口会把 Dispatcher 整个关掉，后续测试全部 TaskCanceledException）。
-新窗口/菜单冒烟优先照这个模式加测试。
+启动基建已统一收拢到 `src/ForkPlus.Tests/HeadlessAppBootstrap.cs`：[ModuleInitializer]
+在程序集加载期启动继承真实 `App` 的 headless 单例（全套 App.axaml 资源，只 override
+掉启动副作用；`ShutdownMode=OnExplicitShutdown` 防 Dispatcher 连锁关闭），任何测试线程
+不再与 Compositor 初始化竞争。新窗口/菜单冒烟直接 `[Collection("HeadlessAvalonia")]` +
+`HeadlessAppBootstrap.Run(delegate { ... })`，参照 `UiSmokeHeadlessTests.cs` /
+`MenuWindowSmokeTests.cs` 加测试即可。
 
 **备选：Xvfb 真机截图冒烟**（最终视觉确认用）：
 
