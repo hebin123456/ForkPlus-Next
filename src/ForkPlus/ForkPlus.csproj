@@ -158,15 +158,21 @@
        子进程产物按平台命名：Windows 是 .exe，Unix 是无扩展名 apphost，都在清单里由
        Exists 守卫自动取舍。-->
   <Target Name="CollectHelperOutputs" Returns="@(_HelperOutputs)">
+    <PropertyGroup>
+      <!-- RID-specific publish（dotnet publish -r linux-x64 等）时，子项目输出到
+           bin\$(Configuration)\$(TargetFramework)\<RID>\ 子目录；非 RID 构建则在根。
+           两个路径都放守卫，谁存在取谁（与下面每个 Exists 一致）。 -->
+      <HelperRidDir Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)\</HelperRidDir>
+    </PropertyGroup>
     <ItemGroup>
-      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.exe')" />
-      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass')" />
-      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.dll')" />
-      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\ForkPlus.AskPass.runtimeconfig.json')" />
-      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.exe')" />
-      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI')" />
-      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.dll')" />
-      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\ForkPlus.RI.runtimeconfig.json')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.exe" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.exe')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.dll" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.dll')" />
+      <_HelperOutputs Include="..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.runtimeconfig.json" Condition="Exists('..\ForkPlus.AskPass\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.AskPass.runtimeconfig.json')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.exe" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.exe')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.dll" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.dll')" />
+      <_HelperOutputs Include="..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.runtimeconfig.json" Condition="Exists('..\ForkPlus.RI\bin\$(Configuration)\$(TargetFramework)\$(HelperRidDir)ForkPlus.RI.runtimeconfig.json')" />
       <!-- biturbo 原生库按平台：Exists 守卫确保只拷实际存在的那一份（每平台 CI 只有一份） -->
       <_HelperOutputs Include="..\..\third_party\biturbo.dll" Condition="Exists('..\..\third_party\biturbo.dll')" />
       <_HelperOutputs Include="..\..\third_party\libbiturbo.so" Condition="Exists('..\..\third_party\libbiturbo.so')" />

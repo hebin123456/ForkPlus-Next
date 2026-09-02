@@ -139,8 +139,17 @@ jobs:
           size=$(wc -c < "$out")
           [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
 
+      # RID-specific publish：只保留本平台 native 库并提升到产物根目录。
+      # 不带 -r 时 SDK 会把 NuGet 包里全部 18 个 RID 的 runtimes/ 复制进产物
+      # （SkiaSharp/HarfBuzzSharp 全平台 so/dylib/dll + pdb 调试符号），Linux 包
+      # 膨胀到 585M；带 -r linux-x64 --self-contained false 后降至约 45M。
+      # DebugType=none / AllowedReferenceRelatedFileExtensions=none 去掉 pdb。
       - name: Publish (framework-dependent)
-        run: dotnet publish src/ForkPlus/ForkPlus.csproj -c Release -o publish/${{ matrix.rid }} --nologo
+        run: >
+          dotnet publish src/ForkPlus/ForkPlus.csproj -c Release
+          -r ${{ matrix.rid }} --self-contained false
+          -p:DebugType=none -p:AllowedReferenceRelatedFileExtensions=none
+          -o publish/${{ matrix.rid }} --nologo
 
       - name: Verify critical outputs
         shell: bash
