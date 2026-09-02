@@ -53,6 +53,7 @@ git push origin HEAD
 | 5 | Kali 额外外层框 | ⬜ 待修（与 #4 同根：窗口装饰层） |
 | 6 | Windows 加载 git mm 仓库直接崩溃 | ⬜ 待修（GitMmUserControl 链路，可用普通 git 仓库模拟） |
 | 7 | 加载非常卡（性能） | ✅ 本轮21 修复（提交列表等 12 处裸 ItemsPresenter 全部补虚拟化绑定） |
+| 8 | git mm 子仓标签页展示不对（竖排堆叠） | ✅ 本轮22 修复（GitMmSubrepoTabControlStyle 双缺陷：ItemsPanel 未绑 + ItemContainerTheme 丢失） |
 
 **🎉 里程碑：主界面侧栏布局与原版对齐（2026-08-30 本轮13）。**（前一轮：主菜单系统完全复活——本轮6）
 - `dotnet build` 0 错误；AVLN XAML 错误 0；运行零未处理异常。
@@ -102,6 +103,18 @@ git push origin HEAD
 | 4 已知遗留 | 📋 见下文 | AutomationTests 的 FlaUI 依赖等 |
 
 **整体进度估算（2026-08-31 更正口径）：编译/CI 层 100%（C# 与 AVLN 清零、单测 3856 全绿、三平台 CI 就位）；运行时按真机 bug 清单计——6 项已修 1 项（#1 初始化仓库链路），另 1 项部分完成（#2 对话框占位标题），其余 4 项待修**。沙箱链路（启动→开仓→列表→详情→菜单→偏好设置→侧栏→统计页图表）已通并留证，但沙箱通过 ≠ 真机可用（用户实测 Windows/Kali 均有阻断性 bug），后续进度以真机 bug 清单为准。
+
+## 运行时修复链 22（2026-09-02 本轮22：git mm 子仓标签页展示不对——竖排堆叠 + 自定义标签样式全丢）
+
+1. **【已修】子仓标签页竖排堆叠（"展示得不对"直接根因）**：
+   - 根因：`GitMmUserControl.axaml` 的 `GitMmSubrepoTabControlStyle`（子仓 ModernTabControl 定制主题）模板里是裸 `<ItemsPresenter />`——**与修复链 21 完全同型的坑**，但这次症状不是性能而是布局：未绑定 `ItemsPanel` 时 ItemsPresenter 物化自身默认面板（**垂直 StackPanel**），子仓标签一列竖排，标签区吃掉全部高度、内容区被挤没了。
+   - Headless 实证（Avalonia.Headless 12.1.1 最小复刻模板）：无绑定 → `ItemsPanelRoot` = StackPanel(Vertical)，TabItem Bounds 依次 (0,0)/(0,48)/(0,96) 竖排；补 `ItemsPanel="{TemplateBinding ItemsPanel}"` 后 → WrapPanel 横排 (0,0)/(48,0)/(96,0)。
+   - 修复：`ItemsPresenter` 补 `ItemsPanel="{TemplateBinding ItemsPanel}"`（与 Tabcontrol.axaml 基础主题、修复链 6/10/21 的既有修法完全一致）。外层 ScrollViewer 以无限宽测量内容，WrapPanel 不会换行，多子仓时靠滚轮横滚（既有 `SubreposTabControl_PreviewMouseWheel` 处理器）。
+2. **【已修】GitMmSubrepoTabItemStyle 从未生效（迁移丢失 ItemContainerTheme）**：
+   - 根因：WPF 原版靠 `Style.Resources` 里的隐式 TabItem 样式（BasedOn GitMmSubrepoTabItemStyle）给全部子仓 TabItem 上定制外观（Height=28/MinWidth=140/Padding=14,2/圆角顶边 Border#Bd/ClosableTabItem 三态背景/选中阴影+ZIndex）。转换工具删了 Style.Resources（Avalonia Style 无 Resources 属性）但**没补 ItemContainerTheme 等价物**——该样式从迁移第一天起就是死代码，子仓标签一直回落到通用 ModernTabControlTabItemStyle 外观。
+   - 修复：`GitMmSubrepoTabControlStyle` 加 `<Setter Property="ItemContainerTheme" Value="{StaticResource GitMmSubrepoTabItemStyle}" />`（与 Tabcontrol.axaml 中 ModernTabControl:395 / RepositoryManagerTabControl:444 的既有模式一致）。Headless 实证：ItemContainerTheme 对代码直接 `Items.Add(tabItem)` 的容器同样生效（Height/MinWidth 均被应用）。
+3. **验证**：`dotnet build` 0 错误；两处修改均在 GitMmUserControl.axaml 资源字典内，不影响其他 ModernTabControl 使用方（该文件外无人引用这两个 key）。
+4. **教训：WPF Style.Resources 隐式样式迁移清单要再补一条——TabControl 的隐式 TabItem 样式 = Avalonia ItemContainerTheme。同类症状：自定义标签外观全丢、标签竖排。检查：样式 ControlTheme 里 grep 不到 ItemContainerTheme Setter 就是丢了。**
 
 ## 运行时修复链 21（2026-08-31 本轮21：性能——提交列表等 12 处裸 ItemsPresenter 虚拟化清剿，用户报告"加载非常非常卡"）
 

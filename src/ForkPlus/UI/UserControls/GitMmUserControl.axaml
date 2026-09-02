@@ -43,7 +43,12 @@
           <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem" BasedOn="{StaticResource GitMmSubrepoTabItemStyle}" />
         </ResourceDictionary>
       </Style.Resources>-->
-
+      <!-- WPF 隐式 TabItem 样式（上面的 Style.Resources 片段）的等价物是 ItemContainerTheme
+           （同 Tabcontrol.axaml 中 ModernTabControl/RepositoryManagerTabControl 的做法）。
+           迁移时丢失了这行 → RebuildSubrepoTabs 代码创建的 TabItem 拿不到
+           GitMmSubrepoTabItemStyle（28px 高/140 最小宽/圆角顶边/选中阴影），回落到
+           基类 ModernTabControlTabItemStyle 通用外观。 -->
+      <Setter Property="ItemContainerTheme" Value="{StaticResource GitMmSubrepoTabItemStyle}" />
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="controls:ModernTabControl">
@@ -54,7 +59,11 @@
               </Grid.RowDefinitions>
               <ScrollViewer Grid.Row="0" Background="{DynamicResource ClosableTabItem.Static.Background}" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Disabled" PointerWheelChanged="SubreposTabControl_PreviewMouseWheel">
                 <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
-                  <ItemsPresenter Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" />
+                  <!-- Migration note：ItemsPanel 必须显式 TemplateBinding（同 Tabcontrol.axaml 基础主题
+                       修复链的坑）：Avalonia ItemsPresenter 不绑 ItemsPanel 时物化自身默认面板
+                       （垂直 StackPanel）→ 子仓标签竖排堆叠、"展示得不对"的根因。
+                       ScrollViewer 以无限宽测量内容，WrapPanel 不会换行，配合滚轮横滚。 -->
+                  <ItemsPresenter Margin="0" x:Name="headerPanel" TabIndex="1" ZIndex="1" ItemsPanel="{TemplateBinding ItemsPanel}" />
                   <Canvas>
                     <Border Height="1.5" Margin="0" Canvas.Left="0" Canvas.Bottom="0" BorderThickness="0" HorizontalAlignment="Left" Background="{DynamicResource SystemAccentBrush}" x:Name="PART_IndicatorBorder" />
                   </Canvas>
