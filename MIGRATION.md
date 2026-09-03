@@ -210,6 +210,42 @@ SideBySideCommitTextDiffControl（commit 视图）、HexDiffUserControl（十六
 - `HorizontalScrollBar_ThumbLaysOutHorizontally`：thumb 宽 ≈ track×视口比例（< 50% track）、
   offset 增加后 thumb 沿 X 右移（Track 方向错即红）
 
+## Resources[key] 索引器不穿透合并字典：自定义颜色窗口全白（2026-09-03）
+
+用户报告"自定义颜色窗口打开没有加载当前的颜色，显示全是 #FFFFFF"。根因：
+`CustomColorsDialog.GetCurrentColorHex` 沿用 WPF 写法
+`Application.Current.Resources[key]`——**两框架的索引器语义不同**：
+
+- WPF 的 `ResourceDictionary[key]` 会先查顶层、再逆序穿透 `MergedDictionaries`
+  （App 合并的 `Generic.{Skin}.axaml` 主题色全能取到）；
+- Avalonia 的索引器**只查本字典自身条目**（headless 探针实测：`BackgroundColor`
+  明明在合并字典里，`Resources["BackgroundColor"]` 返回 null）→ 30 个颜色 key
+  全部命中不了 → 全走 fallback `"#FFFFFF"`。
+
+修复：改用 `ResourceCompat.TryFindResource(Application.Current, key)`（底层
+`Resources.TryGetResource`，与 WPF 索引器同语义：先顶层、再逆序穿透合并字典——
+末尾 merge 的自定义颜色覆盖字典优先命中，主题原色与用户覆盖色都能取到）。
+同对话框 `InitializeSwatches` 的 `BorderBrush` 取值同根因（null → 30 个预设色块
+无描边），一并改掉。
+
+教训：迁移后**审计所有 `Resources[key]` 直接索引**（含 `ResourceDictionary` 实例），
+凡可能命中合并字典/主题字典的，一律换 `TryFindResource`/`TryGetResource` 链式查找。
+索引器只适合"确定写在顶层字典"的场景。
+
+附带修复（同轮发现）：`ToolbarUserControl` 在 ctor 里
+`WeakEventManager` 订阅了 `ActiveTabChanged`/`ApplicationThemeChanged`，但
+`_mainWindow` 要到 `MainWindow` 构造中 `Toolbar.Initialize(this)` 才赋值、
+`TabManager` 更晚——初始化完成前收到事件即 NRE（测试直接 `new` 裸 toolbar 会
+触发）。`RefreshToolbar`/`InitializeAppearanceToolBarButtonContextMenu` 加
+`_mainWindow?.TabManager == null` 早退守卫。
+
+回归防线：`CustomColorsDialogTests`：
+- `DialogLoadsCurrentThemeColors_NotAllWhite`：清空自定义色后打开对话框，
+  30 项取到主题当前色（AccentColor=#007ACC 等），非全 #FFFFFF
+- `SwatchesGetBorderBrush_FromMergedDictionary`：30 个预设色块 BorderBrush 非空
+- `ResourceLookup_LastMergedDictionaryWins`：末尾合并字典优先命中（自定义覆盖
+  语义），移除后回落主题原色
+
 
 - 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）、`/data/user/work/oxyplot-avalonia`（图表库源码，仓库外引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批

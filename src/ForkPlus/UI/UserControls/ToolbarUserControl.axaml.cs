@@ -292,6 +292,15 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshToolbar()
 	{
+		// Migration note（2026-09-03，测试套件 3 个 UiSmoke 用例连环 NRE 根因）：
+		// ctor 里 WeakEventManager 订阅了 ActiveTabChanged，但 _mainWindow 要到
+		// MainWindow 构造第 107 行 Toolbar.Initialize(this) 才赋值、TabManager 到第
+		// 124 行才创建——初始化完成前收到事件（PullPushBadgeTests 直接 new 裸 toolbar
+		// 的场景）即 NRE。下一行本就是 _mainWindow?. 写法，此处对齐加空守卫。
+		if (_mainWindow?.TabManager == null)
+		{
+			return;
+		}
 		ClosableTabItem activeTab = _mainWindow.TabManager.ActiveTab;
 		RepositoryUserControl repositoryUserControl = _mainWindow?.TabManager.ActiveRepositoryUserControl;
 		bool isEnabled = repositoryUserControl != null;
@@ -604,8 +613,11 @@ namespace ForkPlus.UI.UserControls
 			}
 			contextMenu.Items.Add(new Separator());
 			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Commit List Layout", language)));
-			ClosableTabItem activeTab = _mainWindow.TabManager.ActiveTab;
+			// Migration note（2026-09-03，同 RefreshToolbar 根因）：_mainWindow/TabManager 在
+			// MainWindow 构造完成前可能为 null（ApplicationThemeChanged 早于 Initialize 到达），
+			// 对齐下一行的 _mainWindow?. 写法加空守卫，初始化前不构建"Commit List Layout"段。
 			bool isEnabled = _mainWindow?.TabManager.ActiveRepositoryUserControl != null;
+			ClosableTabItem activeTab = _mainWindow?.TabManager.ActiveTab;
 			MenuItem menuItem3 = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(Preferences.PreferencesLocalization.Translate("Horizontal", language), delegate
 			{
 				MainWindow.Commands.SwitchRevisionListOrientation.Execute(RevisionListOrientation.Horizontal);

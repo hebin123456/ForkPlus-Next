@@ -131,10 +131,18 @@ namespace ForkPlus.UI.Dialogs
 
 		/// <summary>从当前 Application.Resources 取某个 Color key 的 hex 值（预设原色）。</summary>
 		private string GetCurrentColorHex(string key)
+	{
+		try
 		{
-			try
-			{
-				object obj = Application.Current.Resources[key];
+			// Migration note（2026-09-03，"自定义颜色窗口不加载当前颜色，显示全是 #FFFFFF"根因）：
+			// WPF 的 Application.Current.Resources[key] 索引器会穿透 MergedDictionaries 找到
+			// 主题色（Generic.{Skin}.axaml 合并在 App.Resources.MergedDictionaries 里）；Avalonia
+			// 的索引器只查顶层字典（headless 探针实测：BackgroundColor 明明在合并字典里，
+			// Resources["BackgroundColor"] 却返回 null），30 个颜色 key 全部命中不了 → 全部走
+			// fallback "#FFFFFF"。改用 ResourceCompat.TryFindResource（底层 Resources.TryGetResource）：
+			// 与 WPF 索引器同语义——先查顶层、再逆序穿透合并字典（末尾 merge 的自定义颜色
+			// 覆盖字典优先命中），主题原色与自定义覆盖色都能取到。
+				object obj = ResourceCompat.TryFindResource(Application.Current, key);
 				if (obj is Color c)
 					return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
 			}
@@ -172,7 +180,10 @@ namespace ForkPlus.UI.Dialogs
 				{
 					Width = 20, Height = 20,
 					Margin = new Thickness(2),
-					BorderBrush = (Brush)Application.Current.Resources["BorderBrush"],
+					// Migration note（2026-09-03，同 GetCurrentColorHex 根因）：BorderBrush 在
+					// 合并主题字典里，WPF 索引器能穿透查到；Avalonia 索引器只查顶层字典返回
+					// null → 预设色板 30 个色块全部无描边。改用 TryFindResource 取到画刷。
+					BorderBrush = ResourceCompat.TryFindResource(Application.Current, "BorderBrush") as Brush,
 					BorderThickness = new Thickness(1),
 					Cursor = Cursors.Hand,
 					Tag = hex,
