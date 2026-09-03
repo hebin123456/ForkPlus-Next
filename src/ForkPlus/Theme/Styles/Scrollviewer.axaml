@@ -106,6 +106,7 @@
                    Maximum="{TemplateBinding Maximum}"
                    Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                    ViewportSize="{TemplateBinding ViewportSize}"
+                   Orientation="{TemplateBinding Orientation}"
                    x:Name="PART_Track">
               <Track.DecreaseButton>
                 <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
@@ -128,6 +129,11 @@
     
   
     <Style Selector="^:horizontal">
+        <!-- Migration note（2026-09-03，横向滚动条只画出 13px 小方块的根因）：
+             WPF 原版 :horizontal 触发器第一个 Setter 就是 Width="Auto"，把基础样式的
+             Width="13" 重置掉；迁移时丢失导致横向滚动条被硬约束成 13px 宽。
+             Avalonia 的 Width 是 double，NaN 即 WPF 的 Auto。 -->
+        <Setter Property="Width" Value="NaN" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Height" Value="13" />
         <Setter Property="MinHeight" Value="13" />
@@ -152,6 +158,7 @@
                        Maximum="{TemplateBinding Maximum}"
                        Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                        ViewportSize="{TemplateBinding ViewportSize}"
+                       Orientation="{TemplateBinding Orientation}"
                        x:Name="PART_Track">
                   <Track.DecreaseButton>
                     <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
@@ -234,6 +241,7 @@
                    Maximum="{TemplateBinding Maximum}"
                    Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                    ViewportSize="{TemplateBinding ViewportSize}"
+                   Orientation="{TemplateBinding Orientation}"
                    x:Name="PART_Track">
               <Track.DecreaseButton>
                 <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />
@@ -256,6 +264,9 @@
     
   
     <Style Selector="^:horizontal">
+        <!-- Migration note（2026-09-03）：同 VerticalScrollBarStyle——补上 WPF 原版
+             Width="Auto"（Avalonia 写作 NaN）重置，横向才不会被基础样式 Width=13 约束。 -->
+        <Setter Property="Width" Value="NaN" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Height" Value="13" />
         <Setter Property="MinHeight" Value="13" />
@@ -280,6 +291,7 @@
                        Maximum="{TemplateBinding Maximum}"
                        Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                        ViewportSize="{TemplateBinding ViewportSize}"
+                       Orientation="{TemplateBinding Orientation}"
                        x:Name="PART_Track">
                   <Track.DecreaseButton>
                     <RepeatButton x:Name="PART_PageUpButton" Theme="{DynamicResource RepeatButtonTransparent}" />

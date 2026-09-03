@@ -180,6 +180,36 @@ SideBySideCommitTextDiffControl（commit 视图）、HexDiffUserControl（十六
 `BuildWindowsExplorerArguments` 守卫参数构造契约）：混合分隔符规范化、纯反斜杠幂等、
 目录无 `/select`、逗号后无空格、中文+空格路径带引号、深层路径全量转换（回归即红）。
 
+## 横向滚动条只画出 13px 小方块（2026-09-03）
+
+用户报告"上下滚动的滚动条没问题，左右滚动的滚动条绘制得有问题"。根因在
+`Theme/Styles/Scrollviewer.axaml` 的 ScrollBar 主题，**两个迁移丢失**叠加：
+
+1. **`Width="Auto"` 重置丢失（主因）**：WPF 原版基础样式设 `Width="13"`（纵向正确），
+   `:horizontal` 触发器第一个 Setter 就是 `Width="Auto"` 把它重置掉——迁移时只搬了
+   MinWidth/Height，丢了 Width 重置 → 横向滚动条被硬约束成 13×13 小方块（track 列
+   13-20px 宽度算成负 → thumb 不可见）。Avalonia 里 Width 是 double，**NaN 即 WPF 的
+   Auto**：`<Setter Property="Width" Value="NaN" />`。
+2. **Track 未绑 Orientation（次因，修主因后显现）**：WPF 的 Track 没有 Orientation
+   属性、按自身宽高比自动推断方向；Avalonia 的 `Track.Orientation` 经
+   `ScrollBar.OrientationProperty.AddOwner` 共享**默认值 Vertical**，且 ScrollBar 不会
+   同步给模板里的 Track → thumb 按纵向语义排列（宽度铺满全 track、value 变化沿 Y 移动）。
+   官方 Fluent 主题在 Track 上显式绑 `Orientation="{TemplateBinding Orientation}"`。
+
+教训：
+- WPF 样式触发器迁移到 Avalonia 伪类样式时，**逐个 Setter 对账**——尤其"重置型"
+  Setter（Auto/NaN）最容易被当作"没用的重复"丢掉。
+- WPF/Avalonia 的 Track 行为差异：WPF 按几何推断方向，Avalonia 必须显式设置
+  Orientation（默认纵向）。
+- Avalonia 官方 ScrollBar 主题**从不设置 `Width`**（只用 MinWidth/MinHeight），
+  方向差异交给 `:horizontal`/`:vertical` 分支模板布局。
+
+回归防线：`HorizontalScrollBarRenderingTests`（headless 实测布局）：
+- `HorizontalScrollBar_SpansViewportWidth`：横向条宽 > 300（Width 约束未重置即红）+
+  纵向条仍 13px（防过度修复，双向守护）
+- `HorizontalScrollBar_ThumbLaysOutHorizontally`：thumb 宽 ≈ track×视口比例（< 50% track）、
+  offset 增加后 thumb 沿 X 右移（Track 方向错即红）
+
 
 - 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）、`/data/user/work/oxyplot-avalonia`（图表库源码，仓库外引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批
