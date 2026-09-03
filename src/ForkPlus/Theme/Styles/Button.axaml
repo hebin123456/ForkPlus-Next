@@ -509,10 +509,9 @@
         <Setter Value="{DynamicResource Button.Pressed.Background}" Property="Background" />
         <Setter Value="{DynamicResource Button.Pressed.Border}" Property="BorderBrush" />
     </Style>
-    <Style Selector="^:checked /template/ Border#border">
-        <Setter Value="{DynamicResource Button.Pressed.Background}" Property="Background" />
-        <Setter Value="{DynamicResource Button.Pressed.Border}" Property="BorderBrush" />
-    </Style>
+    <!-- Migration note（对齐原版 v3.12.3）：原 WPF CodeEditorHeaderToggleButtonStyle 无 IsChecked
+         触发器——选中态仅靠图标切换（*OnIcon 资源）表达，无背景填充。此前的 :checked 背景块
+         是迁移期误加，导致选中效果与原版不一致，已移除。 -->
     <Style Selector="^:disabled /template/ Border#border">
         <Setter Property="Opacity" Value="0.4" />
         <Setter Property="Background" Value="#00FFFFFF" />
