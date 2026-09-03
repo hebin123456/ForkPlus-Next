@@ -96,9 +96,7 @@ namespace ForkPlus
 				{
 					if (OperatingSystem.IsWindows())
 					{
-						// explorer /select 语法要求逗号后紧跟路径，中间不能有空格，否则新版 Windows
-						// 会忽略 /select 直接打开"文档"库而非选中目标文件。
-						string arguments = File.Exists(absolutePath) ? "/select,\"" + absolutePath + "\"" : absolutePath;
+						string arguments = BuildWindowsExplorerArguments(absolutePath, File.Exists(absolutePath));
 						Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true });
 					}
 					else if (OperatingSystem.IsMacOS())
@@ -116,6 +114,21 @@ namespace ForkPlus
 			{
 				Log.Error("Failed to show file in file manager", ex);
 			}
+		}
+
+		// 兑现 ShowFileInFileExplorerCommand 迁移注释"Windows 分隔符交给 FileHelper 内部处理"的承诺
+		// （此前是空头承诺：git 相对路径恒为正斜杠，Path.Combine 后产生混合分隔符路径，如
+		// C:\repo\src/App.cs——.NET 的 File.Exists 接受正斜杠使上方守卫通过，但 explorer.exe
+		// 解析不了 /select 里的正斜杠，Windows 会忽略 /select 直接打开"文档"库，即用户报告的
+		// "在文件资源管理器中显示，一直是打开文档目录"。WPF 原版在命令层 Replace("/", "\\")，
+		// 迁移时误删；等价规范化收敛到本层，且只在 Windows 分支调用——Unix 上反斜杠是合法
+		// 文件名字符，不能替换。纯函数抽出供 Linux CI 回归测试（无法执行 Windows 分支本身）。
+		internal static string BuildWindowsExplorerArguments(string absolutePath, bool isFile)
+		{
+			string normalized = absolutePath.Replace('/', '\\');
+			// explorer /select 语法要求逗号后紧跟路径，中间不能有空格，否则新版 Windows
+			// 会忽略 /select 直接打开"文档"库而非选中目标文件。
+			return isFile ? "/select,\"" + normalized + "\"" : normalized;
 		}
 
 		private static void WriteFile(string filePath, string content)

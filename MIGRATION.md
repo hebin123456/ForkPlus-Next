@@ -155,6 +155,32 @@ SideBySideCommitTextDiffControl（commit 视图）、HexDiffUserControl（十六
 - `SideBySideTextDiffControl_ScrollSyncsLeftAndRight`：真实控件 300 行 diff，
   滚右→左跟随、滚左→右跟随（回归即红）
 
+## 承诺式注释的坑："在文件资源管理器中显示"一直打开文档目录（2026-09-03）
+
+用户报告"在文件资源管理器中显示，一直是打开文档目录，而不是打开需要打开的目录"。
+根因是**迁移期删代码删出了回归**：WPF 原版 `ShowFileInFileExplorerCommand` 里
+`Path.Combine(gitModule.Path, filePath).Replace("/", "\\")` 的 Replace 被删，注释写着
+"Windows 分隔符交给 FileHelper 内部处理"——**但 FileHelper 从未实现这个处理**（空头承诺）。
+链条：git 相对路径恒为正斜杠 → `Path.Combine` 后是混合分隔符（`C:\repo\src/App.cs`）→
+.NET `File.Exists` 接受正斜杠（存在性守卫通过，掩盖了问题）→ `explorer.exe /select`
+解析不了正斜杠路径 → Windows 忽略 `/select` 直接打开"文档"库（默认回退位置）。
+
+教训：
+- **删 WPF 原版代码时，注释里"XX 交给 YY 处理"的承诺必须当场兑现**，否则就是静默回归。
+  本次修复把规范化收敛到 `FileHelper.BuildWindowsExplorerArguments`（Windows 分支专用；
+  Unix 上反斜杠是合法文件名字符，绝不能全局替换）。
+- **`.NET 的 File.Exists 接受正斜杠` ≠ `explorer.exe 接受正斜杠`**：.NET 走 Win32 API 会
+  规范化分隔符，explorer.exe 自己的命令行解析不会——存在性守卫通过不等于下游工具能解析。
+- explorer.exe 的失败模式（新版 Windows）：`/select` 目标不可解析 → 忽略 `/select` →
+  打开"文档"库。FileHelper 历史注释记载的空格坑（`/select, "path"`）与本坑同源。
+- Unix 分支的引号（`xdg-open \"path\"`）实测（net10.0）没问题：.NET 在 Unix 上会做
+  shell 风格引号解析（剥引号、空格路径保持单参数），**勿"顺手修复"**。
+
+回归防线：`FileExplorerRevealTests`（Linux CI 无法执行 Windows 分支，故抽出纯函数
+`BuildWindowsExplorerArguments` 守卫参数构造契约）：混合分隔符规范化、纯反斜杠幂等、
+目录无 `/select`、逗号后无空格、中文+空格路径带引号、深层路径全量转换（回归即红）。
+
+
 - 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）、`/data/user/work/oxyplot-avalonia`（图表库源码，仓库外引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批
 - 构建产物不入库（bin/obj 已在 .gitignore；publish/ 已于 2026-09-02 清除，CI 产物走 release artifact）
