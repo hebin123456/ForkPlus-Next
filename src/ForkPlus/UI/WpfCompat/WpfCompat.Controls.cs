@@ -883,8 +883,12 @@ namespace ForkPlus.UI.WpfCompat
                     }
                 };
                 _ownerWindow.Deactivated += _ownerWindowDeactivatedHandler;
-                _ownerWindow.AddHandler(InputElement.PointerPressedEvent, _ownerWindowPointerPressedHandler, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
-                _ownerWindow.AddHandler(InputElement.PointerReleasedEvent, _ownerWindowPointerReleasedHandler, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+                // Bug3 修复：原 Tunnel|Bubble 双路由使同一 PointerReleased 调用处理器两次
+                //（第一次消耗 _ignoreNextLeftPointerRelease，第二次立即 Close，下拉刚打开就被收拢）。
+                // 改为单一 Bubble 路由：handledEventsToo 仍保证拦截被处理的事件，
+                // 且打开菜单的那次 release 能在冒泡到窗口时被恰好一次接收，标志逻辑正确生效。
+                _ownerWindow.AddHandler(InputElement.PointerPressedEvent, _ownerWindowPointerPressedHandler, RoutingStrategies.Bubble, handledEventsToo: true);
+                _ownerWindow.AddHandler(InputElement.PointerReleasedEvent, _ownerWindowPointerReleasedHandler, RoutingStrategies.Bubble, handledEventsToo: true);
             }
 
             public void Detach()
