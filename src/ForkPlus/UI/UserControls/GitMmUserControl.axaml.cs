@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -63,6 +64,34 @@ namespace ForkPlus.UI.UserControls
 
 	/// <summary>v3.11.0：命令结束后是否自动隐藏覆盖层（替代原 CommandOutputCollapsed 语义）。</summary>
 	private bool _autoHideOutputAfterCommand;
+
+	// ===== Bug 修复（2026-09-03，"git mm 弹窗失焦不消失、堆积后崩溃"）：
+	// WPF 原版三个弹窗均为 StaysOpen=False 的 Popup（OutputPopup/历史 ContextMenu/
+	// 子仓筛选 Popup），点击外部或窗口失活即关闭；迁移版输出弹窗改为树内 Border 覆盖层
+	// （无任何 dismiss 路径）、子仓筛选 Popup 无失活关闭，反复打开还会叠加（每个
+	// SubrepoFilterButton_Click 往 RootGrid 挂一个新 Popup，关闭依赖 Closed 事件，
+	// 失活场景永不触发 → 堆积泄漏，用户报告"弹出来多了软件还会崩溃"）。=====
+
+	/// <summary>输出覆盖层失焦自动关闭：宿主窗口引用（关闭时解绑）。</summary>
+	private Window _outputOverlayOwnerWindow;
+
+	/// <summary>输出覆盖层失焦自动关闭：窗口失活处理器。</summary>
+	private EventHandler _outputOverlayDeactivatedHandler;
+
+	/// <summary>输出覆盖层失焦自动关闭：窗口级按压处理器（点外关闭）。</summary>
+	private EventHandler<PointerPressedEventArgs> _outputOverlayPointerPressedHandler;
+
+	/// <summary>上一个已打开的命令历史菜单——重复打开前先关闭（防 ContextMenu 堆叠）。</summary>
+	private ContextMenu _lastHistoryMenu;
+
+	/// <summary>上一个已打开的子仓筛选 Popup——重开前先关闭 + 失活即关（防堆积泄漏）。</summary>
+	private Popup _lastSubrepoFilterPopup;
+
+	/// <summary>上一个子仓筛选 Popup 的关闭时刻（UTC）。
+	/// WPF 原版 StaysOpen=false 的 Popup 捕获鼠标，点击按钮本身关闭弹窗时该次点击
+	/// 被吞掉（按钮 toggle 语义：开→只关）；Avalonia light dismiss 后 Click 仍触发，
+	/// 需借此时间戳识别"刚被本次按压关闭"以免立即重开（关了又开的抖动）。</summary>
+	private DateTime? _subrepoFilterClosedAtUtc;
 
 		private Point _tabDragStartPoint;
 
@@ -137,6 +166,14 @@ namespace ForkPlus.UI.UserControls
 	/// <summary>v3.11.0：显示命令历史菜单（供主 StatusUserControl History 按钮调用）。</summary>
 	public void ShowGitMmCommandHistory(global::Avalonia.Input.InputElement placementTarget)
 	{
+		// Bug 修复（2026-09-03，"历史命令弹窗失焦不消失、弹多了崩溃"）：
+		// 每次调用都 new 一个 ContextMenu，若上一个仍处于打开状态（失活场景自动关闭
+		// 挂钩未生效/未及时生效时），新旧菜单同时悬浮 → 反复点击不断堆积（每个菜单
+		// 一个平台 Popup 窗口，用户报告"弹出来多了软件还会崩溃"）。重开前先关上一个。
+		if (_lastHistoryMenu != null && _lastHistoryMenu.IsOpen)
+		{
+			_lastHistoryMenu.Close();
+		}
 		ContextMenu contextMenu = new ContextMenu();
 		string[] history = ForkPlusSettings.Default.GitMm.CommandHistory ?? new string[0];
 		if (history.Length == 0)
@@ -168,7 +205,25 @@ namespace ForkPlus.UI.UserControls
 		// Avalonia 的 PlacementTarget 要求 Control，这里显式下转。
 		contextMenu.PlacementTarget = placementTarget as global::Avalonia.Controls.Control;
 		global::ForkPlus.UI.WpfCompat.ContextMenuCompat.AttachAutoDismiss(contextMenu, contextMenu.PlacementTarget);
-		contextMenu.Open();
+		_lastHistoryMenu = contextMenu;
+		contextMenu.Closed += delegate
+		{
+			if (ReferenceEquals(_lastHistoryMenu, contextMenu))
+			{
+				_lastHistoryMenu = null;
+			}
+		};
+		// Bug 修复（2026-09-03 同轮，headless 实证）：Avalonia ContextMenu 无参 Open() 必抛
+		// ArgumentNullException("control")——WPF 的 Show() 无参语义在 Avalonia 无对应（打开
+		// 菜单需要"宿主控件"定位 TopLevel/弹层）。真机上该异常被全局 UnhandledException
+		// 吞掉 → 用户视角"点击历史按钮没反应"，且反复点击反复 new ContextMenu（堆积）。
+		// 必须显式传入宿主控件（PlacementTarget）。
+		if (contextMenu.PlacementTarget == null)
+		{
+			// 防御：调用方传非 Control（无宿主）时菜单无法定位窗口，直接放弃打开。
+			return;
+		}
+		contextMenu.Open(contextMenu.PlacementTarget);
 	}
 
 	/// <summary>v3.11.0：显示上传链接面板（供主 StatusUserControl Uploads 按钮调用）。</summary>
@@ -981,15 +1036,128 @@ namespace ForkPlus.UI.UserControls
 	}
 
 	/// <summary>v3.11.0：控制输出覆盖层的显示/隐藏。
-	/// 本轮25：原 Popup 实现随窗口失活/失焦自动关闭（用户观感"输出弹窗失焦消失"），
-	/// 改为控件树内 Border 覆盖层——结构上没有 dismiss 路径，仅手动关闭。</summary>
+	/// Bug 修复（2026-09-03，"git mm 输出弹窗失焦不消失"）：对齐 WPF 原版 OutputPopup
+	/// （StaysOpen=False：点击弹窗外任意位置或窗口失活即关闭）。此前迁移版改成树内
+	/// Border 覆盖层后结构上没有任何 dismiss 路径，只能手动关。现在覆盖层显示期间挂钩
+	/// 宿主窗口：Deactivated（切应用/点其他窗口）→ 关闭；PointerPressed 落点在覆盖层
+	/// 之外 → 关闭（覆盖层内选文本/滚动/点 × 属正常交互，不关闭）。</summary>
 	private void SetOutputOverlayVisible(bool visible, bool save)
 	{
 		OutputOverlayBorder.IsVisible = visible;
+		if (visible)
+		{
+			AttachOutputOverlayDismissHandlers();
+		}
+		else
+		{
+			DetachOutputOverlayDismissHandlers();
+		}
 		if (save)
 		{
 			SaveSettings();
 		}
+	}
+
+	/// <summary>输出覆盖层失焦自动关闭：挂钩宿主窗口 Deactivated + 窗口级 PointerPressed。</summary>
+	private void AttachOutputOverlayDismissHandlers()
+	{
+		DetachOutputOverlayDismissHandlers();
+		Window window = TopLevel.GetTopLevel(this) as Window;
+		if (window == null)
+		{
+			// 未挂到窗口（防御路径）：退化为旧行为（仅手动关闭），不影响主流程。
+			return;
+		}
+		_outputOverlayOwnerWindow = window;
+		_outputOverlayDeactivatedHandler = delegate
+		{
+			// 窗口失活：立即关闭（对齐 WPF StaysOpen=False 的失活关闭语义）。
+			SetOutputOverlayVisible(visible: false, save: false);
+		};
+		_outputOverlayPointerPressedHandler = delegate(object sender, PointerPressedEventArgs e)
+		{
+			// 落点在覆盖层内部：选择文本/滚动/点关闭按钮等正常交互，不关闭。
+			if (IsVisualWithin(e.Source as Visual, OutputOverlayBorder))
+			{
+				return;
+			}
+			// 落点在切换入口（主状态栏 GitMmOutputButton）上：交给按钮 Click 的
+			// toggle 逻辑关闭，避免"按下即关、抬起 Click 又翻开"的抖动。
+			if (IsVisualWithinNamedButton(e.Source as Visual, "GitMmOutputButton"))
+			{
+				return;
+			}
+			SetOutputOverlayVisible(visible: false, save: false);
+		};
+		window.Deactivated += _outputOverlayDeactivatedHandler;
+		window.AddHandler(InputElement.PointerPressedEvent, _outputOverlayPointerPressedHandler, RoutingStrategies.Bubble, handledEventsToo: true);
+	}
+
+	/// <summary>输出覆盖层失焦自动关闭：解绑宿主窗口事件（隐藏/控件卸载时调用，防泄漏）。</summary>
+	private void DetachOutputOverlayDismissHandlers()
+	{
+		if (_outputOverlayOwnerWindow != null && _outputOverlayDeactivatedHandler != null)
+		{
+			_outputOverlayOwnerWindow.Deactivated -= _outputOverlayDeactivatedHandler;
+		}
+		if (_outputOverlayOwnerWindow != null && _outputOverlayPointerPressedHandler != null)
+		{
+			_outputOverlayOwnerWindow.RemoveHandler(InputElement.PointerPressedEvent, _outputOverlayPointerPressedHandler);
+		}
+		_outputOverlayOwnerWindow = null;
+		_outputOverlayDeactivatedHandler = null;
+		_outputOverlayPointerPressedHandler = null;
+	}
+
+	/// <summary>node 是否位于 ancestor 自身或其视觉子树内（沿视觉父链上溯，O(树深)）。</summary>
+	private static bool IsVisualWithin(Visual node, Visual ancestor)
+	{
+		for (Visual v = node; v != null; v = v.GetVisualParent())
+		{
+			if (ReferenceEquals(v, ancestor))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/// <summary>node 是否位于指定名称的 Button 内（用于识别输出覆盖层的切换入口按钮）。</summary>
+	private static bool IsVisualWithinNamedButton(Visual node, string buttonName)
+	{
+		for (Visual v = node; v != null; v = v.GetVisualParent())
+		{
+			if (v is Button button && button.Name == buttonName)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/// <summary>Bug 修复（2026-09-03）：控件从视觉树移除（关闭 git mm 标签页等）时，
+	/// 关闭仍打开的子仓筛选 Popup / 历史菜单，并解绑输出覆盖层的窗口级处理器——
+	/// 否则宿主窗口持续持有已卸载控件的引用（泄漏）且失活回调操作已卸载控件。</summary>
+	protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+	{
+		base.OnDetachedFromVisualTree(e);
+		if (_lastSubrepoFilterPopup != null)
+		{
+			if (_lastSubrepoFilterPopup.IsOpen)
+			{
+				_lastSubrepoFilterPopup.IsOpen = false;
+			}
+			_lastSubrepoFilterPopup = null;
+		}
+		if (_lastHistoryMenu != null)
+		{
+			if (_lastHistoryMenu.IsOpen)
+			{
+				_lastHistoryMenu.Close();
+			}
+			_lastHistoryMenu = null;
+		}
+		DetachOutputOverlayDismissHandlers();
 	}
 
 	private bool IsCommandOutputCollapsed()
@@ -1323,29 +1491,72 @@ namespace ForkPlus.UI.UserControls
 		}
 
 		private void SubrepoFilterButton_Click(object sender, RoutedEventArgs e)
+	{
+		// Bug 修复（2026-09-03，"已加载 ××/×× 弹窗失焦不消失、堆积后崩溃"）：
+		// WPF 原版 StaysOpen=false 的 Popup 在窗口失活时自动关闭；迁移版只有
+		// IsLightDismissEnabled（仅覆盖窗口内按压），切应用/点其他窗口后旧 Popup
+		// 一直悬浮，再次点击按钮又 new 一个 → 反复打开不断堆积（每个 Popup 一个
+		// 平台浮层窗口，用户报告"弹出来多了软件还会崩溃"）。重开前先关上一个。
+		if (_lastSubrepoFilterPopup != null && _lastSubrepoFilterPopup.IsOpen)
 		{
-			EnsureVisibleSubrepos();
-			Popup popup = new Popup
+			_lastSubrepoFilterPopup.IsOpen = false;
+		}
+		// Bug 修复（toggle 语义）：本次点击的按压若刚通过 light dismiss 关掉了弹窗
+		// （WPF 下该点击被 Popup 捕获吞掉、只关不开），则不再重开——按钮表现为
+		// 开→关的切换，而不是关了又开。300ms 阈值远小于人手点击按压到抬起的间隔，
+		// 不会误吞独立的下一次点击。
+		DateTime? subrepoFilterClosedAt = _subrepoFilterClosedAtUtc;
+		_subrepoFilterClosedAtUtc = null;
+		if (subrepoFilterClosedAt.HasValue
+			&& (DateTime.UtcNow - subrepoFilterClosedAt.Value).TotalMilliseconds < 300.0)
+		{
+			return;
+		}
+		EnsureVisibleSubrepos();
+		Popup popup = new Popup
+		{
+			PlacementTarget = SubrepoFilterButton,
+			Placement = PlacementMode.Bottom,
+			// Migration note：WPF Popup.StaysOpen = false（点击外部关闭）→ Avalonia IsLightDismissEnabled = true。
+			IsLightDismissEnabled = true
+			// Migration note：WPF Popup.AllowsTransparency = true 在 Avalonia 无对应属性
+			//（Popup 永远独立分层渲染，默认支持透明），已移除。
+		};
+		// 本轮25 修复（真机 bug：点击"已展示 ××/××"无反应 + 弹出内容残缺）：
+		// 孤立 Popup（不在逻辑树中）打开走"目标窗口 OverlayLayer/平台 IPopupImpl"的
+		// 兜底路径，一旦失败抛 InvalidOperationException（被全局 UnhandledException
+		// 记日志吞掉 → 点击看起来毫无反应）；同时孤立子控件的资源解析（BackgroundBrush/
+		// BorderBrush/StageAllIcon 等主题资源）不可靠 → 弹出内容无背景无边框（"残缺"）。
+		// 挂进 RootGrid（Popup 不占布局空间）后走正常路径：资源沿逻辑树解析、
+		// 平台 popup 按主窗口创建，关闭时移除避免泄漏。
+		RootGrid.Children.Add(popup);
+		popup.Closed += delegate
+		{
+			RootGrid.Children.Remove(popup);
+			if (ReferenceEquals(_lastSubrepoFilterPopup, popup))
 			{
-				PlacementTarget = SubrepoFilterButton,
-				Placement = PlacementMode.Bottom,
-				// Migration note：WPF Popup.StaysOpen = false（点击外部关闭）→ Avalonia IsLightDismissEnabled = true。
-				IsLightDismissEnabled = true
-				// Migration note：WPF Popup.AllowsTransparency = true 在 Avalonia 无对应属性
-				//（Popup 永远独立分层渲染，默认支持透明），已移除。
+				_lastSubrepoFilterPopup = null;
+			}
+			// 记录关闭时刻：供 SubrepoFilterButton_Click 的 toggle 守卫判断
+			// "本次点击的按压是否刚关掉了弹窗"（见字段注释）。
+			_subrepoFilterClosedAtUtc = DateTime.UtcNow;
+		};
+		// Bug 修复（失焦消失）：挂钩宿主窗口 Deactivated → 立即关闭（对齐 WPF
+		// StaysOpen=false 的失活关闭语义）；Closed 时解绑防泄漏。
+		Window subrepoPopupOwnerWindow = TopLevel.GetTopLevel(this) as Window;
+		if (subrepoPopupOwnerWindow != null)
+		{
+			EventHandler subrepoPopupOwnerDeactivated = delegate
+			{
+				popup.IsOpen = false;
 			};
-			// 本轮25 修复（真机 bug：点击"已展示 ××/××"无反应 + 弹出内容残缺）：
-			// 孤立 Popup（不在逻辑树中）打开走"目标窗口 OverlayLayer/平台 IPopupImpl"的
-			// 兜底路径，一旦失败抛 InvalidOperationException（被全局 UnhandledException
-			// 记日志吞掉 → 点击看起来毫无反应）；同时孤立子控件的资源解析（BackgroundBrush/
-			// BorderBrush/StageAllIcon 等主题资源）不可靠 → 弹出内容无背景无边框（"残缺"）。
-			// 挂进 RootGrid（Popup 不占布局空间）后走正常路径：资源沿逻辑树解析、
-			// 平台 popup 按主窗口创建，关闭时移除避免泄漏。
-			RootGrid.Children.Add(popup);
+			subrepoPopupOwnerWindow.Deactivated += subrepoPopupOwnerDeactivated;
 			popup.Closed += delegate
 			{
-				RootGrid.Children.Remove(popup);
+				subrepoPopupOwnerWindow.Deactivated -= subrepoPopupOwnerDeactivated;
 			};
+		}
+		_lastSubrepoFilterPopup = popup;
 			StackPanel itemsPanel = new StackPanel();
 			TextBox searchTextBox = global::ForkPlus.UI.WpfCompat.ToolTipCompat.WithTip(new TextBox
 			{

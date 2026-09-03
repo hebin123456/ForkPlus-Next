@@ -162,36 +162,40 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void OutputOverlayBorder_InTree_NotDismissedByFocusLoss()
+	public void OutputOverlayBorder_InTree_PlainIsVisibleHasNoDismissPath()
+	{
+		// 基线对照（2026-09-03 更新）：树内 Border 覆盖层仅用 IsVisible 控制时，
+		// 结构上不存在 Popup 的失焦/失活 dismiss 路径——激活切换后仍可见。
+		// 这正是用户报告"输出弹窗失焦不消失"的根因；修复（Deactivated/PointerPressed
+		// 挂钩，见 GitMmPopupDismissTests）在 GitMmUserControl.AttachOutputOverlayDismissHandlers
+		// 中补齐 dismiss 路径，本测试保留"无接线则不消失"的基线以证明接线的必要性。
+		bool visible = HeadlessAppBootstrap.Run(delegate
 		{
-			// 生产修复模式回归（输出覆盖层）：树内 Border 覆盖层用 IsVisible 控制，
-			// 不存在 Popup 的失焦/失活 dismiss 路径——激活另一窗口后再回来仍可见。
-			bool visible = HeadlessAppBootstrap.Run(delegate
+			var window = new Window { Width = 800, Height = 600 };
+			var overlay = new Border
 			{
-				var window = new Window { Width = 800, Height = 600 };
-				var overlay = new Border
-				{
-					IsVisible = false,
-					Width = 720,
-					Height = 360,
-					Background = Brushes.Red,
-					ZIndex = 10
-				};
-				var root = new Panel();
-				root.Children.Add(new Button { Content = "main" });
-				root.Children.Add(overlay);
-				window.Content = root;
-				window.Show();
-				window.UpdateLayout();
+				IsVisible = false,
+				Width = 720,
+				Height = 360,
+				Background = Brushes.Red,
+				ZIndex = 10
+			};
+			var root = new Panel();
+			root.Children.Add(new Button { Content = "main" });
+			root.Children.Add(overlay);
+			window.Content = root;
+			window.Show();
+			window.UpdateLayout();
 
-				overlay.IsVisible = true;
-				// 模拟窗口激活切换（Popup 走 WindowLostFocus/Deactivated 时会被 Close，覆盖层无此路径）
-				window.Activate();
-				bool stillVisible = overlay.IsVisible;
-				window.Close();
-				return stillVisible;
-			});
-			Assert.True(visible);
-		}
+			overlay.IsVisible = true;
+			// 模拟窗口激活切换（Popup 走 WindowLostFocus/Deactivated 时会被 Close，
+			// 无 dismiss 接线的裸覆盖层无此路径）
+			window.Activate();
+			bool stillVisible = overlay.IsVisible;
+			window.Close();
+			return stillVisible;
+		});
+		Assert.True(visible);
+	}
 	}
 }
