@@ -104,6 +104,22 @@ xdotool mousemove X Y click 1       # 菜单点击（坐标靠截图测量，效
 git push origin HEAD
 ```
 
+## 提交列表（轨道树）性能审计（2026-09-03）
+
+用户报告"轨道树没做缓存，内容多时很卡"，与 WPF 原版（github.com/hebin123456/ForkPlus）全面对比后的结论——**不是缓存问题，核心路径健康**：
+
+- **数据层逐字节相同**：`GraphInfo.cs`/`GraphLine.cs`/`Git/RevisionVisualGraph.cs`/`Biturbo/CommitGraphCache.cs` 与 WPF 原版 diff 一致。原版**没有渲染缓存**（`GraphCellView.OnRender` 每次重建 StreamGeometry），靠 Freeze + retained 复合管线兜底；"原版有缓存"假设不成立。
+- **列表虚拟化生效**：5000 项只实化 11 个容器（`ListViewWithGridViewStyle` 的 `ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}"` 绑定有效，见 Listview.axaml 修复链21 注释）。
+- **首帧 O(1)**：1000/5000/20000 行首帧均 ~12-14ms（首档 452ms 是冷 JIT/主题加载一次性成本，与行数无关）。
+- **滚动健康**：40 屏连续滚动后实化仍 13 个容器（容器回收生效），headless 软渲染 ~10-20ms/屏。
+- **尝试过的负优化（勿重蹈）**：按 `GraphInfo` 用 `ConditionalWeakTable` 缓存整行几何——单向滚动（主流场景）无复用机会（新行流过，几何构建本就是一次性必须成本），实测无收益（分配 40MB 不变、耗时持平偏慢），已回退。教训：WPF 原版不卡恰恰证明几何构建不是瓶颈，滚动成本大头在容器换绑+绑定重建（与 GraphCellView 无关）。
+- **若用户仍报告卡顿**，需具体场景定位（仓库规模/操作步骤/卡在哪一步）；已知未对齐项：WPF GuidelineSet 像素对齐（视觉清晰度差异，非性能）。
+
+审计沉淀的回归防线（防止虚拟化被后续改动破坏）：
+- `RevisionListVirtualizationPerfTests`：5000 项实化容器 < 100（虚拟化失效即红）
+- `RevisionListScrollPerfTests`：12-lane 辫子拓扑滚动 40 屏，实化容器不累积（回收失效即红）
+- `RevisionListLoadPerfTests`：首帧耗时随行数 O(1)（5000→20000 行 4 倍裕量阈值，隐藏全量实化即红）
+
 - 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）、`/data/user/work/oxyplot-avalonia`（图表库源码，仓库外引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批
 - 构建产物不入库（bin/obj 已在 .gitignore；publish/ 已于 2026-09-02 清除，CI 产物走 release artifact）
