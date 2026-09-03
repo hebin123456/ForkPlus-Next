@@ -4,13 +4,16 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
-    <!-- Migration note（2026-09-03，"git 错误弹窗选中内容没有选中样式"根因）：
-         WPF TextBox 默认 SelectionBrush=SystemColors.HighlightBrush（系统高亮蓝），
-         SelectionForeground=HighlightText（白），选中文本蓝底白字；且 IsInactiveSelectionHighlightEnabled
-         默认 false，活动选区始终系统蓝。迁移后 SelectionBrush/SelectionForegroundBrush 从未设置
-         （实测 null），选区无任何高亮。对齐原版：应用 accent 蓝底 + 白字。
-         注意不能用 {DynamicResource SystemAccentBrush}——Avalonia Fluent 主题只提供
-         SystemAccentColor 系列 Color 资源、无该 Brush 资源，DynamicResource 解析为 null。 -->
+    <!-- Migration note（2026-09-03，"弹窗 TextBox 选中颜色肉眼无法识别"根因）：
+         WPF TextBox 默认 SelectionBrush=SystemColors.HighlightBrush（系统高亮蓝）+
+         SelectionTextBrush=HighlightText（白），选区蓝底白字。迁移版自定义主题最初只把
+         SelectionBrush/SelectionForegroundBrush 传进 TextPresenter（画刷非空），但漏了
+         SelectionStart/SelectionEnd/CaretIndex/PasswordChar/TextAlignment/TextWrapping——
+         Avalonia 官方 Fluent 主题（12.1.1 TextBox.xaml）这些全部经 TemplateBinding 下传，
+         TextBox 程序化设选区后靠绑定流入 presenter；实测漏绑时 presenter.SelectionStart/End
+         恒为 0/0，选区索引根本到不了渲染层 → 画刷再对也没有任何高亮（用户"看不清"的真根因）。
+         附带修复：PasswordChar 未下传 → AskPassWindow/SshPassphraseWindow 密码明文显示；
+         TextWrapping 未下传 → StatisticsUserControl CodeLinesExcludeBox 不换行。 -->
     <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
     <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF" />
     <Setter Property="BorderThickness" Value="1" />
@@ -26,10 +29,9 @@
         <ControlTemplate TargetType="TextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <!-- Migration note（2026-09-03，同上根因）：WPF 模板经 PART_ContentHost（ScrollViewer）
-                 自动从 TextBox 渲染选区；Avalonia 迁移模板的 TextPresenter 只 TemplateBinding 了 Text，
-                 SelectionBrush/SelectionForegroundBrush 没传给 presenter（实测 null）——选区无高亮。
-                 此处补上两个 TemplateBinding，让主题 Setter 生效到渲染层。 -->
-            <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
+                 自动从 TextBox 渲染选区/光标/密码掩码；Avalonia 必须在 TextPresenter 上显式
+                 TemplateBinding 下传（对齐官方 Fluent 主题），漏一个属性对应功能即静默失效。 -->
+            <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
           </Border>
 
         </ControlTemplate>

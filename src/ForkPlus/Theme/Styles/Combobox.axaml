@@ -168,16 +168,21 @@
     </Grid>
   </ControlTemplate>
   <ControlTheme x:Key="ComboBoxEditableTextBox" TargetType="TextBox">
-    
+
     <Setter Property="MinWidth" Value="0" />
     <Setter Property="MinHeight" Value="0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
-    
+    <!-- Migration note（2026-09-03，TextBox 选区不可见根因，同 Textbox.axaml）：
+         编辑型 ComboBox 的内嵌 TextBox 用显式 Theme 脱离了隐式 TextBox 主题，
+         选区画刷/选区索引均未设置，选中文字同样无高亮。补齐。 -->
+    <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF" />
+
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
-          <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" />
+          <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>

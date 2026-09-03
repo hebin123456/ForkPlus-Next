@@ -104,8 +104,14 @@ namespace ForkPlus.Tests
 						// ClassicDesktopStyleApplicationLifetime——WpfApp.Windows / ShowDialog
 						// 兼容层从它取窗口列表；lifetime 赋值必须发生在 Setup 之前，不能用
 						// SetupWithoutStarting + 后补（之后赋值 Application 会抛异常）。
+						// UseSkia + UseHeadlessDrawing=false（2026-09-03，"TextBox 选区像素级验证"引入）：
+						// 默认 headless 绘图模式没有真渲染后端——RenderTargetBitmap.Render 产出空位图、
+						// CaptureRenderedFrame 恒 null，任何像素级回归断言都无从谈起。切换到真 Skia
+						// 软件渲染（Tests 项目经 Avalonia.Desktop 传递引用 Skia）后 RTB 可像素读回
+						// （Bitmap.CopyPixels(ILockedFramebuffer)）。全套件 3958 用例实证切换后仍全绿。
 						AppBuilder.Configure<HeadlessRealApp>()
-							.UseHeadless(new AvaloniaHeadlessPlatformOptions())
+							.UseSkia()
+							.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
 							.SetupWithClassicDesktopLifetime(Array.Empty<string>(), delegate { });
 						// 默认 ShutdownMode.OnLastWindowClose：单个测试关闭唯一窗口会把
 						// Dispatcher 整个 shut down，后续测试的 InvokeAsync 全部
