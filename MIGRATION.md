@@ -44,6 +44,12 @@ GI="$HOME/.local/share/ForkPlus/gitInstance/2.50.1" && mkdir -p "$GI/bin" \
 
 # ── oxyplot-avalonia 是仓库外源码引用（csproj 的 ..\..\..\oxyplot-avalonia），沙盒重置即丢，必须重新克隆（与 build.yml 的 Clone 步骤同源）──
 git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git /data/user/work/oxyplot-avalonia
+# ⚠️ 教训（2026-09-03 实证）：克隆后直接 dotnet build，一行都不要改！
+# 官方版 oxyplot 用 Avalonia 11.0.0 + netstandard2.0，与主工程（Avalonia 12.1.1 + net10.0）并存完全正常——
+# 它自己按 11 编译成 netstandard2.0 程序集，主工程直接 ProjectReference 引用，NuGet 各按各的版本还原，互不冲突。
+# 曾错误地把它当"版本不匹配"去改 AvaloniaVersion→12.1.1，结果：netstandard2.0 下大量类型解析失败（786 错），
+# 又继续"救火"改 TFM→net10.0、剪贴板 API SetTextAsync→SetDataAsync、关编译绑定开关……越改越多、全部是白干。
+# 正确姿势：官方原版直接编译即可通过（Build succeeded, 0 Error, ~21s），三方件保持零改动。
 
 # ── git 身份（沙盒重置后需重新设置）──
 git config user.name "Test User" && git config user.email "test@example.com"
