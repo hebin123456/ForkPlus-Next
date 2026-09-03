@@ -268,7 +268,16 @@ namespace ForkPlus.UI.Controls
 			Point position = e.GetPosition(this);
 			LastClickedItem = (this.GetObjectAtPoint<TreeViewControlItem>(position) as TreeViewControlItem)?.Node;
 			base.OnDoubleTapped(e);
-			LastClickedItem = null;
+			// v3.12 修复（文件列表双击穿梭失效）：WPF 的 base.OnMouseDoubleClick 内部 RaiseEvent
+			// 同步触发订阅者，末尾清空 LastClickedItem 时订阅者已执行完；Avalonia 的
+			// OnDoubleTapped 是 class handler，先于 instance 订阅者（FileListUserControl 的
+			// DoubleTapped += ...）执行——原样迁移的同步清空让所有订阅者读到的
+			// LastClickedItem 恒为 null，双击 Stage/Unstage 穿梭从不触发。
+			// 清空推迟到事件路由与本轮同步处理完全结束后（Dispatcher.Post）。
+			Dispatcher.UIThread.Post(delegate
+			{
+				LastClickedItem = null;
+			}, global::Avalonia.Threading.DispatcherPriority.Input);
 		}
 
 		protected override void OnPropertyChanged(global::Avalonia.AvaloniaPropertyChangedEventArgs e)

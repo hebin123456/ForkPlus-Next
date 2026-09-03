@@ -77,7 +77,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		static DiffLineNumberMargin()
 		{
-			_typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal);
+			// v3.12 修复（行号/±标记被代码区遮挡）：WPF 原版 Typeface 第 5 参指定 fallback
+			// FontFamily("Courier New")，迁移时丢失。Avalonia 无该构造重载，用内联 fallback
+			// 列表等价表达：非 Windows 平台无 Consolas 时回退到等宽字体（Courier New →
+			// monospace），避免回退到比例字体导致行号实际宽度与测量宽度（'9'×N）不一致、
+			// 右缘被代码区遮住一点。
+			_typeface = new Typeface(new FontFamily("Consolas, Courier New, monospace"), FontStyles.Normal, FontWeights.Normal);
 			_lightBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
 			_darkBrush = new SolidColorBrush(Color.FromRgb(160, 160, 160));
 			_separatorPenLight = new Pen(new SolidColorBrush(Color.FromRgb(218, 218, 215)), 1.0);
@@ -172,7 +177,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), (base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth) / 2.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y);
 						if (_showDiffMarks && !value.To.HasValue)
 						{
-							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
+							// v3.12 修复：WPF 的 RTL FormattedText DrawText(origin) 以 origin 为右上角向左绘制，
+							// 原坐标 (Width-1) 即"右缘贴 Width-1"；Avalonia 的 origin 恒为左上角，须显式减宽度，
+							// 否则 ±标记溢出 margin 右边界 ~7px 被代码区遮住。
+							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0 - _minusText.Width, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
 						}
 					}
 					from = value.To;
@@ -181,7 +189,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine.VisualTop - base.TextView.ScrollOffset.Y);
 						if (_showDiffMarks && !value.From.HasValue)
 						{
-							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
+							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0 - _plusText.Width, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
 						}
 					}
 				}
@@ -200,7 +208,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine2.VisualTop - base.TextView.ScrollOffset.Y);
 						if (_showDiffMarks && !value2.To.HasValue)
 						{
-							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0, visualLine2.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
+							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0 - _minusText.Width, visualLine2.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
 						}
 					}
 				}
@@ -219,7 +227,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine3.VisualTop - base.TextView.ScrollOffset.Y);
 						if (_showDiffMarks && !value3.From.HasValue)
 						{
-							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0, visualLine3.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
+							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0 - _plusText.Width, visualLine3.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
 						}
 					}
 				}
