@@ -935,8 +935,7 @@ namespace ForkPlus.UI.WpfCompat
 
         /// <summary>
         /// WPF control.ContextMenuOpening += (s, ContextMenuEventArgs e) 的安装器。
-        /// Avalonia 的 ContextMenu.Opening 不携带原始右键命中信息；依赖鼠标坐标/Source
-        /// 选中条目的菜单必须挂 Control.ContextRequested，才能在菜单打开前正确填充内容。
+        /// WPF 语义：右键菜单打开前触发，可在此填充 Items，e.Handled=true 阻止打开。
         /// 注：只保留 EventHandler&lt;ContextMenuEventArgs&gt; 一个签名（lambda 与方法组都适用，
         /// 避免与 ContextMenuEventHandler 重载产生二义性）。
         /// </summary>
@@ -945,24 +944,36 @@ namespace ForkPlus.UI.WpfCompat
         {
             if (control?.ContextMenu == null) return; // Migration note：XAML 需先给控件配 ContextMenu
             AttachAutoDismiss(control.ContextMenu, control);
-            control.ContextRequested += (s, e) =>
-            {
-                ContextMenuEventArgs args = new ContextMenuEventArgs
+            // Migration note（Avalonia 12 关键坑）：设置 Control.ContextMenu 属性时，Avalonia 内置
+            // ControlContextRequested 订阅者随属性变更注册（次序永远先于本方法），它在 Bubble 阶段
+            // 打开菜单并置 e.Handled=true。若用默认策略（Direct|Bubble，handledEventsToo=false）订阅，
+            // handler 永远排在它之后而被 "!e.Handled" 检查跳过——即菜单填充逻辑从不执行（已实证：
+            // 裸 Button + compat 订阅 + RaiseEvent(ContextRequested)，compat/native/显式 Bubble
+            // 均不触发，仅 handledEventsToo=True 触发，e.Handled 最终为 True）。
+            // 正确做法：以 Tunnel 策略订阅——Tunnel 阶段先于一切 Bubble 订阅者执行（含内置打开逻辑），
+            // handler 在菜单打开前运行、置 args.Handled=true 可阻止内置逻辑打开菜单，
+            // 与 WPF ContextMenuOpening 时机/取消语义完全一致。
+            control.AddHandler(global::Avalonia.Input.InputElement.ContextRequestedEvent,
+                (s, e) =>
                 {
-                    TargetElement = e.Source,
-                    Source = control
-                };
-                handler(control, args);
-                if (!args.Handled && control.ContextMenu?.Items.Count == 0)
-                {
-                    args.Handled = true;
-                    control.ContextMenu.Close();
-                }
-                if (args.Handled)
-                {
-                    e.Handled = true;
-                }
-            };
+                    ContextMenuEventArgs args = new ContextMenuEventArgs
+                    {
+                        TargetElement = e.Source,
+                        Source = control
+                    };
+                    handler(control, args);
+                    if (!args.Handled && control.ContextMenu?.Items.Count == 0)
+                    {
+                        // 空菜单不再打开（原逻辑此处 Close，Tunnel 阶段菜单尚未打开，置 Handled 即可阻止）
+                        args.Handled = true;
+                    }
+                    if (args.Handled)
+                    {
+                        e.Handled = true;
+                    }
+                },
+                global::Avalonia.Interactivity.RoutingStrategies.Tunnel,
+                handledEventsToo: true);
         }
 
         /// <summary>WPF control.ContextMenuClosing += ... 的安装器（挂 ContextMenu.Closing）。</summary>
