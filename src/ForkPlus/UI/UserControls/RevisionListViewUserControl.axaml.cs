@@ -383,7 +383,12 @@ namespace ForkPlus.UI.UserControls
 
 		private void StretchRevisionListItems()
 		{
-			double width = Math.Max(0.0, RevisionListView.Bounds.Width - 8.0);
+			// Bug 修复（轨道图宽度 100%）：原取 Bounds.Width - 8（含竖向滚动条占位 ~13px，
+			// 且窗口拉伸/行实化时机不同步），行宽比视口大 → extent 超出 → "有点超出"的横向滚动条。
+			// 改为取内嵌 ScrollViewer 的 Viewport.Width（真实可视区域，无滚动条占位）。
+			global::Avalonia.Controls.ScrollViewer scroller = global::Avalonia.VisualTree.VisualExtensions
+				.GetVisualDescendants(RevisionListView).OfType<global::Avalonia.Controls.ScrollViewer>().FirstOrDefault();
+			double width = scroller != null ? scroller.Viewport.Width : Math.Max(0.0, RevisionListView.Bounds.Width - 23.0);
 			if (width <= 0.0)
 			{
 				return;
