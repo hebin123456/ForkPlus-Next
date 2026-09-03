@@ -259,14 +259,22 @@ namespace ForkPlus.UI.Controls
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
 			Point position = e.GetPosition(this);
-			LastClickedItem = (this.GetObjectAtPoint<TreeViewControlItem>(position) as TreeViewControlItem)?.Node;
+			// Migration note（2026-09-03，"暂存区文件双击不能穿梭"根因）：
+			// WPF 原版是 GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem——
+			// GetObjectAtPoint 返回 item（即节点，Flattener 直出的 MultiselectionTreeViewItem），
+			// 不是 TreeViewControlItem 容器；迁移时误写 as TreeViewControlItem，cast 恒为 null，
+			// OnDoubleTapped 里该赋值会把容器 OnPointerPressed 已设好的节点清空，
+			// 订阅者读到的 LastClickedItem 恒 null → ItemDoubleClick 从不触发。
+			LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
 			base.OnPointerPressed(e);
 		}
 
 		protected override void OnDoubleTapped(global::Avalonia.Input.TappedEventArgs e)
 		{
 			Point position = e.GetPosition(this);
-			LastClickedItem = (this.GetObjectAtPoint<TreeViewControlItem>(position) as TreeViewControlItem)?.Node;
+			// 同 OnPointerPressed：GetObjectAtPoint 返回节点 item，cast 到容器类型恒为 null，
+			// 会在双击链路上把 LastClickedItem 清空。WPF 原版 cast 到 MultiselectionTreeViewItem。
+			LastClickedItem = this.GetObjectAtPoint<TreeViewControlItem>(position) as MultiselectionTreeViewItem;
 			base.OnDoubleTapped(e);
 			// v3.12 修复（文件列表双击穿梭失效）：WPF 的 base.OnMouseDoubleClick 内部 RaiseEvent
 			// 同步触发订阅者，末尾清空 LastClickedItem 时订阅者已执行完；Avalonia 的
