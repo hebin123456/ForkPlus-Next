@@ -111,6 +111,10 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private bool _adornerUpdatePending;
 
+		private bool _adornerShowPending;
+
+		private double _pendingAdornerTopPosition;
+
 		protected Brush ChunkBackgroundBrush;
 
 		protected static readonly Pen _chunkBorderPen;
@@ -240,6 +244,29 @@ namespace ForkPlus.UI.Controls.Editor
 
 		protected void ShowChunkAdorner(double popupTopPosition)
 		{
+			// 渲染期间（DrawChunk 调用链）不可同步操作 AdornerLayer/Measure，否则会
+			// 与布局循环竞争甚至替换窗口内容；此处只记录最新位置并 Post 到 Render
+			// 优先级执行（防抖：高频调用只渲染最后一次位置）。
+			if (_adornerShowPending)
+			{
+				_pendingAdornerTopPosition = popupTopPosition;
+				return;
+			}
+			_adornerShowPending = true;
+			_pendingAdornerTopPosition = popupTopPosition;
+			global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+			{
+				if (!_adornerShowPending)
+				{
+					return;
+				}
+				_adornerShowPending = false;
+				ShowChunkAdornerCore(_pendingAdornerTopPosition);
+			}, global::Avalonia.Threading.DispatcherPriority.Render);
+		}
+
+		private void ShowChunkAdornerCore(double popupTopPosition)
+		{
 			double num = 15.0;
 			double num2 = 20.0;
 			num -= _textEditor.SearchBarHeight;
@@ -269,6 +296,8 @@ namespace ForkPlus.UI.Controls.Editor
 
 		protected void RemoveChunkAdorner()
 		{
+			// 无条件取消 pending 显示请求：否则 Remove 后队列里的回调会重建已移除的 Adorner
+			_adornerShowPending = false;
 			if (_adorner != null)
 			{
 				_adorner.Child = null;
