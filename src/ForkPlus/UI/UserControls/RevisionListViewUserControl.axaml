@@ -283,7 +283,7 @@
                             <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" /></Binding.Converter></Binding>
                           </Ellipse.Visibility>
                         </Ellipse>
-                        <ItemsControl DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+                        <ItemsControl DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="True" MaxWidth="600" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
                           <ItemsControl.ItemsSource>
                             <Binding Path="References" />
                           </ItemsControl.ItemsSource>
@@ -401,7 +401,9 @@
               <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
             </Ellipse.IsVisible>
           </Ellipse>
-          <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+          <!-- Bug1 修复：refs 徽章 ClipToBounds + MaxWidth（code-behind 动态计算），
+               防止超长分支名徽章把 Auto 列撑爆、溢出盖住 subject/日期列。 -->
+          <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ClipToBounds="True" MaxWidth="600" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
             <ItemsControl.ItemsSource>
               <Binding Path="References" />
             </ItemsControl.ItemsSource>
@@ -516,7 +518,7 @@
                 <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
               </Ellipse.IsVisible>
             </Ellipse>
-            <ItemsControl DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+            <ItemsControl DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="True" MaxWidth="600" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
               <ItemsControl.ItemsSource>
                 <Binding Path="References" />
               </ItemsControl.ItemsSource>

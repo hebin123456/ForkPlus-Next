@@ -388,6 +388,13 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
+			// Bug1 修复：限制 refs 徽章 ItemsControl 的 MaxWidth（对齐原版 WPF GridView
+			// UpdateResizableColumnWidth(0) 语义：第 0 列(graph+refs+subject)总宽 =
+			// 列表可用宽 - 固定列(avatar 18 + author 120 + sha 70 + date 130) - 边距。
+			// Avalonia Grid 的 Auto 列空间不足时不裁剪（与 WPF 行为不同），超长分支名
+			// 徽章会把行撑爆、溢出盖住日期列；此处给徽章留足空间但封顶剩余宽度
+			// （subject 星号列至少保留 120，graph 按典型宽度预留 130）。
+			double refsMaxWidth = Math.Max(0.0, width - 18.0 - 120.0 - 70.0 - 130.0 - 120.0 - 130.0 - 40.0);
 			foreach (DragAndDropListViewItem item in global::Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(RevisionListView).OfType<DragAndDropListViewItem>())
 			{
 				if (double.IsNaN(item.Width) || Math.Abs(item.Width - width) > 0.5)
@@ -397,6 +404,12 @@ namespace ForkPlus.UI.UserControls
 				if (Math.Abs(item.MinWidth - width) > 0.5)
 				{
 					item.MinWidth = width;
+				}
+				// 行内唯一的 ItemsControl 即 refs 徽章容器（GraphCellView 为纯 Control 无子树）。
+				global::Avalonia.Controls.ItemsControl refsItemsControl = global::Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(item).OfType<global::Avalonia.Controls.ItemsControl>().FirstOrDefault();
+				if (refsItemsControl != null && (double.IsNaN(refsItemsControl.MaxWidth) || Math.Abs(refsItemsControl.MaxWidth - refsMaxWidth) > 0.5))
+				{
+					refsItemsControl.MaxWidth = refsMaxWidth;
 				}
 			}
 		}
