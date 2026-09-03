@@ -7,6 +7,7 @@ using Avalonia.Input;
 using ForkPlus.UI.Helpers;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.Dialogs
 {
@@ -26,6 +27,17 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
+			// WPF 语义对齐：ComboBox / 按钮 / 文本框等内嵌交互控件在 WPF 下会把
+			// MouseLeftButtonDown 标记 Handled（ButtonBase 以 handledEventsToo:true 注册类处理器
+			// 且置 Handled），事件不再到达 ListViewItem，选择与拖拽捕获逻辑完全不执行；
+			// Avalonia 下这些控件不标记 Handled，事件继续冒泡，item 无条件 Capture 抢走指针
+			// → ComboBox 模板里的 ToggleButton 收不到 PointerReleased → Click 不触发 →
+			// 下拉永远打不开（交互式变基窗口"不能更改类型"根因）。
+			// 修复：命中源位于内嵌交互控件内时，跳过整个按压处理（含捕获与选择）。
+			if (IsPressOnEmbeddedInteractiveControl(e))
+			{
+				return;
+			}
 			_wasSelected = base.IsSelected;
 			if (!base.IsSelected)
 			{
@@ -36,6 +48,22 @@ namespace ForkPlus.UI.Dialogs
 				_dragStartPoint = e.GetPosition(null);
 				e.Pointer.Capture(this);
 			}
+		}
+
+		/// <summary>
+		/// 按压命中源（e.Source）到本 item 的可视树路径上是否经过内嵌交互控件。
+		/// ComboBox 的 ToggleButton / 模板内部元素都算（沿 VisualTree 向上遍历到 this）。
+		/// </summary>
+		private bool IsPressOnEmbeddedInteractiveControl(global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			for (Visual v = e.Source as Visual; v != null && v != this; v = v.GetVisualParent())
+			{
+				if (v is ComboBox || v is Button || v is CheckBox || v is TextBox || v is Slider)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
