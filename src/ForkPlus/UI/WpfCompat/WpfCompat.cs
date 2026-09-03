@@ -12,6 +12,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.UI.WpfCompat
 {
@@ -318,13 +319,25 @@ namespace ForkPlus.UI.WpfCompat
     }
 
     /// <summary>
-    /// 按键路由器：把 WPF Window.CommandBindings 的语义搬到 Avalonia。
-    /// 在 TopLevel 上以隧道方式监听 KeyDown，匹配已注册手势后执行绑定。
+    /// 按键路由器：把 WPF CommandBindings 的语义搬到 Avalonia。
+    /// WPF 原语义（CommandDevice/CommandManager）有三条关键规则：
+    /// 1. 手势翻译发生在 KeyDown 冒泡完成之后（PostProcessInput），控件先消费按键；
+    /// 2. 已被控件标记 Handled 的按键不再触发命令（搜索框 Enter 等不被劫持）；
+    /// 3. CommandBinding 挂在哪个控件上，仅当焦点位于该控件子树内才生效
+    ///    （WPF 从焦点沿祖先路由 Executed，Window 级绑定覆盖全窗口）。
+    /// 迁移修复：旧实现用 TopLevel 隧道阶段抢先匹配所有控件的手势，等于全局快捷键，
+    /// 导致任意界面按 Enter 都弹出提交独立窗口、搜索框 Enter 失效等副作用。
     /// Migration note：长期应改为 Avalonia HotKey / KeyBinding 原生方案。
     /// </summary>
     public static class CommandRouter
     {
-        private static readonly ConditionalWeakTable<TopLevel, List<CommandBinding>> _bindings = new();
+        private sealed class Entry
+        {
+            public CommandBinding Binding;
+            public Interactive Host;
+        }
+
+        private static readonly ConditionalWeakTable<TopLevel, List<Entry>> _bindings = new();
         private static readonly ConditionalWeakTable<TopLevel, object> _installed = new();
 
         public static void AddCommandBinding(this Interactive host, CommandBinding binding)
@@ -347,49 +360,95 @@ namespace ForkPlus.UI.WpfCompat
             }
             Install(tl);
             var list = _bindings.GetOrCreateValue(tl);
-            list.Add(binding);
+            list.Add(new Entry { Binding = binding, Host = host });
         }
 
         private static void Install(TopLevel tl)
         {
             if (_installed.TryGetValue(tl, out _)) return;
             _installed.Add(tl, new object());
-            tl.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
+            // WPF 在 KeyDown 冒泡结束后才翻译手势；用冒泡阶段替代旧的隧道抢先执行。
+            tl.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Bubble);
         }
 
         private static void OnKeyDown(object sender, KeyEventArgs e)
         {
+            // 规则 2：控件已处理（如搜索框的 Enter）则不再翻译手势。
+            if (e.Handled) return;
             if (sender is not TopLevel tl) return;
             if (!_bindings.TryGetValue(tl, out var list)) return;
-            foreach (var b in list)
+
+            var source = e.Source as Visual ?? tl.FocusManager?.GetFocusedElement() as Visual;
+            if (source == null) return;
+
+            Entry best = null;
+            int bestDepth = -1;
+            foreach (var entry in list)
             {
+                var b = entry.Binding;
                 if (b.Command == null && b.CommandInterface == null) continue;
-                if (b.Command != null)
+                if (!MatchesGesture(b, e)) continue;
+                // 规则 3：焦点必须位于注册控件子树内，否则该绑定不参与匹配。
+                if (!IsWithinHost(entry.Host, source)) continue;
+                // 嵌套宿主（如 StageFileUserControl 在 CommitUserControl 内）最深者优先，
+                // 对应 WPF 从焦点向上路由时最近的 CommandBinding 先命中。
+                int depth = GetDepth(entry.Host);
+                if (depth > bestDepth)
                 {
-                    if (b.Command.InputGestures == null) continue;
-                    foreach (var g in b.Command.InputGestures)
-                    {
-                        if (Matches(g, e))
-                        {
-                            b.Executed?.Invoke(b.Command, new ExecutedEventArgs { Source = e.Source, Parameter = null });
-                            e.Handled = true;
-                            return;
-                        }
-                    }
-                }
-                else if (b.CommandInterface is RoutedCommand rc && rc.InputGestures != null)
-                {
-                    foreach (var g in rc.InputGestures)
-                    {
-                        if (Matches(g, e))
-                        {
-                            b.Executed?.Invoke(rc, new ExecutedEventArgs { Source = e.Source, Parameter = null });
-                            e.Handled = true;
-                            return;
-                        }
-                    }
+                    best = entry;
+                    bestDepth = depth;
                 }
             }
+
+            if (best == null) return;
+            var command = best.Binding.Command ?? (object)best.Binding.CommandInterface;
+            best.Binding.Executed?.Invoke(command, new ExecutedEventArgs { Source = e.Source, Parameter = null });
+            e.Handled = true;
+        }
+
+        private static bool MatchesGesture(CommandBinding b, KeyEventArgs e)
+        {
+            if (b.Command != null)
+            {
+                if (b.Command.InputGestures == null) return false;
+                foreach (var g in b.Command.InputGestures)
+                {
+                    if (Matches(g, e)) return true;
+                }
+            }
+            else if (b.CommandInterface is RoutedCommand rc && rc.InputGestures != null)
+            {
+                foreach (var g in rc.InputGestures)
+                {
+                    if (Matches(g, e)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>事件源是否位于宿主控件内：先查视觉祖先链，再查逻辑祖先链
+        /// （Popup 内容视觉上在 PopupRoot，逻辑上仍归属主窗口，与 WPF 路由一致）。</summary>
+        private static bool IsWithinHost(Interactive host, Visual source)
+        {
+            if (host is not Visual hostVisual) return false;
+            if (ReferenceEquals(hostVisual, source)) return true;
+            for (var v = source; v != null; v = v.GetVisualParent())
+            {
+                if (ReferenceEquals(v, hostVisual)) return true;
+            }
+            for (var l = source as global::Avalonia.LogicalTree.ILogical; l != null; l = l.LogicalParent)
+            {
+                if (ReferenceEquals(l, hostVisual)) return true;
+            }
+            return false;
+        }
+
+        private static int GetDepth(Interactive host)
+        {
+            if (host is not Visual v) return 0;
+            int depth = 0;
+            for (var a = v.GetVisualParent(); a != null; a = a.GetVisualParent()) depth++;
+            return depth;
         }
 
         private static bool Matches(KeyGesture gesture, KeyEventArgs e)
