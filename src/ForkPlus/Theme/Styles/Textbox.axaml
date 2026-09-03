@@ -4,10 +4,19 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
+    <!-- Migration note（2026-09-03，"git 错误弹窗选中内容没有选中样式"根因）：
+         WPF TextBox 默认 SelectionBrush=SystemColors.HighlightBrush（系统高亮蓝），
+         SelectionForeground=HighlightText（白），选中文本蓝底白字；且 IsInactiveSelectionHighlightEnabled
+         默认 false，活动选区始终系统蓝。迁移后 SelectionBrush/SelectionForegroundBrush 从未设置
+         （实测 null），选区无任何高亮。对齐原版：应用 accent 蓝底 + 白字。
+         注意不能用 {DynamicResource SystemAccentBrush}——Avalonia Fluent 主题只提供
+         SystemAccentColor 系列 Color 资源、无该 Brush 资源，DynamicResource 解析为 null。 -->
+    <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-    
+
 <!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
@@ -16,9 +25,13 @@
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
-            <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" />
+            <!-- Migration note（2026-09-03，同上根因）：WPF 模板经 PART_ContentHost（ScrollViewer）
+                 自动从 TextBox 渲染选区；Avalonia 迁移模板的 TextPresenter 只 TemplateBinding 了 Text，
+                 SelectionBrush/SelectionForegroundBrush 没传给 presenter（实测 null）——选区无高亮。
+                 此处补上两个 TemplateBinding，让主题 Setter 生效到渲染层。 -->
+            <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
           </Border>
-          
+
         </ControlTemplate>
       </Setter.Value>
     </Setter>
