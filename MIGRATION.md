@@ -120,6 +120,41 @@ git push origin HEAD
 - `RevisionListScrollPerfTests`：12-lane 辫子拓扑滚动 40 屏，实化容器不累积（回收失效即红）
 - `RevisionListLoadPerfTests`：首帧耗时随行数 O(1)（5000→20000 行 4 倍裕量阈值，隐藏全量实化即红）
 
+## AvaloniaEdit 空操作滚动 API：FileDiff 左右视图不同步（2026-09-03）
+
+用户报告"FileDiff 视图左右代码原版同步上下滚动，我们是分离的"。根因**不在自家代码**——
+`SideBySideTextDiffControl` 的同步逻辑与 WPF 原版逐行一致，而是三方件 AvaloniaEdit
+（Avalonia.AvaloniaEdit 12.0.0）的 `TextEditor.ScrollToVerticalOffset/ScrollToHorizontalOffset`
+是**空操作**（源码里滚动实现整段被注释，只剩 `ApplyTemplate()`；headless 实证：
+调用后 offset=0）。兼容层 `ScrollViewerCompat` 当时误判"AvaloniaEdit 原生即有，直接转发"，
+于是所有同步/恢复滚动的调用静默失效。
+
+**正确滚动入口是模板 `PART_ScrollViewer`（本项目为 TouchpadAwareScrollViewer）的 `Offset`**，
+与 AvaloniaEdit 自家 `ScrollTo(line,column)`、`TouchpadAwareScrollViewer` 滚轮路径一致：
+Offset 变更 → ScrollContentPresenter 逻辑滚动订阅 → TextView → 触发 `ScrollOffsetChanged`。
+两个坑（勿重蹈）：
+
+- **别直接改 `TextView` 的 `IScrollable.Offset`**：TextView 的 setter 不调
+  `RaiseScrollInvalidated`（只在 `SetScrollData`/`MakeVisible` 里调），外层 ScrollViewer.Offset
+  会滞留旧值，用户下一次滚轮按旧值增量直接跳回旧位置（Avalonia issue #20484 同源问题）。
+- **`TextEditor.ScrollViewer` 是 AvaloniaEdit internal**，拿不到；用
+  `GetVisualDescendants().OfType<ScrollViewer>()` 按名字 `PART_ScrollViewer` 找。
+
+一次性修复受益面（都走同一个兼容方法）：SideBySide 文本 diff 左右同步、
+SideBySideCommitTextDiffControl（commit 视图）、HexDiffUserControl（十六进制 diff）、
+`SplitTextDiffControl.ScrollToVerticalOffset`（BlameWindow 列表↔编辑器同步）、
+`CodeEditor.SetScrollPosition`（切换文件恢复滚动位置——原来也一直是坏的）。
+
+防回声守卫（WPF 原版同款，保留勿动）：`OnScrollOffsetChanged` 会抑制 100ms 内来自
+另一侧编辑器的滚动事件——所以 headless 测试里反向滚动前要 `Thread.Sleep(150)` 模拟
+真人换面板节奏，否则同步被守卫吞掉（这是原版行为，不是 bug）。
+
+回归防线：`DiffScrollSyncTests`
+- `ScrollToVerticalOffsetCompat_ScrollsEditorAndRaisesEvent`：兼容方法真滚动 + 触发事件
+  （附诊断探针：原生 no-op 输出，不断言——上游哪天修了也不误报）
+- `SideBySideTextDiffControl_ScrollSyncsLeftAndRight`：真实控件 300 行 diff，
+  滚右→左跟随、滚左→右跟随（回归即红）
+
 - 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）、`/data/user/work/oxyplot-avalonia`（图表库源码，仓库外引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批
 - 构建产物不入库（bin/obj 已在 .gitignore；publish/ 已于 2026-09-02 清除，CI 产物走 release artifact）

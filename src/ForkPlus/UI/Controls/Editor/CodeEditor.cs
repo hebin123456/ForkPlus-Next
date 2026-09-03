@@ -5,6 +5,7 @@ using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
 using AvaloniaEdit;
 using ForkPlus.UI.Helpers;
+using ForkPlus.UI.WpfCompat;
 using Avalonia;
 
 namespace ForkPlus.UI.Controls.Editor
@@ -62,7 +63,9 @@ namespace ForkPlus.UI.Controls.Editor
 
 		public void SetScrollPosition(double y)
 		{
-			ScrollToVerticalOffset(y);
+			// Migration note：AvaloniaEdit 的 TextEditor.ScrollToVerticalOffset 是空操作，
+			// 改走 ScrollViewerCompat（经模板 PART_ScrollViewer.Offset 真正滚动）。
+			this.ScrollToVerticalOffsetCompat(y);
 		}
 
 		protected override void OnKeyDown(KeyEventArgs e)
