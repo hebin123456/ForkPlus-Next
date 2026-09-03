@@ -16,11 +16,19 @@ namespace ForkPlus
 			// （数字段按数值比较："2" < "10"）。Linux/macOS 无该库，P/Invoke 直接抛
 			// DllNotFoundException（主窗口 RepositoryManager 排序崩溃实证）。
 			// Unix 用纯托管等价实现，Windows 保持原生调用（行为一致）。
+			// 返回值契约：恒 -1/0/1（StrCmpLogicalW 实际语义）。
+			// BinarySearchBy 等调用方按三分支消费比较结果，托管实现曾返回
+			// char.CompareTo/string.Compare 的任意差值（如 -3/+49），破坏契约。
+			int result;
 			if (!OperatingSystem.IsWindows())
 			{
-				return CompareLogicalOrdinalIgnoreCase(x, y);
+				result = CompareLogicalOrdinalIgnoreCase(x, y);
 			}
-			return StrCmpLogicalW(x, y);
+			else
+			{
+				result = StrCmpLogicalW(x, y);
+			}
+			return (result < 0) ? (-1) : ((result > 0) ? 1 : 0);
 		}
 
 		/// <summary>
@@ -53,8 +61,8 @@ namespace ForkPlus
 					int lenX = ex - ix;
 					int lenY = ey - iy;
 					if (lenX != lenY) return lenX < lenY ? -1 : 1;
-					int cmp = string.Compare(x, ix, y, iy, lenX, StringComparison.OrdinalIgnoreCase);
-					if (cmp != 0) return cmp;
+				int cmp = string.Compare(x, ix, y, iy, lenX, StringComparison.OrdinalIgnoreCase);
+				if (cmp != 0) return cmp < 0 ? -1 : 1;
 					// 数值相等：前导零多者（更长原始段）在后，与 Explorer 行为一致
 					int rawX = ex - sx, rawY = ey - sy;
 					if (rawX != rawY) return rawX < rawY ? -1 : 1;
@@ -62,12 +70,12 @@ namespace ForkPlus
 					iy = ey;
 				}
 				else
-				{
-					int c = char.ToUpperInvariant(cx).CompareTo(char.ToUpperInvariant(cy));
-					if (c != 0) return c;
-					ix++;
-					iy++;
-				}
+			{
+				int c = char.ToUpperInvariant(cx).CompareTo(char.ToUpperInvariant(cy));
+				if (c != 0) return c < 0 ? -1 : 1;
+				ix++;
+				iy++;
+			}
 			}
 			if (ix < x.Length) return 1;
 			if (iy < y.Length) return -1;

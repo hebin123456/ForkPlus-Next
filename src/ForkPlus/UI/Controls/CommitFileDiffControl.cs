@@ -26,6 +26,42 @@ namespace ForkPlus.UI.Controls
 			base.Target = FileDiffControlTarget.Commit;
 		}
 
+		// Migration note：原版 diff 编辑器选中若干行右键时，菜单顶部会出现与悬浮按钮
+		// 同源的 Stage/Unstage/Discard 入口（快捷键与 CommitCodeEditor.OnKeyDown 一致：
+		// Return=暂存切换，Delete=丢弃）。迁移时该分支丢失，这里补齐。
+		private void AddSelectionPatchMenuItems(DiffCodeEditor diffCodeEditor, ContextMenu contextMenu)
+		{
+			CommitCodeEditor commitCodeEditor = diffCodeEditor as CommitCodeEditor;
+			if (commitCodeEditor == null || contextMenu == null)
+			{
+				return;
+			}
+			bool hasSelection = commitCodeEditor.SelectionLength > 0 || commitCodeEditor.ActiveChunk != null;
+			if (!hasSelection)
+			{
+				return;
+			}
+			if (commitCodeEditor.IsStaged)
+			{
+				contextMenu.AddMenuItem("Unstage", delegate
+				{
+					this.UnStage?.Invoke(this, commitCodeEditor);
+				}, null, new global::Avalonia.Input.KeyGesture(global::Avalonia.Input.Key.Return));
+			}
+			else
+			{
+				contextMenu.AddMenuItem("Stage", delegate
+				{
+					this.Stage?.Invoke(this, commitCodeEditor);
+				}, null, new global::Avalonia.Input.KeyGesture(global::Avalonia.Input.Key.Return));
+				contextMenu.AddMenuItem("Discard...", delegate
+				{
+					this.Discard?.Invoke(this, commitCodeEditor);
+				}, null, new global::Avalonia.Input.KeyGesture(global::Avalonia.Input.Key.Delete));
+			}
+			contextMenu.Items.Add(new Separator());
+		}
+
 		protected override void UpdateView(bool loadLargeDiff)
 		{
 			RepositoryUserControl repositoryUserControl = base.RepositoryUserControl;
@@ -169,22 +205,23 @@ namespace ForkPlus.UI.Controls
 						c.IsStaged = changedFile.Staged;
 						c.IsNewOrUntracked = !changedFile.Tracked || changedFile.New;
 						c.EditorContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
+					{
+						DiffCodeEditor diffCodeEditor2 = e.Source as DiffCodeEditor ?? s as DiffCodeEditor;
+						if (diffCodeEditor2 == null)
 						{
-							DiffCodeEditor diffCodeEditor2 = e.Source as DiffCodeEditor ?? s as DiffCodeEditor;
-							if (diffCodeEditor2 == null)
-							{
-								e.Handled = true;
-								return;
-							}
-							ContextMenu contextMenu2 = diffCodeEditor2.ContextMenu;
-							contextMenu2.Items.Clear();
-							FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor2, contextMenu2, changedFile.Path);
-							contextMenu2.Items.Add(new Separator());
-							FileDiffControl.Commands.HunkHistory.AddMenuItems(repositoryUserControl, diffCodeEditor2, changedFile.Path, contextMenu2);
-							contextMenu2.Items.Add(new Separator());
-							FileDiffControl.Commands.Copy.AddMenuItems(diffCodeEditor2, contextMenu2);
-							FileDiffControl.Commands.CopyAsPatch.AddMenuItems(diffCodeEditor2, contextMenu2);
-						};
+							e.Handled = true;
+							return;
+						}
+						ContextMenu contextMenu2 = diffCodeEditor2.ContextMenu;
+						contextMenu2.Items.Clear();
+						AddSelectionPatchMenuItems(diffCodeEditor2, contextMenu2);
+						FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor2, contextMenu2, changedFile.Path);
+						contextMenu2.Items.Add(new Separator());
+						FileDiffControl.Commands.HunkHistory.AddMenuItems(repositoryUserControl, diffCodeEditor2, changedFile.Path, contextMenu2);
+						contextMenu2.Items.Add(new Separator());
+						FileDiffControl.Commands.Copy.AddMenuItems(diffCodeEditor2, contextMenu2);
+						FileDiffControl.Commands.CopyAsPatch.AddMenuItems(diffCodeEditor2, contextMenu2);
+					};
 						c.SetDiff(diff2, parsedDiffContent.TabWidth, parsedDiffContent.EntireFile, location2);
 						ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 					});
@@ -257,19 +294,20 @@ namespace ForkPlus.UI.Controls
 					c.IsStaged = changedFile.Staged;
 					c.IsNewOrUntracked = !changedFile.Tracked || changedFile.New;
 					c.EditorContextMenuOpening += delegate(object s, global::Avalonia.Input.ContextRequestedEventArgs e)
+				{
+					DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor ?? s as DiffCodeEditor;
+					if (diffCodeEditor == null)
 					{
-						DiffCodeEditor diffCodeEditor = e.Source as DiffCodeEditor ?? s as DiffCodeEditor;
-						if (diffCodeEditor == null)
-						{
-							e.Handled = true;
-							return;
-						}
-						ContextMenu contextMenu = diffCodeEditor.ContextMenu;
-						contextMenu.Items.Clear();
-						FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor, contextMenu, changedFile.Path);
-						FileDiffControl.Commands.Copy.AddMenuItems(diffCodeEditor, contextMenu);
-						FileDiffControl.Commands.CopyAsPatch.AddMenuItems(diffCodeEditor, contextMenu);
-					};
+						e.Handled = true;
+						return;
+					}
+					ContextMenu contextMenu = diffCodeEditor.ContextMenu;
+					contextMenu.Items.Clear();
+					AddSelectionPatchMenuItems(diffCodeEditor, contextMenu);
+					FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor, contextMenu, changedFile.Path);
+					FileDiffControl.Commands.Copy.AddMenuItems(diffCodeEditor, contextMenu);
+					FileDiffControl.Commands.CopyAsPatch.AddMenuItems(diffCodeEditor, contextMenu);
+				};
 					c.SetDiff(diff, textContent.TabWidth, textContent.EntireFile, location);
 					ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 				});
