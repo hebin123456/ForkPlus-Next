@@ -714,6 +714,16 @@ namespace ForkPlus.UI.Dialogs
 				OnSubmit();
 			};
 			Footer = forkDialogFooter;
+			// Migration note（2026-09-03，"弹窗取消按钮固定是 Cancel 没有国际化"修复）：
+			// Footer XAML 的 Cancel 按钮文本硬编码 "Cancel"（WPF 原版同样如此），未显式设置
+			// CancelButtonTitle 的弹窗（CloneWindow/CreateBranchWindow/PullWindow 等）在任何语言
+			// 下都显示英文 "Cancel"。此处对齐用户预期：弹窗未显式设置时默认翻译。
+			// 已显式设置（Close/Later/Exit 等）的不受影响——构造函数赋值先入 pending，
+			// 此处判空后回放覆盖（见下方 _pendingCancelButtonTitle 回放）。
+			if (_pendingCancelButtonTitle == null)
+			{
+				_pendingCancelButtonTitle = PreferencesLocalization.Translate("Cancel", ForkPlusSettings.Default.UiLanguage);
+			}
 			if (_pendingSubmitButtonTitle != null)
 			{
 				SubmitButtonTitle = _pendingSubmitButtonTitle;
