@@ -70,6 +70,17 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 
 		public HexEditor()
 		{
+			// Bug 修复（2026-09-04，"二进制对比（Hex Diff）显示一片空白"）：
+			// Avalonia 的 ControlTheme 不像 WPF DefaultStyleKey 沿基类链匹配派生类——
+			// HexEditor 的 StyleKey 是自身类型，AvaloniaEdit 官方 {x:Type TextEditor} 主题
+			// 匹配不到它 → 无模板 → 无 ScrollViewer → TextArea 不挂视觉树：Text 已赋值
+			// 但 TextView.Bounds=0x0、VisualLines 永不重建，渲染一片空白（工具栏/MD5 正常）。
+			// 与 CodeEditor 同模式：从应用资源取 {x:Type HexEditor} 专属 ControlTheme 挂到 Theme。
+			object hexEditorTheme = Avalonia.Application.Current?.TryFindResource(typeof(HexEditor));
+			if (hexEditorTheme != null)
+			{
+				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(this, hexEditorTheme);
+			}
 			base.IsReadOnly = true;
 			base.WordWrap = false;
 			base.Options.EnableHyperlinks = false;

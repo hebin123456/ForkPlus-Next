@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:editorHex="clr-namespace:ForkPlus.UI.Controls.Editor.Hex" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 <!-- Migration note：WPF PopupAnimation 资源（Avalonia 无此类型）。原始片段：
   <PopupAnimation x:Key="MenuPopupAnimationKey">None</PopupAnimation>-->
 
@@ -9,6 +9,37 @@
   <controls:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
   <!-- Migration note：菜单快捷键显示本地化（KeyGesture.ToString 会显示 "Ctrl+OemComma" 枚举名） -->
   <controls:KeyGestureTextConverter x:Key="KeyGestureTextConverter" />
+  <!-- Bug 修复（2026-09-04，"二进制对比（Hex Diff）显示一片空白"）：
+       Avalonia 的 ControlTheme 不像 WPF DefaultStyleKey 沿基类链匹配派生类——HexEditor
+       的 StyleKey 是自身类型，AvaloniaEdit 官方 {x:Type TextEditor} 主题匹配不到它，
+       导致无模板、无 ScrollViewer、TextArea 不挂视觉树（text 已赋值但 tvBounds=0x0、
+       VisualLines 永不重建、渲染一片空白，工具栏/MD5 行正常）。与 CodeEditor 同模式：
+       这里定义 {x:Type HexEditor} 专属主题，HexEditor 构造函数从应用资源取出挂到 Theme。
+       模板为 CodeEditor 的精简版：去掉搜索面板占位（Hex 视图用 AvaloniaEdit 官方
+       SearchPanel.Install，挂在 TextArea 层不依赖模板部件）与 Src/Dst 色块 Canvas。 -->
+  <ControlTheme x:Key="{x:Type editorHex:HexEditor}" TargetType="editorHex:HexEditor">
+    <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource CodeEditorForeground}" />
+    <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="IsReadOnly" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="editorHex:HexEditor">
+          <Grid ClipToBounds="True" Background="{TemplateBinding Background}">
+            <controls:TouchpadAwareScrollViewer Background="{TemplateBinding Background}" Focusable="False" ContentTemplate="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" ScrollViewer.HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}" Padding="{TemplateBinding Padding}" x:Name="PART_ScrollViewer">
+              <controls:TouchpadAwareScrollViewer.Content>
+                <Binding Path="TextArea">
+                  <Binding.RelativeSource>
+                    <RelativeSource Mode="TemplatedParent" />
+                  </Binding.RelativeSource>
+                </Binding>
+              </controls:TouchpadAwareScrollViewer.Content>
+            </controls:TouchpadAwareScrollViewer>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
   <ControlTheme x:Key="{x:Type editor:CodeEditor}" TargetType="editor:CodeEditor">
     <Setter Property="Background" Value="{DynamicResource CodeEditorBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CodeEditorForeground}" />
