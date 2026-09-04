@@ -98,12 +98,14 @@
               <RowDefinition Height="*" />
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+            <!-- 同 Scrollviewer.axaml 修复2：不能给 SCP 硬编码 CanHorizontallyScroll/CanVerticallyScroll，
+                 否则 HSBV/VSBV 的 TemplateBinding 永远影响不到测量（Disabled 时内容仍按无限宽排，
+                 * 列不拉伸、长内容被裁切且无横向滚动条）。删掉后由 SCP.AttachToScrollViewer()
+                 自动绑定 (HSBV/VSBV != Disabled)，提交列表(HSBV=Disabled)的 * 列终于能撑满视口。 -->
             <ScrollContentPresenter Grid.Row="0"
                                     Grid.Column="0"
                                     Margin="{TemplateBinding Padding}"
                                     Background="Transparent"
-                                    CanHorizontallyScroll="True"
-                                    CanVerticallyScroll="True"
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{x:Null}"
                                     x:Name="PART_ScrollContentPresenter" />

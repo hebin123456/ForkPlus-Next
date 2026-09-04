@@ -331,6 +331,10 @@
     </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
     <Setter Property="Background" Value="{DynamicResource ScrollViewerBackground}" />
+    <!-- WPF 默认 HorizontalScrollBarVisibility=Auto；Avalonia 12 裸默认是 Disabled。
+         迁移自 WPF 的 20+ 处 ScrollViewer 大多没显式设 HSBV（依赖 WPF 的 Auto），
+         主题层补齐默认，保持“内容超宽时允许横向滚动”的原版行为。 -->
+    <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ScrollViewer">
@@ -344,26 +348,32 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Rectangle Grid.Row="1" Fill="{DynamicResource ScrollViewer.CornerBackgroundBrush}" Grid.Column="1" x:Name="Corner" />
-            <!-- 关键修复：
-                 1) CanVerticallyScroll/CanHorizontallyScroll 必须允许滚动，否则滚轮/拖动都无效
+            <!-- 关键说明（2026-09-04，修复2“引用徽章不换行”重写）：
+                 1) 不要在模板里给 SCP 设 CanHorizontallyScroll/CanVerticallyScroll！
+                    SCP.AttachToScrollViewer() 只在属性“未被设置”(IfUnset/IsSet)时才会自动绑定
+                    CanHorizontallyScroll = (owner.HorizontalScrollBarVisibility != Disabled)。
+                    一旦模板硬编码 True，绑定被跳过，MeasureOverride 永远给内容无限宽，
+                    HorizontalScrollBarVisibility=Disabled 的视图（如提交摘要里的引用徽章区）
+                    里的 WrapPanel 永不换行、内容被裁切。删掉硬编码值让自动绑定生效：
+                    Disabled → 有限宽（换行）；Auto/Visible/Hidden → 无限宽（横向滚动）。
+                    官方 Fluent 主题同样不设置这两个属性。
                  2) 不要手动给 PART_ScrollBar 绑定 Value/Maximum/ViewportSize；
                     让 Avalonia ScrollViewer 自己把 Offset/Viewport 与 PART_* 连接起来，
-                    否则容易出现 thumb 长度错误或拖动不反写 Offset 的“假滚动条”
+                    否则容易出现 thumb 长度错误或拖动不反写 Offset 的“假滚动条”。
                  3) Background="Transparent"（2026-09-04，问题D“提交页滚轮无法滚动”）：
                     Avalonia 的滚轮滚动由 ScrollContentPresenter 的类处理器 OnPointerWheelChanged
                     完成（WPF 是 ScrollViewer.OnMouseWheel 自己处理冒泡事件），事件只有路由
                     “经过” SCP 才会触发。没有背景的元素不可命中——内容里无背景的空白区域
                     （Grid/Panels）命中会穿透内容落到模板根 Grid（SCP 的兄弟节点），事件冒泡
                     永远到不了 SCP，滚轮因此失效（只能拖滚动条）。给 SCP 一个透明背景让整个
-                    视口区域可命中，空白处滚轮也能滚，与 WPF 行为一致。 -->
+                    视口区域可命中，空白处滚轮也能滚，与 WPF 行为一致。
+                    （滚动能力本身由 1) 的自动绑定按 HSBV/VSBV 动态决定，与背景无关。） -->
             <ScrollContentPresenter Grid.Row="0"
                                     Margin="{TemplateBinding Padding}"
                                     Grid.Column="0"
                                     Background="Transparent"
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{x:Null}"
-                                    CanVerticallyScroll="True"
-                                    CanHorizontallyScroll="True"
                                     x:Name="PART_ScrollContentPresenter" />
             <ScrollBar Grid.Row="0"
                        Grid.Column="1"
