@@ -69,22 +69,56 @@ namespace ForkPlus.UI.Dialogs
 	// 此时不应该把"初始化值"当成"用户改色"写回 _workingCopy（避免覆盖已有自定义值）。
 	private bool _isPopupInitializing;
 
-		public CustomColorsDialog()
+	// ===== Bug 修复（2026-09-04，"颜色管理器面板有性能问题"）=====
+	// 拖 HSV 方块/色相条/RGB 滑块时每个 PointerMove 都触发一次 ApplyPopupColor →
+	// ApplyAndRefresh → App.ApplyCustomColors（重载整个 Generic 主题字典 ~290 Color +
+	// 270 Brush 并让全 UI DynamicResource 失效重解析）+ RaiseApplicationThemeChanged
+	// （20+ 订阅控件刷新）+ 30 项预览重建 + 同步写盘。WPF 下 BAML 加载快勉强可用；
+	// Avalonia 每次都重新解析 axaml 字典，60Hz 拖动下 UI 直接卡死。
+	// 修复：拖动中只做轻量更新（item.HexValue → 列表预览色块经 INPC 立即刷新），
+	// 重活（主题字典重载 + 全 UI 刷新 + 落盘）防抖 150ms，停止拖动后才执行一次；
+	// Popup 关闭/对话框关闭时立即 flush，保证"实时预览"语义不丢（最迟 150ms）。
+	// 防抖用 Avalonia 原生 DispatcherTimer（UI 线程计时器）：不走 DelayedAction 的
+	// ServiceLocator.Dispatcher 转发链（该服务仅主程序启动时初始化，对话框早于其
+	// 初始化/测试环境为 null 时回调会被静默丢弃）。
+	private global::Avalonia.Threading.DispatcherTimer _applyDebounceTimer;
+	private bool _hasPendingApply;
+
+	// ===== Bug 修复（2026-09-04，"颜色管理器面板失焦关不掉 + 点色块关了又开"）=====
+	// light dismiss 关闭时刻：点击色块本身的按压先经 light dismiss 关掉 Popup，
+	// 抬起时 PointerReleased 又触重开（WPF 下该次点击被 StaysOpen=False 的 Popup
+	// 捕获吞掉，表现为开→关切换）。借时间戳识别"刚被本次按压关闭"以免重开。
+	private DateTime? _popupClosedAtUtc;
+
+	public CustomColorsDialog()
+	{
+		// 关闭基类 ForkPlusDialogWindow 自动添加的 chrome（logo/header/footer/command preview）。
+		// 基类假设内容 Grid 是两列布局（Column 0=logo 列，Column 1=内容），会自动塞入 64x64
+		// ForkPlus logo + 标题头 + 底部 Submit/Cancel footer。本对话框自定义布局，不兼容该结构，
+		// 若不关闭会导致 logo 与颜色列表叠在 Column 0 上挤在一起，且 footer 与自定义按钮重复。
+		ShowHeader = false;
+		ShowLogo = false;
+		ShowFooter = false;
+		InitializeComponent();
+		Localize();
+		LoadItems();
+		InitializeSwatches();
+		_applyDebounceTimer = new global::Avalonia.Threading.DispatcherTimer
 		{
-			// 关闭基类 ForkPlusDialogWindow 自动添加的 chrome（logo/header/footer/command preview）。
-			// 基类假设内容 Grid 是两列布局（Column 0=logo 列，Column 1=内容），会自动塞入 64x64
-			// ForkPlus logo + 标题头 + 底部 Submit/Cancel footer。本对话框自定义布局，不兼容该结构，
-			// 若不关闭会导致 logo 与颜色列表叠在 Column 0 上挤在一起，且 footer 与自定义按钮重复。
-			ShowHeader = false;
-			ShowLogo = false;
-			ShowFooter = false;
-			InitializeComponent();
-			Localize();
-			LoadItems();
-			InitializeSwatches();
-			// Popup 关闭（点外部）时清空正在编辑的 item，避免后续误写。
-			ColorPickerPopup.Closed += Popup_Closed;
-		}
+			Interval = TimeSpan.FromMilliseconds(150.0)
+		};
+		_applyDebounceTimer.Tick += delegate
+		{
+			_applyDebounceTimer.Stop();
+			_hasPendingApply = false;
+			ApplyAndRefresh();
+		};
+		// Popup 关闭（点外部）时清空正在编辑的 item，避免后续误写；并 flush 防抖中的待应用色。
+		ColorPickerPopup.Closed += Popup_Closed;
+		// Bug 修复（失焦消失）：窗口失活（切应用/点其他窗口）→ 关闭 Popup，
+		// 对齐 WPF StaysOpen=False 的失活关闭语义（light dismiss 只覆盖窗口内按压）。
+		Deactivated += delegate { ColorPickerPopup.IsOpen = false; };
+	}
 
 		private void Localize()
 		{
@@ -209,12 +243,27 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		/// <summary>颜色预览块点击 → 打开颜色选择 Popup。</summary>
-		private void ColorPreview_Click(object sender, global::Avalonia.Input.PointerPressedEventArgs e)
+		/// <summary>颜色预览块点击（抬起）→ 打开颜色选择 Popup。
+		/// Bug 修复（2026-09-04，"面板弹出来不对"）：原版 WPF 挂 MouseLeftButtonUp（抬起弹出），
+		/// 迁移版错挂 PointerPressed（按下即弹，手未抬 Popup 已挡住光标）——恢复抬起弹出；
+		/// 并锚定 PlacementTarget=被点色块 + Bottom（原版 Placement="Mouse" 的稳定等效，
+		/// Pointer 模式跟随指针漂移）。另带"关了又开"守卫（见 _popupClosedAtUtc 注释）。</summary>
+		private void ColorPreview_Click(object sender, global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
+			// 守卫：本次按压若刚通过 light dismiss 关掉了 Popup（WPF 下该点击被
+			// StaysOpen=False 的 Popup 捕获吞掉、只关不开），则不再重开——
+			// 色块表现为开→关的切换，而不是关了又开。
+			DateTime? closedAt = _popupClosedAtUtc;
+			if (closedAt.HasValue && (DateTime.UtcNow - closedAt.Value).TotalMilliseconds < 300.0)
+			{
+				_popupClosedAtUtc = null;
+				return;
+			}
 			if (sender is global::Avalonia.Controls.Control fe && fe.Tag is CustomColorItem item)
 			{
 				_popupEditingItem = item;
+				// 锚定被点色块：Popup 弹在色块正下方（Bottom），不再跟随指针。
+				ColorPickerPopup.PlacementTarget = fe;
 				// 初始化阶段标志：用 item 当前 hex 填充 Popup 控件时不要回写 _workingCopy
 				_isPopupInitializing = true;
 				UpdatePopupFromHex(item.HexValue);
@@ -250,8 +299,9 @@ namespace ForkPlus.UI.Dialogs
 			catch { }
 		}
 
-		/// <summary>把 Popup 当前 hex 实时写回正在编辑的 item + _workingCopy + 主界面 + settings.json。
-		/// 这样用户在 Popup 里拖动滑块时主界面立刻跟着变，且立即落盘，无需点 OK 确认。</summary>
+		/// <summary>把 Popup 当前 hex 实时写回正在编辑的 item + _workingCopy（轻量，INPC 立即刷列表预览），
+		/// 重活（主题字典重载 + 全 UI 刷新 + 落盘）经防抖调度（见 _applyDebounce 注释）。
+		/// 拖动滑块/HSV 时列表预览色块立即跟随，主界面与 settings.json 最迟 150ms 后同步。</summary>
 		private void ApplyPopupColor()
 		{
 			if (_popupEditingItem == null) return;
@@ -263,12 +313,38 @@ namespace ForkPlus.UI.Dialogs
 			_popupEditingItem.HexValue = hex;
 			_popupEditingItem.IsCustomized = true;
 			_workingCopy[_popupEditingItem.Key] = hex;
+			// 防抖重活：拖动中每个 PointerMove 都进这里，全量 ApplyAndRefresh 会卡死 UI。
+			_hasPendingApply = true;
+			_applyDebounceTimer.Stop();
+			_applyDebounceTimer.Start();
+		}
+
+		/// <summary>立即执行防抖中的待应用色（Popup 关闭/对话框关闭时调用，保证不丢最后一次改动）。</summary>
+		private void FlushPendingApply()
+		{
+			if (!_hasPendingApply) return;
+			_hasPendingApply = false;
+			_applyDebounceTimer.Stop();
 			ApplyAndRefresh();
 		}
 
 		private void Popup_Closed(object sender, EventArgs e)
 		{
+			// 关闭即 flush：用户选完色点外部关闭，最后一次改动立即应用 + 落盘。
+			FlushPendingApply();
 			_popupEditingItem = null;
+			// 记录关闭时刻：供 ColorPreview_Click 的"关了又开"守卫判断
+			// "本次点击的按压是否刚关掉了 Popup"（见字段注释）。
+			_popupClosedAtUtc = DateTime.UtcNow;
+		}
+
+		/// <summary>对话框关闭：flush 防抖中的待应用色，停掉计时器。
+		/// 换色已实时落盘的设计下，关窗时 pending 的最后一步不能丢。</summary>
+		protected override void OnClosed(EventArgs e)
+		{
+			base.OnClosed(e);
+			FlushPendingApply();
+			_applyDebounceTimer.Stop();
 		}
 
 		/// <summary>更新 HSV 2D 方块的背景色（当前色相纯色）+ 指示器位置。</summary>

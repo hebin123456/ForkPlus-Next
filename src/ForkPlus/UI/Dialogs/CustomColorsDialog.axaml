@@ -24,7 +24,10 @@
               <!-- 颜色名 -->
               <TextBlock Grid.Column="0" Text="{Binding DisplayName}" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush}" TextTrimming="CharacterEllipsis" />
               <!-- 颜色预览（点击弹出颜色选择器） -->
-              <Border Grid.Column="1" Width="32" Height="22" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Left" Cursor="Hand" Tag="{Binding}" ToolTip.Tip="{Binding Key}" PointerPressed="ColorPreview_Click">
+              <!-- Bug 修复（2026-09-04，"颜色管理器面板弹出不对"）：原版 WPF 在
+                   MouseLeftButtonUp（鼠标抬起）时弹出，迁移版错挂到 PointerPressed（按下即弹），
+                   按下后手未抬 Popup 已抢在指针处弹出挡住光标；恢复抬起弹出语义。 -->
+              <Border Grid.Column="1" Width="32" Height="22" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Left" Cursor="Hand" Tag="{Binding}" ToolTip.Tip="{Binding Key}" PointerReleased="ColorPreview_Click">
                 <Rectangle Fill="{Binding PreviewBrush}" />
               </Border>
               <!-- hex 输入 -->
@@ -57,7 +60,12 @@
     </Grid>
 
     <!-- 颜色选择器 Popup：HSV 2D 调色盘 + 色相条 + RGB 滑块 + 预设色板 -->
-    <Popup x:Name="ColorPickerPopup" Grid.RowSpan="3" Placement="Pointer">
+    <!-- Bug 修复（2026-09-04，"颜色管理器面板失焦关不掉"）：原版 WPF StaysOpen="False"
+         （点外部/窗口失活即关）迁移时丢失 → Avalonia IsLightDismissEnabled="True"；
+         窗口 Deactivated 关闭在 code-behind 补齐。Placement：原版 Placement="Mouse"
+         （鼠标处弹出）迁移版用的 Pointer 模式跟随指针漂移且 headless 下拿不到位置，
+         改 PlacementTarget（被点色块，code-behind 动态设置）+ Bottom 稳定锚定。 -->
+    <Popup x:Name="ColorPickerPopup" Grid.RowSpan="3" Placement="Bottom" IsLightDismissEnabled="True">
       <Border Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="16" Width="340">
         <StackPanel>
           <TextBlock x:Name="PopupTitleText" Text="Color Picker" FontWeight="SemiBold" Margin="0,0,0,12" Foreground="{DynamicResource ForegroundBrush}" />

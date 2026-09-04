@@ -55,7 +55,14 @@
                         </Border>
                       </DockPanel>
                     </Border>
-                    <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    <!-- Bug 修复（2026-09-04，同 CustomWindow/DialogWindow 模板）：补 VisualLayerManager
+                         且命名 PART_VisualLayerManager——TopLevel.OnApplyTemplate 经该名取回它，
+                         Window.OnApplyTemplate 的 EnableVisualLayerManagerLayers 会启用 internal 的
+                         EnablePopupOverlayLayer，模板内 NotificationManagerPopup 及窗口内所有 Popup
+                         （颜色选择器等）才能在无平台 IPopupImpl 的环境下经 OverlayLayer 回退打开。 -->
+                    <VisualLayerManager x:Name="PART_VisualLayerManager" Grid.Row="1">
+                      <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </VisualLayerManager>
     <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
                   </Grid>
                 </Border>

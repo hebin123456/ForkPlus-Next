@@ -195,16 +195,27 @@
                     </Border>
                   </DockPanel>
                 </Border>
-                <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                <!-- Bug 修复（2026-09-04，"颜色管理器面板弹出来不对"的深层根因）：模板缺
+                     VisualLayerManager，且必须命名为 PART_VisualLayerManager——
+                     TopLevel.OnApplyTemplate 经 e.NameScope.Find("PART_VisualLayerManager")
+                     取回它，随后 Window.OnApplyTemplate 的 EnableVisualLayerManagerLayers()
+                     把 EnableOverlayLayer / EnablePopupOverlayLayer（internal，XAML 无法直接设）
+                     / EnableTextSelectorLayer 全部置 true。Popup/Tooltip/ComboBox 下拉在无平台
+                     IPopupImpl 的环境（headless/部分平台）回退 PopupOverlayLayer 路径时靠它宿主，
+                     缺名或缺控件都直接抛 "Unable to create IPopupImpl and no overlay layer is
+                     found"（与 Avalonia 内置 Fluent Window 模板一致）。 -->
+                <VisualLayerManager x:Name="PART_VisualLayerManager" Grid.Row="1">
+                  <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True"  ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </VisualLayerManager>
     <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
             </Border>
           </Border>
-          
+
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-  
+
 <!-- Migration note：WPF 选择器 ^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip">
         <Setter Property="IsVisible" Value="True" />
@@ -251,7 +262,13 @@
                     </Border>
                   </DockPanel>
                 </Border>
-                <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True" Grid.Row="1"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                <!-- Bug 修复（2026-09-04）：同 CustomWindow 模板——补 VisualLayerManager 且必须
+                     命名 PART_VisualLayerManager（TopLevel 经该名查找，Window.OnApplyTemplate 的
+                     EnableVisualLayerManagerLayers 会启用 internal 的 EnablePopupOverlayLayer），
+                     对话框内 Popup（颜色选择器等）才能在 OverlayLayer 回退路径下打开。 -->
+                <VisualLayerManager x:Name="PART_VisualLayerManager" Grid.Row="1">
+                  <ContentPresenter Content="{TemplateBinding Content}" ClipToBounds="True"  ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </VisualLayerManager>
     <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
             </Border>
