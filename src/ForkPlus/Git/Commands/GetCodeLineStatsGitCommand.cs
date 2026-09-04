@@ -28,13 +28,24 @@ namespace ForkPlus.Git.Commands
 		private const int TimeoutMs = 60_000;
 
 		/// <summary>查找 tokei 路径。优先 ForkPlus 同目录（构建期拉取的副本），
-		/// 再退化到 PATH。</summary>
+		/// 再退化到 PATH（用户系统自装的 tokei，如 cargo install / 系统包管理器）。</summary>
 		[Null]
 		private static string ResolveTokeiPath()
 		{
+			return ResolveTokeiPath(App.InstanceDirectory, Environment.GetEnvironmentVariable("PATH"));
+		}
+
+		/// <summary>可测重载：instanceDirectory 为 bundled 查找目录（ForkPlus 可执行文件所在目录），
+		/// pathEnv 为 PATH 环境变量原始内容（参数注入而非读进程环境，测试无需污染全局）。
+		/// Migration note（2026-09-04，"linux版本提示 tokei not found"）：注释一直声称
+		/// "再退化到 PATH"但实现从未做——bundled 缺失（旧产物/自建时下载失败）时即使系统
+		/// 装了 tokei 也直接报 not found。本轮真正实现 PATH 扫描回退。</summary>
+		[Null]
+		internal static string ResolveTokeiPath(string instanceDirectory, [Null] string pathEnv)
+		{
 			try
 			{
-				string bundled = Path.Combine(App.InstanceDirectory, TokeiExeName);
+				string bundled = Path.Combine(instanceDirectory, TokeiExeName);
 				if (File.Exists(bundled))
 				{
 					return bundled;
@@ -44,7 +55,51 @@ namespace ForkPlus.Git.Commands
 			{
 				Log.Error("Failed to resolve bundled tokei path", ex);
 			}
+			// PATH 回退：逐目录探测 &lt;dir&gt;/tokei(.exe)。Unix 上要求可执行位——
+			// PATH 里无执行位的同名文件（如解压丢了权限位）spawn 会 Permission denied，
+			// 跳过继续找下一个目录；Windows 无执行位概念，存在即可。
+			if (!string.IsNullOrEmpty(pathEnv))
+			{
+				foreach (string rawDir in pathEnv.Split(Path.PathSeparator))
+				{
+					string dir = rawDir?.Trim();
+					if (string.IsNullOrEmpty(dir))
+					{
+						continue;
+					}
+					try
+					{
+						string candidate = Path.Combine(dir, TokeiExeName);
+						if (File.Exists(candidate) && IsExecutableFile(candidate))
+						{
+							return candidate;
+						}
+					}
+					catch (Exception ex)
+					{
+						Log.Warn("Failed to probe tokei candidate in PATH dir " + dir, ex);
+					}
+				}
+			}
 			return null;
+		}
+
+		/// <summary>PATH 候选文件的可执行性检查（bundled 副本不走此检查——
+		/// EnsureExecutableBit 会补权限位，PATH 上的是系统装的，不该也没权限去改）。</summary>
+		private static bool IsExecutableFile(string path)
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				return true;
+			}
+			try
+			{
+				return (File.GetUnixFileMode(path) & System.IO.UnixFileMode.UserExecute) != 0;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		/// <summary>Unix 下确保 tokei 有可执行位（best-effort）。
@@ -83,7 +138,16 @@ namespace ForkPlus.Git.Commands
 			string tokeiExe = ResolveTokeiPath();
 			if (tokeiExe == null || !File.Exists(tokeiExe))
 			{
-				return GitCommandResult<CodeLineStats>.Failure(new GitCommandError.GenericError(TokeiExeName + " not found (expected next to the ForkPlus executable). Code line statistics unavailable."));
+				// 2026-09-04（"linux版本提示 tokei not found"）：消息带上实际查找位置与自救
+				// 指引——旧产物/自建下载失败时 bundled 缺失，用户按提示放一份 tokei 或装到
+				// PATH（本轮起 PATH 副本可用）即可恢复，不必重下整个应用。
+				return GitCommandResult<CodeLineStats>.Failure(new GitCommandError.GenericError(
+					"tokei not found. Searched next to the ForkPlus executable ("
+					+ (App.InstanceDirectory ?? "(unknown)")
+					+ ") and all PATH directories. Fix: download tokei for your platform from "
+					+ "https://github.com/XAMPPRocky/tokei/releases and place '" + TokeiExeName
+					+ "' next to the ForkPlus executable, or install tokei on PATH. "
+					+ "Code line statistics unavailable."));
 			}
 			EnsureExecutableBit(tokeiExe);
 
