@@ -488,8 +488,20 @@ namespace ForkPlus.UI.WpfCompat
         {
             if (child != null) VisualChildren.Remove(child);
         }
-        protected void AddLogicalChild(global::Avalonia.Controls.Control child) { }
-        protected void RemoveLogicalChild(global::Avalonia.Controls.Control child) { }
+        // Bug 修复（2026-09-04，"代码悬停/选区的暂存/丢弃浮窗丢失"）：
+        // 此前 AddLogicalChild 是空实现。Avalonia 的样式（ControlTheme/Style）只在控件
+        // 挂入"逻辑树"（AttachedToLogicalTree → ApplyStyling）时应用；仅经 VisualChildren
+        // 挂接的子控件拿不到主题 → TemplatedControl 无模板 → 测量 0×0。WPF 原版
+        // Adorner.AddLogicalChild 真正挂逻辑树（隐式样式经逻辑树解析），语义等价物是把
+        // 子控件加入 LogicalChildren 集合（ContentControl 承载 Content 就是同一机制）。
+        protected void AddLogicalChild(global::Avalonia.Controls.Control child)
+        {
+            if (child != null && !LogicalChildren.Contains(child)) LogicalChildren.Add(child);
+        }
+        protected void RemoveLogicalChild(global::Avalonia.Controls.Control child)
+        {
+            if (child != null) LogicalChildren.Remove(child);
+        }
         protected virtual int VisualChildrenCount => VisualChildren.Count;
         protected virtual Visual GetVisualChild(int index) => VisualChildren[index];
     }
