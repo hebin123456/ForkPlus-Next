@@ -101,6 +101,7 @@
             <ScrollContentPresenter Grid.Row="0"
                                     Grid.Column="0"
                                     Margin="{TemplateBinding Padding}"
+                                    Background="Transparent"
                                     CanHorizontallyScroll="True"
                                     CanVerticallyScroll="True"
                                     Content="{TemplateBinding Content}"

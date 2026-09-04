@@ -348,10 +348,18 @@
                  1) CanVerticallyScroll/CanHorizontallyScroll 必须允许滚动，否则滚轮/拖动都无效
                  2) 不要手动给 PART_ScrollBar 绑定 Value/Maximum/ViewportSize；
                     让 Avalonia ScrollViewer 自己把 Offset/Viewport 与 PART_* 连接起来，
-                    否则容易出现 thumb 长度错误或拖动不反写 Offset 的“假滚动条” -->
+                    否则容易出现 thumb 长度错误或拖动不反写 Offset 的“假滚动条”
+                 3) Background="Transparent"（2026-09-04，问题D“提交页滚轮无法滚动”）：
+                    Avalonia 的滚轮滚动由 ScrollContentPresenter 的类处理器 OnPointerWheelChanged
+                    完成（WPF 是 ScrollViewer.OnMouseWheel 自己处理冒泡事件），事件只有路由
+                    “经过” SCP 才会触发。没有背景的元素不可命中——内容里无背景的空白区域
+                    （Grid/Panels）命中会穿透内容落到模板根 Grid（SCP 的兄弟节点），事件冒泡
+                    永远到不了 SCP，滚轮因此失效（只能拖滚动条）。给 SCP 一个透明背景让整个
+                    视口区域可命中，空白处滚轮也能滚，与 WPF 行为一致。 -->
             <ScrollContentPresenter Grid.Row="0"
                                     Margin="{TemplateBinding Padding}"
                                     Grid.Column="0"
+                                    Background="Transparent"
                                     Content="{TemplateBinding Content}"
                                     ContentTemplate="{x:Null}"
                                     CanVerticallyScroll="True"
