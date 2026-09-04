@@ -48,6 +48,12 @@ namespace ForkPlus.UI.Dialogs
 		public RewordAdorner(global::Avalonia.Input.InputElement adornernedElement)
 			: base(adornernedElement)
 		{
+			// Bug 修复（2026-09-04，"交互式变基 reword 弹窗点不动/输入不了"）：
+			// shim 基类 Adorner 默认 IsHitTestVisible=false（适配 DragAdorner 之类
+			// 纯视觉装饰），但本装饰器承载的是可交互的 RewordUserControl——
+			// 不开启 hit-test 时弹窗绘制在窗口最上层却收不到任何鼠标/键盘输入
+			// （WPF 原生 Adorner 的 UIElement 默认就是可 hit-test 的）。
+			IsHitTestVisible = true;
 		}
 
 		protected override Visual GetVisualChild(int index)
