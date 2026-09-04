@@ -49,6 +49,9 @@ namespace ForkPlus.UI.Commands
 		{
 			Application.Current.Resources.MergedDictionaries.Remove(oldThemeInclude);
 		}
+			// 同步 FluentTheme/AvaloniaEdit/OxyPlot 的明暗变体（2026-09-04 突兀根因，
+			// 详见 App.SyncThemeVariant 注释）：切换命令是运行时换肤唯一入口，必须在这里同步
+			App.SyncThemeVariant(newTheme);
 			global::ForkPlus.UI.Theme.Refresh();
 			// 切换皮肤后重新应用用户自定义颜色覆盖（旧字典随主题字典移除后需重建）
 			App.ApplyCustomColors();

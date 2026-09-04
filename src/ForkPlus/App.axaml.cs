@@ -745,7 +745,30 @@ namespace ForkPlus
 			return null;
 		}
 
-		private void InitializeTheme()
+		/// <summary>把 FluentTheme 的明暗变体（Application.RequestedThemeVariant）同步到当前皮肤的
+	/// 基底明暗（2026-09-04，"切换主题时部分组件样式没包进去、突兀"根因修复）。
+	///
+	/// 根因：App.Styles 同时加载 FluentTheme + AvaloniaEdit(Fluent) + OxyPlot(Default) 三个
+	/// 外来主题，其余自有控件主题全部走皮肤字典（DynamicResource 随换肤刷新）。但全仓库从未
+	/// 设置 RequestedThemeVariant——Fluent 系控件只看这个变体选明暗（默认跟随操作系统，与
+	/// 应用内皮肤选择完全脱钩）：用户切到 Dark/Monokai/Dracula 等暗皮肤时，走 Fluent 渲染的
+	/// 控件（未被自有 ControlTheme 覆盖的兜底控件 + AvaloniaEdit 编辑器内部子控件如搜索面板/
+	/// 滚动条 + OxyPlot 图表内部元素）仍是亮色外观，反之亦然——切换瞬间一块区域"亮岛"突兀。
+	///
+	/// 修复：皮肤加载/切换时按 IsDarkBase 设置变体，Fluent 系与皮肤字典同步明暗。
+	/// 纯机制修复不涉及配色——Fluent 变体只有 Light/Dark 二元，22 皮肤按基底归类
+	///（IsDarkBase，与 WebView2 PreferredColorScheme 同一分界）。</summary>
+	internal static void SyncThemeVariant(global::ForkPlus.UI.ThemeType theme)
+	{
+		if (Application.Current == null)
+		{
+			return;
+		}
+		Application.Current.RequestedThemeVariant =
+			theme.IsDarkBase() ? ThemeVariant.Dark : ThemeVariant.Light;
+	}
+
+	private void InitializeTheme()
 		{
 			if (ForkPlusSettings.Default.FollowSystemTheme)
 			{
@@ -761,6 +784,8 @@ namespace ForkPlus
 			{
 				Application.Current.Resources.MergedDictionaries.Remove(oldThemeInclude);
 			}
+			// 同步 FluentTheme/AvaloniaEdit/OxyPlot 的明暗变体（详见 SyncThemeVariant 注释）
+			SyncThemeVariant(ForkPlusSettings.Default.Theme);
 			global::ForkPlus.UI.Theme.SubscribeToSystemEvents();
 			InitializeTextEditorContextMenuStyle();
 			ApplyCustomColors();

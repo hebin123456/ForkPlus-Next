@@ -111,6 +111,7 @@
   <Color x:Key="ClosableTabItem.Static.BorderColor">#CFCFCF</Color>
   <Color x:Key="ClosableTabItem.MouseOver.BackgroundColor">#D7D7D7</Color>
   <Color x:Key="ClosableTabItem.MouseOver.BorderColor">#CFCFCF</Color>
+  <Color x:Key="ClosableTabItem.MouseOver.ButtonColor">#767676</Color>
   <Color x:Key="ClosableTabItem.Disabled.BackgroundColor">DarkGray</Color>
   <Color x:Key="ClosableTabItem.Disabled.BorderColor">#C2C2C2</Color>
   <Color x:Key="ClosableTabItem.Selected.BackgroundColor">#FFFFFF</Color>
