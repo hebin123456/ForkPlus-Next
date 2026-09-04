@@ -679,18 +679,20 @@ namespace ForkPlus.UI.WpfCompat
 		}
 
 		private static Control RenderPre(Node node, RenderContext ctx)
+	{
+		// CSS：pre { bg #f6f8fa; border #E6E5E6; radius 5; padding 8; 85% 等宽; overflow auto }
+		string code = CollectRawText(node).TrimEnd('\n');
+		// SelectableTextBlock（2026-09-04，问题E）：代码块是手册/AI 输出最需要复制的内容，
+		// WPF 版 WebView2 是浏览器内容天然可选中复制，TextBlock 不可选中。
+		var text = new SelectableTextBlock
 		{
-			// CSS：pre { bg #f6f8fa; border #E6E5E6; radius 5; padding 8; 85% 等宽; overflow auto }
-			string code = CollectRawText(node).TrimEnd('\n');
-			var text = new TextBlock
-			{
-				Text = code,
-				FontFamily = MonoFont,
-				FontSize = 11,       // 85% of 13
-				LineHeight = 16,     // 1.45
-				TextWrapping = TextWrapping.NoWrap,
-				Foreground = ctx.Pal.Text
-			};
+			Text = code,
+			FontFamily = MonoFont,
+			FontSize = 11,       // 85% of 13
+			LineHeight = 16,     // 1.45
+			TextWrapping = TextWrapping.NoWrap,
+			Foreground = ctx.Pal.Text
+		};
 			Border border = new Border
 			{
 				Background = ctx.Pal.PreBg,
@@ -901,7 +903,10 @@ namespace ForkPlus.UI.WpfCompat
 
 		private static TextBlock MakeTextBlock(InlineCollection inlines, RenderContext ctx)
 		{
-			TextBlock text = new TextBlock
+			// SelectableTextBlock（2026-09-04，问题E"git mm 手册内容无法选中"）：
+			// WPF 版手册/AI 输出在 WebView2 浏览器里天然可选中复制；Avalonia TextBlock
+			// 不支持选择，替换为 SelectableTextBlock（鼠标拖选 + Ctrl+A/Ctrl+C）。
+			SelectableTextBlock text = new SelectableTextBlock
 			{
 				FontSize = BaseFontSize,
 				LineHeight = LineHeight,

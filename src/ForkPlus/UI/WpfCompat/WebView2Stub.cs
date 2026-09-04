@@ -104,6 +104,18 @@ namespace Microsoft.Web.WebView2.Wpf
         private string _lastHtml;
         private bool _themeHooked;
 
+        /// <summary>
+        /// Migration note（2026-09-04，问题E"git mm 手册内容无法选中和滚动"）：
+        /// Avalonia 隐式 ControlTheme 按 StyleKey 精确匹配资源 key（默认=实际类型
+        /// WebView2），而资源链里只有 {x:Type ScrollViewer}——子类匹配不到就落到
+        /// ContentControl 的默认模板（裸 ContentPresenter，无 ScrollContentPresenter
+        /// 无滚动条），于是手册内容显示出来但 extent/viewport 恒 0、完全不能滚。
+        /// 重写 StyleKey 为基类 ScrollViewer，与 TouchpadAwareScrollViewer 在
+        /// Scrollviewer.axaml 里挂 ControlTheme BasedOn 的做法等价，让 ForkPlus 的
+        /// ScrollViewer 主题（含 SCP 命中修复）对本控件生效。
+        /// </summary>
+        protected override Type StyleKeyOverride => typeof(ScrollViewer);
+
         public WebView2()
         {
             Background = Brushes.Transparent;
