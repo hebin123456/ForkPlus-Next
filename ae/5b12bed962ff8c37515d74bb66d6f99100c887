@@ -1,0 +1,116 @@
+src/ForkPlus.Tests/AiAuthorshipStatsEndToEndTests.cs
+  h_e858f2c2faea28 1-247
+src/ForkPlus.Tests/ClassCoverageManifest.cs
+  h_e858f2c2faea28 295-297,359-371,1265,1719-1720
+src/ForkPlus.Tests/GitAiStatsTests.cs
+  h_e858f2c2faea28 1-139
+src/ForkPlus.Tests/HeadlessAppBootstrap.cs
+  h_e858f2c2faea28 27,55,59-110
+src/ForkPlus.Tests/SourceFileCoverageManifest.cs
+  h_e858f2c2faea28 220-222,270-273
+src/ForkPlus/App.axaml.cs
+  h_e858f2c2faea28 212-285
+src/ForkPlus/Git/Commands/GetGitAiDiffAttributionGitCommand.cs
+  h_e858f2c2faea28 1-64
+src/ForkPlus/Git/Commands/GetGitAiStatsGitCommand.cs
+  h_e858f2c2faea28 1-65
+src/ForkPlus/Git/Commands/GetGitAiVersionShellCommand.cs
+  h_e858f2c2faea28 1-52
+src/ForkPlus/Git/Commands/GitAiCheckpointShellCommand.cs
+  h_e858f2c2faea28 1-175
+src/ForkPlus/Git/Commands/GitAiModels.cs
+  h_e858f2c2faea28 1-419
+src/ForkPlus/Git/Commands/GitAiResultCache.cs
+  h_e858f2c2faea28 1-130
+src/ForkPlus/Git/Commands/GitAiVersionChecker.cs
+  h_e858f2c2faea28 1-99
+src/ForkPlus/Languages/de-DE.json
+  h_e858f2c2faea28 1,5-30
+src/ForkPlus/Languages/es-ES.json
+  h_e858f2c2faea28 1,5-30
+src/ForkPlus/Languages/fr-FR.json
+  h_e858f2c2faea28 1,5-30
+src/ForkPlus/Languages/ja-JP.json
+  h_e858f2c2faea28 1,5-30
+src/ForkPlus/Languages/ko-KR.json
+  h_e858f2c2faea28 1,5-30
+src/ForkPlus/Languages/zh-Hans.json
+  h_e858f2c2faea28 1,5-30
+src/ForkPlus/Languages/zh-Hant.json
+  h_e858f2c2faea28 1,5-30
+src/ForkPlus/Settings/ForkPlusSettings.cs
+  h_e858f2c2faea28 1106-1111,2509-2549,2840-2842,2965-2967,3521-3535
+src/ForkPlus/Shell/Interaction/ShellRequest.cs
+  h_e858f2c2faea28 20-28,37-47,55,57-59,61,63-97,100,103,114-129
+src/ForkPlus/Theme/Styles/Brushes/Brushes.axaml
+  h_e858f2c2faea28 283-284
+src/ForkPlus/Theme/Styles/Brushes/Colors.BlueDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.BlueLight.axaml
+  h_e858f2c2faea28 294-295
+src/ForkPlus/Theme/Styles/Brushes/Colors.CyanDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.CyanLight.axaml
+  h_e858f2c2faea28 294-295
+src/ForkPlus/Theme/Styles/Brushes/Colors.Dark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.Dracula.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.GitHubDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.GitHubLight.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.GreenDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.GreenLight.axaml
+  h_e858f2c2faea28 294-295
+src/ForkPlus/Theme/Styles/Brushes/Colors.Light.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.Monokai.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.OrangeDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.OrangeLight.axaml
+  h_e858f2c2faea28 294-295
+src/ForkPlus/Theme/Styles/Brushes/Colors.PurpleDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.PurpleLight.axaml
+  h_e858f2c2faea28 294-295
+src/ForkPlus/Theme/Styles/Brushes/Colors.RedDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.RedLight.axaml
+  h_e858f2c2faea28 294-295
+src/ForkPlus/Theme/Styles/Brushes/Colors.SolarizedDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.SolarizedLight.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.YellowDark.axaml
+  h_e858f2c2faea28 293-294
+src/ForkPlus/Theme/Styles/Brushes/Colors.YellowLight.axaml
+  h_e858f2c2faea28 294-295
+src/ForkPlus/UI/Dialogs/BlameItemViewModel.cs
+  h_e858f2c2faea28 4-6,30-77,82,86,90-94,99-125
+src/ForkPlus/UI/Dialogs/BlameWindow.axaml
+  h_e858f2c2faea28 15,21,30-34,39
+src/ForkPlus/UI/Dialogs/BlameWindow.axaml.cs
+  h_e858f2c2faea28 85-101,282-297,300,302-305,307,309-315,317-318,320-326,331-336,340-342,359,366,372,378,390-392,400-402,416-524
+src/ForkPlus/UI/UserControls/Preferences/GitUserControl.axaml
+  h_e858f2c2faea28 42-45,72-92
+src/ForkPlus/UI/UserControls/Preferences/GitUserControl.axaml.cs
+  h_e858f2c2faea28 95-99,201-203,216-222,224-237,540-667
+src/ForkPlus/UI/UserControls/StatisticsUserControl.axaml
+  h_e858f2c2faea28 37,191-256
+src/ForkPlus/UI/UserControls/StatisticsUserControl.axaml.cs
+  h_e858f2c2faea28 323-325,329-340,384-386,423-424,465-468,904-1171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.1",
+  "base_commit_sha": "ae5b12bed962ff8c37515d74bb66d6f99100c887",
+  "prompts": {},
+  "humans": {
+    "h_e858f2c2faea28": {
+      "author": "Test User <test@example.com>"
+    }
+  }
+}
