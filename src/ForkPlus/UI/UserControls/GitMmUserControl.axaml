@@ -127,7 +127,12 @@
          (Border CornerRadius=6, DropShadowEffect, BorderThickness=1, BackgroundBrush)。
          本轮25 修复：原 WPF 用 StaysOpen=False 的 Popup（点击外部/窗口失活即关闭），
          用户要求输出弹窗保持显示直到手动关闭 → 改为控件树内浮动覆盖层：
-         结构上不存在失焦/失活消失路径，仅通过 Command Output 按钮或 × 按钮关闭。 -->
+         结构上不存在失焦/失活消失路径，仅通过 Command Output 按钮或 × 按钮关闭。
+         2026-09-04 修复（"弹出位置跑到别的地方去了"）：原 WPF Popup Placement="Mouse"
+         在点击点（命令输出按钮处）弹出；迁移版固定右下角远离按钮。现在每次显示由
+         代码后置锚定主状态栏 GitMmOutputButton 上方（对齐方式改为 Left/Bottom + 动态
+         左边距），按钮找不到时保持此默认位置。标题栏恢复原版（无 × 关闭按钮——
+         覆盖层已是点击外部/失焦即关的模态行为，与 ActivityManager 标题栏一致）。 -->
     <Border Width="720" Height="360" MinWidth="400" MinHeight="200" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" CornerRadius="6" x:Name="OutputOverlayBorder" IsVisible="False" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,16" ZIndex="10">
       <Border.Effect>
         <DropShadowEffect BlurRadius="10" Color="DimGray" Opacity="0.4" OffsetY="2" />
@@ -139,12 +144,10 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- 标题栏（28px 高，底部 1px 分割线；本轮25 增加 × 关闭按钮——覆盖层不随失焦消失，需手动关闭入口） -->
+        <!-- 标题栏（与 ActivityManager 一致：28px 高，底部 1px 分割线，无关闭按钮——
+             点击覆盖层外部/窗口失焦即关，无需手动关闭入口） -->
         <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
-          <DockPanel>
-            <Button DockPanel.Dock="Right" Margin="6,0,8,0" Width="20" Height="20" Padding="0" Content="✕" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" Background="Transparent" BorderThickness="0" Click="CloseOutputOverlayButton_Click" x:Name="CloseOutputOverlayButton" Theme="{DynamicResource TransparentButtonStyle}" ToolTip.Tip="Close" />
-            <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.DimGray}" x:Name="OutputTitleTextBlock" />
-          </DockPanel>
+          <TextBlock Text="Command Output" FontSize="14" FontWeight="Medium" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.DimGray}" x:Name="OutputTitleTextBlock" />
         </Border>
 
         <!-- Upload links 容器（可折叠） -->

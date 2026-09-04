@@ -1029,20 +1029,19 @@ namespace ForkPlus.UI.UserControls
 		SetOutputOverlayVisible(!OutputOverlayBorder.IsVisible, save: true);
 	}
 
-	/// <summary>本轮25：输出覆盖层 × 关闭按钮。</summary>
-	private void CloseOutputOverlayButton_Click(object sender, RoutedEventArgs e)
-	{
-		SetOutputOverlayVisible(false, save: true);
-	}
-
 	/// <summary>v3.11.0：控制输出覆盖层的显示/隐藏。
 	/// Bug 修复（2026-09-03，"git mm 输出弹窗失焦不消失"）：对齐 WPF 原版 OutputPopup
 	/// （StaysOpen=False：点击弹窗外任意位置或窗口失活即关闭）。此前迁移版改成树内
 	/// Border 覆盖层后结构上没有任何 dismiss 路径，只能手动关。现在覆盖层显示期间挂钩
 	/// 宿主窗口：Deactivated（切应用/点其他窗口）→ 关闭；PointerPressed 落点在覆盖层
-	/// 之外 → 关闭（覆盖层内选文本/滚动/点 × 属正常交互，不关闭）。</summary>
+	/// 之外 → 关闭（覆盖层内选文本/滚动属正常交互，不关闭）。
+	/// Bug 修复（2026-09-04，"弹出位置跑到别的地方"）：显示前锚定命令输出按钮。</summary>
 	private void SetOutputOverlayVisible(bool visible, bool save)
 	{
+		if (visible)
+		{
+			PositionOutputOverlayAtCommandOutputButton();
+		}
 		OutputOverlayBorder.IsVisible = visible;
 		if (visible)
 		{
@@ -1056,6 +1055,52 @@ namespace ForkPlus.UI.UserControls
 		{
 			SaveSettings();
 		}
+	}
+
+	/// <summary>Bug 修复（2026-09-04，"命令输出弹窗位置跑到别的地方去了"）：锚定命令输出按钮。
+	/// WPF 原版 OutputPopup 用 Placement="Mouse"（弹出在鼠标点击点——即主状态栏的命令
+	/// 输出按钮处）；迁移版覆盖层固定在 git mm 区域右下角，与按钮相距甚远。现在每次
+	/// 显示前从宿主窗口视觉树找 GitMmOutputButton，把其左边缘换算到 RootGrid 坐标，
+	/// 覆盖层左对齐按钮、底边贴本控件底部（即按钮正上方区域），并做右边界收窄防溢出。
+	/// 按钮找不到（未挂树/git mm 未激活的边缘路径）时保持 XAML 默认右下位置。</summary>
+	private void PositionOutputOverlayAtCommandOutputButton()
+	{
+		global::Avalonia.Controls.Button button = FindGitMmOutputButton();
+		if (button == null)
+		{
+			return;
+		}
+		global::Avalonia.Point? p = button.TranslatePoint(new global::Avalonia.Point(0, 0), RootGrid);
+		if (!p.HasValue)
+		{
+			return;
+		}
+		double x = p.Value.X;
+		// 右边界收窄：覆盖层宽 720，越过 RootGrid 右缘时整体左移，留 16px 边距。
+		double maxX = Math.Max(0.0, RootGrid.Bounds.Width - OutputOverlayBorder.Width - 16.0);
+		x = Math.Min(x, maxX);
+		OutputOverlayBorder.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Left;
+		OutputOverlayBorder.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Bottom;
+		OutputOverlayBorder.Margin = new global::Avalonia.Thickness(x, 0, 0, 0);
+	}
+
+	/// <summary>在宿主窗口视觉树中查找主状态栏的命令输出按钮（git mm 激活时可见）。</summary>
+	[global::ForkPlus.Null]
+	private global::Avalonia.Controls.Button FindGitMmOutputButton()
+	{
+		global::Avalonia.Controls.TopLevel topLevel = TopLevel.GetTopLevel(this);
+		if (topLevel == null)
+		{
+			return null;
+		}
+		foreach (global::Avalonia.Visual v in topLevel.GetVisualDescendants())
+		{
+			if (v is global::Avalonia.Controls.Button b && b.Name == "GitMmOutputButton" && b.IsVisible)
+			{
+				return b;
+			}
+		}
+		return null;
 	}
 
 	/// <summary>输出覆盖层失焦自动关闭：挂钩宿主窗口 Deactivated + 窗口级 PointerPressed。</summary>
