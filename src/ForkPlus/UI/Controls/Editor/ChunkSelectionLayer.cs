@@ -227,7 +227,11 @@ namespace ForkPlus.UI.Controls.Editor
 
 		protected virtual void InvalidateAdornerVisibility()
 		{
-			if (_activeChunk != null)
+			// Bug 修复（2026-09-04，"选中一小块变更区域应该出来悬浮的变更和丢弃"）：
+			// 原版 WPF 条件是 `_activeChunk != null || Selection.Length > 0`，迁移时把
+			// 选区分支丢了——鼠标不在 hunk 上（键盘 Shift 选行 / 选完手移开）时选区
+			// 存在也只走 RemoveChunkAdorner，悬浮 Stage/Discard 永远不出现。
+			if (_activeChunk != null || _textEditor.TextArea.Selection.Length > 0)
 			{
 				ShowChunkAdorner(0.0);
 			}
@@ -410,6 +414,11 @@ namespace ForkPlus.UI.Controls.Editor
 			}
 			Rect rect = new Rect(0.0, num, _textEditor.Bounds.Width, num2);
 			DrawBorder(rect, drawingContext);
+			// Bug 修复（2026-09-04，"选中一小块变更区域应该出来悬浮的变更和丢弃"）：
+			// 原版 WPF 画完选区边框后把悬浮按钮定位到选区顶部（num=选区顶 + SearchBarHeight
+			// 补偿，ShowChunkAdorner 内部再 -SearchBarHeight +15），迁移时该调用丢失，
+			// 选区悬浮按钮既不出现也不跟随选区位置。
+			ShowChunkAdorner(num + _textEditor.SearchBarHeight);
 		}
 
 		protected virtual void DrawBorder(Rect rect, DrawingContext drawingContext)

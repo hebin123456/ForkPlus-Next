@@ -26,41 +26,11 @@ namespace ForkPlus.UI.Controls
 			base.Target = FileDiffControlTarget.Commit;
 		}
 
-		// Migration note：原版 diff 编辑器选中若干行右键时，菜单顶部会出现与悬浮按钮
-		// 同源的 Stage/Unstage/Discard 入口（快捷键与 CommitCodeEditor.OnKeyDown 一致：
-		// Return=暂存切换，Delete=丢弃）。迁移时该分支丢失，这里补齐。
-		private void AddSelectionPatchMenuItems(DiffCodeEditor diffCodeEditor, ContextMenu contextMenu)
-		{
-			CommitCodeEditor commitCodeEditor = diffCodeEditor as CommitCodeEditor;
-			if (commitCodeEditor == null || contextMenu == null)
-			{
-				return;
-			}
-			bool hasSelection = commitCodeEditor.SelectionLength > 0 || commitCodeEditor.ActiveChunk != null;
-			if (!hasSelection)
-			{
-				return;
-			}
-			if (commitCodeEditor.IsStaged)
-			{
-				contextMenu.AddMenuItem("Unstage", delegate
-				{
-					this.UnStage?.Invoke(this, commitCodeEditor);
-				}, null, new global::Avalonia.Input.KeyGesture(global::Avalonia.Input.Key.Return));
-			}
-			else
-			{
-				contextMenu.AddMenuItem("Stage", delegate
-				{
-					this.Stage?.Invoke(this, commitCodeEditor);
-				}, null, new global::Avalonia.Input.KeyGesture(global::Avalonia.Input.Key.Return));
-				contextMenu.AddMenuItem("Discard...", delegate
-				{
-					this.Discard?.Invoke(this, commitCodeEditor);
-				}, null, new global::Avalonia.Input.KeyGesture(global::Avalonia.Input.Key.Delete));
-			}
-			contextMenu.Items.Add(new Separator());
-		}
+		// Bug 修复（2026-09-04，"右键菜单是另外的行为"）：原版 WPF 的 diff 编辑器右键菜单
+		// 只有 OpenFileInExternalEditor / HunkHistory / Copy / CopyAsPatch，Stage/Unstage/Discard
+		// 只出现在选中区域旁的悬浮按钮（DiffSelectionLayer.ButtonsAdorner）和键盘快捷键
+		// （CommitCodeEditor.OnKeyDown：Return=暂存切换、Delete=丢弃），不在右键菜单里。
+		// 此前把这几个入口塞进右键菜单属于迁移偏差，已移除，恢复与原版一致的菜单结构。
 
 		protected override void UpdateView(bool loadLargeDiff)
 		{
@@ -213,9 +183,8 @@ namespace ForkPlus.UI.Controls
 							return;
 						}
 						ContextMenu contextMenu2 = diffCodeEditor2.ContextMenu;
-						contextMenu2.Items.Clear();
-						AddSelectionPatchMenuItems(diffCodeEditor2, contextMenu2);
-						FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor2, contextMenu2, changedFile.Path);
+					contextMenu2.Items.Clear();
+					FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor2, contextMenu2, changedFile.Path);
 						contextMenu2.Items.Add(new Separator());
 						FileDiffControl.Commands.HunkHistory.AddMenuItems(repositoryUserControl, diffCodeEditor2, changedFile.Path, contextMenu2);
 						contextMenu2.Items.Add(new Separator());
@@ -302,9 +271,8 @@ namespace ForkPlus.UI.Controls
 						return;
 					}
 					ContextMenu contextMenu = diffCodeEditor.ContextMenu;
-					contextMenu.Items.Clear();
-					AddSelectionPatchMenuItems(diffCodeEditor, contextMenu);
-					FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor, contextMenu, changedFile.Path);
+				contextMenu.Items.Clear();
+				FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor, contextMenu, changedFile.Path);
 					FileDiffControl.Commands.Copy.AddMenuItems(diffCodeEditor, contextMenu);
 					FileDiffControl.Commands.CopyAsPatch.AddMenuItems(diffCodeEditor, contextMenu);
 				};
