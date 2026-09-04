@@ -1,24 +1,35 @@
-# ForkPlus
+# ForkPlus-Next
 
-A high-performance Git GUI client with a Rust-rewritten underlying engine, featuring AI-assisted development, 8 languages, 12 theme skins, git mm workflow, and visualizations like contribution heatmaps and repository treemaps.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Build](https://github.com/hebin123456/ForkPlus-Next/actions/workflows/build.yml/badge.svg)](https://github.com/hebin123456/ForkPlus-Next/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus-Next)](https://github.com/hebin123456/ForkPlus-Next/releases)
+
+The cross-platform port of [ForkPlus](https://github.com/hebin123456/ForkPlus) (the WPF edition): the UI layer is rewritten on .NET 10 + Avalonia 12, and a single codebase runs on Windows / Linux / macOS. The underlying Rust engine (biturbo native), AI-assisted development, 8 languages, 12 theme skins, the git mm workflow, and visualizations such as contribution heatmaps and repository treemaps remain identical to the original.
+
+> Environment setup for the migration, the chain of historical fixes, and lessons learned are documented in [MIGRATION.md](MIGRATION.md).
 
 [English](README.en.md) | [简体中文](README.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
 
 ## Key Features
 
-- **Multi-language support**: Built-in English, Simplified Chinese, Traditional Chinese, and Japanese, with JSON-based extensibility for more languages
+- **Cross-platform**: Avalonia 12 based cross-platform UI layer; CI produces Windows x64 / Linux x64 / macOS arm64 builds in parallel
+- **Multi-language support**: Built-in English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish, extensible with more languages via JSON files
 - **Multiple themes**: 12 built-in skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, Purple/Green light & dark) plus user-customizable color overrides applied instantly
-- **git mm workflow**: Bundled `git mm` subcommand providing Lean Branching workflows
+- **git mm workflow**: Bundled `git mm` subcommand providing Lean Branching workflows that manage changes and sync across multiple sub-repositories
 - **AI-assisted development**: Integrated AI code review, automatic commit message generation, and AI-assisted code modification
+- **Contribution heatmap**: GitHub-style 53-week × 7-day commit heatmap with color-scale legend and statistics summary (total commits / longest streak / most active day); hovering shows the commit count and Top 3 authors of that day
+- **Repository treemap**: File-size visualization powered by the biturbo native treemap algorithm, with click-to-drill-down
+- **Remote branch tracking**: The right-click "Track" action is a two-level menu grouped by remote with a pinned search box, for quickly locating branches among many remotes
 - **Performance optimizations**: Targeted improvements for large repository refresh, diff rendering, and submodule management
-- **Code statistics**: Integrates tokei (Rust, 200+ languages) for line-of-code stats per language (files, code, comments, blanks) with pie-chart visualization, supporting Workspace/branch/tag ref switching
+- **Code statistics**: Integrates tokei (Rust, 200+ languages) for per-language line counts (files, code, comments, blanks) with pie-chart visualization, supporting Workspace/branch/tag ref switching
 
 ## Repository Layout
 
 ```
-ForkPlus/
+ForkPlus-Next/
 ├── src/
-│   ├── ForkPlus/              # Main WPF application source, XAML, assets
+│   ├── ForkPlus/              # Main application source (Avalonia 12 cross-platform UI), XAML, assets
+│   │   ├── Biturbo/           # P/Invoke bindings for the biturbo native library
 │   │   ├── Languages/         # Localization translation files (JSON)
 │   │   │   ├── zh-Hans.json   # Simplified Chinese
 │   │   │   ├── zh-Hant.json   # Traditional Chinese
@@ -31,8 +42,10 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH askpass helper
 │   ├── ForkPlus.RI/           # Interactive rebase editor helper
-│   └── ForkPlus.Tests/        # xUnit unit tests (incl. Avalonia.Headless UI smoke tests)
-├── third_party/               # Runtime tools and native binaries
+│   ├── ForkPlus.Tests/        # xUnit unit tests (incl. Avalonia.Headless UI smoke tests)
+│   ├── ForkPlus.AskPass.Tests/# AskPass helper unit tests
+│   └── ForkPlus.RI.Tests/     # RI helper unit tests
+├── third_party/               # Native binaries fetched at build time (see "biturbo native library" below)
 ├── gitmm/                     # git mm workflow reference docs
 └── .github/workflows/         # GitHub Actions CI config
 ```
@@ -41,31 +54,71 @@ ForkPlus/
 
 ### Prerequisites
 
-- Windows 10 or later
-- Visual Studio 2022 17.13+, or .NET 10 SDK
-- .NET 10 SDK (with Windows Desktop runtime)
-- Git 2.31 or later (2.40+ recommended; older versions trigger a warning on startup and some features may not work)
-- git-mm 3.0 or later (required for git mm workflow; a warning is shown on startup if older or missing; configure git-mm.exe path in Preferences)
+- Windows 10 or later / Linux / macOS (cross-platform)
+- .NET 10 SDK
+- IDE (optional): Visual Studio 2026 (Windows; open the solution with one click via `OpenForkPlusInVS2026.cmd` in the repo root), Rider, or VS Code
+- Git 2.40 or later (recommended; older versions trigger a startup warning and some features may misbehave. The app prefers its bundled git 2.50.1 and falls back to the system git when missing)
+- git-mm 3.0 or later (required for the git mm workflow; a warning is shown on startup if older; without it the git mm workspace features are unavailable; configure the git-mm path in Preferences)
 
 ### Build Steps
 
-- Open `ForkPlus.sln` in Visual Studio 2022 17.13+, select Release configuration and build
-- Or run from command line: `dotnet build ForkPlus.sln -c Release`
+```bash
+# ① The charting library OxyPlot.Avalonia is integrated as an out-of-repo source
+#    reference (the csproj points to a sibling directory of this repo), so clone
+#    it next to this repo before the first build. Keep the official version
+#    untouched and do not modify its Avalonia version:
+git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
+
+# ② Build (from the repo root):
+dotnet build ForkPlus.sln -c Release
+```
+
+Alternatively, open `ForkPlus.sln` in the repo root directly with Visual Studio 2026.
+
+### biturbo native library
+
+The biturbo native add-on (Rust) provides repository treemap layout, commit-graph caching, revision header parsing, and more. **The binary is not committed to this repo**; instead it is fetched at build time from the latest release of the [Biturbo repository](https://github.com/hebin123456/Biturbo), selecting the file per platform:
+
+| Platform | File |
+|----------|------|
+| Windows x64 | `third_party/biturbo.dll` |
+| Linux x64 | `third_party/libbiturbo.so` |
+| macOS arm64 | `third_party/libbiturbo.dylib` |
+
+Mechanics (see [ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj)):
+
+- `RestoreBiturbo` target (`BeforeTargets=Build`): automatically downloads the native library for the current platform when missing (PowerShell on Windows, bash + curl on Linux/macOS selecting `.so` / `.dylib` via `uname -s`, with retries)
+- `CopyHelperExecutables` / `PublishHelperExecutables` targets (`AfterTargets=Build` / `Publish`): copy the native library and the AskPass/RI helper outputs to the Build / Publish directories
+- `.gitignore` already excludes these files under `third_party/`
+
+Therefore the first build requires network access to GitHub; on CI the workflow downloads and verifies them explicitly (non-empty and >1MB), with the csproj `RestoreBiturbo` as a fallback.
+
+### tokei
+
+[tokei](https://github.com/XAMPPRocky/tokei) (MIT licensed) powers the "lines of code" panel. At build time the **prebuilt binary** is fetched from the latest release of the [hebin123456/tokei](https://github.com/hebin123456/tokei) repository, so no local Rust toolchain is needed:
+
+- Windows x64 → bare exe, saved as `third_party/tokei.exe`
+- Linux x64 / macOS → tar.gz (containing a bare `tokei` binary), extracted to `third_party/tokei`
+- The macOS asset is x86_64 and runs on Apple Silicon via Rosetta 2
+
+Same mechanism as biturbo: the `RestoreTokei` target (`BeforeTargets=Build`) fetches it automatically, CI downloads and verifies it explicitly, and `.gitignore` excludes the artifacts.
 
 ### Continuous Integration
 
-The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)). Pushing a `v*` tag automatically builds on Windows and publishes a complete runtime zip to GitHub Release.
+The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): on push / PR to `master`, or manual dispatch, it builds in parallel on three platforms and uploads the artifacts:
 
-```bash
-git tag v1.3.0
-git push origin v1.3.0
-```
+| Matrix | Runner | RID |
+|--------|--------|-----|
+| windows-x64 | windows-latest | win-x64 |
+| linux-x64 | ubuntu-latest | linux-x64 |
+| macos-arm64 | macos-latest | osx-arm64 |
 
-The build artifact includes `ForkPlus.exe`, all dependency DLLs, `biturbo.dll`, language files, and more—just unzip and run.
+The artifacts are **framework-dependent publishes** (the target machine needs the .NET 10 runtime), containing the main app, the AskPass/RI helper trio, the platform's biturbo native library, tokei, and language files. Download them from the corresponding run on the [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) page (Artifacts, retained for 14 days).
 
 ## Tests
 
-- Unit tests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (includes cross-platform Avalonia.Headless UI smoke tests, no separate Windows-only UI suite)
+- Unit tests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (incl. Avalonia.Headless UI smoke and end-to-end tests, cross-platform, run together with unit tests)
+- 4000+ cases in total; every key fix during the migration has a regression guard (see [MIGRATION.md](MIGRATION.md))
 
 ## Multi-language Support
 
@@ -110,10 +163,19 @@ The codebase uses the following APIs for internationalization:
 
 ## Download
 
-For the latest release, visit the [Releases page](https://github.com/hebin123456/ForkPlus/releases).
+- CI build artifacts: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) page → the corresponding build run → Artifacts (framework-dependent, requires the .NET 10 runtime)
+- Official releases: [Releases page](https://github.com/hebin123456/ForkPlus-Next/releases)
+- For changes in each version, see the [Release Notes](RELEASE_NOTE.md) (including the WPF edition history)
 
-For changes in each version, see the [Release Notes](RELEASE_NOTE.md).
+## Development Conventions
 
-## Development Convention
+- When modifying the application itself, stay within `src/ForkPlus`; runtime binaries under `third_party/` (the biturbo native library, tokei) are fetched automatically at build time—do not commit binaries manually
+- To upgrade biturbo / tokei, publish a new release in the corresponding repository; the next build of this repo picks it up automatically
+- `../oxyplot-avalonia` is an out-of-repo source reference—keep the official version untouched (see MIGRATION.md for the lesson learned from accidentally modifying its version)
+- The environment setup, work in progress, and the chain of historical fixes for the migration (WPF → Avalonia) are documented in [MIGRATION.md](MIGRATION.md)
 
-When modifying the application itself, stay within `src/ForkPlus` unless intentionally updating runtime files under `third_party`.
+## License
+
+This project is open source under the [MIT License](LICENSE).
+
+Copyright (c) 2026 hebin123456
