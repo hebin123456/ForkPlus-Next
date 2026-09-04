@@ -17,6 +17,15 @@ namespace ForkPlus.Shell.Interaction
 
 		public string FilePath { get; }
 
+		/// <summary>
+		/// 写入子进程标准输入的内容（可选）。
+		/// 设置后 Execute 会重定向 stdin、写入该内容并关闭流——用于
+		/// <c>git-ai checkpoint agent-v1 --hook-input stdin</c> 这类从 stdin 接收 JSON 的命令。
+		/// 未设置（null）时行为与原来完全一致。
+		/// </summary>
+		[Null]
+		public string StandardInput { get; set; }
+
 		public ShellRequest([Null] string workingDirectory, string filePath, string[] arguments)
 		{
 			WorkingDirectory = workingDirectory;
@@ -26,28 +35,72 @@ namespace ForkPlus.Shell.Interaction
 
 		public GitRequestResult Execute()
 		{
+			return Execute(0);
+		}
+
+		/// <summary>
+		/// 执行命令，可选超时（毫秒）。
+		/// 外部工具（如 git-ai）可能因 daemon 冷启动或大仓库而长时间不返回，
+		/// 超时后强制结束进程并返回失败结果（exit code -1、stderr 标注超时），调用方得以优雅降级。
+		/// </summary>
+		/// <param name="timeoutMilliseconds">超时毫秒数，小于等于 0 表示不设超时（与原 Execute 行为一致）。</param>
+		public GitRequestResult Execute(int timeoutMilliseconds)
+		{
 			string argumentsString = _command.ArgumentsString;
 			Benchmarker benchmarker = new Benchmarker("Running '" + FilePath + " " + argumentsString + "'");
 			Log.Info("Running '" + FilePath + " " + argumentsString + "'");
 			Process process = new Process();
 			try
 			{
-				process.StartInfo = CreateProcessStartInfo();
+				process.StartInfo = CreateProcessStartInfo(StandardInput != null);
 				process.Start();
-				string error = string.Empty;
-				Task task = Task.Run(delegate
+				// 先启动 stdout/stderr 读取再写 stdin：若子进程输出先填满管道缓冲区而无人读取，
+				// 会停止消费 stdin 导致 Write 死锁（transcript JSON 可达数十 KB）
+				Task<string> stdoutTask = Task.Run(delegate
 				{
-					error = process.StandardError.ReadToEnd();
+					return process.StandardOutput.ReadToEnd();
 				});
-				string text = process.StandardOutput.ReadToEnd();
-				task.Wait();
-				process.WaitForExit();
+				Task<string> stderrTask = Task.Run(delegate
+				{
+					return process.StandardError.ReadToEnd();
+				});
+				if (StandardInput != null)
+				{
+					try
+					{
+						process.StandardInput.Write(StandardInput);
+						process.StandardInput.Close();
+					}
+					catch (Exception ex2)
+					{
+						// 子进程可能提前退出（如 git-ai 版本过旧不认识 agent-v1 preset），写 stdin 失败不影响结果读取
+						Log.Warn("Failed to write standard input for '" + FilePath + " " + argumentsString + "': " + ex2.Message);
+					}
+				}
+				bool exited;
+				if (timeoutMilliseconds > 0)
+				{
+					exited = process.WaitForExit(timeoutMilliseconds);
+				}
+				else
+				{
+					process.WaitForExit();
+					exited = true;
+				}
+				if (!exited)
+				{
+					Log.Warn("Shell request '" + FilePath + " " + argumentsString + "' timed out after " + timeoutMilliseconds + "ms, killing process");
+					TryKill(process);
+					return new GitRequestResult(-1, "", "Command timed out after " + timeoutMilliseconds + "ms: '" + FilePath + " " + argumentsString + "'");
+				}
+				string text = stdoutTask.Result;
+				string text2 = stderrTask.Result;
 				if (process.ExitCode != 0)
 				{
-					Log.Warn("Shell request '" + FilePath + " " + argumentsString + "' failed: '" + error + "'");
+					Log.Warn("Shell request '" + FilePath + " " + argumentsString + "' failed: '" + text2 + "'");
 				}
 				benchmarker.ReportElapsed();
-				return new GitRequestResult(process.ExitCode, text.ToString(), error.ToString());
+				return new GitRequestResult(process.ExitCode, text.ToString(), text2.ToString());
 			}
 			finally
 			{
@@ -55,6 +108,22 @@ namespace ForkPlus.Shell.Interaction
 				{
 					((IDisposable)process).Dispose();
 				}
+			}
+		}
+
+		/// <summary>尽力结束进程。进程已退出或无权限时静默忽略。</summary>
+		private static void TryKill(Process process)
+		{
+			try
+			{
+				if (process != null && !process.HasExited)
+				{
+					process.Kill();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Failed to kill timed-out process: " + ex.Message);
 			}
 		}
 

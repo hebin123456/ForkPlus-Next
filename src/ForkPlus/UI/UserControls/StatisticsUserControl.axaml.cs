@@ -320,8 +320,23 @@ namespace ForkPlus.UI.UserControls
 		/// <summary>代码行数饼图的 PlotModel（按语言代码行数占比）。</summary>
 		private PlotModel _codeLinesPieModel;
 
+		/// <summary>AI 作者归属饼图的 PlotModel（Human/AI/Unknown 新增行占比）。</summary>
+		private PlotModel _aiPieModel;
+
 		/// <summary>代码行数后台任务队列。串行化多次 refresh，避免切换 ref 时并发 spawn tokei。</summary>
 		private readonly JobQueue _codeLinesJobQueue = new JobQueue();
+
+		/// <summary>AI 统计后台任务队列。串行化多次 refresh（切范围/重试），避免并发 spawn git-ai。</summary>
+		private readonly JobQueue _aiStatsJobQueue = new JobQueue();
+
+		/// <summary>AI 统计刷新令牌。每次 RefreshAiStats 自增，回投 UI 时校验，丢弃过期任务结果。</summary>
+		private int _aiStatsRefreshToken;
+
+		/// <summary>当前 AI 统计选中的范围提交数；-1 = 全部历史。</summary>
+		private int _currentAiRangeCount = -1;
+
+		/// <summary>防止范围下拉初始化期间 SelectionChanged 触发查询。</summary>
+		private bool _isAiRangeInitializing;
 
 		/// <summary>当前代码行数查询选中的 refSpec。null/空 = 工作区 snapshot。</summary>
 		[Null]
@@ -366,6 +381,9 @@ namespace ForkPlus.UI.UserControls
 			// 代码行数饼图复用 CreatePiePlotModel（同样的 PieSeries 配置）
 			_codeLinesPieModel = PlotHelper.CreatePiePlotModel();
 			CodeLinesPiePlot.Model = _codeLinesPieModel;
+			// AI 作者归属饼图同样复用（Human/AI/Unknown 三片）
+			_aiPieModel = PlotHelper.CreatePiePlotModel();
+			AiPiePlot.Model = _aiPieModel;
 			DateRangeButton.DateRangeChanged += delegate
 			{
 				if (!_isCalendarUpdatingInProgress)
@@ -402,6 +420,8 @@ namespace ForkPlus.UI.UserControls
 			InitializeCodeLinesRefComboBox(gitModule);
 			SelectCodeLineRef(initialRef);
 			RefreshCodeLines(_currentCodeLinesRef);
+			// 初始化 AI 作者归属范围下拉并触发首次查询（默认最近 100 个提交）
+			InitializeAiRangeComboBox();
 		}
 
 		/// <summary>在 _codeLineRefs 中找到 RefSpec == refSpec 的项并选中；找不到则回退到 Workspace（第一项）。</summary>
@@ -442,6 +462,10 @@ namespace ForkPlus.UI.UserControls
 				PlotHelper.RefreshPlotColors(_piePlotModel);
 				PlotHelper.RefreshPlotColors(_weekDayPlotModel);
 				PlotHelper.RefreshPlotColors(_dayHourPlotModel);
+				PlotHelper.RefreshPlotColors(_codeLinesPieModel);
+				PlotHelper.RefreshPlotColors(_aiPieModel);
+				CodeLinesPiePlot.InvalidatePlot();
+				AiPiePlot.InvalidatePlot();
 			}
 		}
 
@@ -875,6 +899,274 @@ private void UpdatePreview(GitModule gitModule, [Null] ForkPlus.Services.Calenda
 				RefSpec = refSpec;
 			}
 			public override string ToString() => Display;
+		}
+
+		// ===================== AI 作者归属统计（git-ai stats）=====================
+
+		/// <summary>AI 统计细分列表行 ViewModel：一个 agent（tool · model）一行。</summary>
+		public class AiAgentViewModel
+		{
+			public string Name { get; }
+			public string AiLines { get; }
+			public string Accepted { get; }
+			public string Share { get; }
+			/// <summary>色块颜色（与饼图同源色板），XAML Rectangle.Fill 绑定。</summary>
+			public string Color { get; }
+
+			public AiAgentViewModel(string name, string aiLines, string accepted, string share, string color)
+			{
+				Name = name;
+				AiLines = aiLines;
+				Accepted = accepted;
+				Share = share;
+				Color = color;
+			}
+		}
+
+		/// <summary>AI 统计范围下拉项：显示名 + 提交数（-1 = 全部历史）。</summary>
+		public class AiRangeItem
+		{
+			public string Display { get; }
+			public int CommitCount { get; }
+			public AiRangeItem(string display, int commitCount)
+			{
+				Display = display;
+				CommitCount = commitCount;
+			}
+			public override string ToString() => Display;
+		}
+
+		/// <summary>初始化 AI 统计范围下拉：最近 100/500/1000 个提交 + 全部历史，默认选最近 100 个。</summary>
+		private void InitializeAiRangeComboBox()
+		{
+			_isAiRangeInitializing = true;
+			AiRangeComboBox.ItemsSource = new AiRangeItem[4]
+			{
+				new AiRangeItem(Translate("Last 100 commits"), 100),
+				new AiRangeItem(Translate("Last 500 commits"), 500),
+				new AiRangeItem(Translate("Last 1000 commits"), 1000),
+				new AiRangeItem(Translate("All history"), -1)
+			};
+			AiRangeComboBox.SelectedIndex = 0;
+			_currentAiRangeCount = 100;
+			_isAiRangeInitializing = false;
+			RefreshAiStats(100);
+		}
+
+		/// <summary>范围下拉选中项变化：触发 AI 统计查询。</summary>
+		private void AiRangeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (_isAiRangeInitializing || _gitModule == null)
+			{
+				return;
+			}
+			AiRangeItem item = AiRangeComboBox.SelectedItem as AiRangeItem;
+			if (item == null || item.CommitCount == _currentAiRangeCount)
+			{
+				return;
+			}
+			RefreshAiStats(item.CommitCount);
+		}
+
+		/// <summary>Refresh 按钮点击：用当前选中范围重跑（跳过缓存，forceRefresh=true）。</summary>
+		private void AiRefreshButton_Click(object sender, RoutedEventArgs e)
+		{
+			RefreshAiStats(_currentAiRangeCount, forceRefresh: true);
+		}
+
+		/// <summary>
+		/// 异步跑 git-ai stats 获取 AI 作者归属统计，更新饼图 + 细分列表 + 摘要。
+		/// 未启用 AI 归属时只显示提示不跑命令；走 JobQueue 串行化，令牌校验丢弃过期结果。
+		/// </summary>
+		private void RefreshAiStats(int commitCount, bool forceRefresh = false)
+		{
+			if (_gitModule == null)
+			{
+				return;
+			}
+			_currentAiRangeCount = commitCount;
+			int token = ++_aiStatsRefreshToken;
+			AiStatsError.IsVisible = false;
+			if (!App.IsAiAttributionEnabled)
+			{
+				AiStatsSummary.Text = Translate("Enable AI attribution in Preferences → Git to see AI authorship statistics.");
+				ClearAiStatsPlot();
+				AiRefreshButton.IsEnabled = true;
+				AiRangeComboBox.IsEnabled = true;
+				return;
+			}
+			AiStatsSummary.Text = Translate("Analyzing AI authorship...") + " (" + AiRangeLabel(commitCount) + ")";
+			AiRefreshButton.IsEnabled = false;
+			AiRangeComboBox.IsEnabled = false;
+
+			GitModule gitModule = _gitModule;
+			_aiStatsJobQueue.Add("AiStats", delegate (JobMonitor monitor)
+			{
+				string revSpec = ResolveAiRevSpec(gitModule, commitCount);
+				var result = new GetGitAiStatsGitCommand().Execute(gitModule, App.GitAiPath, revSpec, forceRefresh);
+				Dispatcher.Post(delegate
+				{
+					// 期间用户又切了范围/仓库，丢弃过期结果
+					if (token != _aiStatsRefreshToken || _gitModule != gitModule)
+					{
+						return;
+					}
+					AiRefreshButton.IsEnabled = true;
+					AiRangeComboBox.IsEnabled = true;
+					if (!result.Succeeded)
+					{
+						ShowAiStatsError(result.Error?.FriendlyDescription ?? "Failed");
+						return;
+					}
+					UpdateAiStatsPlot(result.Result, commitCount);
+				});
+			}, JobFlags.LongRunning, showMessageWhenDone: false);
+		}
+
+		/// <summary>范围提交数 → 显示名（下拉项文本）。</summary>
+		private string AiRangeLabel(int commitCount)
+		{
+			switch (commitCount)
+			{
+				case 500:
+					return Translate("Last 500 commits");
+				case 1000:
+					return Translate("Last 1000 commits");
+				case -1:
+					return Translate("All history");
+				default:
+					return Translate("Last 100 commits");
+			}
+		}
+
+		/// <summary>
+		/// 把范围提交数解析为 git-ai stats 接受的 revSpec：
+		/// 最近 N 个提交 → <c>&lt;第 N+1 个提交&gt;..HEAD</c>（排除第 N+1 个提交及其祖先，恰好 N 个）；
+		/// 全部历史（或仓库提交数不足 N）→ <c>&lt;空树哈希&gt;..HEAD</c> —— 空树不是任何提交的祖先，
+		/// 区间恰好覆盖全部提交（含根提交；<c>root^..HEAD</c> 在 git / git-ai 均不可解析，实测空树可行）。
+		/// 空树哈希按仓库对象格式现算（git hash-object -t tree --stdin，sha1=4b825dc…，兼容 sha256 仓库）。
+		/// </summary>
+		private string ResolveAiRevSpec(GitModule gitModule, int commitCount)
+		{
+			try
+			{
+				if (commitCount > 0)
+				{
+					ForkPlus.Git.Interaction.GitRequestResult listResult = new ForkPlus.Git.Interaction.GitRequest(gitModule)
+						.Command("rev-list", "--max-count=" + (commitCount + 1), "HEAD")
+						.Execute(silent: true);
+					if (listResult.Success)
+					{
+						List<string> shas = new List<string>();
+						foreach (string line in listResult.Stdout.Split(Consts.Chars.NewLine))
+						{
+							string trimmed = line.Trim();
+							if (!string.IsNullOrEmpty(trimmed))
+							{
+								shas.Add(trimmed);
+							}
+						}
+						if (shas.Count > commitCount)
+						{
+							return shas[commitCount] + "..HEAD";
+						}
+					}
+				}
+				// 全部历史：空树作区间下界。GitRequest.Stdin 空数组不写不关 stdin（git 会等 EOF 挂起），
+				// 故走 ShellRequest（空字符串 stdin 会立即写空并关闭，git 读到 EOF 输出空树哈希）。
+				ForkPlus.Git.Interaction.GitRequestResult treeResult = new ForkPlus.Shell.Interaction.ShellRequest(gitModule.Path, App.GitPath,
+					new string[4] { "hash-object", "-t", "tree", "--stdin" }) { StandardInput = "" }.Execute();
+				string emptyTree = treeResult.Stdout.Trim();
+				if (treeResult.Success && !string.IsNullOrEmpty(emptyTree))
+				{
+					return emptyTree + "..HEAD";
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to resolve git-ai stats range", ex);
+			}
+			return "HEAD";
+		}
+
+		/// <summary>把 GitAiStats 渲染到饼图（Human/AI/Unknown）+ 细分列表 + 摘要。</summary>
+		private void UpdateAiStatsPlot(GitAiStats stats, int commitCount)
+		{
+			AiStatsError.IsVisible = false;
+			var pieSeries = _aiPieModel.Series[0] as PieSeries;
+			pieSeries.Slices.Clear();
+			// 三片：人类 / AI / 未知（无归属数据）。human+unknown+ai == git_diff_added_lines（实测）
+			long human = stats.HumanAdditions;
+			long ai = stats.AiAdditions;
+			long unknown = stats.UnknownAdditions;
+			if (human > 0)
+			{
+				pieSeries.Slices.Add(new PieSlice(Translate("Human"), human) { Fill = _pieChartColors[2] });
+			}
+			if (ai > 0)
+			{
+				pieSeries.Slices.Add(new PieSlice("AI", ai) { Fill = _pieChartColors[5] });
+			}
+			if (unknown > 0)
+			{
+				pieSeries.Slices.Add(new PieSlice(Translate("Unknown"), unknown) { Fill = _pieChartColors[7] });
+			}
+			AiPiePlot.InvalidatePlot();
+
+			// 细分列表：按 tool · model 维度，Share = 该 agent AI 行数占 AI 总行数比例
+			var breakdownItems = new List<AiAgentViewModel>(stats.Breakdown.Length);
+			long totalAi = stats.AiAdditions;
+			for (int i = 0; i < stats.Breakdown.Length; i++)
+			{
+				GitAiToolStats tool = stats.Breakdown[i];
+				string share = totalAi > 0 ? Math.Round(tool.AiAdditions * 100.0 / totalAi, 1).ToString("0.#", CultureInfo.CurrentUICulture) + "%" : "-";
+				breakdownItems.Add(new AiAgentViewModel(
+					tool.DisplayName,
+					tool.AiAdditions.ToString("N0", CultureInfo.CurrentUICulture),
+					tool.AiAccepted.ToString("N0", CultureInfo.CurrentUICulture),
+					share,
+					OxyColorToHex(_colors[i % _colors.Length])));
+			}
+			AiBreakdownListBox.ItemsSource = breakdownItems;
+
+			// 摘要：范围内 AI 生成行数占比；区间模式追加带归属数据的提交数
+			string label = AiRangeLabel(commitCount);
+			if (stats.TotalCommits.HasValue && stats.CommitsWithAuthorship.HasValue)
+			{
+				AiStatsSummary.Text = string.Format(CultureInfo.CurrentUICulture,
+					Translate("{0}: {1} of {2} added lines were AI-generated ({3}%) · authorship data on {4} of {5} commits"),
+					label,
+					stats.AiAdditions.ToString("N0", CultureInfo.CurrentUICulture),
+					stats.GitDiffAddedLines.ToString("N0", CultureInfo.CurrentUICulture),
+					stats.AiPercentage.ToString("0.#", CultureInfo.CurrentUICulture),
+					stats.CommitsWithAuthorship.Value.ToString("N0", CultureInfo.CurrentUICulture),
+					stats.TotalCommits.Value.ToString("N0", CultureInfo.CurrentUICulture));
+			}
+			else
+			{
+				AiStatsSummary.Text = string.Format(CultureInfo.CurrentUICulture,
+					Translate("{0}: {1} of {2} added lines were AI-generated ({3}%)"),
+					label,
+					stats.AiAdditions.ToString("N0", CultureInfo.CurrentUICulture),
+					stats.GitDiffAddedLines.ToString("N0", CultureInfo.CurrentUICulture),
+					stats.AiPercentage.ToString("0.#", CultureInfo.CurrentUICulture));
+			}
+		}
+
+		private void ShowAiStatsError(string message)
+		{
+			AiStatsError.Text = message;
+			AiStatsError.IsVisible = true;
+			AiStatsSummary.Text = "";
+			ClearAiStatsPlot();
+		}
+
+		/// <summary>清空 AI 饼图和细分列表（出错/未启用时）。</summary>
+		private void ClearAiStatsPlot()
+		{
+			(_aiPieModel.Series[0] as PieSeries).Slices.Clear();
+			AiPiePlot.InvalidatePlot();
+			AiBreakdownListBox.ItemsSource = null;
 		}
 
 	}

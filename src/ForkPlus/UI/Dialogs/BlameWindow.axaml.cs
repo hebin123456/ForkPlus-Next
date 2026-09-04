@@ -82,6 +82,23 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
+		/// <summary>
+		/// blame 块的行号匹配上下文：块头部项 + 块内"当前提交新增行"的新文件行号（1-based）。
+		/// git-ai 归属数据异步到达后按这些行号匹配区间，命中即给头部补 AI 徽标（见 ApplyAiAttributions）。
+		/// </summary>
+		private class BlameBlockContext
+		{
+			public readonly BlameItemViewModel HeaderItem;
+
+			public readonly List<int> NewFileLineNumbers;
+
+			public BlameBlockContext(BlameItemViewModel headerItem, List<int> newFileLineNumbers)
+			{
+				HeaderItem = headerItem;
+				NewFileLineNumbers = newFileLineNumbers;
+			}
+		}
+
 		private static readonly Revision DummyRevision = new Revision(Sha.NullSha, new RevisionHeader(new UserIdentity("dummy", "dummy"), DateTimeHelper.UnixStartTime, "dummy", hasBody: false));
 
 		private readonly UndoManager _undoManager = new UndoManager();
@@ -262,50 +279,67 @@ namespace ForkPlus.UI.Dialogs
 				else
 				{
 					Diff diff = parsedDiffContent.Diff;
+				base.Dispatcher.Post(delegate
+				{
+					CodeEditorFallbackUserControl.Hide();
+					TextDiffControl.Show();
+					TextDiffControl.SetDiff(diff, tabWidth, entireFile: true, DiffLocation.Revision);
+				});
+				// git-ai 行级归属与 git blame 并行执行（同为后台线程）：
+				// git-ai 首次调用可能冷启动 daemon（秒级耗时，超时上限 15 秒），
+				// blame 首屏不等它——归属数据到达后经 ApplyAiAttributions 异步补 AI 徽标。
+				Task<List<GitAiLineAttribution>> aiAttributionTask = Task.Factory.StartNew(delegate
+				{
+					return GetAiAttributions(gitModule, args);
+				});
+				GitCommandResult<GetBlameGitCommand.BlameChunk[]> blameResult = new GetBlameGitCommand().Execute(gitModule, args.Filepath, $"{args.Sha}~");
+				if (!blameResult.Succeeded)
+				{
 					base.Dispatcher.Post(delegate
 					{
-						CodeEditorFallbackUserControl.Hide();
-						TextDiffControl.Show();
-						TextDiffControl.SetDiff(diff, tabWidth, entireFile: true, DiffLocation.Revision);
+						ShowErrorFallback(blameResult.Error);
 					});
-					GitCommandResult<GetBlameGitCommand.BlameChunk[]> blameResult = new GetBlameGitCommand().Execute(gitModule, args.Filepath, $"{args.Sha}~");
-					if (!blameResult.Succeeded)
+				}
+				else
+				{
+					base.Dispatcher.Post(delegate
 					{
-						base.Dispatcher.Post(delegate
+						if (TextDiffControl.VisualPatch.VisualDiff.Node == diff)
 						{
-							ShowErrorFallback(blameResult.Error);
-						});
-					}
-					else
-					{
-						base.Dispatcher.Post(delegate
-						{
-							if (TextDiffControl.VisualPatch.VisualDiff.Node == diff)
+							BusyIndicator.Hide();
+							_undoManager.Add(args);
+							RefreshUndoControls();
+							Revision revision = IReadOnlyListExtensions.FirstItem(_revisions, (RevisionViewModel x) => x.Sha == args.Sha).Revision.Revision;
+							List<BlameBlockContext> blockContexts = new List<BlameBlockContext>();
+							BlameListBox.ItemsSource = CreateBlameItems(blameResult.Result, TextDiffControl.VisualPatch, revision, blockContexts);
+							if (RevisionListScrollViewer != null)
 							{
-								BusyIndicator.Hide();
-								_undoManager.Add(args);
-								RefreshUndoControls();
-								Revision revision = IReadOnlyListExtensions.FirstItem(_revisions, (RevisionViewModel x) => x.Sha == args.Sha).Revision.Revision;
-								BlameListBox.ItemsSource = CreateBlameItems(blameResult.Result, TextDiffControl.VisualPatch, revision);
-								if (RevisionListScrollViewer != null)
-								{
-									RevisionListScrollViewer.ScrollChanged -= RevisionListScrollViewer_ScrollChanged;
-									RevisionListScrollViewer.ScrollChanged += RevisionListScrollViewer_ScrollChanged;
-								}
-								RevisionListFallbackBorder.Hide();
-								RevisionListFallbackUserControl.Hide();
-								BlameListBox.Show();
+								RevisionListScrollViewer.ScrollChanged -= RevisionListScrollViewer_ScrollChanged;
+								RevisionListScrollViewer.ScrollChanged += RevisionListScrollViewer_ScrollChanged;
 							}
-						});
-					}
+							RevisionListFallbackBorder.Hide();
+							RevisionListFallbackUserControl.Hide();
+							BlameListBox.Show();
+							ApplyAiAttributions(diff, aiAttributionTask, blockContexts);
+						}
+					});
+				}
 				}
 			}).Start();
 		}
 
-		private static BlameItemViewModel[] CreateBlameItems(GetBlameGitCommand.BlameChunk[] blameChunks, VisualPatch visualPatch, Revision newCommit)
+		/// <summary>
+		/// 构建 blame 列表项。blockContexts 非空时，为"当前提交（newCommit）新增行"的块
+		/// 记录头部项与块内新文件行号（1-based），供 git-ai 归属数据异步到达后
+		/// 补 AI 徽标（见 ApplyAiAttributions）；旧提交块不打徽标（git-ai diff 只查当前提交）。
+		/// </summary>
+		private static BlameItemViewModel[] CreateBlameItems(GetBlameGitCommand.BlameChunk[] blameChunks, VisualPatch visualPatch, Revision newCommit, List<BlameBlockContext> blockContexts)
 		{
 			Revision[] array = Expand(blameChunks);
 			List<Revision> list = new List<Revision>();
+			// 与 list 平行的新文件行号表：Added/Context 行记录其在提交后版本中的行号（1-based），
+			// Deleted 行只存在于旧版本，记 0 表示"新文件中无此行"。
+			List<int> newFileLineNumbers = new List<int>();
 			bool flag = false;
 			VisualChunk[] visualChunks = visualPatch.VisualDiff.VisualChunks;
 			foreach (VisualChunk obj in visualChunks)
@@ -322,22 +356,26 @@ namespace ForkPlus.UI.Dialogs
 					for (int k = visualSubChunk.PreContextLines.Start; k < visualSubChunk.PreContextLines.End; k++)
 					{
 						list.Add(array[num - 1]);
+						newFileLineNumbers.Add(num2);
 						num++;
 						num2++;
 					}
 					for (int l = visualSubChunk.DeletedLines.Start; l < visualSubChunk.DeletedLines.End; l++)
 					{
 						list.Add(array[num - 1]);
+						newFileLineNumbers.Add(0);
 						num++;
 					}
 					for (int m = visualSubChunk.AddedLines.Start; m < visualSubChunk.AddedLines.End; m++)
 					{
 						list.Add(newCommit);
+						newFileLineNumbers.Add(num2);
 						num2++;
 					}
 					for (int n = visualSubChunk.PostContextLines.Start; n < visualSubChunk.PostContextLines.End; n++)
 					{
 						list.Add(array[num - 1]);
+						newFileLineNumbers.Add(num2);
 						num++;
 						num2++;
 					}
@@ -349,7 +387,9 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (num4 > 0 && list[num3].Sha != list[num4].Sha)
 				{
-					list2.Add(new BlameItemViewModel(list[num3]));
+					BlameItemViewModel headerItem = new BlameItemViewModel(list[num3]);
+					list2.Add(headerItem);
+					AddBlameBlockContext(blockContexts, headerItem, newFileLineNumbers, num3, num4, newCommit);
 					for (int num5 = 1; num5 < num4 - num3; num5++)
 					{
 						list2.Add(new BlameItemBodyViewModel(list[num3]));
@@ -357,7 +397,9 @@ namespace ForkPlus.UI.Dialogs
 					num3 = num4;
 				}
 			}
-			list2.Add(new BlameItemViewModel(list[num3]));
+			BlameItemViewModel lastHeaderItem = new BlameItemViewModel(list[num3]);
+			list2.Add(lastHeaderItem);
+			AddBlameBlockContext(blockContexts, lastHeaderItem, newFileLineNumbers, num3, list.Count, newCommit);
 			for (int num6 = 1; num6 < list.Count - num3; num6++)
 			{
 				list2.Add(new BlameItemBodyViewModel(list[num3]));
@@ -369,6 +411,115 @@ namespace ForkPlus.UI.Dialogs
 				list2.Add(new DummyBlameItemBodyViewModel(DummyRevision));
 			}
 			return list2.ToArray();
+		}
+
+		/// <summary>
+		/// 为"当前提交（newCommit）新增行"的 blame 块记录匹配上下文：头部项 + 块内新文件行号（1-based）。
+		/// 只有这些块可能携带 AI 徽标——git-ai diff 查询的是当前提交的行级归属，
+		/// 旧提交块的行号属于彼时版本，与当前提交的归属区间不对应。
+		/// </summary>
+		private static void AddBlameBlockContext(List<BlameBlockContext> blockContexts, BlameItemViewModel headerItem, List<int> newFileLineNumbers, int start, int end, Revision newCommit)
+		{
+			if (blockContexts == null || headerItem.Revision.Sha != newCommit.Sha)
+			{
+				return;
+			}
+			List<int> list = new List<int>();
+			for (int i = start; i < end; i++)
+			{
+				if (newFileLineNumbers[i] > 0)
+				{
+					list.Add(newFileLineNumbers[i]);
+				}
+			}
+			if (list.Count > 0)
+			{
+				blockContexts.Add(new BlameBlockContext(headerItem, list));
+			}
+		}
+
+		/// <summary>
+		/// 获取当前提交在当前文件上的 git-ai 行级归属（后台线程调用）。
+		/// git-ai 未安装、被用户关闭或该提交无 AI 代码时返回空列表——
+		/// AI 归属是增强信息，任何失败都静默降级，不影响 blame 主流程。
+		/// </summary>
+		private static List<GitAiLineAttribution> GetAiAttributions(GitModule gitModule, BlameArgs args)
+		{
+			if (!App.IsAiAttributionEnabled)
+			{
+				return new List<GitAiLineAttribution>();
+			}
+			GitCommandResult<GitAiDiffAttribution> aiResult = new GetGitAiDiffAttributionGitCommand().Execute(gitModule, args.Sha, App.GitAiPath);
+			if (!aiResult.Succeeded)
+			{
+				return new List<GitAiLineAttribution>();
+			}
+			return aiResult.Result.GetAttributions(args.Filepath);
+		}
+
+		/// <summary>
+		/// 等待并行的 git-ai 归属查询完成（后台线程），再回到 UI 线程按块内行号
+		/// 匹配归属区间、给命中的 blame 块头部补 AI 徽标。归属数据在 blame 列表
+		/// 首屏之后异步浮现（SetAiAttribution 触发属性变更通知），
+		/// 窗口交互不被 git-ai 的冷启动/超时阻塞。
+		/// </summary>
+		private void ApplyAiAttributions(Diff diff, Task<List<GitAiLineAttribution>> aiAttributionTask, List<BlameBlockContext> blockContexts)
+		{
+			if (blockContexts.Count == 0)
+			{
+				return;
+			}
+			new Task(delegate
+			{
+				List<GitAiLineAttribution> aiAttributions = aiAttributionTask.Result;
+				if (aiAttributions.Count == 0)
+				{
+					return;
+				}
+				base.Dispatcher.Post(delegate
+				{
+					// 用户已切到其他提交/文件（diff 已被替换）时丢弃，避免把陈旧徽标打到新列表上
+					if (TextDiffControl.VisualPatch.VisualDiff.Node != diff)
+					{
+						return;
+					}
+					foreach (BlameBlockContext blockContext in blockContexts)
+					{
+						MatchAiAttribution(blockContext, aiAttributions);
+					}
+				});
+			}).Start();
+		}
+
+		/// <summary>
+		/// 块内新文件行号逐个与归属区间比对，取命中行数最多的区间作为该块的归属
+		/// （一个块通常只落在一个 agent 的生成区间内；命中行数用于 tooltip 的
+		/// "n of m lines" 部分归属描述）。
+		/// </summary>
+		private static void MatchAiAttribution(BlameBlockContext blockContext, List<GitAiLineAttribution> aiAttributions)
+		{
+			GitAiLineAttribution bestAttribution = null;
+			int bestHitCount = 0;
+			foreach (GitAiLineAttribution attribution in aiAttributions)
+			{
+				int hitCount = 0;
+				foreach (int lineNumber in blockContext.NewFileLineNumbers)
+				{
+					if (attribution.Contains(lineNumber))
+					{
+						hitCount++;
+					}
+				}
+				if (hitCount > bestHitCount)
+				{
+					bestAttribution = attribution;
+					bestHitCount = hitCount;
+				}
+			}
+			if (bestAttribution != null)
+			{
+				blockContext.HeaderItem.SetAiAttribution(bestAttribution, bestHitCount, blockContext.NewFileLineNumbers.Count);
+			}
 		}
 
 		private static Revision[] Expand(GetBlameGitCommand.BlameChunk[] chunks)

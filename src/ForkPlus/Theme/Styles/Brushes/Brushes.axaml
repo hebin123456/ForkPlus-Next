@@ -280,4 +280,6 @@
   <SolidColorBrush x:Key="SliderThumb.Track.Border" Color="{DynamicResource SliderThumb.Track.BorderColor}" />
   <SolidColorBrush x:Key="SliderThumb.Track.Background" Color="{DynamicResource SliderThumb.Track.BackgroundColor}" />
   <SolidColorBrush x:Key="NoColorButtonBrush" Color="{DynamicResource NoColorButtonColor}" />
+  <SolidColorBrush x:Key="AiBadge.Background" Color="{DynamicResource AiBadge.BackgroundColor}" />
+  <SolidColorBrush x:Key="AiBadge.Foreground" Color="{DynamicResource AiBadge.ForegroundColor}" />
 </ResourceDictionary>

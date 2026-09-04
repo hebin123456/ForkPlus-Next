@@ -290,4 +290,6 @@
   <Color x:Key="SliderThumb.Disabled.BackgroundColor">#F4F4F4</Color>
   <Color x:Key="SliderThumb.Disabled.BorderColor">#ADB2B5</Color>
   <Color x:Key="NoColorButtonColor">#FFFFFF</Color>
+  <Color x:Key="AiBadge.BackgroundColor">#6C71C4</Color>
+  <Color x:Key="AiBadge.ForegroundColor">#FDF6E3</Color>
 </ResourceDictionary>

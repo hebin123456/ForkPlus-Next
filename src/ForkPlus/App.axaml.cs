@@ -210,6 +210,80 @@ namespace ForkPlus
 		}
 
 		/// <summary>
+		/// PATH 查找 git-ai 可执行文件的缓存（与 git-mm 同模式）。
+		/// </summary>
+		private static string _cachedGitAiFromPath;
+		private static bool _gitAiFromPathResolved;
+
+		/// <summary>
+		/// git-ai 可执行文件路径（https://github.com/git-ai-project/git-ai，AI 代码归属追踪扩展）。
+		/// 优先使用用户在偏好设置中指定的路径；否则在 PATH 环境变量中查找 git-ai（Windows 为 git-ai.exe）；
+		/// 再否则在 git 可执行文件同目录查找。三者都找不到返回 null（AI 归属功能自动降级隐藏）。
+		/// </summary>
+		public static string GitAiPath => ResolveGitAiPath();
+
+		/// <summary>
+		/// 仅从 PATH 查找的 git-ai 可执行文件路径（带缓存）。供偏好设置 UI 列出候选时使用。
+		/// </summary>
+		public static string GitAiPathFromPath
+		{
+			get
+			{
+				if (!_gitAiFromPathResolved)
+				{
+					_cachedGitAiFromPath = FindExecutableInPath(GitAiExecutableName);
+					_gitAiFromPathResolved = true;
+				}
+				return _cachedGitAiFromPath;
+			}
+		}
+
+		/// <summary>git-ai 可执行文件名（Migration note：原版 Windows 硬编码 git-ai.exe，此处跨平台）。</summary>
+		private static string GitAiExecutableName => OperatingSystem.IsWindows() ? "git-ai.exe" : "git-ai";
+
+		private static string ResolveGitAiPath()
+		{
+			string saved = ForkPlusSettings.Default.GitAiInstancePath;
+			if (!string.IsNullOrWhiteSpace(saved) && File.Exists(saved))
+			{
+				return saved;
+			}
+			string fromPath = GitAiPathFromPath;
+			if (fromPath != null)
+			{
+				return fromPath;
+			}
+			try
+			{
+				string gitDir = Path.GetDirectoryName(GitPath);
+				if (gitDir != null)
+				{
+					string sibling = Path.Combine(gitDir, GitAiExecutableName);
+					if (File.Exists(sibling))
+					{
+						return sibling;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to resolve git-ai path from git directory", ex);
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// 是否启用 AI 归属功能（Blame 徽标 / 统计）。要求 git-ai 已安装且用户未关闭开关。
+		/// </summary>
+		public static bool IsAiAttributionEnabled => ForkPlusSettings.Default.AiAttributionEnabled && GitAiPath != null;
+
+		/// <summary>
+		/// 是否把 ForkPlus 内置 AI（AI 开发 / AI 代码审查）的文件修改上报给 git-ai checkpoint。
+		/// 需同时满足：总开关开启、checkpoint 上报开关开启、git-ai 可用。
+		/// </summary>
+		public static bool IsAiCheckpointReportingEnabled => IsAiAttributionEnabled && ForkPlusSettings.Default.AiCheckpointReportingEnabled;
+
+		/// <summary>
 		/// 在 PATH 环境变量中查找指定可执行文件，返回第一个匹配的完整路径；未找到返回 null。
 		/// </summary>
 		public static string FindExecutableInPath(string fileName)

@@ -24,6 +24,7 @@
 // 启动失败不在 ModuleInit 抛（避免连累非 headless 测试加载程序集），记入 startupError，
 // 由首个 headless 测试经 EnsureStarted 显式抛出。
 using System;
+using System.IO;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
@@ -51,7 +52,60 @@ namespace ForkPlus.Tests
 		[System.Runtime.CompilerServices.ModuleInitializer]
 		internal static void ModuleInit()
 		{
+			EnsureGitInstanceForTests();
 			StartAsync();
+		}
+
+		/// <summary>
+		/// 端到端测试的 git 实例兜底（2026-09-04，"Cannot find git instance"）：
+		/// App.GitPath 解析链为 环境变量(forkgitinstance) → settings.GitInstancePath → 内置实例
+		/// （LocalApplicationData/ForkPlus/gitInstance/2.50.1/bin/git）。沙箱/CI 没有安装内置
+		/// git 时，原先所有走 GitRequest 的 e2e 全部失败（"Cannot find git instance"）。
+		/// 这里在 App 静态构造（bootstrap 线程 Configure&lt;HeadlessRealApp&gt; 触发）之前设好
+		/// 环境变量指向系统 git；已有显式环境变量或内置实例存在时不动，保证开发机行为不变。
+		/// </summary>
+		private static void EnsureGitInstanceForTests()
+		{
+			try
+			{
+				string envVariable = global::ForkPlus.Consts.ForkPlus.GitInstanceEnvVariable;
+				if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envVariable)))
+				{
+					return;
+				}
+				string exeName = OperatingSystem.IsWindows() ? "git.exe" : "git";
+				// 与 App.GetForkGitInstancePath 相同的路径拼法，但直接计算——避免提前触发 App 静态构造
+				string localApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+				string bundledGit = Path.Combine(localApplicationData, "ForkPlus", "gitInstance", "2.50.1", "bin", exeName);
+				if (File.Exists(bundledGit))
+				{
+					return;
+				}
+				// 内置 git 缺失：从 PATH 找系统 git 作 e2e 兜底
+				string pathVariable = Environment.GetEnvironmentVariable("PATH");
+				if (string.IsNullOrEmpty(pathVariable))
+				{
+					return;
+				}
+				foreach (string directory in pathVariable.Split(Path.PathSeparator))
+				{
+					try
+					{
+						string candidate = Path.Combine(directory.Trim(), exeName);
+						if (File.Exists(candidate))
+						{
+							Environment.SetEnvironmentVariable(envVariable, candidate);
+							return;
+						}
+					}
+					catch
+					{
+					}
+				}
+			}
+			catch
+			{
+			}
 		}
 
 		// 所有 headless 测试类的唯一入口：确保 App 已就绪。等待无超时上限——"超时后继续"
