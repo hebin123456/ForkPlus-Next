@@ -80,19 +80,23 @@
             <Canvas Grid.Column="0" x:Name="HsvCanvas" Width="240" Height="160" ClipToBounds="True" Cursor="Cross" PointerPressed="HsvCanvas_MouseDown" PointerReleased="HsvCanvas_MouseUp" PointerMoved="HsvCanvas_MouseMove">
               <!-- 背景纯色（当前色相，动态替换） -->
               <Rectangle x:Name="HsvBaseRect" Width="240" Height="160" Fill="Red" />
-              <!-- 白色横向渐变（饱和度 0→100%） -->
+              <!-- 白色横向渐变（饱和度 0→100%）。
+                   Migration note（2026-09-04，"颜色选择器面板整个是黑色"）：WPF 的
+                   StartPoint/EndPoint 是 0~1 相对坐标，Avalonia 的 LinearGradientBrush
+                   用 RelativePoint——裸数字 "1,0" 解析为 Absolute（绝对像素 1,0）！
+                   渐变轴坍缩成 1px + Pad 填充末 stop，三层渐变全部失效。必须写百分比。 -->
               <Rectangle x:Name="HsvSatRect" Width="240" Height="160">
                 <Rectangle.Fill>
-                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
                     <GradientStop Offset="0" Color="White" />
                     <GradientStop Offset="1" Color="Transparent" />
                   </LinearGradientBrush>
                 </Rectangle.Fill>
               </Rectangle>
-              <!-- 黑色纵向渐变（明度 100→0%） -->
+              <!-- 黑色纵向渐变（明度 100→0%），坐标同上必须用百分比 -->
               <Rectangle x:Name="HsvValRect" Width="240" Height="160">
                 <Rectangle.Fill>
-                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
                     <GradientStop Offset="0" Color="Transparent" />
                     <GradientStop Offset="1" Color="Black" />
                   </LinearGradientBrush>
@@ -101,11 +105,12 @@
               <!-- 选中指示器 -->
               <Ellipse x:Name="HsvIndicator" Width="10" Height="10" Stroke="White" StrokeThickness="1.5" Margin="-5,-5,0,0" />
             </Canvas>
-            <!-- 色相条（垂直彩虹） -->
+            <!-- 色相条（垂直彩虹）。坐标同样必须百分比——裸数字会把 7 段彩虹坍缩成 1px
+                 渐变 + Pad 填充末 stop（Red），整条显示成纯红（用户报告的第二个症状）。 -->
             <Canvas Grid.Column="1" x:Name="HueCanvas" Width="20" Height="160" Margin="0,0,0,0" ClipToBounds="True" Cursor="Cross" PointerPressed="HueCanvas_MouseDown" PointerReleased="HueCanvas_MouseUp" PointerMoved="HueCanvas_MouseMove">
               <Rectangle Width="20" Height="160">
                 <Rectangle.Fill>
-                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
                     <GradientStop Offset="0.000" Color="Red" />
                     <GradientStop Offset="0.167" Color="Yellow" />
                     <GradientStop Offset="0.333" Color="Lime" />

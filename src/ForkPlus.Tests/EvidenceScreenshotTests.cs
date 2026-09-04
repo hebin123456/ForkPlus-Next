@@ -593,6 +593,128 @@ namespace ForkPlus.Tests
 			Assert.True(belowSwatch[0], "弹窗应锚定在被点色块正下方（Placement=Bottom），不跟随指针");
 		}
 
+		// ============================ 修复13：颜色选择器渐变坐标 ============================
+		// 用户报告（2026-09-04）："颜色选择器那个面板弹出来不对，整个不是彩色的而是黑色的"。
+		// 根因（RelativePoint 探针实锤）：WPF LinearGradientBrush 的 StartPoint/EndPoint 是
+		// 0~1 相对坐标；Avalonia 用 RelativePoint——裸数字 "1,0" 解析为 Absolute（绝对像素）！
+		// 渐变轴坍缩成 1px 长 + SpreadMode 默认 Pad 用末 stop 填满整块：
+		//   HsvValRect（透明→黑）→ 除顶 1px 外全黑盖住底色/白渐变 → 画布全黑；
+		//   HueCanvas 彩虹 7 stops → 末 stop Red 填满 → 色相条纯红。
+		// 修复：三处渐变坐标改百分比（"0%,0%"→"100%,0%" 等）。
+		// 本测试两层守卫：1) 画刷结构（StartPoint/EndPoint 必须 Relative，防 XAML 改回去）；
+		// 2) 像素级——彩虹条 G/B 通道显著存在（纯红时≈0），HSV 画布上半区非黑（修复前全黑）。
+		[Fact]
+		public void Fix13_ColorPickerGradients_RelativeUnitsAndPixels_ScreenshotEvidence()
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			int[] hueGreenPixels = new int[1];
+			int[] hueBluePixels = new int[1];
+			int[] hsvNonBlackPixels = new int[1];
+			Dispatcher.UIThread.InvokeAsync(delegate
+			{
+				var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog();
+				dialog.Show();
+				Dispatcher.UIThread.RunJobs();
+
+				// 生产打开路径（同 Fix12）：抬起弹出 + 锚定
+				Avalonia.Controls.Border swatch = dialog.GetVisualDescendants().OfType<Avalonia.Controls.Border>()
+					.FirstOrDefault(b => b.Tag is ForkPlus.UI.Dialogs.CustomColorsDialog.CustomColorItem);
+				Assert.NotNull(swatch);
+				MethodInfo click = typeof(ForkPlus.UI.Dialogs.CustomColorsDialog).GetMethod("ColorPreview_Click",
+					BindingFlags.NonPublic | BindingFlags.Instance);
+				Assert.NotNull(click);
+				click.Invoke(dialog, new object[] { swatch, null });
+				Dispatcher.UIThread.RunJobs();
+				Dispatcher.UIThread.RunJobs();
+				Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+
+				Visual popupContent = dialog.ColorPickerPopup.Child;
+				Assert.NotNull(popupContent);
+
+				// ── 结构守卫：三处渐变画刷的坐标必须 Relative（裸数字=Absolute 即回归） ──
+				Avalonia.Controls.Shapes.Rectangle satRect = dialog.GetVisualDescendants()
+					.OfType<Avalonia.Controls.Shapes.Rectangle>().First(r => r.Name == "HsvSatRect");
+				Avalonia.Controls.Shapes.Rectangle valRect = dialog.GetVisualDescendants()
+					.OfType<Avalonia.Controls.Shapes.Rectangle>().First(r => r.Name == "HsvValRect");
+				Canvas hueCanvas = dialog.GetVisualDescendants().OfType<Canvas>().First(c => c.Name == "HueCanvas");
+				Avalonia.Controls.Shapes.Rectangle hueRainbow = hueCanvas.GetVisualDescendants()
+					.OfType<Avalonia.Controls.Shapes.Rectangle>().First();
+				var satBrush = Assert.IsType<LinearGradientBrush>(satRect.Fill);
+				var valBrush = Assert.IsType<LinearGradientBrush>(valRect.Fill);
+				var rainbowBrush = Assert.IsType<LinearGradientBrush>(hueRainbow.Fill);
+				Assert.All(new[] { satBrush, valBrush, rainbowBrush }, delegate (LinearGradientBrush b)
+				{
+					Assert.Equal(RelativeUnit.Relative, b.StartPoint.Unit);
+					Assert.Equal(RelativeUnit.Relative, b.EndPoint.Unit);
+				});
+
+				// ── 像素守卫：渲染弹层，按 HsvCanvas/HueCanvas 实际位置分区域统计 ──
+				var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(
+					new PixelSize(Math.Max(1, (int)Math.Ceiling(popupContent.Bounds.Width)),
+						Math.Max(1, (int)Math.Ceiling(popupContent.Bounds.Height))));
+				rtb.Render(popupContent);
+				rtb.Save(Path.Combine(EvidenceDir(), "fix13-colorpicker-gradient.png"));
+
+				Canvas hsvCanvas = dialog.GetVisualDescendants().OfType<Canvas>().First(c => c.Name == "HsvCanvas");
+				Matrix? hsvToContent = hsvCanvas.TransformToVisual(popupContent);
+				Matrix? hueToContent = hueCanvas.TransformToVisual(popupContent);
+				Assert.NotNull(hsvToContent);
+				Assert.NotNull(hueToContent);
+				Rect hsvRect = new Rect(hsvToContent.Value.Transform(new Point(0, 0)),
+					new Size(hsvCanvas.Bounds.Width, hsvCanvas.Bounds.Height));
+				Rect hueRect = new Rect(hueToContent.Value.Transform(new Point(0, 0)),
+					new Size(hueCanvas.Bounds.Width, hueCanvas.Bounds.Height));
+
+				using (var wb = new Avalonia.Media.Imaging.WriteableBitmap(rtb.PixelSize, rtb.Dpi))
+				using (rtb)
+				{
+					using (ILockedFramebuffer fb = wb.Lock())
+					{
+						// 先把 rtb 像素拷进 wb 再读（第一版漏了 CopyPixels 直接读空白 wb，
+						// 全 0 像素导致假失败）
+						rtb.CopyPixels(fb);
+						int len = fb.RowBytes * fb.Size.Height;
+						byte[] pixels = new byte[len];
+						System.Runtime.InteropServices.Marshal.Copy(fb.Address, pixels, 0, len);
+						const int bpp = 4;
+						for (int y = 0; y < fb.Size.Height; y++)
+						{
+							int row = y * fb.RowBytes;
+							for (int x = 0; x < fb.Size.Width; x++)
+							{
+								int o = row + x * bpp;
+								byte b = pixels[o], g = pixels[o + 1], r = pixels[o + 2];
+								if (hueRect.Contains(new Point(x, y)))
+								{
+									// 彩虹条：黄绿青段 G 高、青蓝紫段 B 高。修复前纯红两者≈0。
+									if (g > 100) { hueGreenPixels[0]++; }
+									if (b > 100) { hueBluePixels[0]++; }
+								}
+								// HSV 画布上半区（白色饱和度渐变 + 色相底色；下半被黑渐变盖）：
+								// 修复前全黑（仅顶 1px 残留白线）。
+								if (hsvRect.Contains(new Point(x, y)) && y - hsvRect.Y < hsvRect.Height * 0.5)
+								{
+									if (Math.Max(r, Math.Max(g, b)) > 60) { hsvNonBlackPixels[0]++; }
+								}
+							}
+						}
+					}
+				}
+
+				dialog.ColorPickerPopup.IsOpen = false;
+				Dispatcher.UIThread.RunJobs();
+				dialog.Close();
+				return 0;
+			}).GetAwaiter().GetResult();
+
+			Assert.True(hueGreenPixels[0] > 350,
+				"色相条应有绿色系区段（G>100 像素=" + hueGreenPixels[0] + "）——修复前整条纯红");
+			Assert.True(hueBluePixels[0] > 350,
+				"色相条应有蓝色系区段（B>100 像素=" + hueBluePixels[0] + "）——修复前整条纯红");
+			Assert.True(hsvNonBlackPixels[0] > 2000,
+				"HSV 画布上半区应渲染白渐变+色相底色而非全黑（非黑像素=" + hsvNonBlackPixels[0] + "）");
+		}
+
 		/// <summary>逐像素对比两帧（容忍 8 级抗锯齿噪声），返回可见差异像素数。</summary>
 		private static int CountDifferentPixels(
 			Avalonia.Media.Imaging.WriteableBitmap a, Avalonia.Media.Imaging.WriteableBitmap b)
