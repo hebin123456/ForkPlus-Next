@@ -131,6 +131,15 @@
   <SolidColorBrush x:Key="CloseButton.Pressed.Foreground" Color="{DynamicResource CloseButton.Pressed.ForegroundColor}" />
   <SolidColorBrush x:Key="TextBox.Static.Background" Color="{DynamicResource TextBox.Static.BackgroundColor}" />
   <SolidColorBrush x:Key="TextBox.Static.Border" Color="{DynamicResource TextBox.Static.BorderColor}" />
+  <!-- 文本选区高亮（2026-09-04，"重命名仓库时选中颜色不对"根因修复）：
+       迁移版曾把 TextBox 选区绑到皮肤 AccentBrush + 硬编码白前景。皮肤 accent 常为高亮度
+       （Monokai #A6E22E / YellowDark #FACC15 / CyanDark #22D3EE / RedDark #F87171 …），
+       白字打在浅色 accent 上几乎不可读。WPF 原版从不设 SelectionBrush（走系统高亮蓝 +
+       HighlightText 白，与皮肤无关）；本应用列表/树选中项也是全皮肤固定 #236BD2 蓝
+       （Item.SelectedActive.BackgroundColor）。对齐两者：选区 = 固定 #236BD2 + 白字
+       （对比度 5.1:1，WCAG AA），不随皮肤 accent 漂移。皮肤字典仍可用同名 key 覆盖。 -->
+  <SolidColorBrush x:Key="TextBox.Selection.Background" Color="#FF236BD2" />
+  <SolidColorBrush x:Key="TextBox.Selection.Foreground" Color="#FFFFFFFF" />
   <SolidColorBrush x:Key="FilterPanel.SecondaryBackground" Color="{DynamicResource FilterPanel.SecondaryBackgroundColor}" />
   <SolidColorBrush x:Key="FilterPanel.SecondaryBorder" Color="{DynamicResource FilterPanel.SecondaryBorderColor}" />
   <SolidColorBrush x:Key="ToolbarForeground" Color="{DynamicResource Toolbar.ForegroundColor}" />

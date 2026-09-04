@@ -3,6 +3,7 @@
 // 随代码一起提交，供人工核验"修复确实可见、非自欺"。
 //   fix9-before-hover.png / fix9-after-hover.png —— diff 悬浮 Stage/Discard 浮窗（修复9）
 //   fix8-hexdiff.png —— 二进制文件 Hex Diff 视图（修复8）
+//   fix10-before/after-{monokai,yellowdark,dark,light}.png —— 重命名内联编辑框选区颜色（修复10）
 // 截图同时做像素断言（非全空白、hover 前后有可见差异），测试本身就是回归证明。
 using System;
 using System.IO;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.Git;
@@ -194,6 +196,120 @@ namespace ForkPlus.Tests
 			Assert.True(changedInAdornerRegion[0] > 100,
 				"浮窗区域应渲染出可见变化（changedPixels=" + changedInAdornerRegion[0]
 				+ ", region=" + regionDesc[0] + "）");
+		}
+
+		// ============================ 修复10：重命名内联编辑框选区颜色 ============================
+		// 症状："重命名仓库，仓库名那个位置被选中的颜色不对"。根因：TextBox/PlaceholderTextBox/
+		// AutoCompleteTextBox/ComboBoxEditableTextBox 四个 ControlTheme 的选区绑皮肤 AccentBrush +
+		// 硬编码白前景——Monokai(#A6E22E)/YellowDark(#FACC15)/CyanDark(#22D3EE) 等浅色 accent 皮肤上
+		// 白字几乎不可读，Dark 的 #3E9FF8 也偏"洗白"。修复：全皮肤固定选区蓝 #236BD2（与列表/树
+		// 选中项 Item.SelectedActive.Background 一致）+ 白字（5.1:1，WCAG AA）。
+		// 证据：before 截图（fix10-before-*.png，修复前 accent 选区）由诊断探针在修复前截取入库；
+		// 本测试在修复后渲染同一场景出 after 截图，并像素断言选区蓝真实画出（非自欺）。
+
+		// 与 RepositoryManagerUserControl.axaml 仓库行模板同构的最小场景：EditableTextBlock 进编辑态
+		private static (Window window, ForkPlus.UI.Controls.RepositoryManagerEditableTextBlock etb) BuildFix10Scenario()
+		{
+			var etb = new ForkPlus.UI.Controls.RepositoryManagerEditableTextBlock
+			{
+				FontSize = 14,
+				Height = 22,
+				HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+				Value = "my-repository-name",
+				Width = 220
+			};
+			var row = new Grid { Height = 22, Background = new SolidColorBrush(Color.Parse("#2C2C2D")) };
+			row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(18) });
+			row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+			Grid.SetColumn(etb, 1);
+			row.Children.Add(etb);
+			var window = new Window { Width = 420, Height = 120, Content = row };
+			window.Show();
+			Dispatcher.UIThread.RunJobs();
+			return (window, etb);
+		}
+
+		// 换肤（与 App.InitializeTheme 同机制：加新皮肤 include 再移除旧的）
+		private static void SwitchSkin(string skin)
+		{
+			var app = global::Avalonia.Application.Current!;
+			var oldInclude = app.Resources.MergedDictionaries
+				.OfType<global::Avalonia.Markup.Xaml.Styling.ResourceInclude>()
+				.FirstOrDefault(i => i.Source?.OriginalString.Contains("Theme/Generic.") == true);
+			var newInclude = new global::Avalonia.Markup.Xaml.Styling.ResourceInclude(new Uri("avares://ForkPlus/App.axaml"))
+			{
+				Source = new Uri("avares://ForkPlus/Theme/Generic." + skin + ".axaml")
+			};
+			app.Resources.MergedDictionaries.Add(newInclude);
+			if (oldInclude != null)
+			{
+				app.Resources.MergedDictionaries.Remove(oldInclude);
+			}
+			Dispatcher.UIThread.RunJobs();
+		}
+
+		[Fact]
+		public void Fix10_RenameSelection_ScreenshotEvidence()
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			int[] selectionPixelsMonokai = new int[1];
+			Dispatcher.UIThread.InvokeAsync(delegate
+			{
+				// 皮肤文件名 → 证据文件后缀（与 fix10-before-*.png 一一对应）
+				(string skin, string file)[] cases =
+				{
+					("Monokai", "fix10-after-monokai.png"),
+					("YellowDark", "fix10-after-yellowdark.png"),
+					("Dark", "fix10-after-dark.png"),
+					("Light", "fix10-after-light.png")
+				};
+				Color selectionBlue = Color.FromRgb(0x23, 0x6B, 0xD2);
+				foreach (var (skin, file) in cases)
+				{
+					SwitchSkin(skin);
+					var (window, etb) = BuildFix10Scenario();
+					etb.IsInEditMode = true;
+					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+					using var frame = HeadlessWindowExtensions.CaptureRenderedFrame(window);
+					Assert.NotNull(frame);
+					SaveFrame(frame, file);
+					if (skin == "Monokai")
+					{
+						// 像素断言：最糟皮肤（荧光绿 accent）上选区蓝必须真实渲染（数百像素量级）。
+						// CaptureRenderedFrame 的 Lock() 帧缓冲实测为 RGBA 字节序（byte0=R）——
+						// 与 RenderTargetBitmap.CopyPixels 的 BGRA 不同，精确匹配必须按对序读。
+						using var l = frame.Lock();
+						int count = 0;
+						for (int y = 0; y < l.Size.Height; y++)
+						{
+							IntPtr rowPtr = l.Address + y * l.RowBytes;
+							for (int x = 0; x < l.Size.Width; x++)
+							{
+								byte r = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4);
+								byte g = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4 + 1);
+								byte b = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4 + 2);
+								if (r == selectionBlue.R && g == selectionBlue.G && b == selectionBlue.B)
+								{
+									count++;
+								}
+							}
+						}
+						selectionPixelsMonokai[0] = count;
+					}
+					window.Close();
+				}
+				// 还原默认 Light 皮肤，避免污染同进程后续 headless 测试的主题假设
+				SwitchSkin("Light");
+				return 0;
+			}).GetAwaiter().GetResult();
+
+			foreach (string file in new[] { "fix10-after-monokai.png", "fix10-after-yellowdark.png", "fix10-after-dark.png", "fix10-after-light.png" })
+			{
+				string path = Path.Combine(EvidenceDir(), file);
+				Assert.True(File.Exists(path) && new FileInfo(path).Length > 1000, file + " 应生成");
+			}
+			Assert.True(selectionPixelsMonokai[0] > 100,
+				"Monokai 皮肤上选区蓝未渲染（像素=" + selectionPixelsMonokai[0] + "）——修复不可见");
 		}
 
 		// ============================ 修复8：二进制 Hex Diff 视图 ============================

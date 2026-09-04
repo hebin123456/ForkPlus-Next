@@ -60,16 +60,9 @@ namespace ForkPlus.Tests
 				}
 			}
 			return count;
-		}
+	}
 
-		private static Color ResolveAccentColor()
-		{
-			var brush = Avalonia.Application.Current!.FindResource("AccentBrush") as ISolidColorBrush;
-			Assert.NotNull(brush);
-			return brush!.Color;
-		}
-
-		[Fact]
+	[Fact]
 		public void ErrorWindow_MessageTextBox_HasVisibleSelectionStyle()
 		{
 			HeadlessAppBootstrap.EnsureStarted();
@@ -178,38 +171,148 @@ namespace ForkPlus.Tests
 			Assert.True(placeholder, "PlaceholderTextBox 选区索引未传入 TextPresenter（各类弹窗输入框场景）");
 		}
 
-		// ── 像素层守卫：选中后必须真实画出 accent 高亮（有基线对照，防"恒亮"假阳性） ──
+		// ── 像素层守卫：选中后必须真实画出选区高亮（有基线对照，防"恒亮"假阳性）──
+	// 2026-09-04（"重命名仓库时选中颜色不对"）起选区为全皮肤固定蓝 TextBox.Selection.Background
+	//（原 accent 蓝），像素探针同步改为统计"选区画刷色"像素。
 
-		[Fact]
-		public void Selection_RendersAccentHighlightPixels_WithCleanBaseline()
+	[Fact]
+	public void Selection_RendersSelectionBrushPixels_WithCleanBaseline()
+	{
+		HeadlessAppBootstrap.EnsureStarted();
+		(int selected, int baseline) = HeadlessAppBootstrap.Run(delegate
 		{
-			HeadlessAppBootstrap.EnsureStarted();
-			(int selected, int baseline) = HeadlessAppBootstrap.Run(delegate
+			Color selectionBg = ResolveSelectionBackgroundColor();
+			bool IsSelection(Color c) => c.A == selectionBg.A && c.R == selectionBg.R && c.G == selectionBg.G && c.B == selectionBg.B;
+
+			var selected = new TextBox { Text = "0123456789ABCDEF", Width = 260, Height = 32, FontSize = 14 };
+			selected.SelectionStart = 2;
+			selected.SelectionEnd = 10;
+			var w1 = new Window { Width = 320, Height = 90, Content = selected };
+			w1.Show();
+			Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+			int withSel = CountPixels(selected, IsSelection);
+			w1.Close();
+
+			var plain = new TextBox { Text = "0123456789ABCDEF", Width = 260, Height = 32, FontSize = 14 };
+			var w2 = new Window { Width = 320, Height = 90, Content = plain };
+			w2.Show();
+			Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+			int withoutSel = CountPixels(plain, IsSelection);
+			w2.Close();
+			return (withSel, withoutSel);
+		});
+		// 选中后必须出现数百量级的选区蓝像素（实测 ~792）；未选中时基线应为 0（高亮只来自选区）。
+		Assert.True(selected > 100, "选中后未渲染选区高亮像素（实测 " + selected + "）——选区不可见回归");
+		Assert.Equal(0, baseline);
+	}
+
+	// ── 第三轮守卫（2026-09-04，"重命名仓库时选中颜色不对"）：全皮肤选区必须可读 ──
+	// 根因：选区曾绑皮肤 AccentBrush + 硬编码白前景。皮肤 accent 常为高亮度
+	//（Monokai #A6E22E / YellowDark #FACC15 / CyanDark #22D3EE …），白字对比度 ~1.3:1，
+	// 选中文字肉眼不可读。修复后选区为全皮肤固定 #236BD2 + 白（5.1:1，WCAG AA）。
+	// 本测试遍历全部 22 个皮肤字典，逐个解析选区前后景并断言 WCAG 对比度 ≥ 4.5:1——
+	// 防止未来有人把选区重新绑回 accent 或换上不可读的组合。
+
+	private static readonly string[] AllSkins =
+	{
+		"Light", "Dark", "SolarizedLight", "SolarizedDark", "Dracula", "GitHubLight", "GitHubDark",
+		"Monokai", "PurpleLight", "PurpleDark", "GreenLight", "GreenDark",
+		"RedLight", "RedDark", "OrangeLight", "OrangeDark", "YellowLight", "YellowDark",
+		"CyanLight", "CyanDark", "BlueLight", "BlueDark"
+	};
+
+	internal static Color ResolveSelectionBackgroundColor()
+	{
+		var brush = Avalonia.Application.Current!.FindResource("TextBox.Selection.Background") as ISolidColorBrush;
+		Assert.NotNull(brush);
+		return brush!.Color;
+	}
+
+	// WCAG 相对亮度对比度（1.0=完全相同，21.0=黑白）
+	private static double ContrastRatio(Color a, Color b)
+	{
+		static double Luminance(Color c)
+		{
+			static double Channel(byte v)
 			{
-				Color accent = ResolveAccentColor();
-				bool IsAccent(Color c) => c.A == accent.A && c.R == accent.R && c.G == accent.G && c.B == accent.B;
-
-				var selected = new TextBox { Text = "0123456789ABCDEF", Width = 260, Height = 32, FontSize = 14 };
-				selected.SelectionStart = 2;
-				selected.SelectionEnd = 10;
-				var w1 = new Window { Width = 320, Height = 90, Content = selected };
-				w1.Show();
-				Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-				int withSel = CountPixels(selected, IsAccent);
-				w1.Close();
-
-				var plain = new TextBox { Text = "0123456789ABCDEF", Width = 260, Height = 32, FontSize = 14 };
-				var w2 = new Window { Width = 320, Height = 90, Content = plain };
-				w2.Show();
-				Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-				int withoutSel = CountPixels(plain, IsAccent);
-				w2.Close();
-				return (withSel, withoutSel);
-			});
-			// 选中后必须出现数百量级的 accent 蓝像素（实测 ~792）；未选中时基线应为 0（高亮只来自选区）。
-			Assert.True(selected > 100, "选中后未渲染 accent 高亮像素（实测 " + selected + "）——选区不可见回归");
-			Assert.Equal(0, baseline);
+				double s = v / 255.0;
+				return s <= 0.03928 ? s / 12.92 : Math.Pow((s + 0.055) / 1.055, 2.4);
+			}
+			return 0.2126 * Channel(c.R) + 0.7152 * Channel(c.G) + 0.0722 * Channel(c.B);
 		}
+		double la = Luminance(a);
+		double lb = Luminance(b);
+		double max = Math.Max(la, lb);
+		double min = Math.Min(la, lb);
+		return (max + 0.05) / (min + 0.05);
+	}
+
+	[Fact]
+	public void AllSkins_TextBoxSelectionContrast_IsReadable()
+	{
+		HeadlessAppBootstrap.EnsureStarted();
+		System.Collections.Generic.List<string> failures = new System.Collections.Generic.List<string>();
+		HeadlessAppBootstrap.Run(delegate
+		{
+			var app = Avalonia.Application.Current!;
+			foreach (string skin in AllSkins)
+			{
+				// 换肤：加新皮肤 include 再移除旧的（与 App.InitializeTheme 同机制）
+				var oldInclude = app.Resources.MergedDictionaries
+					.OfType<global::Avalonia.Markup.Xaml.Styling.ResourceInclude>()
+					.FirstOrDefault(i => i.Source?.OriginalString.Contains("Theme/Generic.") == true);
+				var newInclude = new global::Avalonia.Markup.Xaml.Styling.ResourceInclude(new Uri("avares://ForkPlus/App.axaml"))
+				{
+					Source = new Uri("avares://ForkPlus/Theme/Generic." + skin + ".axaml")
+				};
+				app.Resources.MergedDictionaries.Add(newInclude);
+				if (oldInclude != null)
+				{
+					app.Resources.MergedDictionaries.Remove(oldInclude);
+				}
+				Dispatcher.UIThread.RunJobs();
+
+				var bg = app.FindResource("TextBox.Selection.Background") as ISolidColorBrush;
+				var fg = app.FindResource("TextBox.Selection.Foreground") as ISolidColorBrush;
+				if (bg == null || fg == null)
+				{
+					failures.Add(skin + ": 选区画刷资源缺失(bg=" + (bg != null) + ",fg=" + (fg != null) + ")");
+					continue;
+				}
+				double ratio = ContrastRatio(bg.Color, fg.Color);
+				if (ratio < 4.5)
+				{
+					failures.Add(skin + ": 选区对比度 " + ratio.ToString("F2") + ":1 (<4.5) bg=" + bg.Color + " fg=" + fg.Color);
+				}
+			}
+			// 还原默认 Light 皮肤，避免污染同进程后续 headless 测试的主题假设
+			var lastOld = app.Resources.MergedDictionaries
+				.OfType<global::Avalonia.Markup.Xaml.Styling.ResourceInclude>()
+				.FirstOrDefault(i => i.Source?.OriginalString.Contains("Theme/Generic.") == true);
+			var restore = new global::Avalonia.Markup.Xaml.Styling.ResourceInclude(new Uri("avares://ForkPlus/App.axaml"))
+			{
+				Source = new Uri("avares://ForkPlus/Theme/Generic.Light.axaml")
+			};
+			app.Resources.MergedDictionaries.Add(restore);
+			if (lastOld != null)
+			{
+				app.Resources.MergedDictionaries.Remove(lastOld);
+			}
+			Dispatcher.UIThread.RunJobs();
+		});
+		Assert.True(failures.Count == 0,
+			"以下皮肤选区不可读（WCAG < 4.5:1）：" + string.Join("; ", failures));
+	}
+
+	// 选区蓝必须是全皮肤一致的应用选中蓝（与列表/树选中项 #236BD2 对齐），不随皮肤 accent 漂移
+	[Fact]
+	public void SelectionBackground_MatchesAppWideSelectionBlue()
+	{
+		HeadlessAppBootstrap.EnsureStarted();
+		Color expected = Color.FromRgb(0x23, 0x6B, 0xD2);
+		Color actual = HeadlessAppBootstrap.Run(ResolveSelectionBackgroundColor);
+		Assert.Equal(expected, actual);
+	}
 
 		// ── 同因连带修复守卫：PasswordChar 掩码必须下传（密码框明文回归） ──
 

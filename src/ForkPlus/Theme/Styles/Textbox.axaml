@@ -14,8 +14,11 @@
          恒为 0/0，选区索引根本到不了渲染层 → 画刷再对也没有任何高亮（用户"看不清"的真根因）。
          附带修复：PasswordChar 未下传 → AskPassWindow/SshPassphraseWindow 密码明文显示；
          TextWrapping 未下传 → StatisticsUserControl CodeLinesExcludeBox 不换行。 -->
-    <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF" />
+    <!-- Migration note（2026-09-04，"重命名仓库时选中颜色不对"）：选区原绑 AccentBrush——
+         Monokai/YellowDark/CyanDark 等浅色 accent 皮肤上白字不可读。改为全皮肤固定选区蓝
+         （同列表选中项 #236BD2），见 Brushes.axaml 的 TextBox.Selection.* 注释。 -->
+    <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}" />
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextBox.Selection.Foreground}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />

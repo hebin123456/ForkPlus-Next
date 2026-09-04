@@ -175,9 +175,11 @@
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     <!-- Migration note（2026-09-03，TextBox 选区不可见根因，同 Textbox.axaml）：
          编辑型 ComboBox 的内嵌 TextBox 用显式 Theme 脱离了隐式 TextBox 主题，
-         选区画刷/选区索引均未设置，选中文字同样无高亮。补齐。 -->
-    <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF" />
+         选区画刷/选区索引均未设置，选中文字同样无高亮。补齐。
+         2026-09-04（"重命名仓库时选中颜色不对"）：AccentBrush → 全皮肤固定选区蓝
+         TextBox.Selection.*（浅色 accent 皮肤白字不可读），见 Brushes.axaml 注释。 -->
+    <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}" />
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextBox.Selection.Foreground}" />
 
     <Setter Property="Template">
       <Setter.Value>

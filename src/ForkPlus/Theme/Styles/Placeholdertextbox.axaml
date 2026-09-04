@@ -5,14 +5,16 @@
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
     <!-- Migration note（2026-09-03，"git 错误弹窗选中内容没有选中样式"根因，同 Textbox.axaml）：
-         WPF 默认选区为系统高亮蓝底白字；迁移后未设置且模板未传递，选区无高亮。对齐原版。 -->
-    <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF" />
+         WPF 默认选区为系统高亮蓝底白字；迁移后未设置且模板未传递，选区无高亮。对齐原版。
+         2026-09-04（"重命名仓库时选中颜色不对"）：AccentBrush → 全皮肤固定选区蓝
+         TextBox.Selection.*（浅色 accent 皮肤白字不可读），见 Brushes.axaml 注释。 -->
+    <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}" />
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextBox.Selection.Foreground}" />
     <Setter Property="MinHeight" Value="24" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-    
+
 <!-- Migration note：WPF Setter Property=AllowDrop 已删（Avalonia 无该属性/值） -->
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
@@ -32,11 +34,11 @@
               <TextBlock Grid.Column="1" Padding="{TemplateBinding Padding}" IsHitTestVisible="False" FontSize="{TemplateBinding FontSize}" Margin="2,0,0,0" Foreground="{TemplateBinding Foreground}" Opacity="0.56" Text="{TemplateBinding controls:PlaceholderTextBox.Placeholder}" x:Name="PlaceholderElement" IsVisible="False" />
             </Grid>
           </Border>
-          
+
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    
+ 
   
 <!-- Migration note：WPF 选择器 ^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false] 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[IsInactiveSelectionHighlightEnabled=true][IsSelectionActive=false]">
@@ -67,9 +69,11 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}" />
-    <!-- Migration note（2026-09-03，选区高亮根因，同 PlaceholderTextBox）。 -->
-    <Setter Property="SelectionBrush" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF" />
+    <!-- Migration note（2026-09-03，选区高亮根因，同 PlaceholderTextBox）。
+         2026-09-04（"重命名仓库时选中颜色不对"）：AccentBrush → 全皮肤固定选区蓝
+         TextBox.Selection.*（浅色 accent 皮肤白字不可读），见 Brushes.axaml 注释。 -->
+    <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}" />
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextBox.Selection.Foreground}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="MinHeight" Value="24" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
