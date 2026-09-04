@@ -78,8 +78,23 @@
           </Setter>
         </Style>
     -->
+  <!-- Bug 修复（2026-09-04，"所有提交页分隔条只有 tab 附近能拖"）：原迁移只带了
+       Background setter、无 Template。WPF 中 GridSplitter 有系统默认模板（Border
+       Background=TemplateBinding Background）兜底，透明背景热区仍可命中；Avalonia 中
+       本 ControlTheme（x:Key={x:Type GridSplitter}）在 App.Resources 中优先于 Fluent
+       主题生效，无模板 = 无视觉内容 = 不参与命中测试 → 所有未显式引用
+       HorizontalGridSplitter/VerticalGridSplitter 主题的 GridSplitter（如
+       RepositoryContentUserControl 的 SecondColumnHorizontalGridSplitter：32px 热区 +
+       透明背景 + 顶部 1px 边线）整个不可拖。补齐与 WPF 系统默认等价的 Border 模板。 -->
   <ControlTheme x:Key="{x:Type GridSplitter}" TargetType="GridSplitter">
     <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="GridSplitter">
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
   </ControlTheme>
   <ControlTheme x:Key="HorizontalGridSplitter" TargetType="GridSplitter">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
