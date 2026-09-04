@@ -12,8 +12,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.Git;
@@ -420,6 +422,208 @@ namespace ForkPlus.Tests
 			{
 				try { Directory.Delete(repoRoot, true); } catch { }
 			}
+		}
+		// ============================ 修复11：git mm 手册滚动条 + 文字选区 ============================
+		// 用户报告（2026-09-04）："git mm 文档显示那个界面，好像没有滚动条，选中文字的样式也不对"。
+		// headless 测试宿主下 WebView2 兼容层走降级渲染（ScrollViewer + MarkdownHtmlRenderer），
+		// 滚动条与 SelectableTextBlock 选区都在本窗口渲染管线内，可像素级取证；
+		// 原生路径（Win / macOS / 装了 WPE WebKit 的 Linux）由真浏览器引擎渲染，滚动/选区天然正确。
+		[Fact]
+		public void Fix11_GitMmManual_ScrollbarAndSelection_ScreenshotEvidence()
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			int[] contentPixels = new int[1];
+			int[] selectionDiffPixels = new int[1];
+			bool[] scrollBarVisible = new bool[1];
+			Dispatcher.UIThread.InvokeAsync(delegate
+			{
+				var window = new ForkPlus.UI.Dialogs.GitMmReferenceWindow();
+				window.Show();
+				// Loaded → InitializeManualWebView（async void）：等导航 + 降级渲染 + 兼容桥事件
+				Dispatcher.UIThread.RunJobs();
+				Task.Delay(300).GetAwaiter().GetResult();
+				Dispatcher.UIThread.RunJobs();
+				Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+				Dispatcher.UIThread.RunJobs();
+
+				// 手册真实渲染进降级路径（文档缺失/转换失败时 Content 为 null）
+				ScrollViewer viewer = Assert.IsType<ScrollViewer>(window.ManualWebView.Content);
+				Assert.True(viewer.Extent.Height > viewer.Viewport.Height,
+					"手册内容应溢出视口（" + viewer.Extent.Height + " vs " + viewer.Viewport.Height + "）");
+				// 滚动条断言：找降级渲染器模板自己的 PART_VerticalScrollBar（判定：祖父就是 viewer
+				// 本身）。viewer 的后代里还嵌着 Markdown 代码块的子 ScrollViewer（垂直条 Disabled、
+				// IsVisible=false），按 Orientation 或窗口级 FirstOrDefault 都会拿错。
+				ScrollBar bar = viewer.GetVisualDescendants().OfType<ScrollBar>()
+					.FirstOrDefault(b => b.Orientation == Avalonia.Layout.Orientation.Vertical
+						&& b.Parent is Control templateRoot && templateRoot.Parent == viewer);
+				scrollBarVisible[0] = bar != null && bar.IsVisible && bar.Maximum > 0;
+
+				// 截帧 A：滚动条可见态。frameA 不提前 dispose——选区对比帧 B 还要用它做像素差。
+			Avalonia.Media.Imaging.WriteableBitmap frameA = HeadlessWindowExtensions.CaptureRenderedFrame(window);
+			Assert.NotNull(frameA);
+			SaveFrame(frameA, "fix11-gitmm-scrollbar.png");
+			contentPixels[0] = CountNonBlankPixels(frameA);
+
+				// 选中第一段手册文字：同一滚动位置截帧对比，选区高亮应产生可见像素差。
+				// 注意：手册走 Inlines 复杂内容（Text 属性为空，实际文本在 Inlines.Text），
+				// 取首个有实际文本的块设选区。
+				Avalonia.Controls.SelectableTextBlock selectable = viewer.GetVisualDescendants()
+					.OfType<Avalonia.Controls.SelectableTextBlock>()
+					.FirstOrDefault(b => !string.IsNullOrEmpty(b.Text ?? b.Inlines?.Text));
+				Assert.NotNull(selectable);
+				string text = selectable.Text ?? selectable.Inlines?.Text ?? "";
+				Assert.True(text.Length > 0, "手册文本块不应为空");
+				selectable.SelectionStart = 0;
+				selectable.SelectionEnd = Math.Min(48, text.Length);
+				Dispatcher.UIThread.RunJobs();
+				using (var frameB = HeadlessWindowExtensions.CaptureRenderedFrame(window))
+				{
+					Assert.NotNull(frameB);
+					SaveFrame(frameB, "fix11-gitmm-selection.png");
+					selectionDiffPixels[0] = CountDifferentPixels(frameA, frameB);
+				}
+				frameA.Dispose();
+				window.Close();
+				return 0;
+			}).GetAwaiter().GetResult();
+
+			Assert.True(scrollBarVisible[0], "内容溢出时垂直滚动条应可见（修复：git mm 无滚动条）");
+			Assert.True(contentPixels[0] > 2000,
+				"手册渲染近乎全空白（非空白像素=" + contentPixels[0] + "）");
+			Assert.True(selectionDiffPixels[0] > 100,
+				"文字选区高亮未渲染（像素差=" + selectionDiffPixels[0] + "）——选中样式修复不可见");
+		}
+
+		// ============================ 修复12：颜色管理器弹窗锚定 + 打开态 ============================
+		// 用户报告（2026-09-04）："颜色管理器那个面板弹出来不对"（按下即弹 + 跟随指针漂移 + 失焦关不掉）。
+		// 证据：① 列表态截帧；② 生产路径（ColorPreview_Click 抬起弹出 + PlacementTarget 锚定 Bottom）
+		// 打开后的弹窗内容截帧；③ 几何断言——弹窗位于被点色块正下方，不再跟随指针。
+		[Fact]
+		public void Fix12_ColorManagerPopup_ScreenshotEvidence()
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			int[] closedPixels = new int[1];
+			int[] popupPixels = new int[1];
+			bool[] belowSwatch = new bool[1];
+			Dispatcher.UIThread.InvokeAsync(delegate
+			{
+				var dialog = new ForkPlus.UI.Dialogs.CustomColorsDialog();
+				dialog.Show();
+				dialog.UpdateLayout();
+				Dispatcher.UIThread.RunJobs();
+
+				using (var frame = HeadlessWindowExtensions.CaptureRenderedFrame(dialog))
+				{
+					Assert.NotNull(frame);
+					SaveFrame(frame, "fix12-colors-closed.png");
+					closedPixels[0] = CountNonBlankPixels(frame);
+				}
+
+				// 生产打开路径：反射调用 ColorPreview_Click（sender=色块 Border，e 未使用）
+				Avalonia.Controls.Border swatch = dialog.GetVisualDescendants().OfType<Avalonia.Controls.Border>()
+					.FirstOrDefault(b => b.Tag is ForkPlus.UI.Dialogs.CustomColorsDialog.CustomColorItem);
+				Assert.NotNull(swatch);
+				MethodInfo click = typeof(ForkPlus.UI.Dialogs.CustomColorsDialog).GetMethod("ColorPreview_Click",
+					BindingFlags.NonPublic | BindingFlags.Instance);
+				Assert.NotNull(click);
+				click.Invoke(dialog, new object[] { swatch, null });
+				Dispatcher.UIThread.RunJobs();
+				Dispatcher.UIThread.RunJobs();
+
+				Avalonia.Controls.Primitives.Popup popup = dialog.ColorPickerPopup;
+				Assert.True(popup.IsOpen, "点击色块（抬起）应打开颜色选择器 Popup");
+
+				// 弹窗内容（headless 下 Popup 经 OverlayPopupHost 渲染进主窗口视觉树）
+				Visual popupContent = popup.Child;
+				Assert.NotNull(popupContent);
+
+				// 几何证据：弹窗顶边在色块底边下方、水平基本对齐（Placement=Bottom 锚定，不跟随指针）。
+				// Avalonia 12 的 Popup 无 Host 属性、PopupRoot 无 Position（headless 下也没有独立
+				// PopupRoot 窗口，走 OverlayPopupHost 弹层），统一用 TransformToVisual 换算到对话框坐标。
+				Matrix? toDialog = popupContent.TransformToVisual(dialog);
+				Matrix? swatchToDialog = swatch.TransformToVisual(dialog);
+				Assert.NotNull(toDialog);
+				Assert.NotNull(swatchToDialog);
+				Point popupTopLeft = toDialog.Value.Transform(new Point(0, 0));
+				Point swatchBottomLeft = swatchToDialog.Value.Transform(new Point(0, swatch.Bounds.Height));
+				belowSwatch[0] = popupTopLeft.Y >= swatchBottomLeft.Y - 2
+					&& Math.Abs(popupTopLeft.X - swatchBottomLeft.X) < 260;
+
+				// 弹窗内容截帧（RenderTargetBitmap 直接渲染弹层内容）
+				Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+				var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(
+					new PixelSize(Math.Max(1, (int)Math.Ceiling(popupContent.Bounds.Width)),
+						Math.Max(1, (int)Math.Ceiling(popupContent.Bounds.Height))));
+				rtb.Render(popupContent);
+				rtb.Save(Path.Combine(EvidenceDir(), "fix12-colors-popup-open.png"));
+				using (var wb = new Avalonia.Media.Imaging.WriteableBitmap(rtb.PixelSize, rtb.Dpi))
+				{
+					using (ILockedFramebuffer fb = wb.Lock())
+					{
+						rtb.CopyPixels(fb);
+						int len = fb.RowBytes * fb.Size.Height;
+						byte[] pixels = new byte[len];
+						System.Runtime.InteropServices.Marshal.Copy(fb.Address, pixels, 0, len);
+						const int bpp = 4;
+						for (int y = 0; y < fb.Size.Height; y++)
+						{
+							int row = y * fb.RowBytes;
+							for (int x = 0; x < fb.Size.Width; x++)
+							{
+								int o = row + x * bpp;
+								byte b = pixels[o], g = pixels[o + 1], r = pixels[o + 2];
+								if (r < 230 || g < 230 || b < 230)
+								{
+									popupPixels[0]++;
+								}
+							}
+						}
+					}
+				}
+				rtb.Dispose();
+
+				popup.IsOpen = false;
+				Dispatcher.UIThread.RunJobs();
+				dialog.Close();
+				return 0;
+			}).GetAwaiter().GetResult();
+
+			Assert.True(closedPixels[0] > 2000, "颜色列表渲染近乎全空白");
+			Assert.True(popupPixels[0] > 500, "颜色选择器弹窗内容渲染近乎全空白（非空白像素=" + popupPixels[0] + "）");
+			Assert.True(belowSwatch[0], "弹窗应锚定在被点色块正下方（Placement=Bottom），不跟随指针");
+		}
+
+		/// <summary>逐像素对比两帧（容忍 8 级抗锯齿噪声），返回可见差异像素数。</summary>
+		private static int CountDifferentPixels(
+			Avalonia.Media.Imaging.WriteableBitmap a, Avalonia.Media.Imaging.WriteableBitmap b)
+		{
+			Assert.Equal(a.PixelSize, b.PixelSize);
+			int count = 0;
+			using (ILockedFramebuffer fa = a.Lock())
+			using (ILockedFramebuffer fb = b.Lock())
+			{
+				int len = fa.RowBytes * fa.Size.Height;
+				byte[] pa = new byte[len];
+				byte[] pb = new byte[len];
+				System.Runtime.InteropServices.Marshal.Copy(fa.Address, pa, 0, len);
+				System.Runtime.InteropServices.Marshal.Copy(fb.Address, pb, 0, len);
+				const int bpp = 4;
+				for (int y = 0; y < fa.Size.Height; y++)
+				{
+					int row = y * fa.RowBytes;
+					for (int x = 0; x < fa.Size.Width; x++)
+					{
+						int o = row + x * bpp;
+						int diff = Math.Abs(pa[o] - pb[o]) + Math.Abs(pa[o + 1] - pb[o + 1])
+							+ Math.Abs(pa[o + 2] - pb[o + 2]);
+						if (diff > 24)
+						{
+							count++;
+						}
+					}
+				}
+			}
+			return count;
 		}
 	}
 }

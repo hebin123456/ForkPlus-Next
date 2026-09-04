@@ -192,6 +192,11 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
+    <!-- 官方跨平台 WebView（2026-09-04，"引入官方 Native WebView 替代自研渲染"）：
+         Win=WebView2 / macOS=WKWebView / Linux=WPE WebKit(缺失时回退 WebKitGTK)。
+         版本对齐 Avalonia 12.1.1。WebView2Stub 兼容层内部改为真 WebView 优先、
+         自研 MarkdownHtmlRenderer 降级（headless 测试/无 WPE 的 Linux）。 -->
+    <PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0" />
     <PackageReference Include="System.CodeDom" Version="10.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
   </ItemGroup>

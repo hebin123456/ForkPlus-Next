@@ -39,6 +39,13 @@ namespace ForkPlus.UI.WpfCompat
 	{
 		// ── 配色：对齐 md-ai-output.css 的明/暗两套 ──
 
+		// 线程安全说明（2026-09-04，全量套件随机 3~7 例 VerifyAccess 失败的根因）：
+		// SolidColorBrush 是 AvaloniaObject，有创建线程亲和。此前 Light/Dark 作为静态
+		// 只读字段在类型首次触达线程上创建画刷，被两条线程共享访问——headless 套件里
+		// WebView2StubTests（UI 线程走降级渲染）与 MarkdownHtmlRendererTests（worker
+		// 线程直调 Render）谁先触达谁持有，输的一方读 .Color 即抛
+		// "calling thread cannot access this object"。颜色值（struct，线程安全）静态缓存，
+		// 画刷实例每次 Render 在调用线程上新建——谁创建谁访问，永不跨线程。
 		private sealed class Palette
 		{
 			public Brush Body;
@@ -55,37 +62,40 @@ namespace ForkPlus.UI.WpfCompat
 			public Brush TableHeaderBg;
 		}
 
-		private static readonly Palette Light = new Palette
+		private static Palette CreatePalette(bool dark)
 		{
-			Body = new SolidColorBrush(Color.FromRgb(0xFA, 0xFA, 0xFA)),
-			Text = new SolidColorBrush(Color.FromRgb(0x00, 0x00, 0x00)),
-			Link = new SolidColorBrush(Color.FromRgb(0x03, 0x66, 0xD6)),
-			Muted = new SolidColorBrush(Color.FromRgb(0x6A, 0x73, 0x7D)),
-			PreBg = new SolidColorBrush(Color.FromRgb(0xF6, 0xF8, 0xFA)),
-			PreBorder = new SolidColorBrush(Color.FromRgb(0xE6, 0xE5, 0xE6)),
-			BlockBar = new SolidColorBrush(Color.FromRgb(0xDF, 0xE2, 0xE5)),
-			Hr = new SolidColorBrush(Color.FromRgb(0xC5, 0xC5, 0xC5)),
-			H1Border = new SolidColorBrush(Color.FromRgb(0xE6, 0xE6, 0xE6)),
-			TableBorder = new SolidColorBrush(Color.FromRgb(0xDF, 0xE2, 0xE5)),
-			TableStripe = new SolidColorBrush(Color.FromRgb(0xF6, 0xF8, 0xFA)),
-			TableHeaderBg = new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)),
-		};
-
-		private static readonly Palette Dark = new Palette
-		{
-			Body = new SolidColorBrush(Color.FromRgb(0x28, 0x28, 0x28)),
-			Text = new SolidColorBrush(Color.FromRgb(0xDD, 0xDD, 0xDD)),
-			Link = new SolidColorBrush(Color.FromRgb(0x42, 0x9C, 0xFF)),
-			Muted = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E)),
-			PreBg = new SolidColorBrush(Color.FromRgb(0x29, 0x2A, 0x2F)),
-			PreBorder = new SolidColorBrush(Color.FromRgb(0x3E, 0x3F, 0x44)),
-			BlockBar = new SolidColorBrush(Color.FromRgb(0x3A, 0x39, 0x39)),
-			Hr = new SolidColorBrush(Color.FromRgb(0x40, 0x3F, 0x3E)),
-			H1Border = new SolidColorBrush(Color.FromRgb(0x3A, 0x39, 0x39)),
-			TableBorder = new SolidColorBrush(Color.FromRgb(0x3E, 0x3F, 0x44)),
-			TableStripe = new SolidColorBrush(Color.FromRgb(0x2E, 0x2F, 0x33)),
-			TableHeaderBg = new SolidColorBrush(Color.FromRgb(0x24, 0x25, 0x29)),
-		};
+			return dark
+				? new Palette
+				{
+					Body = new SolidColorBrush(Color.FromRgb(0x28, 0x28, 0x28)),
+					Text = new SolidColorBrush(Color.FromRgb(0xDD, 0xDD, 0xDD)),
+					Link = new SolidColorBrush(Color.FromRgb(0x42, 0x9C, 0xFF)),
+					Muted = new SolidColorBrush(Color.FromRgb(0x8B, 0x94, 0x9E)),
+					PreBg = new SolidColorBrush(Color.FromRgb(0x29, 0x2A, 0x2F)),
+					PreBorder = new SolidColorBrush(Color.FromRgb(0x3E, 0x3F, 0x44)),
+					BlockBar = new SolidColorBrush(Color.FromRgb(0x3A, 0x39, 0x39)),
+					Hr = new SolidColorBrush(Color.FromRgb(0x40, 0x3F, 0x3E)),
+					H1Border = new SolidColorBrush(Color.FromRgb(0x3A, 0x39, 0x39)),
+					TableBorder = new SolidColorBrush(Color.FromRgb(0x3E, 0x3F, 0x44)),
+					TableStripe = new SolidColorBrush(Color.FromRgb(0x2E, 0x2F, 0x33)),
+					TableHeaderBg = new SolidColorBrush(Color.FromRgb(0x24, 0x25, 0x29)),
+				}
+				: new Palette
+				{
+					Body = new SolidColorBrush(Color.FromRgb(0xFA, 0xFA, 0xFA)),
+					Text = new SolidColorBrush(Color.FromRgb(0x00, 0x00, 0x00)),
+					Link = new SolidColorBrush(Color.FromRgb(0x03, 0x66, 0xD6)),
+					Muted = new SolidColorBrush(Color.FromRgb(0x6A, 0x73, 0x7D)),
+					PreBg = new SolidColorBrush(Color.FromRgb(0xF6, 0xF8, 0xFA)),
+					PreBorder = new SolidColorBrush(Color.FromRgb(0xE6, 0xE5, 0xE6)),
+					BlockBar = new SolidColorBrush(Color.FromRgb(0xDF, 0xE2, 0xE5)),
+					Hr = new SolidColorBrush(Color.FromRgb(0xC5, 0xC5, 0xC5)),
+					H1Border = new SolidColorBrush(Color.FromRgb(0xE6, 0xE6, 0xE6)),
+					TableBorder = new SolidColorBrush(Color.FromRgb(0xDF, 0xE2, 0xE5)),
+					TableStripe = new SolidColorBrush(Color.FromRgb(0xF6, 0xF8, 0xFA)),
+					TableHeaderBg = new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)),
+				};
+		}
 
 		private const double BaseFontSize = 13.0;       // CSS body font-size: 13px
 		private const double LineHeight = 19.5;         // 13 * 1.5
@@ -102,7 +112,7 @@ namespace ForkPlus.UI.WpfCompat
 		/// <summary>把 HTML body 内容渲染成带 md-ai-output.css 排版的 Avalonia 控件树。</summary>
 		public static Control Render(string bodyHtml, bool dark, Action<string> onWebMessage)
 		{
-			Palette pal = dark ? Dark : Light;
+			Palette pal = CreatePalette(dark);
 			var ctx = new RenderContext { Pal = pal, OnWebMessage = onWebMessage };
 			StackPanel blocks = new StackPanel();
 			foreach (Node node in Parse(bodyHtml))
@@ -906,6 +916,10 @@ namespace ForkPlus.UI.WpfCompat
 			// SelectableTextBlock（2026-09-04，问题E"git mm 手册内容无法选中"）：
 			// WPF 版手册/AI 输出在 WebView2 浏览器里天然可选中复制；Avalonia TextBlock
 			// 不支持选择，替换为 SelectableTextBlock（鼠标拖选 + Ctrl+A/Ctrl+C）。
+			// 选区画刷（同日补，"选中文字的样式也不对"）：SelectableTextBlock.RenderTextLayout
+			// 只在 SelectionBrush != null 时才画高亮——主题无 SelectableTextBlock 默认样式，
+			// 不显式设置选区就"能选但看不见"。用全应用统一选区蓝 #236BD2 + 白字
+			// （与 TextBox/ComboBox 的修复10选区样式一致，明暗皮肤下均高对比可读）。
 			SelectableTextBlock text = new SelectableTextBlock
 			{
 				FontSize = BaseFontSize,
@@ -913,7 +927,11 @@ namespace ForkPlus.UI.WpfCompat
 				TextWrapping = TextWrapping.Wrap,
 				// 默认前景色放在块级（Run 仅在覆盖时携带颜色），保证标题加粗/h6 灰字/
 				// 段落红字（style='color:#d33'）/ ai-empty 灰字这些块级样式不被行内遮蔽。
-				Foreground = ctx.Pal.Text
+				Foreground = ctx.Pal.Text,
+				SelectionBrush = new SolidColorBrush(Color.FromRgb(0x23, 0x6B, 0xD2)),
+				// 不用 Brushes.White 静态实例——画刷有创建线程亲和（见 CreatePalette 注释），
+				// 每次在调用线程新建；Colors.White 是 struct，线程安全。
+				SelectionForegroundBrush = new SolidColorBrush(Colors.White)
 			};
 			text.Inlines = inlines;
 			return text;

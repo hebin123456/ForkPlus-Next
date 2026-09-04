@@ -75,10 +75,15 @@ namespace ForkPlus.UI.Controls
 		}
 
 		/// <summary>构建 HTML 文档外壳：CSS + body + 可选 scroll 上报脚本。</summary>
+		/// <para>scroll 上报的 JS→C# 消息桥做三重兼容（NativeWebView 各引擎注入的桥不同）：
+		/// ① WebView2 原生 window.chrome.webview.postMessage；② Avalonia WebKit 系注入的全局
+		/// invokeCSharpAction（引擎无关桥，字符串原样传到 WebMessageReceived.Body）；
+		/// ③ window.external.invokeCSharpAction（部分 WebView2 Loader 路径）。缺哪个桥就静默跳过，
+		/// 保证任一引擎下脚本不抛错。</para>
 		public static string BuildHtmlDocument(string bodyHtml, bool includeScrollScript = false)
 		{
 			string scrollScript = includeScrollScript
-				? "<script>(function(){function s(){var st=document.documentElement.scrollTop||document.body.scrollTop;var sh=document.documentElement.scrollHeight||document.body.scrollHeight;var ch=document.documentElement.clientHeight;var at=ch<=0||(st+ch>=sh-80);window.chrome.webview.postMessage('scroll-at-bottom:'+(at?'1':'0'));}window.addEventListener('scroll',s,{passive:true});window.addEventListener('load',s);if(document.readyState==='complete'||document.readyState==='interactive'){s();}})();</script>"
+				? "<script>(function(){function p(m){try{if(window.chrome&&window.chrome.webview&&window.chrome.webview.postMessage){window.chrome.webview.postMessage(m);return;}if(typeof invokeCSharpAction==='function'){invokeCSharpAction(m);return;}if(window.external&&window.external.invokeCSharpAction){window.external.invokeCSharpAction(m);}}catch(e){}}function s(){var st=document.documentElement.scrollTop||document.body.scrollTop;var sh=document.documentElement.scrollHeight||document.body.scrollHeight;var ch=document.documentElement.clientHeight;var at=ch<=0||(st+ch>=sh-80);p('scroll-at-bottom:'+(at?'1':'0'));}window.addEventListener('scroll',s,{passive:true});window.addEventListener('load',s);if(document.readyState==='complete'||document.readyState==='interactive'){s();}})();</script>"
 				: "";
 			return "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + GetCss() + "\n</style></head>\n<body>" + bodyHtml + "\n" + scrollScript + "\n</body>\n</html>";
 		}
