@@ -246,6 +246,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/CodeLineStats.cs", "class", "CodeLineStats", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/CodeLineStats.cs", "class", "LanguageStats", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/CommitGitCommand.cs", "class", "CommitGitCommand", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/Git/Commands/CommitMessageArchive.cs", "class", "CommitMessageArchive", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/CommitTemplate.cs", "class", "CommitTemplate", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/CommonDirReader.cs", "class", "CommonDirReader", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/ComposeWipCommitsGitCommand.cs", "class", "ComposeWipCommitsGitCommand", "UNIT-SOURCE-COVERAGE-001"),

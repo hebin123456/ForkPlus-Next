@@ -11,6 +11,13 @@ namespace ForkPlus.Git.Commands
 		public GitCommandResult Execute(GitModule gitModule, [Null] IGitPoint destination)
 		{
 			string input = PathHelper.NormalizeUnix(Path.Combine(AppContext.BaseDirectory, Consts.ForkPlus.RIHelperFilename));
+			// RI.exe 缺失（部署不完整）时直接给出明确错误，避免 git 报晦涩的
+			// "there was a problem with the editor '<路径>'"，让用户误以为路径写死。
+			GitCommandResult helperMissing = ContinueRebaseGitCommand.CheckRebaseHelperExists(input);
+			if (helperMissing != null)
+			{
+				return helperMissing;
+			}
 			GitCommand gitCommand = new GitCommand(App.OverrideCredentialHelper, "-c", "core.commentChar=" + Consts.Git.CommentChar, "-c", "rebase.instructionFormat=" + TokenSeparator + "%H", "-c", "rebase.abbreviateCommands=true", "-c", "sequence.editor=" + input.EscapeSpaces().Quotify(), "-c", "core.editor=" + input.EscapeSpaces().Quotify(), "rebase", "-i", "--autosquash", "--update-refs");
 			if (destination == null)
 			{

@@ -802,13 +802,30 @@ namespace ForkPlus.UI.Dialogs
 		private void IpcMessageHandler(NamedPipeServerStream pipeServer)
 		{
 			string text = pipeServer.ReadString();
-			if (text.StartsWith("prepareTodoListForRebase "))
+			if (text != null && text.StartsWith("prepareTodoListForRebase "))
 			{
 				string todoListPath = text.Substring("prepareTodoListForRebase ".Length);
+				if (!IsTodoListFile(todoListPath))
+				{
+					// git 处理 reword/squash 指令时通过 core.editor（同为 ForkPlus.RI.exe）编辑
+					// COMMIT_EDITMSG；RI.exe 不区分场景、统一转发文件路径。若按 todo 列表解析，
+					// 会把提交消息文件解析成空列表并等待用户再次确认——此时窗口已进入
+					// "Rebasing..." 状态且无人应答，git 会卡住直至超时并报
+					// "there was a problem with the editor"。此处直接用窗口确认时归档的消息
+					// 改写该文件并放行（无归档则保持原消息，rebase 仍能完成，不中断）。
+					CommitMessageArchive.TryApplyArchivedMessage(_gitModule, todoListPath);
+					pipeServer.WriteString("start");
+					return;
+				}
 				PrepareTodoListForRebase(todoListPath);
 			}
 			_finishRiProcessSemaphore.WaitOne(Timeout);
 			pipeServer.WriteString(_response);
+		}
+
+		private static bool IsTodoListFile(string path)
+		{
+			return string.Equals(Path.GetFileName(path), "git-rebase-todo", StringComparison.OrdinalIgnoreCase);
 		}
 
 		private void PrepareTodoListForRebase(string todoListPath)

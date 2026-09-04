@@ -173,6 +173,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/Git/Commands/CloneGitCommand.cs",
 				"src/ForkPlus/Git/Commands/CodeLineStats.cs",
 				"src/ForkPlus/Git/Commands/CommitGitCommand.cs",
+				"src/ForkPlus/Git/Commands/CommitMessageArchive.cs",
 				"src/ForkPlus/Git/Commands/CommitTemplate.cs",
 				"src/ForkPlus/Git/Commands/CommonDirReader.cs",
 				"src/ForkPlus/Git/Commands/ComposeWipCommitsGitCommand.cs",
