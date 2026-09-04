@@ -1442,6 +1442,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/UI/Helpers/ScrollViewerHelper.cs", "class", "ScrollViewerHelper", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Helpers/TextEditorExtensions.cs", "class", "TextEditorExtensions", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Helpers/TextGuidelineHelper.cs", "class", "TextGuidelineHelper", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/UI/Helpers/TitleBarDragSnapTracker.cs", "class", "TitleBarDragSnapTracker", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Helpers/WindowLocationStateExtensions.cs", "struct", "AppBarData", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Helpers/WindowLocationStateExtensions.cs", "struct", "DisplayScale", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Helpers/WindowLocationStateExtensions.cs", "enum", "GetDeviceCapsIndex", "UNIT-SOURCE-COVERAGE-001"),

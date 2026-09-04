@@ -1149,6 +1149,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/Helpers/ScrollViewerHelper.cs",
 				"src/ForkPlus/UI/Helpers/TextEditorExtensions.cs",
 				"src/ForkPlus/UI/Helpers/TextGuidelineHelper.cs",
+				"src/ForkPlus/UI/Helpers/TitleBarDragSnapTracker.cs",
 				"src/ForkPlus/UI/Helpers/WindowLocationStateExtensions.cs",
 				"src/ForkPlus/UI/ILocalizableControl.cs",
 				"src/ForkPlus/UI/IRoundedSelectionListBoxViewModel.cs",

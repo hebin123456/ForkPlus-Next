@@ -71,6 +71,10 @@ namespace ForkPlus.UI
 
 		private bool _showHeader = true;
 
+		// 问题H：标题栏拖拽期间活跃的贴顶吸附跟踪器（null = 未在跟踪）。
+		// 原生模态移动循环独占输入且阻塞 Dispatcher，不可能并发第二个拖拽。
+		private TitleBarDragSnapTracker _activeDragSnapTracker;
+
 		private bool IsDesignMode => global::ForkPlus.DesignTimeHelper.IsInDesignMode();
 
 		// ===== WPF 兼容成员（迁移期）=====
@@ -324,14 +328,7 @@ namespace ForkPlus.UI
 
 			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
-				try
-				{
-					BeginMoveDrag(e);
-				}
-				catch (global::System.InvalidOperationException)
-				{
-					// 窗口尚未显示等边缘状态：忽略
-				}
+				BeginMoveDragWithSnapTracking(e);
 			}
 		}
 
@@ -549,14 +546,93 @@ namespace ForkPlus.UI
 			}
 			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
-				try
+				BeginMoveDragWithSnapTracking(e);
+			}
+		}
+
+		// ===== 问题H：标题栏拖拽贴屏幕顶边松手 → 最大化（模拟原生 Aero Snap 顶边行为）=====
+
+		/// <summary>
+		/// 贴顶吸附是否在当前窗口启用。测试子类 override 以在 headless 下驱动完整链路。
+		/// </summary>
+		protected virtual bool IsTitleBarDragSnapEnabled => TitleBarDragSnapTracker.IsPlatformSupported;
+
+		/// <summary>
+		/// 创建贴顶吸附跟踪器。测试子类 override 注入假光标/屏幕提供者；
+		/// 生产实现用 MouseHelper.GetMousePosition（硬件级光标查询，模态循环中可用）
+		/// 与 Screens.ScreenFromPoint（与原生按光标所在屏幕判定一致）。
+		/// </summary>
+		protected virtual TitleBarDragSnapTracker CreateTitleBarDragSnapTracker()
+		{
+			return new TitleBarDragSnapTracker(
+				MouseHelper.GetMousePosition,
+				delegate (global::Avalonia.PixelPoint point)
 				{
-					BeginMoveDrag(e);
-				}
-				catch (global::System.InvalidOperationException)
+					return Screens?.ScreenFromPoint(point);
+				});
+		}
+
+		/// <summary>
+		/// 启动标题栏移动拖拽并跟踪贴顶吸附（拖到屏幕顶边松手 → 最大化，原生 Aero Snap 顶边行为）。
+		/// 关键机制（Avalonia 12 Win32 源码实证）：
+		///   1) BeginMoveDrag 只是向 Dispatcher post 一个 DispatcherPriority.Send 任务，任务内
+		///      SendMessage(WM_SYSCOMMAND, SC_MOUSEMOVE) 进入原生模态移动循环并阻塞该任务直到
+		///      用户松开鼠标；
+		///   2) 移动循环期间 Avalonia 不派发指针事件，但窗口每次 WM_MOVE 都会触发 PositionChanged
+		///      （WindowImpl.AppWndProc），借它做拖拽中的贴顶采样；
+		///   3) 紧随其后 post 同优先级任务——同优先级 FIFO，必在移动循环任务之后执行，即拖拽已
+		///      结束的时机——此时仍贴顶则最大化。
+		/// </summary>
+		private void BeginMoveDragWithSnapTracking(global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			if (!TitleBarDragSnapTracker.ShouldTrackDrag(IsTitleBarDragSnapEnabled, CanResize, base.WindowState))
+			{
+				TryBeginMoveDrag(e);
+				return;
+			}
+
+			TitleBarDragSnapTracker tracker = CreateTitleBarDragSnapTracker();
+			tracker.Begin();
+			_activeDragSnapTracker = tracker;
+			EventHandler<global::Avalonia.Controls.PixelPointEventArgs> positionHandler = delegate (object sender, global::Avalonia.Controls.PixelPointEventArgs args)
+			{
+				_activeDragSnapTracker?.Sample(args.Point);
+			};
+			PositionChanged += positionHandler;
+			try
+			{
+				BeginMoveDrag(e);
+			}
+			catch (global::System.InvalidOperationException)
+			{
+				// 窗口尚未显示等边缘状态：忽略，避免拖动破坏显示。
+				PositionChanged -= positionHandler;
+				_activeDragSnapTracker = null;
+				return;
+			}
+			global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+			{
+				PositionChanged -= positionHandler;
+				TitleBarDragSnapTracker activeTracker = _activeDragSnapTracker;
+				_activeDragSnapTracker = null;
+				if (activeTracker != null
+					&& TitleBarDragSnapTracker.ShouldMaximize(activeTracker.TopSnapEngaged, IsVisible, base.WindowState))
 				{
-					// 窗口尚未显示等边缘状态：忽略，避免拖动破坏显示。
+					base.WindowState = global::Avalonia.Controls.WindowState.Maximized;
 				}
+			}, global::Avalonia.Threading.DispatcherPriority.Send);
+		}
+
+		/// <summary>裸 BeginMoveDrag + 边缘状态吞异常（与历史行为一致）。</summary>
+		private void TryBeginMoveDrag(global::Avalonia.Input.PointerPressedEventArgs e)
+		{
+			try
+			{
+				BeginMoveDrag(e);
+			}
+			catch (global::System.InvalidOperationException)
+			{
+				// 窗口尚未显示等边缘状态：忽略
 			}
 		}
 
