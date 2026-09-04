@@ -66,9 +66,17 @@ namespace ForkPlus.AskPass
 		private static string ReadString(PipeStream stream)
 		{
 			byte[] lengthBytes = new byte[4];
-			if (stream.Read(lengthBytes, 0, lengthBytes.Length) != lengthBytes.Length)
+			// Bug fix (2026-09-04, 凭据回传间歇性失败)：流式管道语义下单次 Read 可能
+			// 只返回部分字节，长度前缀必须循环读满（与 ForkPlus.RI 同源问题）。
+			int headerOffset = 0;
+			while (headerOffset < lengthBytes.Length)
 			{
-				return null;
+				int read = stream.Read(lengthBytes, headerOffset, lengthBytes.Length - headerOffset);
+				if (read <= 0)
+				{
+					return null;
+				}
+				headerOffset += read;
 			}
 			int length = BitConverter.ToInt32(lengthBytes, 0);
 			byte[] buffer = new byte[length];
