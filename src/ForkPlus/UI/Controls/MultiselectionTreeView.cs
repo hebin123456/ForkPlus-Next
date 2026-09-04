@@ -34,15 +34,21 @@ namespace ForkPlus.UI.Controls
 		{
 			private MultiselectionTreeView _instance;
 
+			private readonly IDisposable _flattenerDeferral;
+
 			public UpdateLock(MultiselectionTreeView instance)
 			{
 				_instance = instance;
 				_instance._updatesLocked = true;
+				// 性能优化（大仓库侧栏批量插入）：同时抑制 flattener 的逐节点通知，
+				// 批量结束（Dispose）时只发一次 Reset 刷新列表。
+				_flattenerDeferral = _instance._flattener?.DeferNotifications();
 			}
 
 			public void Dispose()
 			{
 				_instance._updatesLocked = false;
+				_flattenerDeferral?.Dispose();
 			}
 		}
 

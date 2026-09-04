@@ -53,7 +53,7 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                       </Grid.ColumnDefinitions>
-                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Column="0" CellHeight="23" Margin="4 0 0 0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" />
+                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Column="0" CellHeight="23" Margin="8 0 0 0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" />
                       <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center">
                         <Ellipse.Fill>
                           <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" /></Binding.Converter></Binding>
@@ -232,7 +232,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                       </Grid.ColumnDefinitions>
-                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" CellHeight="42" Margin="4,0,0,0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" />
+                      <controls:GraphCellView ExpandToggle="GraphCellView_ExpandToggle" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" CellHeight="42" Margin="8,0,0,0" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" />
                       <StackPanel Grid.Row="0" Grid.Column="1" Margin="3,0,0,0" Orientation="Horizontal">
                         <Border Margin="0,2,0,0" Width="18" Height="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
                           <Border.Background>
@@ -397,7 +397,7 @@
            修复：横向滚动禁用（ScrollViewer 以视口宽测量行、超宽裁剪，与 WPF 列宽钳制语义对齐）。 -->
       <DataTemplate x:Key="SingleRowRevisionTemplate">
         <Grid Height="23" ClipToBounds="True" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto">
-          <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="4,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" />
+          <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="8,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" />
           <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Ellipse.Fill>
               <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
@@ -472,7 +472,7 @@
       </DataTemplate>
       <DataTemplate x:Key="DoubleRowRevisionTemplate">
         <Grid Height="42" ClipToBounds="True" RowDefinitions="*,*" ColumnDefinitions="Auto,*,Auto">
-          <controls:GraphCellView Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" CellHeight="42" Margin="4,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" />
+          <controls:GraphCellView Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" CellHeight="42" Margin="8,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" />
           <StackPanel Grid.Row="0" Grid.Column="1" Margin="3,0,0,0" Orientation="Horizontal">
             <Border Margin="0,2,0,0" Width="18" Height="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
               <Border.Background>

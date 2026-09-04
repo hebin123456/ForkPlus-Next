@@ -1090,6 +1090,9 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/FilterTextBox.cs", "class", "FilterTextBox", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/Flattener/FlattenerNode.cs", "class", "Flattener", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/Flattener/FlattenerNode.cs", "class", "FlattenerNode", "UNIT-SOURCE-COVERAGE-001"),
+				// 2026-09-04 patch 合入：Flattener 批量插入性能优化新增的私有嵌套类（DeferNotifications
+				// 的 IDisposable 句柄，批量期间抑制 CollectionChanged、结束发一次 Reset）。
+				new ClassCoverageEntry("src/ForkPlus/UI/Controls/Flattener/FlattenerNode.cs", "class", "NotificationDeferral", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/Flattener/TreeTraversal.cs", "class", "TreeTraversal", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/FuzzyHighlightableTextBlock.cs", "class", "FuzzyHighlightableTextBlock", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/GitmojiAutocompleteProvider.cs", "class", "GitmojiAutocompleteProvider", "UNIT-SOURCE-COVERAGE-001"),

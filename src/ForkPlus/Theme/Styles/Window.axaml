@@ -162,6 +162,9 @@
         <ControlTemplate TargetType="ui:CustomWindow">
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
             <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
+              <!-- 窗口菜单"放大/缩小"：WPF 原版此处 Grid 有 LayoutTransform="{DynamicResource
+                   LayoutScaleTransform}"；Avalonia 用 LayoutTransformControl 实现等效布局缩放。 -->
+              <LayoutTransformControl LayoutTransform="{DynamicResource LayoutScaleTransform}">
               <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
@@ -209,6 +212,7 @@
                 </VisualLayerManager>
     <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
+              </LayoutTransformControl>
             </Border>
           </Border>
 
@@ -229,6 +233,9 @@
         <ControlTemplate TargetType="ui:CustomWindow">
           <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
             <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
+              <!-- 窗口菜单"放大/缩小"：同主窗口模板，WPF 原版此 Grid 有
+                   LayoutTransform="{DynamicResource LayoutScaleTransform}"。 -->
+              <LayoutTransformControl LayoutTransform="{DynamicResource LayoutScaleTransform}">
               <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto" />
@@ -271,13 +278,14 @@
                 </VisualLayerManager>
     <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
               </Grid>
+              </LayoutTransformControl>
             </Border>
           </Border>
-          
+
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-  
+
 <!-- Migration note：WPF 选择器 ^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip 无对应 Avalonia 属性，样式块注释化。原始片段：
     <Style Selector="^[ResizeMode=CanResizeWithGrip][WindowState=Normal] /template/ ResizeGrip#ResizeGrip">
         <Setter Property="IsVisible" Value="True" />

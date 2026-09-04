@@ -50,26 +50,33 @@ namespace ForkPlus.UI.UserControls
 				GitCommandResult<RevisionStorage> revisionStorageResponse = new GetRevisionStorageGitCommand().Execute(gitModule, sha);
 				base.Dispatcher.Post(delegate
 				{
-					if (!revisionStorageResponse.Succeeded)
+					try
 					{
-						BusyIndicator.Collapse();
-						RevisionListView.Collapse();
-						FallbackMessageTextBlock.Show();
-						FallbackMessageTextBlock.Text = PreferencesLocalization.FormatCurrent("Error: {0}", revisionStorageResponse.Error.FriendlyDescription);
+						if (!revisionStorageResponse.Succeeded)
+						{
+							BusyIndicator.Collapse();
+							RevisionListView.Collapse();
+							FallbackMessageTextBlock.Show();
+							FallbackMessageTextBlock.Text = PreferencesLocalization.FormatCurrent("Error: {0}", revisionStorageResponse.Error.FriendlyDescription);
+						}
+						else
+						{
+							BusyIndicator.Collapse();
+							FallbackMessageTextBlock.Collapse();
+							RevisionListView.Show();
+							RepositoryReferences references = RepositoryReferences.New(fullRepositoryData.References.ReferenceStorage.WithHead(_sha), new string[0], new string[0], new string[0], hideTags: false);
+							RevisionStorage result = revisionStorageResponse.Result;
+							RepositoryRemotes remotes = fullRepositoryData.Remotes;
+							RepositoryWorktrees worktrees = fullRepositoryData.Worktrees;
+							CollapseState collapseState = new CollapseState(collapseAllMode: true, new HashSet<Sha>(new Sha[1] { _sha }));
+							RevisionListView.SelectedIndex = -1;
+							_revisionsDataSource.Reload(_repositoryUserControl.JobQueue, result, RepositoryStashes.Empty, references, remotes, worktrees, showStashesInRevisionList: false, reflog: false, collapseState, UserColors.Empty, gitModule);
+							RefreshHeight();
+						}
 					}
-					else
+					catch (System.Exception ex)
 					{
-						BusyIndicator.Collapse();
-						FallbackMessageTextBlock.Collapse();
-						RevisionListView.Show();
-						RepositoryReferences references = RepositoryReferences.New(fullRepositoryData.References.ReferenceStorage.WithHead(_sha), new string[0], new string[0], new string[0], hideTags: false);
-						RevisionStorage result = revisionStorageResponse.Result;
-						RepositoryRemotes remotes = fullRepositoryData.Remotes;
-						RepositoryWorktrees worktrees = fullRepositoryData.Worktrees;
-						CollapseState collapseState = new CollapseState(collapseAllMode: true, new HashSet<Sha>(new Sha[1] { _sha }));
-						RevisionListView.SelectedIndex = -1;
-						_revisionsDataSource.Reload(_repositoryUserControl.JobQueue, result, RepositoryStashes.Empty, references, remotes, worktrees, showStashesInRevisionList: false, reflog: false, collapseState, UserColors.Empty, gitModule);
-						RefreshHeight();
+						Log.Error("RevisionGraphTooltipUserControl apply failed: " + ex);
 					}
 				});
 			}, JobFlags.Hidden);

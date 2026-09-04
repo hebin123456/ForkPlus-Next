@@ -9,7 +9,7 @@
       <Grid Height="23" ClipToBounds="True" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
         <!-- 原第 1 列（resizable 复合列）：mini 轨道图 + upstream 圆点 + refs 徽章 + subject。
              ShowGraphToolTip=False：tooltip 内的 mini 图不再嵌套 tooltip（原版语义）。 -->
-        <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="4,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" ShowGraphToolTip="False" />
+        <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="8,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" ShowGraphToolTip="False" />
         <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center">
           <Ellipse.Fill>
             <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>

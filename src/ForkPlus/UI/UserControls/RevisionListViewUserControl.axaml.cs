@@ -124,7 +124,9 @@ namespace ForkPlus.UI.UserControls
 			RevisionListView.AddHandler(DragDrop.DropEvent, RevisionListView_Drop);
 			RevisionListView.LayoutUpdated += delegate
 			{
-				StretchRevisionListItems();
+				// 性能修复（大仓库滚动卡顿）：LayoutUpdated 在滚动实化新行时每个布局帧都会触发，
+				// 原实现每次都全量遍历可视树，开销巨大。此处合并到每个渲染帧最多执行一次。
+				RequestStretchRevisionListItems();
 			};
 			RevisionListView.AddHandler(
 				InputElement.PointerPressedEvent,
@@ -381,13 +383,36 @@ namespace ForkPlus.UI.UserControls
 			StretchRevisionListItems();
 		}
 
+		private bool _stretchQueued;
+
+		private global::Avalonia.Controls.ScrollViewer _cachedScroller;
+
+		private void RequestStretchRevisionListItems()
+		{
+			if (_stretchQueued)
+			{
+				return;
+			}
+			_stretchQueued = true;
+			Dispatcher.UIThread.Post(delegate
+			{
+				_stretchQueued = false;
+				StretchRevisionListItems();
+			}, DispatcherPriority.Render);
+		}
+
 		private void StretchRevisionListItems()
 		{
 			// Bug 修复（轨道图宽度 100%）：原取 Bounds.Width - 8（含竖向滚动条占位 ~13px，
 			// 且窗口拉伸/行实化时机不同步），行宽比视口大 → extent 超出 → "有点超出"的横向滚动条。
 			// 改为取内嵌 ScrollViewer 的 Viewport.Width（真实可视区域，无滚动条占位）。
-			global::Avalonia.Controls.ScrollViewer scroller = global::Avalonia.VisualTree.VisualExtensions
-				.GetVisualDescendants(RevisionListView).OfType<global::Avalonia.Controls.ScrollViewer>().FirstOrDefault();
+			// 性能：ScrollViewer 查找结果缓存，避免每次全量遍历可视树。
+			global::Avalonia.Controls.ScrollViewer scroller = _cachedScroller;
+			if (scroller == null || !global::Avalonia.VisualTree.VisualExtensions.GetVisualAncestors(scroller).Any((global::Avalonia.Visual x) => ReferenceEquals(x, RevisionListView)))
+			{
+				scroller = (_cachedScroller = global::Avalonia.VisualTree.VisualExtensions
+					.GetVisualDescendants(RevisionListView).OfType<global::Avalonia.Controls.ScrollViewer>().FirstOrDefault());
+			}
 			double width = scroller != null ? scroller.Viewport.Width : Math.Max(0.0, RevisionListView.Bounds.Width - 23.0);
 			if (width <= 0.0)
 			{
@@ -400,7 +425,9 @@ namespace ForkPlus.UI.UserControls
 			// 徽章会把行撑爆、溢出盖住日期列；此处给徽章留足空间但封顶剩余宽度
 			// （subject 星号列至少保留 120，graph 按典型宽度预留 130）。
 			double refsMaxWidth = Math.Max(0.0, width - 18.0 - 120.0 - 70.0 - 130.0 - 120.0 - 130.0 - 40.0);
-			foreach (DragAndDropListViewItem item in global::Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(RevisionListView).OfType<DragAndDropListViewItem>())
+			// 性能：用 GetRealizedContainers() 直接拿已实化容器（O(行数)），
+			// 替代原来的 GetVisualDescendants 全可视树遍历（含每个行内所有子元素，分配大）。
+			foreach (DragAndDropListViewItem item in RevisionListView.GetRealizedContainers().OfType<DragAndDropListViewItem>())
 			{
 				if (double.IsNaN(item.Width) || Math.Abs(item.Width - width) > 0.5)
 				{

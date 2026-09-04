@@ -278,21 +278,23 @@ namespace ForkPlus.UI
 			RevisionVisualGraph revisionVisualGraph = RevisionVisualGraph.Create(newRevisionStorage, _references, _stashes, _showStashesInRevisionList, _reflog, _visualGraph.CollapseState);
 			if (_visualGraph.RevisionStorage.Count != revisionVisualGraph.RevisionStorage.Count)
 			{
-				if (_visualGraph.Count == revisionVisualGraph.Count)
-				{
-					_ = _visualGraph.RevisionStorage.Count;
-					_ = revisionVisualGraph.RevisionStorage.Count;
-				}
-				for (int i = 0; i < _visualGraph.Count; i++)
-				{
-				}
 				int count = _visualGraph.Count;
 				_visualGraph = revisionVisualGraph;
 				_contextSearch = contextSearch;
-				for (int j = count; j < _visualGraph.Count; j++)
+				int newCount = _visualGraph.Count;
+				if (newCount > count)
 				{
-					DecoratedRevision decoratedRevisionAtRow = GetDecoratedRevisionAtRow(j);
-					this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, decoratedRevisionAtRow, j));
+					// 性能修复（大仓库分页加载卡顿/崩溃）：原实现对每个新增行单独触发一次
+					// CollectionChanged(Add) —— 一页 10000 条提交就是 10000 次 UI 通知，
+					// 每次通知都会穿透 ItemsSourceView/SelectionModel/虚拟化面板，极易卡死或崩溃。
+					// 改为：按行序批量物化新增行（图轨道计算必须按行序，无法省略），
+					// 然后只发一次批量 Add 通知。
+					// 注意：_decoratedRevisions 是惰性物化的，其 Count 可能小于 count，
+					// DecorateRows 采用追加语义，必须从 _decoratedRevisions.Count 开始补齐，
+					// 否则列表索引与行号错位（IndexOf 依赖 Row == 列表索引）。
+					DecorateRows(new Range(_decoratedRevisions.Count, newCount));
+					List<DecoratedRevision> added = _decoratedRevisions.GetRange(count, newCount - count);
+					this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, added, count));
 				}
 			}
 		}

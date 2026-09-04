@@ -39,7 +39,48 @@ namespace ForkPlus.UI.Controls
 		[Null]
 		private Popup _popup;
 
+		[Null]
+		private global::Avalonia.Controls.Panel _popupHost;
+
+		[Null]
+		private global::Avalonia.Controls.Control _popupContent;
+
+		[Null]
+		private global::Avalonia.Controls.TopLevel _popupPointerMoveRoot;
+
+		// 弹窗打开期间订阅顶层 PointerMoved（只有鼠标真实移动才触发；滚动/布局变化导致的
+		// 命中测试重算不会触发）——鼠标移出单元格且不在弹窗上时才启动关闭定时器。
+		private void OnPopupRootPointerMoved(object sender, global::Avalonia.Input.PointerEventArgs e)
+		{
+			if (_popup == null || !_popup.IsOpen)
+			{
+				return;
+			}
+			bool overContent = _popupContent != null && _popupContent.IsPointerOver;
+			if (IsPointerOver || overContent)
+			{
+				_closePopupTimer.Stop();
+			}
+			else
+			{
+				_closePopupTimer.Start();
+			}
+		}
+
+		private void UnhookPopupPointerMove()
+		{
+			if (_popupPointerMoveRoot != null)
+			{
+				_popupPointerMoveRoot.RemoveHandler(global::Avalonia.Input.InputElement.PointerMovedEvent, (EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerMoved);
+				_popupPointerMoveRoot = null;
+			}
+		}
+
 		private Sha? _activeMergePointSha;
+
+		// WPF Mouse.GetPosition(this) 的替代：WpfCompat Mouse shim 恒返回 (0,0)。
+		// 在指针事件中记录真实 X（供命中测试列计算使用）。
+		private double _lastPointerX;
 
 		// Migration note：字段类型收紧为 StyledProperty<T>（XAML 编译器要求 typed property）。
                 public static readonly global::Avalonia.StyledProperty<double> CellHeightProperty;
@@ -131,6 +172,7 @@ namespace ForkPlus.UI.Controls
 			if (ShowGraphToolTip && base.DataContext is DecoratedRevision decoratedRevision && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				base.OnPointerEntered(e);
+				_lastPointerX = e.GetPosition(this).X;
 				if (decoratedRevision.GetParents().Length > 1)
 				{
 					_activeMergePointSha = decoratedRevision.Sha;
@@ -148,7 +190,12 @@ namespace ForkPlus.UI.Controls
 			{
 				_activeMergePointSha = null;
 				_showPopupTimer.Stop();
-				_closePopupTimer.Start();
+				// 弹窗已打开时不在这里启动关闭定时器：滚动/布局变化会对静止鼠标重新命中测试，
+				// 产生假的 PointerExited。关闭时机改由顶层 PointerMoved 处理器决定（见 CreatePopup）。
+				if (_popup == null || !_popup.IsOpen)
+				{
+					_closePopupTimer.Start();
+				}
 			}
 		}
 
@@ -157,7 +204,8 @@ namespace ForkPlus.UI.Controls
 			base.OnPointerMoved(e);
 			if (base.DataContext is DecoratedRevision decoratedRevision)
 			{
-				int num = (int)((e.GetPosition(this).X + 5.0) / _defaultCellWidth);
+				_lastPointerX = e.GetPosition(this).X;
+				int num = (int)((_lastPointerX + 5.0) / _defaultCellWidth);
 				IsMouseOver = num == decoratedRevision.GraphInfo.CurrentCommitColumn;
 			}
 		}
@@ -331,46 +379,146 @@ namespace ForkPlus.UI.Controls
 
 		private void ShowPopup()
 		{
-			RepositoryUserControl parent = this.GetParent<RepositoryUserControl>();
-			if (parent != null && (_popup == null || !_popup.IsOpen))
+			try
 			{
-				Sha? activeMergePointSha = _activeMergePointSha;
-				if (activeMergePointSha.HasValue)
+				RepositoryUserControl parent = this.GetParent<RepositoryUserControl>();
+				if (parent != null && (_popup == null || !_popup.IsOpen))
 				{
-					Sha valueOrDefault = activeMergePointSha.GetValueOrDefault();
-					double horizontalOffset = Mouse.GetPosition(this).X + 5.0;
-					_popup = CreatePopup(parent, horizontalOffset, valueOrDefault);
-					_popup.IsOpen = true;
+					Sha? activeMergePointSha = _activeMergePointSha;
+					if (activeMergePointSha.HasValue)
+					{
+						Sha valueOrDefault = activeMergePointSha.GetValueOrDefault();
+						_popup = CreatePopup(parent, valueOrDefault);
+						_popup.IsOpen = true;
+					}
 				}
+			}
+			catch (System.Exception ex)
+			{
+				Log.Error("GraphCellView.ShowPopup failed: " + ex);
 			}
 		}
 
 		private void ClosePopup(bool hardClose = false)
 		{
-			if (_popup != null && _popup.IsOpen && (!_popup.IsPointerOver|| hardClose))
+			// Bug 修复（弹窗悬停闪烁死循环）：Avalonia 的 Popup 不是 Visual，IsPointerOver 恒为
+			// false → 原判断 !_popup.IsPointerOver 永远成立 → 弹窗一盖住轨道图单元格就触发
+			// PointerExited → 关窗 → 鼠标又回到单元格 → 再开 → 死循环。改为检查弹窗内容控件
+			//（真正的 Visual）的 IsPointerOver，并在内容 PointerEntered 时停止关闭定时器。
+			bool pointerOverContent = (_popupContent != null && _popupContent.IsPointerOver) || IsPointerOver;
+			if (_popup != null && _popup.IsOpen && (!pointerOverContent || hardClose))
 			{
 				_popup.IsOpen = false;
 				VisualTreeAttachmentHelper.TrySetPopupChild(_popup, null, GetType().Name + ".Popup");
+				DetachPopupFromHost(_popup);
+				UnhookPopupPointerMove();
 				_popup = null;
+				_popupContent = null;
 			}
 		}
 
-		private Popup CreatePopup(RepositoryUserControl repositoryUserControl, double horizontalOffset, Sha sha)
+		private void DetachPopupFromHost(Popup popup)
+		{
+			if (_popupHost != null)
+			{
+				_popupHost.Children.Remove(popup);
+				_popupHost = null;
+			}
+		}
+
+		private Popup CreatePopup(RepositoryUserControl repositoryUserControl, Sha sha)
 		{
 			Popup popup = new Popup();
-			popup.HorizontalOffset = horizontalOffset;
-			popup.VerticalOffset = -50.0;
+			// 弹窗定位：左上角对齐合并按钮（圆点）的右下角，不遮挡按钮。
+			// 圆点圆心 = (cellWidth * CurrentCommitColumn, CellHeight/2)，半径 _commitMergePointRadius。
+			// 注意：Placement=Bottom 是 xdg 语义——锚点取锚定矩形底边【中点】，弹窗水平居中过去，
+			// 这就是之前"按钮跑到弹窗中心"的原因。改用 AnchorAndGravity 精确定位（同 Menu.axaml）：
+			// PlacementAnchor=BottomRight 锚点取按钮矩形的右下角，PlacementGravity=BottomRight
+			// 弹窗从该点向右下延伸（即弹窗左上角 = 按钮右下角 + 偏移）。
+			Rect anchorRect = new Rect(_defaultCellWidth - _commitMergePointRadius, CellHeight - _commitMergePointRadius, _commitMergePointRadius * 2.0, _commitMergePointRadius * 2.0);
+			if (base.DataContext is DecoratedRevision decoratedRevision)
+			{
+				double centerX = _defaultCellWidth * (double)(int)decoratedRevision.GraphInfo.CurrentCommitColumn;
+				double centerY = CellHeight / 2.0;
+				anchorRect = new Rect(centerX - _commitMergePointRadius, centerY - _commitMergePointRadius, _commitMergePointRadius * 2.0, _commitMergePointRadius * 2.0);
+			}
+			popup.Placement = PlacementMode.AnchorAndGravity;
+			popup.PlacementAnchor = global::Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.BottomRight;
+			popup.PlacementGravity = global::Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
+			popup.PlacementRect = anchorRect;
+			popup.HorizontalOffset = 4.0;
+			popup.VerticalOffset = 4.0;
 			popup.IsLightDismissEnabled= (!true);
 			/* Migration note: AllowsTransparency 已删除 */;
 			/* Migration note: PopupAnimation 已删除 */;
 			popup.PlacementTarget = this;
 			RevisionGraphTooltipUserControl revisionGraphTooltipUserControl = new RevisionGraphTooltipUserControl(repositoryUserControl, sha);
-			revisionGraphTooltipUserControl.HeightChanged += delegate(object s, EventArgs<double> e)
-			{
-				double value = e.Value;
-				popup.VerticalOffset = 0.0 - value / 2.0 - 10.0;
-			};
 			VisualTreeAttachmentHelper.TrySetPopupChild(popup, revisionGraphTooltipUserControl, GetType().Name + ".Popup");
+			_popupContent = revisionGraphTooltipUserControl;
+			// 鼠标进入弹窗内容时取消关闭定时器（可在弹窗上自由移动/点击），离开后再启动关闭。
+			revisionGraphTooltipUserControl.PointerEntered += delegate
+			{
+				_closePopupTimer.Stop();
+			};
+			revisionGraphTooltipUserControl.PointerExited += delegate
+			{
+				_closePopupTimer.Start();
+			};
+			// Bug 修复（合并节点悬浮详情弹窗空白）：孤立 Popup（不在逻辑树中）的子控件
+			// DynamicResource 解析链在自身截止（BorderBrush/ListBox.Static.Background/主题全部
+			// 解析为 null）→ 弹窗只剩宿主白底、无边框无内容。与 GitMmUserControl 本轮25 修复
+			// 同法：把 Popup 挂进 Panel 祖先（不占布局空间），资源沿逻辑树正常解析；
+			// 关闭时移除防泄漏。
+			// 注意宿主选择：不能挂最近的行容器 Panel——提交列表是虚拟化的，点击/滚动触发的
+			// 布局刷新会回收行容器（PlacementTarget 随之 detach → Avalonia 自动关弹窗，
+			// 即"点击/滚动时弹窗突然消失"）。这里挂到 RepositoryUserControl 根 Grid
+			//（稳定、不随行回收），找不到才退回最近的 Panel。
+			global::Avalonia.Controls.Panel fallbackPanel = null;
+			global::Avalonia.Visual ancestor = this;
+			while ((ancestor = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(ancestor)) != null)
+			{
+				if (fallbackPanel == null && ancestor is global::Avalonia.Controls.Panel nearPanel)
+				{
+					fallbackPanel = nearPanel;
+				}
+				if (ancestor is RepositoryUserControl)
+				{
+					foreach (global::Avalonia.Visual child in global::Avalonia.VisualTree.VisualExtensions.GetVisualChildren(ancestor))
+					{
+						if (child is global::Avalonia.Controls.Panel rootPanel)
+						{
+							_popupHost = rootPanel;
+							break;
+						}
+					}
+					break;
+				}
+			}
+			if (_popupHost == null)
+			{
+				_popupHost = fallbackPanel;
+			}
+			if (_popupHost != null)
+			{
+				_popupHost.Children.Add(popup);
+				Popup popupRef = popup;
+				popup.Closed += delegate
+				{
+					DetachPopupFromHost(popupRef);
+					UnhookPopupPointerMove();
+				};
+			}
+			// 弹窗打开期间：滚动/点击/布局变化不再直接关窗（Avalonia 会对静止鼠标重新命中测试，
+			// 滚动时单元格会收到假 PointerExited；WPF 只在鼠标真实移动时改变悬停）。
+			// 改为监听顶层 PointerMoved（仅真实鼠标移动触发）决定关闭时机。
+			_popupPointerMoveRoot = global::Avalonia.Controls.TopLevel.GetTopLevel(this);
+			if (_popupPointerMoveRoot != null)
+			{
+				_popupPointerMoveRoot.AddHandler(global::Avalonia.Input.InputElement.PointerMovedEvent,
+					(EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerMoved,
+					global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+					true);
+			}
 			popup.PointerExited += delegate
 			{
 				_closePopupTimer.Start();

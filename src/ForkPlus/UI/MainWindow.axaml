@@ -7,6 +7,13 @@
             <ControlTemplate TargetType="ui:CustomWindow">
               <Border BorderThickness="{TemplateBinding ui:CustomWindow.WindowResizeBorderThickness}">
                 <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
+                  <!-- 窗口菜单"放大/缩小"（Zoom In/Out，Ctrl+= / Ctrl+-）：
+                       WPF 原版在此 Grid 上 LayoutTransform="{DynamicResource LayoutScaleTransform}"；
+                       Avalonia 无元素级 LayoutTransform，用 LayoutTransformControl 包裹实现等效布局缩放。
+                       命令链路：Increase/DecreaseLayoutScaleCommand → ForkPlusSettings.LayoutScaling
+                       → ApplicationExtensions.RefreshLayoutScaling() 替换 App 资源里的
+                       ScaleTransform → DynamicResource 联动到此处。 -->
+                  <LayoutTransformControl LayoutTransform="{DynamicResource LayoutScaleTransform}">
                   <Grid>
                     <Grid.RowDefinitions>
                       <RowDefinition Height="Auto" />
@@ -65,6 +72,7 @@
                     </VisualLayerManager>
     <!-- Migration note：WPF ResizeGrip 已删（Avalonia 窗口缩放由系统边框处理；自绘 chrome 需 CustomWindow 自己实现） -->
                   </Grid>
+                  </LayoutTransformControl>
                 </Border>
               </Border>
             </ControlTemplate>
