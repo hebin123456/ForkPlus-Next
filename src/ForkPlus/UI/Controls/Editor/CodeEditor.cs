@@ -30,6 +30,12 @@ namespace ForkPlus.UI.Controls.Editor
 			base.Options.InheritWordWrapIndentation = false;
 			base.Options.EnableHyperlinks = false;
 			base.Options.EnableEmailHyperlinks = false;
+			// Bug 修复（2026-09-04，"FileDiff 高度计算多了，滚动条可拉到很下面有一大块空白"）：
+			// WPF AvalonEdit 的 AllowScrollBelowDocument 默认 false（拉到底即文档末尾）；
+			// AvaloniaEdit 12.x 把默认值改成了 true——TextView.MeasureOverride 会给
+			// 滚动 extent 加"viewport 高 - 一行"的额外空间，diff/代码编辑器都能滚到
+			// 文档底部之下一大块空白（探针实测 Extent=文档高+viewport）。显式关闭对齐 WPF。
+			base.Options.AllowScrollBelowDocument = false;
 			base.TextArea.SelectionBorder = null;
 			base.TextArea.SelectionCornerRadius = 0.0;
 			base.TextArea.TextView.BackgroundRenderers.Add(new ClearTypeBackgroundRenderer());

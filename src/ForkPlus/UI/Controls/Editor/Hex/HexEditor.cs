@@ -74,6 +74,9 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 			base.WordWrap = false;
 			base.Options.EnableHyperlinks = false;
 			base.Options.EnableEmailHyperlinks = false;
+			// Bug 修复（2026-09-04）：AvaloniaEdit 12.x 默认 AllowScrollBelowDocument=true
+			//（WPF AvalonEdit 默认 false），十六进制视图同样能滚到内容底下一大块空白。
+			base.Options.AllowScrollBelowDocument = false;
 			base.TextArea.SelectionBorder = null;
 			base.TextArea.SelectionCornerRadius = 0.0;
 			base.FontFamily = new global::Avalonia.Media.FontFamily("Consolas, Courier New, monospace");
