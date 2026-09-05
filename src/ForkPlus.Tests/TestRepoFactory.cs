@@ -362,6 +362,22 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>Stash 工作区仓库（供模块14 保存/部分保存）：已提交 a.txt("a base\n")/
+		/// b.txt("b base\n")，工作区：修改 a.txt + 修改 b.txt + 未跟踪 c.txt ——
+		/// SaveStashWindow（全量 + Stage new files）与 CreatePartialStashWindow（多文件勾选）
+		/// 测试基底。工作区干净度由各用例自行断言。</summary>
+		public static string CreateStashWork()
+		{
+			string root = NewTempDir("stashwork");
+			Init(root);
+			Commit(root, "a.txt", "a base\n", "base a");
+			Commit(root, "b.txt", "b base\n", "base b");
+			File.WriteAllText(Path.Combine(root, "a.txt"), "a modified\n");
+			File.WriteAllText(Path.Combine(root, "b.txt"), "b modified\n");
+			File.WriteAllText(Path.Combine(root, "c.txt"), "untracked\n");
+			return root;
+		}
+
 		public static void Cleanup(string root)
 		{
 			try

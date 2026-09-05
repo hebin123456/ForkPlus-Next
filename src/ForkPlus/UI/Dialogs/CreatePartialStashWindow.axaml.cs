@@ -177,6 +177,16 @@ namespace ForkPlus.UI.Dialogs
 
 		private void FileCheckBox_Changed(object sender, RoutedEventArgs e)
 	{
+		// Migration note（迁移回归修复，2026-09-05 E2E 模块14 探针实证）：
+		// WPF 下 Checked/Unchecked 触发时 TwoWay 绑定已把 IsChecked 写回
+		// ViewModel.Selected；Avalonia 的 IsCheckedChanged 先于绑定回写触发——
+		// 此时从 VM 读到的是旧值，导致取消全部勾选后提交按钮仍启用、命令预览
+		// 仍显示旧文件集（OnSubmit 读 VM 又会 stash 错误的文件集合）。
+		// 故此处直接读 CheckBox.IsChecked 同步推回 VM，消除对绑定回写时序的依赖。
+		if (sender is CheckBox checkBox && checkBox.DataContext is PartialStashFileViewModel viewModel)
+		{
+			viewModel.Selected = checkBox.IsChecked == true;
+		}
 		UpdateSubmitButton();
 		RefreshCommandPreview();
 	}
