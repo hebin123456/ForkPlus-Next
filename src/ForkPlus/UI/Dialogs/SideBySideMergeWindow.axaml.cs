@@ -67,9 +67,12 @@ namespace ForkPlus.UI.Dialogs
 
 		private DiffContent _fileContent;
 
-		private DateTime _lastLastScrollTime;
-
-		private MergeCodeEditor _lastUpdatedEditor;
+		// 修复（2026-09-05，"点击横向滚动条界面弹动"）：
+		// 垂直/水平滚动分别防抖；同步前检查差值，避免联动循环。
+		private DateTime _lastVerticalScrollTime;
+		private DateTime _lastHorizontalScrollTime;
+		private MergeCodeEditor _lastVerticalEditor;
+		private MergeCodeEditor _lastHorizontalEditor;
 
 		private bool _refreshInProgress;
 
@@ -545,60 +548,92 @@ namespace ForkPlus.UI.Dialogs
 
 		private void OnScrollOffsetChanged(MergeCodeEditor editor)
 		{
-			if (DateTime.Now - _lastLastScrollTime < TimeSpan.FromMilliseconds(100.0) && editor != _lastUpdatedEditor)
-			{
-				return;
-			}
 			double verticalOffset = editor.TextArea.TextView.ScrollOffset.Y;
 			double horizontalOffset = editor.TextArea.TextView.ScrollOffset.X;
+
+			// ── 垂直滚动同步 ──
 			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
 			{
-				if (editor != RemoteMergeEditor)
+				if (!(DateTime.Now - _lastVerticalScrollTime < TimeSpan.FromMilliseconds(100.0)
+					&& editor != _lastVerticalEditor))
 				{
-					ScrollToVerticalOffset(RemoteMergeEditor, verticalOffset);
-				}
-				if (editor != LocalMergeEditor)
-				{
-					ScrollToVerticalOffset(LocalMergeEditor, verticalOffset);
-				}
-				if (editor != MergedMergeEditor)
-				{
-					ScrollToVerticalOffset(MergedMergeEditor, verticalOffset);
+					const double vTolerance = 0.5;
+					bool synced = false;
+					if (editor != RemoteMergeEditor
+						&& RemoteMergeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+						&& Math.Abs(RemoteMergeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					{
+						ScrollToVerticalOffset(RemoteMergeEditor, verticalOffset);
+						synced = true;
+					}
+					if (editor != LocalMergeEditor
+						&& LocalMergeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+						&& Math.Abs(LocalMergeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					{
+						ScrollToVerticalOffset(LocalMergeEditor, verticalOffset);
+						synced = true;
+					}
+					if (editor != MergedMergeEditor
+						&& MergedMergeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+						&& Math.Abs(MergedMergeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					{
+						ScrollToVerticalOffset(MergedMergeEditor, verticalOffset);
+						synced = true;
+					}
+					if (synced)
+					{
+						_lastVerticalScrollTime = DateTime.Now;
+						_lastVerticalEditor = editor;
+					}
 				}
 			}
+
+			// ── 水平滚动同步 ──
 			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset))
 			{
-				if (editor != RemoteMergeEditor)
+				if (!(DateTime.Now - _lastHorizontalScrollTime < TimeSpan.FromMilliseconds(100.0)
+					&& editor != _lastHorizontalEditor))
 				{
-					ScrollToHorizontalOffset(RemoteMergeEditor, horizontalOffset);
-				}
-				if (editor != LocalMergeEditor)
-				{
-					ScrollToHorizontalOffset(LocalMergeEditor, horizontalOffset);
-				}
-				if (editor != MergedMergeEditor)
-				{
-					ScrollToHorizontalOffset(MergedMergeEditor, horizontalOffset);
+					const double hTolerance = 0.5;
+					bool synced = false;
+					if (editor != RemoteMergeEditor
+						&& RemoteMergeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+						&& Math.Abs(RemoteMergeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					{
+						ScrollToHorizontalOffset(RemoteMergeEditor, horizontalOffset);
+						synced = true;
+					}
+					if (editor != LocalMergeEditor
+						&& LocalMergeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+						&& Math.Abs(LocalMergeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					{
+						ScrollToHorizontalOffset(LocalMergeEditor, horizontalOffset);
+						synced = true;
+					}
+					if (editor != MergedMergeEditor
+						&& MergedMergeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+						&& Math.Abs(MergedMergeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					{
+						ScrollToHorizontalOffset(MergedMergeEditor, horizontalOffset);
+						synced = true;
+					}
+					if (synced)
+					{
+						_lastHorizontalScrollTime = DateTime.Now;
+						_lastHorizontalEditor = editor;
+					}
 				}
 			}
-			_lastLastScrollTime = DateTime.Now;
-			_lastUpdatedEditor = editor;
 		}
 
 		private static void ScrollToVerticalOffset(MergeCodeEditor editor, double offset)
 		{
-			if (editor.IsVerticalOffsetWithinDocumentArea(offset))
-			{
-				editor.ScrollToVerticalOffsetCompat(offset);
-			}
+			editor.ScrollToVerticalOffsetCompat(offset);
 		}
 
 		private static void ScrollToHorizontalOffset(MergeCodeEditor editor, double offset)
 		{
-			if (editor.IsHorizontalOffsetWithinDocumentArea(offset))
-			{
-				editor.ScrollToHorizontalOffsetCompat(offset);
-			}
+			editor.ScrollToHorizontalOffsetCompat(offset);
 		}
 
 		private void AllRemoteCheckBox_Changed(object sender, RoutedEventArgs e)

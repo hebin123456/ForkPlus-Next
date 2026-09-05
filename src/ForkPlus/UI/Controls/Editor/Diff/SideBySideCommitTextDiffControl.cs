@@ -14,9 +14,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private CommitCodeEditor _rightDiffCodeEditor;
 
-		private DateTime _lastLastScrollTime;
-
-		private DiffCodeEditor _lastUpdatedEditor;
+		// 修复（2026-09-05，"点击横向滚动条界面弹动"）：
+		// 垂直/水平滚动分别防抖；同步前检查差值，避免联动循环。
+		private DateTime _lastVerticalScrollTime;
+		private DateTime _lastHorizontalScrollTime;
+		private DiffCodeEditor _lastVerticalEditor;
+		private DiffCodeEditor _lastHorizontalEditor;
 
 		[Null]
 		public CodeEditorScrollPositionCache PositionCache { get; set; }
@@ -229,51 +232,67 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private void OnScrollOffsetChanged(DiffCodeEditor editor)
 		{
-			if (DateTime.Now - _lastLastScrollTime < TimeSpan.FromMilliseconds(100.0) && editor != _lastUpdatedEditor)
-			{
-				return;
-			}
 			double verticalOffset = editor.TextArea.TextView.ScrollOffset.Y;
 			double horizontalOffset = editor.TextArea.TextView.ScrollOffset.X;
+
+			// ── 垂直滚动同步 ──
 			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
 			{
-				if (editor != _leftDiffCodeEditor)
+				if (!(DateTime.Now - _lastVerticalScrollTime < TimeSpan.FromMilliseconds(100.0)
+					&& editor != _lastVerticalEditor))
 				{
-					ScrollToVerticalOffset(_leftDiffCodeEditor, verticalOffset);
-				}
-				if (editor != _rightDiffCodeEditor)
-				{
-					ScrollToVerticalOffset(_rightDiffCodeEditor, verticalOffset);
+					const double vTolerance = 0.5;
+					bool synced = false;
+					if (editor != _leftDiffCodeEditor
+						&& _leftDiffCodeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+						&& Math.Abs(_leftDiffCodeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					{
+						_leftDiffCodeEditor.ScrollToVerticalOffsetCompat(verticalOffset);
+						synced = true;
+					}
+					if (editor != _rightDiffCodeEditor
+						&& _rightDiffCodeEditor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+						&& Math.Abs(_rightDiffCodeEditor.TextArea.TextView.ScrollOffset.Y - verticalOffset) > vTolerance)
+					{
+						_rightDiffCodeEditor.ScrollToVerticalOffsetCompat(verticalOffset);
+						synced = true;
+					}
+					if (synced)
+					{
+						_lastVerticalScrollTime = DateTime.Now;
+						_lastVerticalEditor = editor;
+					}
 				}
 			}
+
+			// ── 水平滚动同步 ──
 			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset))
 			{
-				if (editor != _leftDiffCodeEditor)
+				if (!(DateTime.Now - _lastHorizontalScrollTime < TimeSpan.FromMilliseconds(100.0)
+					&& editor != _lastHorizontalEditor))
 				{
-					ScrollToHorizontalOffset(_leftDiffCodeEditor, horizontalOffset);
+					const double hTolerance = 0.5;
+					bool synced = false;
+					if (editor != _leftDiffCodeEditor
+						&& _leftDiffCodeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+						&& Math.Abs(_leftDiffCodeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					{
+						_leftDiffCodeEditor.ScrollToHorizontalOffsetCompat(horizontalOffset);
+						synced = true;
+					}
+					if (editor != _rightDiffCodeEditor
+						&& _rightDiffCodeEditor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+						&& Math.Abs(_rightDiffCodeEditor.TextArea.TextView.ScrollOffset.X - horizontalOffset) > hTolerance)
+					{
+						_rightDiffCodeEditor.ScrollToHorizontalOffsetCompat(horizontalOffset);
+						synced = true;
+					}
+					if (synced)
+					{
+						_lastHorizontalScrollTime = DateTime.Now;
+						_lastHorizontalEditor = editor;
+					}
 				}
-				if (editor != _rightDiffCodeEditor)
-				{
-					ScrollToHorizontalOffset(_rightDiffCodeEditor, horizontalOffset);
-				}
-			}
-			_lastLastScrollTime = DateTime.Now;
-			_lastUpdatedEditor = editor;
-		}
-
-		private static void ScrollToVerticalOffset(DiffCodeEditor editor, double offset)
-		{
-			if (editor.IsVerticalOffsetWithinDocumentArea(offset))
-			{
-				editor.ScrollToVerticalOffsetCompat(offset);
-			}
-		}
-
-		private static void ScrollToHorizontalOffset(DiffCodeEditor editor, double offset)
-		{
-			if (editor.IsHorizontalOffsetWithinDocumentArea(offset))
-			{
-				editor.ScrollToHorizontalOffsetCompat(offset);
 			}
 		}
 	}

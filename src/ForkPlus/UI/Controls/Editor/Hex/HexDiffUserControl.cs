@@ -566,11 +566,17 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 		_isSyncingScroll = true;
 		try
 		{
-			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
+			// 修复（2026-09-05）：同步前检查差值，避免无意义的 ScrollTo 触发额外事件
+			const double tolerance = 0.5;
+			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+				&& other.IsVerticalOffsetWithinDocumentArea(verticalOffset)
+				&& Math.Abs(other.TextArea.TextView.ScrollOffset.Y - verticalOffset) > tolerance)
 			{
 				other.ScrollToVerticalOffsetCompat(verticalOffset);
 			}
-			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset))
+			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+				&& other.IsHorizontalOffsetWithinDocumentArea(horizontalOffset)
+				&& Math.Abs(other.TextArea.TextView.ScrollOffset.X - horizontalOffset) > tolerance)
 			{
 				other.ScrollToHorizontalOffsetCompat(horizontalOffset);
 			}
