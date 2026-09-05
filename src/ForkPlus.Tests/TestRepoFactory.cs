@@ -161,6 +161,33 @@ namespace ForkPlus.Tests
 			return work;
 		}
 
+		/// <summary>远程落后仓库（供模块15 远程交互）：bare 远程 + work 克隆 + other 克隆。
+		/// work 推 c1 后，other 推 c2 到 bare（work 未 fetch）——work 处于 behind 1 状态：
+		/// 供 Fetch（fetch 后 origin/main 前进而本地 main 不动）与 Pull（合并后 main 前进）
+		/// 的真实执行验证。bare 路径 = &lt;work 同级&gt;/remote.git。</summary>
+		public static string CreateRemoteBehind()
+		{
+			string root = NewTempDir("remotebehind");
+			string bare = Path.Combine(root, "remote.git");
+			string work = Path.Combine(root, "work");
+			Run(root, "init -q -b main --bare " + Quote(bare));
+			Run(root, "clone -q " + Quote(bare) + " " + Quote(work));
+			Run(work, "config user.email test@example.com");
+			Run(work, "config user.name Test");
+			Run(work, "config commit.gpgsign false");
+			Commit(work, "r.txt", "remote v1\n", "c1");
+			Run(work, "push -q origin main");
+			// 远端前进：另一克隆推 c2（work 不 fetch——behind 状态由真实 fetch/pull 拉平）
+			string other = Path.Combine(root, "other");
+			Run(root, "clone -q " + Quote(bare) + " " + Quote(other));
+			Run(other, "config user.email test@example.com");
+			Run(other, "config user.name Test");
+			Run(other, "config commit.gpgsign false");
+			Commit(other, "b.txt", "behind change\n", "c2 from other");
+			Run(other, "push -q origin main");
+			return work;
+		}
+
 		/// <summary>远程多分支仓库（供模块11 分支操作测试）：bare 远程 + work 克隆。
 		/// main 已推送且领先 1 提交；feature/one、feature/two 仅本地未推送（供多分支推送）；
 		/// 远程独有分支 remote-only（bare 直建，work 无同名本地分支——供跟踪远程分支）。</summary>
