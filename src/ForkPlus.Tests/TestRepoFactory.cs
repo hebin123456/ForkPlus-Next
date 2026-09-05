@@ -1,0 +1,293 @@
+// E2E 测试基建（阶段0，2026-09-05）：临时 git 仓库工厂。
+// 为全功能 UI 测试按需构造各形态真实仓库：
+//   Basic（多提交多文件） / Branches（本地+远程跟踪分支+tag） / Conflict（合并冲突中）
+//   Stash（含 stash 条目） / BareRemote（本地 bare 远程，供 push/pull/fetch 真实执行）
+// 所有仓库建在临时目录，调用方 finally 用 Cleanup 删除。
+using System;
+using System.Diagnostics;
+using System.IO;
+
+namespace ForkPlus.Tests
+{
+	internal static class TestRepoFactory
+	{
+		/// <summary>基础仓库：4 个提交、2 个文本文件（含未暂存修改）。</summary>
+		public static string CreateBasic()
+		{
+			string root = NewTempDir("basic");
+			Init(root);
+			Commit(root, "readme.md", "# Test Repo\n", "initial commit");
+			Commit(root, "a.txt", "line1\nline2\nline3\n", "add a.txt");
+			Commit(root, "src/app.cs", "class App { }\n", "add app.cs");
+			Commit(root, "b.txt", "hello world\n", "add b.txt");
+			// 未暂存修改（供 working dir diff / stage 测试）
+			File.AppendAllText(Path.Combine(root, "a.txt"), "line4-appended\nline5-appended\n");
+			return root;
+		}
+
+		/// <summary>分支/tag 仓库：main + feature/one + feature/two + 2 个 tag + ahead/behind 状态。</summary>
+		public static string CreateBranches()
+		{
+			string root = NewTempDir("branches");
+			Init(root);
+			Commit(root, "main.txt", "main v1\n", "c1 on main");
+			Run(root, "branch feature/one");
+			Run(root, "branch feature/two");
+			Commit(root, "main.txt", "main v2\n", "c2 on main");
+			Run(root, "tag v1.0");
+			Commit(root, "main.txt", "main v3\n", "c3 on main");
+			Run(root, "tag v2.0");
+			Run(root, "checkout -q feature/one");
+			Commit(root, "one.txt", "feature one\n", "c4 on feature/one");
+			Run(root, "checkout -q feature/two");
+			Commit(root, "two.txt", "feature two\n", "c5 on feature/two");
+			Run(root, "checkout -q main");
+			return root;
+		}
+
+		/// <summary>冲突仓库：两分支各自改同一行，checkout conflict 分支（处于冲突状态需要外部 merge）。</summary>
+		public static string CreateConflict()
+		{
+			string root = NewTempDir("conflict");
+			Init(root);
+			Commit(root, "conflicted.txt", "base line\n", "base");
+			Run(root, "checkout -q -b theirs");
+			Commit(root, "conflicted.txt", "their line\n", "theirs change");
+			Run(root, "checkout -q main");
+			Commit(root, "conflicted.txt", "our line\n", "ours change");
+			// 触发冲突（留下 conflicted 状态）
+			var psi = GitPsi(root, "merge theirs");
+			using var p = Process.Start(psi);
+			p.WaitForExit(); // 期望非 0（冲突）
+			return root;
+		}
+
+		/// <summary>stash 仓库：2 个 stash 条目。</summary>
+		public static string CreateStash()
+		{
+			string root = NewTempDir("stash");
+			Init(root);
+			Commit(root, "f.txt", "committed\n", "base");
+			File.WriteAllText(Path.Combine(root, "s1.txt"), "stashed 1\n");
+			Run(root, "add s1.txt");
+			Run(root, "stash push -m stash-one");
+			File.WriteAllText(Path.Combine(root, "s2.txt"), "stashed 2\n");
+			Run(root, "add s2.txt");
+			Run(root, "stash push -m stash-two");
+			return root;
+		}
+
+		/// <summary>本地 bare 远程 + 克隆工作仓库：work 推到 origin（origin=本地 bare），
+		/// 供 push/pull/fetch/多分支推送的真实执行验证（结果落文件系统，无网络）。</summary>
+		public static string CreateBareRemote()
+		{
+			string root = NewTempDir("bare");
+			string bare = Path.Combine(root, "remote.git");
+			string work = Path.Combine(root, "work");
+			Run(root, "init -q -b main --bare " + Quote(bare));
+			Run(root, "clone -q " + Quote(bare) + " " + Quote(work));
+			// clone 出的 work 需要自己的用户配置（Init 只配了 root）
+			Run(work, "config user.email test@example.com");
+			Run(work, "config user.name Test");
+			Run(work, "config commit.gpgsign false");
+			Commit(work, "r.txt", "remote v1\n", "c1");
+			Run(work, "push -q origin main");
+			// 让 main 领先 origin/main 一个提交（供 push 测试）
+			Commit(work, "r2.txt", "remote v2\n", "c2 ahead");
+			return work;
+		}
+
+		/// <summary>二进制 + 图片 diff 仓库：.bin（修改）、两张 png（旧/新）。</summary>
+		public static string CreateBinary()
+		{
+			string root = NewTempDir("binary");
+			Init(root);
+			byte[] v1 = new byte[256];
+			new Random(7).NextBytes(v1);
+			File.WriteAllBytes(Path.Combine(root, "data.bin"), v1);
+			File.Copy(GetOrMakePng(root, 100), Path.Combine(root, "img.png"));
+			Run(root, "add .");
+			Run(root, "commit -q -m " + Quote("binary base"));
+			byte[] v2 = new byte[512];
+			new Random(8).NextBytes(v2);
+			File.WriteAllBytes(Path.Combine(root, "data.bin"), v2);
+			File.Copy(GetOrMakePng(root, 140), Path.Combine(root, "img.png"), overwrite: true);
+			return root;
+		}
+
+		public static void Cleanup(string root)
+		{
+			try
+			{
+				if (Directory.Exists(root))
+				{
+					Directory.Delete(root, recursive: true);
+				}
+			}
+			catch
+			{
+				// Windows 句柄延迟释放：忽略（临时目录，OS 会清理）
+			}
+		}
+
+		// ============================ 内部工具 ============================
+
+		// 8x8 单色 PNG（无外部依赖；不同 seed 生成不同颜色，供图片 diff 对比）
+		private static string GetOrMakePng(string dir, int seed)
+		{
+			string path = Path.Combine(Path.GetTempPath(), "fp_png_" + seed + ".png");
+			if (!File.Exists(path))
+			{
+				File.WriteAllBytes(path, MakeSolidPng(seed));
+			}
+			return path;
+		}
+
+		private static byte[] MakeSolidPng(int channel)
+		{
+			int w = 8, h = 8;
+			byte r = (byte)(channel % 256), g = (byte)((channel * 3) % 256), b = (byte)((channel * 7) % 256);
+			byte[] raw = new byte[h * (1 + w * 4)];
+			for (int y = 0; y < h; y++)
+			{
+				int off = y * (1 + w * 4);
+				raw[off] = 0;
+				for (int x = 0; x < w; x++)
+				{
+					raw[off + 1 + x * 4] = r;
+					raw[off + 2 + x * 4] = g;
+					raw[off + 3 + x * 4] = b;
+					raw[off + 4 + x * 4] = 255;
+				}
+			}
+			byte[] compressed;
+			using (var ms = new MemoryStream())
+			{
+				ms.WriteByte(0x78);
+				ms.WriteByte(0x01);
+				using (var ds = new System.IO.Compression.DeflateStream(ms, System.IO.Compression.CompressionMode.Compress, leaveOpen: true))
+				{
+					ds.Write(raw, 0, raw.Length);
+				}
+				uint adler = Adler32(raw);
+				ms.WriteByte((byte)(adler >> 24));
+				ms.WriteByte((byte)(adler >> 16));
+				ms.WriteByte((byte)(adler >> 8));
+				ms.WriteByte((byte)adler);
+				compressed = ms.ToArray();
+			}
+			using var png = new MemoryStream();
+			png.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, 0, 8);
+			byte[] ihdr = new byte[13 + 12];
+			ihdr[0] = (byte)'I'; ihdr[1] = (byte)'H'; ihdr[2] = (byte)'D'; ihdr[3] = (byte)'R';
+			byte[] len = { 0, 0, 0, 13 };
+			ihdr[4] = len[0]; ihdr[5] = len[1]; ihdr[6] = len[2]; ihdr[7] = len[3];
+			ihdr[8] = 0; ihdr[9] = 0; ihdr[10] = 0; ihdr[11] = (byte)w;
+			ihdr[12] = 0; ihdr[13] = 0; ihdr[14] = 0; ihdr[15] = (byte)h;
+			ihdr[16] = 8; ihdr[17] = 6; ihdr[18] = 0; ihdr[19] = 0; ihdr[20] = 0;
+			uint crc = Crc32(ihdr, 4, 17);
+			ihdr[21] = (byte)(crc >> 24); ihdr[22] = (byte)(crc >> 16); ihdr[23] = (byte)(crc >> 8); ihdr[24] = (byte)crc;
+			png.Write(ihdr, 0, 25);
+			byte[] idat = new byte[compressed.Length + 12];
+			int cl = compressed.Length;
+			idat[0] = (byte)'I'; idat[1] = (byte)'D'; idat[2] = (byte)'A'; idat[3] = (byte)'T';
+			idat[4] = (byte)(cl >> 24); idat[5] = (byte)(cl >> 16); idat[6] = (byte)(cl >> 8); idat[7] = (byte)cl;
+			Buffer.BlockCopy(compressed, 0, idat, 8, cl);
+			uint crc2 = Crc32(idat, 4, 4 + cl);
+			idat[8 + cl] = (byte)(crc2 >> 24); idat[9 + cl] = (byte)(crc2 >> 16); idat[10 + cl] = (byte)(crc2 >> 8); idat[11 + cl] = (byte)crc2;
+			png.Write(idat, 0, idat.Length);
+			byte[] iend = { 0, 0, 0, 0, (byte)'I', (byte)'E', (byte)'N', (byte)'D', 0xAE, 0x42, 0x60, 0x82 };
+			png.Write(iend, 0, iend.Length);
+			return png.ToArray();
+		}
+
+		private static uint Adler32(byte[] data)
+		{
+			uint a = 1, b = 0;
+			foreach (byte x in data)
+			{
+				a = (a + x) % 65521;
+				b = (b + a) % 65521;
+			}
+			return (b << 16) | a;
+		}
+
+		private static uint[] _crcTable;
+
+		private static uint Crc32(byte[] data, int offset, int count)
+		{
+			if (_crcTable == null)
+			{
+				_crcTable = new uint[256];
+				for (int n = 0; n < 256; n++)
+				{
+					uint c = (uint)n;
+					for (int k = 0; k < 8; k++)
+					{
+						c = (c & 1) != 0 ? 0xEDB88320u ^ (c >> 1) : c >> 1;
+					}
+					_crcTable[n] = c;
+				}
+			}
+			uint crc = 0xFFFFFFFFu;
+			for (int i = 0; i < count; i++)
+			{
+				crc = _crcTable[(crc ^ data[offset + i]) & 0xFF] ^ (crc >> 8);
+			}
+			return crc ^ 0xFFFFFFFFu;
+		}
+
+		private static string NewTempDir(string kind)
+		{
+			string root = Path.Combine(Path.GetTempPath(), "fpe2e_" + kind + "_" + Guid.NewGuid().ToString("N").Substring(0, 8));
+			Directory.CreateDirectory(root);
+			return root;
+		}
+
+		private static void Init(string root)
+		{
+			// -b main：显式初始分支（沙箱 git 版本默认 master，测试统一假定 main）
+			Run(root, "init -q -b main");
+			Run(root, "config user.email test@example.com");
+			Run(root, "config user.name Test");
+			Run(root, "config commit.gpgsign false");
+		}
+
+		private static void Commit(string root, string relPath, string content, string message)
+		{
+			string full = Path.Combine(root, relPath);
+			Directory.CreateDirectory(Path.GetDirectoryName(full));
+			File.WriteAllText(full, content);
+			Run(root, "add " + Quote(relPath));
+			Run(root, "commit -q -m " + Quote(message));
+		}
+
+		private static void Run(string cwd, string args)
+		{
+			using var p = Process.Start(GitPsi(cwd, args));
+			string err = p.StandardError.ReadToEnd();
+			p.StandardOutput.ReadToEnd();
+			p.WaitForExit();
+			if (p.ExitCode != 0)
+			{
+				throw new InvalidOperationException("git " + args + " 失败: " + err);
+			}
+		}
+
+		private static ProcessStartInfo GitPsi(string cwd, string args)
+		{
+			return new ProcessStartInfo("git", args)
+			{
+				WorkingDirectory = cwd,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true,
+				UseShellExecute = false
+			};
+		}
+
+		private static string Quote(string s)
+		{
+			return "\"" + s + "\"";
+		}
+	}
+}
