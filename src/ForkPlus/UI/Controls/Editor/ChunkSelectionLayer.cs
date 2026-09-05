@@ -115,6 +115,14 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private double _pendingAdornerTopPosition;
 
+		// 修复（2026-09-05，"浮窗抖动 / 反复显示消失"）：
+		// 跟踪鼠标是否在浮窗上，避免编辑器 MouseLeave 时误删浮窗。
+		private bool _isPointerOverAdorner;
+
+		// 延迟隐藏的取消令牌：鼠标离开编辑器后延迟隐藏，
+		// 若期间鼠标进入浮窗则取消隐藏，消除抖动。
+		private global::System.Threading.CancellationTokenSource _hideDelayCts;
+
 		protected Brush ChunkBackgroundBrush;
 
 		protected static readonly Pen _chunkBorderPen;
@@ -162,6 +170,12 @@ namespace ForkPlus.UI.Controls.Editor
 			_textEditor.TextChanged += TextEditor_TextChanged;
 			// Migration note：WPF IsVisibleChanged 事件 → Avalonia 用 Visual.IsVisibleProperty 属性变更可观察流。
 			_textEditor.GetPropertyChangedObservable(global::Avalonia.Visual.IsVisibleProperty).Subscribe(delegate(global::Avalonia.AvaloniaPropertyChangedEventArgs e) { TextEditor_IsVisibleChanged(_textEditor, e); });
+			// 修复（2026-09-05，"浮窗消失不掉 / 切换界面后残留"）：
+			// 监听自身从可视树剥离事件（layer 随 TextView 一同卸载时触发），
+			// 彻底清理浮窗，避免 AdornerLayer 上残留"僵尸"装饰器。
+			// 注意：不能监听 _textEditor.DetachedFromVisualTree——在某些场景
+			// （如 headless 测试）下编辑器可能先短暂 attach/detach，导致误判。
+			this.DetachedFromVisualTree += ChunkSelectionLayer_DetachedFromVisualTree;
 			RefreshBrush();
 			// Migration note：WPF WeakEventManagerBase<TMgr,TSrc>.AddListener → AvaloniaEdit 12 的 4 泛型 AddHandler(source, handler)。
 			AvaloniaEdit.Rendering.TextViewWeakEventManager.ScrollOffsetChanged.AddHandler(_textEditor.TextArea.TextView, TextView_ScrollOffsetChanged);
@@ -285,6 +299,12 @@ namespace ForkPlus.UI.Controls.Editor
 				}
 				_adorner = new ButtonsAdorner(this);
 				_adorner.Child = CreateAdornerContent(_textEditor);
+				// 修复（2026-09-05，"浮窗抖动 / 反复显示消失"）：
+				// 监听浮窗自身的鼠标进入/离开，与编辑器的鼠标状态配合：
+				// 只要鼠标在编辑器或浮窗任一上，浮窗就保持显示；
+				// 两者都离开后才延迟隐藏，消除"离开编辑器→消失→又出现"的抖动。
+				_adorner.PointerEntered += Adorner_PointerEntered;
+				_adorner.PointerExited += Adorner_PointerExited;
 				_adornerLayer.Add(_adorner);
 			}
 			_adorner.Child.Measure(new Size(1000.0, 22.0));
@@ -302,8 +322,16 @@ namespace ForkPlus.UI.Controls.Editor
 		{
 			// 无条件取消 pending 显示请求：否则 Remove 后队列里的回调会重建已移除的 Adorner
 			_adornerShowPending = false;
+			// 取消延迟隐藏任务
+			_hideDelayCts?.Cancel();
+			_hideDelayCts?.Dispose();
+			_hideDelayCts = null;
+			_isPointerOverAdorner = false;
 			if (_adorner != null)
 			{
+				// 解绑事件，避免内存泄漏
+				_adorner.PointerEntered -= Adorner_PointerEntered;
+				_adorner.PointerExited -= Adorner_PointerExited;
 				_adorner.Child = null;
 				_adornerLayer?.Remove(_adorner);
 				_adornerLayer = null;
@@ -329,6 +357,8 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private void TextEditor_MouseEnter(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
+			// 鼠标回到编辑器 → 取消待执行的隐藏
+			_hideDelayCts?.Cancel();
 			_lastPointerPosition = e.GetPosition(_textEditor);
 			RefreshActiveChunk();
 		}
@@ -338,13 +368,70 @@ namespace ForkPlus.UI.Controls.Editor
 			ContextMenu contextMenu = _textEditor.ContextMenu;
 			if (contextMenu == null || !contextMenu.IsPointerOver)
 			{
-				ButtonsAdorner adorner = _adorner;
-				if (adorner == null || VisualTreeHelper.HitTest(adorner, e.GetPosition(_adorner)) == null)
+				// 修复（2026-09-05，"浮窗抖动 / 反复显示消失"）：
+				// 原代码直接判断鼠标不在 Adorner 上就 ActiveChunk=null，
+				// 但 PointerExited 触发时鼠标可能刚离开编辑器、还没进入浮窗
+				// （中间有 1~2 像素间隙或事件时序问题），导致浮窗立即消失，
+				// 消失后鼠标又"落回"编辑器 → MouseEnter → 重新显示 → 抖动。
+				//
+				// 改为：鼠标在浮窗上 → 绝不隐藏；不在浮窗上 → 延迟 150ms 再隐藏，
+				// 给鼠标从编辑器滑入浮窗预留时间，期间若进入浮窗则取消隐藏。
+				if (_isPointerOverAdorner)
+				{
+					return;
+				}
+				ScheduleDelayedHide();
+			}
+			_lastPointerPosition = null;
+		}
+
+		/// <summary>
+		/// 延迟隐藏浮窗：150ms 内若鼠标进入浮窗或回到编辑器则取消。
+		/// </summary>
+		private async void ScheduleDelayedHide()
+		{
+			_hideDelayCts?.Cancel();
+			_hideDelayCts?.Dispose();
+			var cts = new global::System.Threading.CancellationTokenSource();
+			_hideDelayCts = cts;
+			try
+			{
+				await global::System.Threading.Tasks.Task.Delay(150, cts.Token);
+				// 延迟结束后再检查一次：鼠标在浮窗上则不隐藏
+				if (!_isPointerOverAdorner)
 				{
 					ActiveChunk = null;
 				}
 			}
-			_lastPointerPosition = null;
+			catch (global::System.Threading.Tasks.TaskCanceledException)
+			{
+				// 被取消：什么都不做（浮窗保持显示）
+			}
+			finally
+			{
+				if (_hideDelayCts == cts)
+				{
+					_hideDelayCts = null;
+				}
+				cts.Dispose();
+			}
+		}
+
+		private void Adorner_PointerEntered(object sender, global::Avalonia.Input.PointerEventArgs e)
+		{
+			_isPointerOverAdorner = true;
+			// 鼠标进入浮窗 → 取消待执行的隐藏
+			_hideDelayCts?.Cancel();
+		}
+
+		private void Adorner_PointerExited(object sender, global::Avalonia.Input.PointerEventArgs e)
+		{
+			_isPointerOverAdorner = false;
+			// 鼠标离开浮窗 → 检查是否还在编辑器上，不在则延迟隐藏
+			if (_lastPointerPosition == null)
+			{
+				ScheduleDelayedHide();
+			}
 		}
 
 		private void TextEditor_MouseMove(object sender, global::Avalonia.Input.PointerEventArgs e)
@@ -364,6 +451,16 @@ namespace ForkPlus.UI.Controls.Editor
 			{
 				RemoveChunkAdorner();
 			}
+		}
+
+		private void ChunkSelectionLayer_DetachedFromVisualTree(object sender, global::Avalonia.VisualTreeAttachmentEventArgs e)
+		{
+			// 修复（2026-09-05，"浮窗消失不掉 / 切换界面后残留"）：
+			// layer 从可视树剥离（如切换页面、关闭 Tab）时，必须彻底清理浮窗，
+			// 否则 AdornerLayer 上的装饰器会成为"僵尸"——对应控件已不在但浮窗还在。
+			// 注：ShowChunkAdornerCore 中 GetAdornerLayer 返回 null 会自然阻止重建，
+			// 无需额外 _detached 标志守卫。
+			RemoveChunkAdorner();
 		}
 
 		private void TextArea_SelectionChanged(object sender, EventArgs e)
