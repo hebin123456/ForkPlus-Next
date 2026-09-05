@@ -90,6 +90,18 @@ namespace ForkPlus.UI.Dialogs
 	// 捕获吞掉，表现为开→关切换）。借时间戳识别"刚被本次按压关闭"以免重开。
 	private DateTime? _popupClosedAtUtc;
 
+	// ===== Bug 修复（2026-09-05，"自定义颜色弹窗有概率关不掉/要点好几下，甚至 UI 卡死崩溃"）=====
+	// 关窗销毁路径守卫。关窗时序里平台会先把激活权移交别的窗口（触发 Deactivated），
+	// 旧代码在 Deactivated 里无条件 ColorPickerPopup.IsOpen = false → Popup_Closed →
+	// FlushPendingApply → ApplyAndRefresh——重活（重载整个主题字典 + 全 UI 资源失效 +
+	// 广播 20+ 订阅者刷新 + 同步写盘）全部同步跑在窗口 teardown 路径上：
+	//   1) 关窗被阻塞数百 ms → 用户连点 X（"要点好几下才能关掉"）；
+	//   2) 订阅者刷新可能访问正在拆除的控件树，OnClosed 又无异常保护——任何订阅者
+	//      异常都是未处理 dispatcher 异常，直接崩掉整个应用（"UI 卡死崩溃"）。
+	// 置位时机：OnClosing（用户点 X 的主路径）+ OnClosed 兜底（Owner 级联关闭等
+	// 可能不经 OnClosing）。
+	private bool _isClosing;
+
 	public CustomColorsDialog()
 	{
 		// 关闭基类 ForkPlusDialogWindow 自动添加的 chrome（logo/header/footer/command preview）。
@@ -117,7 +129,16 @@ namespace ForkPlus.UI.Dialogs
 		ColorPickerPopup.Closed += Popup_Closed;
 		// Bug 修复（失焦消失）：窗口失活（切应用/点其他窗口）→ 关闭 Popup，
 		// 对齐 WPF StaysOpen=False 的失活关闭语义（light dismiss 只覆盖窗口内按压）。
-		Deactivated += delegate { ColorPickerPopup.IsOpen = false; };
+		// 2026-09-05：关窗销毁路径上平台必触发失活——此时不再操作 Popup（销毁中改 IsOpen
+		// 是 PopupRoot 生命周期竞态，且会连带 Popup_Closed 在 teardown 里跑重活，见 _isClosing）。
+		Deactivated += delegate
+		{
+			if (_isClosing)
+			{
+				return;
+			}
+			ColorPickerPopup.IsOpen = false;
+		};
 	}
 
 		private void Localize()
@@ -159,8 +180,13 @@ namespace ForkPlus.UI.Dialogs
 					isCustomized = false;
 				}
 				_items.Add(new CustomColorItem(key, TranslateColorKey(key, lang), hex, isCustomized, resetLabel));
-			}
-			ColorListControl.ItemsSource = _items;
+		}
+		// 注入编辑回调：列表 hex 框改色经 HexValue setter 走防抖应用（2026-09-05）
+		foreach (CustomColorItem item in _items)
+		{
+			item.HexValueEdited = OnItemHexEdited;
+		}
+		ColorListControl.ItemsSource = _items;
 		}
 
 		/// <summary>从当前 Application.Resources 取某个 Color key 的 hex 值（预设原色）。</summary>
@@ -310,8 +336,11 @@ namespace ForkPlus.UI.Dialogs
 			if (!hex.StartsWith("#")) hex = "#" + hex;
 			try { ColorConverter.ConvertFromString(hex); }
 			catch { return; }
+			// 程序化赋值经 _suppressUpdates 抑制编辑回调（本方法自管 workingCopy/防抖）
+			_suppressUpdates = true;
 			_popupEditingItem.HexValue = hex;
 			_popupEditingItem.IsCustomized = true;
+			_suppressUpdates = false;
 			_workingCopy[_popupEditingItem.Key] = hex;
 			// 防抖重活：拖动中每个 PointerMove 都进这里，全量 ApplyAndRefresh 会卡死 UI。
 			_hasPendingApply = true;
@@ -329,23 +358,70 @@ namespace ForkPlus.UI.Dialogs
 		}
 
 		private void Popup_Closed(object sender, EventArgs e)
+	{
+		// 先记关闭时刻（供 ColorPreview_Click 的"关了又开"守卫判断），
+		// 再调度 flush——时间戳与按压同拍，重活推迟到下一拍。
+		_popupClosedAtUtc = DateTime.UtcNow;
+		_popupEditingItem = null;
+		// 关窗触发的 Popup 关闭不在此 flush（销毁路径禁跑重活，OnClosed 统一收尾）。
+		if (_isClosing)
 		{
-			// 关闭即 flush：用户选完色点外部关闭，最后一次改动立即应用 + 落盘。
-			FlushPendingApply();
-			_popupEditingItem = null;
-			// 记录关闭时刻：供 ColorPreview_Click 的"关了又开"守卫判断
-			// "本次点击的按压是否刚关掉了 Popup"（见字段注释）。
-			_popupClosedAtUtc = DateTime.UtcNow;
+			return;
 		}
+		// 关闭即 flush（用户选完色点外部关闭，最后一次改动立即应用 + 落盘）。
+		// 2026-09-05：flush 从同步改为推迟一拍（Background 优先级）。同步 flush 时，
+		// 重活会阻塞同一次点击的 PointerReleased 分发——release 到达时距关闭时刻已超
+		// 300ms 守卫窗口（慢机重载主题字典可达数百 ms），ColorPreview_Click 会把刚被
+		// 按压关掉的弹板又开回去（"弹板关不掉"）。推迟后 release 先于重活分发、守卫在
+		// 窗口内生效；主界面变色延迟 < 一帧，"立即生效"语义不变。
+		global::Avalonia.Threading.Dispatcher.UIThread.Post(FlushPendingApply, global::Avalonia.Threading.DispatcherPriority.Background);
+	}
 
-		/// <summary>对话框关闭：flush 防抖中的待应用色，停掉计时器。
-		/// 换色已实时落盘的设计下，关窗时 pending 的最后一步不能丢。</summary>
-		protected override void OnClosed(EventArgs e)
+	/// <summary>对话框关闭：轻量收尾——只做持久化 + 推迟应用，绝不在销毁路径跑重活。
+	/// 换色已实时落盘的设计下，关窗时 pending 的最后一步不能丢；但 OnClosed 里同步跑
+	/// ApplyAndRefresh（重载主题字典 + 广播 20+ 订阅者刷新 + 写盘）会把重活压在窗口
+	/// teardown 路径上——关窗卡顿数百 ms（"点好几下才能关掉"），订阅者异常 = 未处理
+	/// dispatcher 异常 = 应用崩溃（2026-09-05）。改为：settings 赋值 + Save（轻）同步做，
+	/// App.ApplyCustomColors 推迟到窗口销毁完成后（订阅者树里不再有半拆的对话框）。 </summary>
+	protected override void OnClosed(EventArgs e)
+	{
+		_isClosing = true; // 兜底：Owner 级联关闭等路径可能不经 OnClosing
+		try
 		{
-			base.OnClosed(e);
-			FlushPendingApply();
 			_applyDebounceTimer.Stop();
 		}
+		catch
+		{
+		}
+		base.OnClosed(e);
+		try
+		{
+			if (_hasPendingApply)
+			{
+				_hasPendingApply = false;
+				ForkPlusSettings.Default.CustomColors = new Dictionary<string, string>(_workingCopy);
+				if (_workingCopy.Count > 0)
+				{
+					ForkPlusSettings.Default.UseCustomColors = true;
+				}
+				try { ForkPlusSettings.Default.Save(); } catch { /* 持久化失败不阻断关窗 */ }
+				// 应用推迟到销毁完成后；方法组无捕获，不延长本对话框生命周期。
+				global::Avalonia.Threading.Dispatcher.UIThread.Post(App.ApplyCustomColors, global::Avalonia.Threading.DispatcherPriority.Background);
+			}
+		}
+		catch
+		{
+			// 销毁路径上任何异常都不允许冒泡成未处理 dispatcher 异常（= 崩溃）
+		}
+	}
+
+	/// <summary>关窗最早可拦截点：置 _isClosing，让后续的 Deactivated/Popup_Closed
+	/// 走销毁守卫（不再操作 Popup、不再在 teardown 里 flush 重活）。</summary>
+	protected override void OnClosing(global::Avalonia.Controls.WindowClosingEventArgs e)
+	{
+		_isClosing = true;
+		base.OnClosing(e);
+	}
 
 		/// <summary>更新 HSV 2D 方块的背景色（当前色相纯色）+ 指示器位置。</summary>
 		private void UpdateHsvCanvas(double h, double s, double v)
@@ -529,23 +605,38 @@ namespace ForkPlus.UI.Dialogs
 
 		#endregion
 
-		private void HexTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		/// <summary>列表内 hex 输入框改色（经 HexValue setter 编辑回调，见 CustomColorItem）。
+		/// Migration note（2026-09-05，"列表里直接改 hex 不生效"）：WPF 原版 XAML 挂 TextChanged，
+		/// 迁移丢失——TwoWay 绑定只写了 item.HexValue（列表预览变了），_workingCopy/主题/落盘
+		/// 全不走，关窗即丢。修复不补 TextChanged 而走 setter 回调：绑定初始化（source→target）
+		/// 只读 getter 不触发回调；程序化赋值（Reset/Random/Import）经 _suppressUpdates 同步抑制，
+		/// 无"绑定回声"污染（TextChanged 方案下程序化改值→绑定刷 Text→TextChanged 回写，
+		/// 会把 Reset 刚清掉的自定义项又写回去，表现为 Reset 失效）。
+		/// 走 150ms 防抖（与 Popup 改色一致）：原死代码实现是每击键一次全量 ApplyAndRefresh。 </summary>
+		private void OnItemHexEdited(CustomColorItem item)
 		{
-			if (sender is TextBox tb && tb.Tag is CustomColorItem item)
+			if (_suppressUpdates || item == null)
 			{
-				string hex = tb.Text.Trim();
-				if (string.IsNullOrEmpty(hex)) return;
-				if (!hex.StartsWith("#")) hex = "#" + hex;
-				try
-				{
-					ColorConverter.ConvertFromString(hex);
-					item.HexValue = hex;
-					item.IsCustomized = true;
-					_workingCopy[item.Key] = hex;
-					ApplyAndRefresh();
-				}
-				catch { }
+				return;
 			}
+			string hex = item.HexValue == null ? "" : item.HexValue.Trim();
+			if (string.IsNullOrEmpty(hex)) return;
+			if (!hex.StartsWith("#")) hex = "#" + hex;
+			try
+			{
+				ColorConverter.ConvertFromString(hex);
+			}
+			catch
+			{
+				return; // 输入到一半（如 "#28"）不应用，等输完
+			}
+			item.HexValue = hex;
+			item.IsCustomized = true;
+			_workingCopy[item.Key] = hex;
+			// 与 Popup 改色一致的防抖调度：连击期间轻量更新，停顿后跑一次重活
+			_hasPendingApply = true;
+			_applyDebounceTimer.Stop();
+			_applyDebounceTimer.Start();
 		}
 
 		private void ResetItem_Click(object sender, RoutedEventArgs e)
@@ -553,8 +644,12 @@ namespace ForkPlus.UI.Dialogs
 			if (sender is Button btn && btn.Tag is CustomColorItem item)
 			{
 				_workingCopy.Remove(item.Key);
+				// 程序化赋值经 _suppressUpdates 抑制编辑回调（否则回调把刚删的 key 又写回，
+				// Reset 表现为"按了没反应"）
+				_suppressUpdates = true;
 				item.HexValue = GetCurrentColorHex(item.Key);
 				item.IsCustomized = false;
+				_suppressUpdates = false;
 				ApplyAndRefresh();
 			}
 		}
@@ -562,11 +657,14 @@ namespace ForkPlus.UI.Dialogs
 		private void ResetAll_Click(object sender, RoutedEventArgs e)
 	{
 		_workingCopy.Clear();
+		// 程序化赋值经 _suppressUpdates 抑制编辑回调（同 ResetItem_Click）
+		_suppressUpdates = true;
 		foreach (CustomColorItem item in _items)
 		{
 			item.HexValue = GetCurrentColorHex(item.Key);
 			item.IsCustomized = false;
 		}
+		_suppressUpdates = false;
 		ApplyAndRefresh();
 	}
 
@@ -831,7 +929,8 @@ namespace ForkPlus.UI.Dialogs
 		foreach (KeyValuePair<string, string> kv in imported)
 			_workingCopy[kv.Key] = kv.Value;
 
-		// 同步 UI：更新每项的 HexValue/IsCustomized
+		// 同步 UI：更新每项的 HexValue/IsCustomized（程序化赋值经 _suppressUpdates 抑制编辑回调）
+		_suppressUpdates = true;
 		foreach (CustomColorItem item in _items)
 		{
 			if (_workingCopy.TryGetValue(item.Key, out string hex))
@@ -840,6 +939,7 @@ namespace ForkPlus.UI.Dialogs
 				item.IsCustomized = true;
 			}
 		}
+		_suppressUpdates = false;
 
 		ApplyAndRefresh();
 
@@ -1007,7 +1107,8 @@ namespace ForkPlus.UI.Dialogs
 	Set("Window.BackgroundColor", windowBg);
 	Set("Window.TitleBar.BackgroundColor", titleBarBg);
 
-		// 更新 UI
+		// 更新 UI（程序化赋值经 _suppressUpdates 抑制编辑回调）
+	_suppressUpdates = true;
 		foreach (CustomColorItem item in _items)
 		{
 			if (_workingCopy.TryGetValue(item.Key, out string hex))
@@ -1016,6 +1117,7 @@ namespace ForkPlus.UI.Dialogs
 				item.IsCustomized = true;
 			}
 		}
+		_suppressUpdates = false;
 		ApplyAndRefresh();
 	}
 
@@ -1046,11 +1148,26 @@ namespace ForkPlus.UI.Dialogs
 			public string ResetLabel { get; }
 
 			private string _hexValue;
-			public string HexValue
+		public string HexValue
+		{
+			get { return _hexValue; }
+			set
 			{
-				get { return _hexValue; }
-				set { _hexValue = value; OnPropertyChanged(); OnPropertyChanged(nameof(PreviewBrush)); }
+				// 同值短路：正常事件语义外，还断开 OnItemHexEdited 回调里的规范化回写重入
+				if (_hexValue == value)
+				{
+					return;
+				}
+				_hexValue = value; OnPropertyChanged(); OnPropertyChanged(nameof(PreviewBrush));
+				// 编辑回调（对话框注入）：用户经列表 hex 框改色（TwoWay 绑定 target→source 推送）
+				// 时走防抖应用。绑定初始化（source→target）只读 getter 不触发；程序化赋值
+				//（Reset/Random/Import/popup 同步）由对话框经 _suppressUpdates 抑制。
+				HexValueEdited?.Invoke(this);
 			}
+		}
+
+		/// <summary>对话框注入的编辑回调（2026-09-05，"列表里直接改 hex 不生效"，见 OnItemHexEdited）。</summary>
+		internal Action<CustomColorItem> HexValueEdited;
 
 			private bool _isCustomized;
 			public bool IsCustomized

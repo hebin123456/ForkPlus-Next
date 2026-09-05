@@ -30,7 +30,9 @@
               <Border Grid.Column="1" Width="32" Height="22" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Left" Cursor="Hand" Tag="{Binding}" ToolTip.Tip="{Binding Key}" PointerReleased="ColorPreview_Click">
                 <Rectangle Fill="{Binding PreviewBrush}" />
               </Border>
-              <!-- hex 输入 -->
+              <!-- hex 输入。改动经 HexValue setter 的编辑回调走防抖应用（见 OnItemHexEdited），
+                   不挂 TextChanged：绑定回声（程序化改 HexValue → 绑定刷 Text → TextChanged
+                   回写）会把 Reset 刚清掉的自定义项又写回去。 -->
               <TextBox Grid.Column="2" Text="{Binding HexValue, Mode=TwoWay}" Margin="8,0,0,0" VerticalAlignment="Center" Tag="{Binding}" />
               <!-- 重置按钮 -->
               <Button Grid.Column="3" x:Name="ResetItemBtn" Content="{Binding ResetLabel}" Padding="12,2" Margin="8,0,0,0" Click="ResetItem_Click" Tag="{Binding}" IsEnabled="{Binding IsCustomized}" VerticalAlignment="Center" HorizontalAlignment="Left" />
