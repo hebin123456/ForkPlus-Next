@@ -34,14 +34,22 @@
     </Setter>
   </ControlTheme>
   <ControlTheme x:Key="ScrollBarThumbVertical" TargetType="Thumb">
-    
+    <!-- Migration note（2026-09-05，修复"垂直滚动条有时候长度不对"）：
+         1) MinHeight 从 60 降到 18：长内容时按比例 thumb 可能只有十几像素，
+            60 的下限会把 thumb 强行拉成 3~4 倍大，用户拖到底部发现内容还没滚完。
+            18px 是 thumb 圆角 + 可拖拽的视觉下限，比官方 Fluent 主题的 8px 略大，
+            兼顾可用性与比例准确性。
+         2) 去掉 Border 的 Height="{TemplateBinding Height}" / Width="{TemplateBinding Width}"：
+            Avalonia Track 通过 Arrange 设置 Thumb 的 Bounds，不设置 Height/Width 属性
+            （这两个属性运行时是 NaN），TemplateBinding 到 NaN 在 measure 阶段可能
+            干扰布局计算；让 Border 默认 Stretch 铺满 Thumb 即可。 -->
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
-    <Setter Property="MinHeight" Value="60" />
+    <Setter Property="MinHeight" Value="18" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Thumb">
           <Grid Background="#00FFFFFF">
-            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="2,0,2,0" CornerRadius="4" x:Name="rectangle" />
+            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,2,0" CornerRadius="4" x:Name="rectangle" />
           </Grid>
           
         </ControlTemplate>
@@ -57,14 +65,14 @@
         <Setter Value="{DynamicResource ScrollBar.Pressed.Thumb.Border}" Property="BorderBrush" />
     </Style></ControlTheme>
   <ControlTheme x:Key="ScrollBarThumbHorizontal" TargetType="Thumb">
-    
+    <!-- 同垂直版：MinWidth 60→18，去掉 Height/Width TemplateBinding。 -->
     <Setter Property="KeyboardNavigation.IsTabStop" Value="false" />
-    <Setter Property="MinWidth" Value="60" />
+    <Setter Property="MinWidth" Value="18" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Thumb">
           <Grid Background="#00FFFFFF">
-            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb.Horizontal}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" Margin="0,2,0,2" CornerRadius="4" x:Name="rectangle" />
+            <Border BorderThickness="1" BorderBrush="{DynamicResource ScrollBar.Static.Thumb.Border}" Background="{DynamicResource ScrollBar.Static.Thumb.Horizontal}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,2,0,2" CornerRadius="4" x:Name="rectangle" />
           </Grid>
           
         </ControlTemplate>
@@ -92,7 +100,7 @@
           <Grid x:Name="Bg">
             <Grid.RowDefinitions>
               <RowDefinition Height="10" />
-              <RowDefinition Height="0.00001*" />
+              <RowDefinition Height="*" />
               <RowDefinition Height="10" />
             </Grid.RowDefinitions>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
@@ -144,7 +152,7 @@
               <Grid x:Name="Bg">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="10" />
-                  <ColumnDefinition Width="0.00001*" />
+                  <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="10" />
                 </Grid.ColumnDefinitions>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
@@ -227,7 +235,7 @@
           <Grid x:Name="Bg">
             <Grid.RowDefinitions>
               <RowDefinition Height="10" />
-              <RowDefinition Height="0.00001*" />
+              <RowDefinition Height="*" />
               <RowDefinition Height="10" />
             </Grid.RowDefinitions>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
@@ -277,7 +285,7 @@
               <Grid x:Name="Bg">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="10" />
-                  <ColumnDefinition Width="0.00001*" />
+                  <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="10" />
                 </Grid.ColumnDefinitions>
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
