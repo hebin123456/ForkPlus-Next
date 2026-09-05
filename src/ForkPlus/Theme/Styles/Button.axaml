@@ -9,6 +9,11 @@
     <Setter Property="Foreground" Value="{DynamicResource Button.Foreground}" />
     <Setter Property="Margin" Value="4,2,4,2" />
     <Setter Property="Padding" Value="10,0,10,0" />
+    <!-- 固定高度 24（边框 1+1 → 内槽 22px；13px 字行高 ≈17.3-18px）。
+         ⚠️ 垂直 Padding 合计必须 ≤ 4px（槽 ≥ 18px）：WPF 原版同模板下文字溢出槽位
+         但 WPF 不裁剪渲染（不可见）；Avalonia 会按槽位裁剪 → 文字底部被切
+         （2026-09-05 "有些 button 里面的字下面被遮挡"）。需要更厚的按钮请用
+         MinHeight 抬高，而不是加大垂直 Padding。 -->
     <Setter Property="Height" Value="24" />
     <Setter Property="MaxWidth" Value="400" />
     <Setter Property="FontSize" Value="13" />

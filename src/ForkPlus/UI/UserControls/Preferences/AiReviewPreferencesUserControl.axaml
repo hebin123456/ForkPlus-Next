@@ -50,7 +50,8 @@
     <!-- Row 9: Skill name input + Add button -->
     <TextBlock Grid.Row="9" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Skill name:" />
     <TextBox Text="" Grid.Row="9" Grid.Column="1" Margin="10,8,0,0" Padding="4,2,4,2" VerticalContentAlignment="Center" x:Name="SkillNameTextBox" />
-    <Button Grid.Row="9" Grid.Column="2" Margin="6,8,0,0" Padding="8,4,8,4" FontSize="12" x:Name="AddCustomSkillButton">
+    <!-- 垂直 Padding=0：主题固定 Height=24，垂直 Padding 4 把内容槽挤到 14px < 行高 → 裁字（2026-09-05 修复） -->
+    <Button Grid.Row="9" Grid.Column="2" Margin="6,8,0,0" Padding="8,0,8,0" FontSize="12" x:Name="AddCustomSkillButton">
       <TextBlock Text="Add Skill" TextDecorations="{x:Null}" />
     </Button>
     
@@ -61,7 +62,7 @@
     <!-- Row 11: Import file button + hint -->
     <TextBlock Grid.Row="11" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Import:" />
     <StackPanel Grid.Row="11" Grid.Column="1" Margin="10,8,0,0" Orientation="Horizontal">
-      <Button Padding="8,4,8,4" FontSize="12" x:Name="LoadSkillButton">
+      <Button Padding="8,0,8,0" FontSize="12" x:Name="LoadSkillButton">
         <TextBlock Text="Load Skill File..." TextDecorations="{x:Null}" />
       </Button>
       <TextBlock VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="8,0,0,0" x:Name="CtrlEnterHintTextBlock" Text="Ctrl+Enter to add" />

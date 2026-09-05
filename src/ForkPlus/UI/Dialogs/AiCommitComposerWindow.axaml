@@ -64,8 +64,9 @@
     <!-- Bottom: hint + apply / cancel -->
     <DockPanel Grid.Row="3" Margin="12,4,12,12" LastChildFill="False">
       <TextBlock DockPanel.Dock="Left" x:Name="UnassignedFilesHint" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.WindowsInfo}" TextTrimming="CharacterEllipsis" />
-      <Button DockPanel.Dock="Right" MinWidth="96" Padding="12,4" Margin="6,0,0,0" x:Name="ApplyAllButton" Content="Apply All" Click="ApplyAllButton_Click" />
-      <Button DockPanel.Dock="Right" MinWidth="96" Padding="12,4" Margin="6,0,0,0" x:Name="CancelButton" Content="Cancel" Click="CancelButton_Click" />
+      <!-- 垂直 Padding=0：主题固定 Height=24，垂直 Padding ≥3 挤压内容槽裁切文字（2026-09-05 修复） -->
+      <Button DockPanel.Dock="Right" MinWidth="96" Padding="12,0" Margin="6,0,0,0" x:Name="ApplyAllButton" Content="Apply All" Click="ApplyAllButton_Click" />
+      <Button DockPanel.Dock="Right" MinWidth="96" Padding="12,0" Margin="6,0,0,0" x:Name="CancelButton" Content="Cancel" Click="CancelButton_Click" />
     </DockPanel>
   </Grid>
 </fud:AiResultWindowBase>
