@@ -188,6 +188,46 @@ namespace ForkPlus.Tests
 			return work;
 		}
 
+		/// <summary>标签仓库（供模块12 标签操作测试）：3 提交；c1 → 附注标签 ann-1.0
+		/// （tagger=Test/test@example.com，消息 "annotated release one"），c2 → 轻量标签
+		/// light-2.0（无 tagger——TagDetailsWindow 走 for-each-ref 回退路径，消息=提交消息
+		/// "second commit"，探针实证 2026-09-05），c3 无标签（HEAD）。</summary>
+		public static string CreateTags()
+		{
+			string root = NewTempDir("tags");
+			Init(root);
+			Commit(root, "a.txt", "a\n", "first commit");
+			Run(root, "tag -a ann-1.0 -m " + Quote("annotated release one"));
+			Commit(root, "b.txt", "b\n", "second commit");
+			Run(root, "tag light-2.0");
+			Commit(root, "c.txt", "c\n", "third commit");
+			return root;
+		}
+
+		/// <summary>远程标签仓库（供模块12 推送/远程删除测试）：bare 远程 + work 克隆，main 已推。
+		/// 附注标签 rel-1、rel-2 已推远程（供 RemoveTagWindow 勾选"从远程删除"真实删两端）；
+		/// rel-3 / rel-4 / rel-5 仅本地（供 PushTagWindow 单推 / PushMultipleTagsWindow 多推）。</summary>
+		public static string CreateRemoteTags()
+		{
+			string root = NewTempDir("remotetags");
+			string bare = Path.Combine(root, "remote.git");
+			string work = Path.Combine(root, "work");
+			Run(root, "init -q -b main --bare " + Quote(bare));
+			Run(root, "clone -q " + Quote(bare) + " " + Quote(work));
+			Run(work, "config user.email test@example.com");
+			Run(work, "config user.name Test");
+			Run(work, "config commit.gpgsign false");
+			Commit(work, "r.txt", "remote v1\n", "c1");
+			Run(work, "push -q origin main");
+			Run(work, "tag -a rel-1 -m " + Quote("release one"));
+			Run(work, "tag -a rel-2 -m " + Quote("release two"));
+			Run(work, "push -q origin rel-1 rel-2");
+			Run(work, "tag -a rel-3 -m " + Quote("release three"));
+			Run(work, "tag -a rel-4 -m " + Quote("release four"));
+			Run(work, "tag -a rel-5 -m " + Quote("release five"));
+			return work;
+		}
+
 		/// <summary>二进制 + 图片 diff 仓库：.bin（修改）、两张 png（旧/新）。</summary>
 		public static string CreateBinary()
 		{
