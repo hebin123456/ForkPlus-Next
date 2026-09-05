@@ -174,6 +174,22 @@ namespace ForkPlus.Tests
 						{
 							desktopLifetime.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 						}
+						// E2E（2026-09-05，"上下文搜索无结果"）：生产 App 在 RunStartup() 里做
+						// ServiceLocator.Initialize，而 headless 覆写了 OnFrameworkInitializationCompleted
+						// 跳过启动副作用——ServiceLocator.Dispatcher 恒 null，DelayedAction 等经
+						// ServiceLocator.Dispatcher?.Post 的回调被静默丢弃（修订列表搜索、各种防抖全部失效）。
+						// 这里补齐与生产一致的轻量服务（纯包装类，构造无副作用）。
+						if (!global::ForkPlus.Services.ServiceLocator.IsInitialized)
+						{
+							global::ForkPlus.Services.ServiceLocator.Initialize(
+								dispatcher: new global::ForkPlus.Services.Wpf.WpfDispatcher(Dispatcher.UIThread),
+								designMode: new global::ForkPlus.Services.Wpf.WpfDesignModeService(),
+								appContext: new global::ForkPlus.Services.Wpf.WpfAppContext(),
+								clipboard: new global::ForkPlus.Services.Wpf.WpfClipboardService(),
+								timer: new global::ForkPlus.Services.Wpf.WpfTimerService(),
+								toast: new global::ForkPlus.Services.Wpf.WpfToastNotificationService(),
+								windowManager: new global::ForkPlus.Services.Wpf.WpfWindowManagerService());
+						}
 					}
 					catch (Exception e)
 					{

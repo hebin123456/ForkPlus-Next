@@ -157,5 +157,23 @@ namespace ForkPlus.Tests
 			item.IsExpanded = expanded;
 			Dispatcher.UIThread.RunJobs();
 		}
+
+		/// <summary>在 UI 线程内轮询等待条件成立（后台 JobQueue 完成后经 Dispatcher.Post 回 UI）。
+		/// 模式：Delay（后台线程可继续跑）→ RunJobs（处理 Post 回调）→ 检查条件。</summary>
+		public static bool WaitFor(Func<bool> condition, int timeoutMs = 15000)
+		{
+			var sw = System.Diagnostics.Stopwatch.StartNew();
+			while (sw.ElapsedMilliseconds < timeoutMs)
+			{
+				Dispatcher.UIThread.RunJobs();
+				if (condition())
+				{
+					return true;
+				}
+				System.Threading.Tasks.Task.Delay(50).GetAwaiter().GetResult();
+			}
+			Dispatcher.UIThread.RunJobs();
+			return condition();
+		}
 	}
 }
