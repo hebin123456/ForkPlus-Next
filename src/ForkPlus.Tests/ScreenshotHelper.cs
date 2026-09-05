@@ -60,7 +60,10 @@ namespace ForkPlus.Tests
 			return frame == null ? 0 : CountNonBlankPixels(frame);
 		}
 
-		/// <summary>1920×1280 最大化截图：放大 → 截帧 → 复原尺寸与全部滚动偏移（见类头注释）。</summary>
+		/// <summary>1920×1280 最大化截图：放大 → 截帧 → 复原尺寸与全部滚动偏移（见类头注释）。
+		/// SizeToContent=WidthAndHeight 的窗口（如 CheckoutBranchWindow，MaxWidth=670，
+		/// WPF 原仓同款）内容驱动宽度会无视显式 Width 回缩自然宽——先临时降为 Height 让
+		/// 显式 Width 生效（仍受窗口自身 MaxWidth 钳制 = 窗口允许的最大宽），截后复原。</summary>
 		private static WriteableBitmap CaptureMaximized(Window window)
 		{
 			Dispatcher.UIThread.RunJobs();
@@ -72,6 +75,11 @@ namespace ForkPlus.Tests
 			Vector[] offsets = scrollers.Select(s => s.Offset).ToArray();
 
 			// 2) 最大化 + 布局（偏移可能在此期间被钳制，属预期，第 4 步复原）
+			SizeToContent oldSizeToContent = window.SizeToContent;
+			if (oldSizeToContent == SizeToContent.WidthAndHeight)
+			{
+				window.SizeToContent = SizeToContent.Height;
+			}
 			window.Width = CaptureWidth;
 			window.Height = CaptureHeight;
 			Dispatcher.UIThread.RunJobs();
@@ -82,6 +90,7 @@ namespace ForkPlus.Tests
 			// 4) 复原窗口尺寸 → 布局（extent 按原视口重算）→ 复原滚动偏移 → 布局收敛
 			window.Width = oldWidth;
 			window.Height = oldHeight;
+			window.SizeToContent = oldSizeToContent;
 			Dispatcher.UIThread.RunJobs();
 			for (int i = 0; i < scrollers.Length; i++)
 			{

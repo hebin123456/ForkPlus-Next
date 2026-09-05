@@ -161,6 +161,33 @@ namespace ForkPlus.Tests
 			return work;
 		}
 
+		/// <summary>远程多分支仓库（供模块11 分支操作测试）：bare 远程 + work 克隆。
+		/// main 已推送且领先 1 提交；feature/one、feature/two 仅本地未推送（供多分支推送）；
+		/// 远程独有分支 remote-only（bare 直建，work 无同名本地分支——供跟踪远程分支）。</summary>
+		public static string CreateRemoteBranches()
+		{
+			string root = NewTempDir("remotebranches");
+			string bare = Path.Combine(root, "remote.git");
+			string work = Path.Combine(root, "work");
+			Run(root, "init -q -b main --bare " + Quote(bare));
+			Run(root, "clone -q " + Quote(bare) + " " + Quote(work));
+			// clone 出的 work 需要自己的用户配置（Init 只配了 root）
+			Run(work, "config user.email test@example.com");
+			Run(work, "config user.name Test");
+			Run(work, "config commit.gpgsign false");
+			Commit(work, "r.txt", "remote v1\n", "c1");
+			Run(work, "push -q origin main");
+			// 两个未推送的本地分支（供 PushMultipleBranchesWindow 勾选推送）
+			Run(work, "branch feature/one");
+			Run(work, "branch feature/two");
+			// 远程独有分支：把 main 推到不同名的远程分支（本地无 remote-only 跟踪分支）
+			Run(work, "push -q origin main:refs/heads/remote-only");
+			// 再造两个远程独有分支（供 RemoveRemoteBranchWindow 多分支列表模式）
+			Run(work, "push -q origin main:refs/heads/rb-one main:refs/heads/rb-two");
+			Run(work, "fetch -q origin");
+			return work;
+		}
+
 		/// <summary>二进制 + 图片 diff 仓库：.bin（修改）、两张 png（旧/新）。</summary>
 		public static string CreateBinary()
 		{
