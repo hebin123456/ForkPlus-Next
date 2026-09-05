@@ -134,6 +134,37 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>领先/落后仓库（供模块6 工具栏角标测试）：bare 远程 + 克隆 work。
+		/// work 的 main 相对 origin/main：ahead 2（本地两个未推提交）+ behind 1（另一克隆推
+		/// 了一个提交后 work 已 fetch，remote-tracking ref 已前进）。UpstreamStatus 基于
+		/// 本地 remote-tracking ref 计算，无需网络。</summary>
+		public static string CreateAheadBehind()
+		{
+			string root = NewTempDir("aheadbehind");
+			string bare = Path.Combine(root, "remote.git");
+			string work = Path.Combine(root, "work");
+			Run(root, "init -q -b main --bare " + Quote(bare));
+			Run(root, "clone -q " + Quote(bare) + " " + Quote(work));
+			Run(work, "config user.email test@example.com");
+			Run(work, "config user.name Test");
+			Run(work, "config commit.gpgsign false");
+			Commit(work, "base.txt", "v1\n", "c1");
+			Run(work, "push -q origin main");
+			// ahead：本地两个未推提交
+			Commit(work, "a1.txt", "a\n", "ahead 1");
+			Commit(work, "a2.txt", "a\n", "ahead 2");
+			// behind：另一克隆推送一个提交，本仓库 fetch 使 origin/main 前进
+			string other = Path.Combine(root, "other");
+			Run(root, "clone -q " + Quote(bare) + " " + Quote(other));
+			Run(other, "config user.email test@example.com");
+			Run(other, "config user.name Test");
+			Run(other, "config commit.gpgsign false");
+			Commit(other, "b1.txt", "b\n", "behind 1");
+			Run(other, "push -q origin main");
+			Run(work, "fetch -q origin");
+			return work;
+		}
+
 		public static void Cleanup(string root)
 		{
 			try

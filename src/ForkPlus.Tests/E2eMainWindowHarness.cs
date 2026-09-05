@@ -13,6 +13,7 @@
 //   2) 每个 [Fact] 建自己的 MainWindow：MainWindow.Instance 是"最近创建者"，
 //      跨用例复用旧窗口会让 IsActiveRepository 永假（刷新又被推迟）。
 using System;
+using System.Linq;
 using Avalonia.Threading;
 using ForkPlus.UI;
 using ForkPlus.UI.UserControls;
@@ -43,11 +44,21 @@ namespace ForkPlus.Tests
 			return repoControl;
 		}
 
+		/// <summary>创建真实 MainWindow（不打开仓库，默认停留在仓库管理 tab）。
+		/// 供模块6 等无仓库场景测试工具栏禁用态；收尾用 DetachWindow。</summary>
+		public static MainWindow CreateWindow()
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			MainWindow window = new MainWindow();
+			window.Width = 1400;
+			window.Height = 900;
+			window.Show();
+			Dispatcher.UIThread.RunJobs(); // Loaded → RestoreSession（空工作区 → 仓库管理 tab）
+			return window;
+		}
+
 		/// <summary>收尾：关闭仓库 tab（触发 SaveSession 把临时路径从会话里清掉），随后摘除窗口。
-		/// 不能 Close()（见铁律 1），改为 Hide + 从 lifetime 窗口列表移除——残留的可见窗口
-		/// 会参与后续测试（如 ThemeSystemIntegrityTests 切皮肤）的布局，ModernTabControl
-		/// 模板重建时旧 ContentPresenter 与新 ContentPresenter 争抢同一 Grid 抛
-		/// "already has a visual parent"（2026-09-05 实证：E2e05 先跑则主题守卫必崩）。</summary>
+		/// 不能 Close()（见铁律 1）；窗口摘除细节见 DetachWindow。</summary>
 		public static void CloseRepositoryTab(MainWindow window, string repoPath)
 		{
 			try
@@ -59,6 +70,46 @@ namespace ForkPlus.Tests
 			{
 				// 收尾尽力而为：仓库目录可能已被 finally 清理，失败不掩盖断言
 			}
+			RemoveTestReposFromManager(repoPath);
+			DetachWindow(window);
+		}
+
+		/// <summary>把测试仓库从 RepositoryManager"最近"列表摘除（OpenRepository 经
+		/// AddOrUpdateLastOpened 记录、SaveSession 时持久化到用户配置——残留的 fpe2e_*
+		/// 条目会污染真实用户机器的仓库列表）。顺带清掉历史测试残留（fpe2e_ 前缀，
+		/// 测试中断未收尾时留下的）。</summary>
+		private static void RemoveTestReposFromManager(string repoPath)
+		{
+			try
+			{
+				var manager = global::ForkPlus.RepositoryManager.Instance;
+				string[] toDelete = manager.Repositories
+					.Where(delegate (global::ForkPlus.RepositoryManager.Repository r)
+					{
+						return string.Equals(r.Path, repoPath, StringComparison.OrdinalIgnoreCase)
+							|| r.Path.Contains("fpe2e_", StringComparison.Ordinal);
+					})
+					.Select(r => r.Path)
+					.ToArray();
+				if (toDelete.Length > 0)
+				{
+					manager.DeleteRepositories(toDelete, addToIgnore: false);
+					manager.Save();
+					Dispatcher.UIThread.RunJobs();
+				}
+			}
+			catch
+			{
+				// 清理尽力而为，不掩盖测试断言
+			}
+		}
+
+		/// <summary>窗口摘除：Hide + 清 lifetime.MainWindow。不能 Close()（见铁律 1），
+		/// 残留的可见窗口会参与后续测试（如 ThemeSystemIntegrityTests 切皮肤）的布局，
+		/// ModernTabControl 模板重建时旧 ContentPresenter 与新 ContentPresenter 争抢同一 Grid 抛
+		/// "already has a visual parent"（2026-09-05 实证：E2e05 先跑则主题守卫必崩）。</summary>
+		public static void DetachWindow(MainWindow window)
+		{
 			try
 			{
 				window.Hide();
