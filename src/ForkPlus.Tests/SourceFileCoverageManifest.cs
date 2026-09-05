@@ -809,6 +809,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/Controls/AutoCompleteSuggestion.cs",
 				"src/ForkPlus/UI/Controls/AutoCompleteSuggestions.cs",
 				"src/ForkPlus/UI/Controls/AutoCompleteTextBox.cs",
+				"src/ForkPlus/UI/Controls/AutoCompleteSuggestionTemplateSelector.cs",
 				"src/ForkPlus/UI/Controls/AutoTooltipTextBlock.cs",
 				"src/ForkPlus/UI/Controls/AvatarImage.cs",
 				"src/ForkPlus/UI/Controls/AvatarManager.cs",

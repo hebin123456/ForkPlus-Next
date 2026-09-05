@@ -1008,6 +1008,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/AutoCompleteSuggestion.cs", "class", "AutoCompleteSuggestion", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/AutoCompleteSuggestions.cs", "class", "AutoCompleteSuggestions", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/AutoCompleteTextBox.cs", "class", "AutoCompleteTextBox", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/UI/Controls/AutoCompleteSuggestionTemplateSelector.cs", "class", "AutoCompleteSuggestionTemplateSelector", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/AutoTooltipTextBlock.cs", "class", "AutoTooltipTextBlock", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/AvatarImage.cs", "class", "AvatarImage", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/AvatarManager.cs", "class", "AvatarManager", "UNIT-SOURCE-COVERAGE-001"),

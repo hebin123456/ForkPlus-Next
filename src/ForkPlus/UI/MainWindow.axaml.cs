@@ -124,7 +124,32 @@ namespace ForkPlus.UI
 			TabManager = new TabManager(TabControl);
 		}
 
+		// 修复（2026-09-05，测试宿主 Stack overflow）：ApplyLocalization 末尾把本轮刷新扇出给
+		// lifetime.Windows 里其他 ILocalizableControl 窗口；本类自身就实现该接口，当窗口集合
+		// 里有 ≥2 个 MainWindow（测试环境多窗口并存；真实用户场景主窗+偏好窗同理可构造出
+		// 跨窗互调链）时，A→B→A 无守卫互调无限递归爆栈（实证：全量测试尾部 test host 崩溃，
+		// 栈帧 ApplyLocalization 连续出现）。本地化刷新幂等：一轮分发进行中，后续扇出请求
+		// 直接跳过即可（同一轮里文案已刷新过）。
+		private static bool _localizationDispatchInProgress;
+
 		public void ApplyLocalization()
+	{
+		if (_localizationDispatchInProgress)
+		{
+			return;
+		}
+		_localizationDispatchInProgress = true;
+		try
+		{
+			ApplyLocalizationCore();
+		}
+		finally
+		{
+			_localizationDispatchInProgress = false;
+		}
+	}
+
+		private void ApplyLocalizationCore()
 	{
 		_menuManager?.ApplyLocalization();
 		Toolbar.ApplyLocalization();

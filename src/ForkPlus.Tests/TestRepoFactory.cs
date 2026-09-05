@@ -62,6 +62,70 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>多冲突块仓库（供模块10 冲突块选择测试）：同一文件两个独立区域各产生一个
+		/// 冲突块，ours/theirs 两版本各含两处差异。
+		/// ⚠️ 冲突块之间必须隔 ≥7 行公共上下文（git 合并的 marker size=7：相邻变更间
+		/// 公共行少于该值会被并进同一个冲突 hunk——探针实证 1 行分隔只产生 1 块）。</summary>
+		public static string CreateConflictMulti()
+		{
+			string root = NewTempDir("confmulti");
+			Init(root);
+			string sep = "sep1\nsep2\nsep3\nsep4\nsep5\nsep6\nsep7\n";
+			Commit(root, "multi.txt", "context start\nblock1 base\n" + sep + "block2 base\ncontext end\n", "base");
+			Run(root, "checkout -q -b theirs");
+			Commit(root, "multi.txt", "context start\nblock1 theirs\n" + sep + "block2 theirs\ncontext end\n", "theirs change");
+			Run(root, "checkout -q main");
+			Commit(root, "multi.txt", "context start\nblock1 ours\n" + sep + "block2 ours\ncontext end\n", "ours change");
+			var psi = GitPsi(root, "merge theirs");
+			using var p = Process.Start(psi);
+			p.WaitForExit(); // 期望非 0（两块独立冲突）
+			return root;
+		}
+
+		/// <summary>大文件冲突仓库（供模块10 三方编辑器滚动同步/冲突块导航回归）：
+		/// ~150 行 + 3 个分散冲突块（行 12/62/112 附近，Next/Prev 导航有距离）+
+		/// 每 20 行插一行 300 字符宽行（AvaloniaEdit 宽度 extent 只由可见行决定——
+		/// 宽行分散放置保证垂直滚动过程中水平 extent 不塌缩，水平同步路径可达）。</summary>
+		public static string CreateConflictLarge()
+		{
+			string root = NewTempDir("conflarge");
+			Init(root);
+			var @base = new System.Text.StringBuilder();
+			var ours = new System.Text.StringBuilder();
+			var theirs = new System.Text.StringBuilder();
+			for (int i = 1; i <= 150; i++)
+			{
+				string line;
+				if (i % 20 == 0)
+				{
+					line = new string('w', 300); // 宽行（分散，滚动中保持水平 extent）
+				}
+				else if (i == 12 || i == 62 || i == 112)
+				{
+					@base.AppendLine("conflict block " + i);
+					ours.AppendLine("ours block " + i);
+					theirs.AppendLine("theirs block " + i);
+					continue;
+				}
+				else
+				{
+					line = "context line " + i;
+				}
+				@base.AppendLine(line);
+				ours.AppendLine(line);
+				theirs.AppendLine(line);
+			}
+			Commit(root, "big.txt", @base.ToString(), "base");
+			Run(root, "checkout -q -b theirs");
+			Commit(root, "big.txt", theirs.ToString(), "theirs change");
+			Run(root, "checkout -q main");
+			Commit(root, "big.txt", ours.ToString(), "ours change");
+			var psi = GitPsi(root, "merge theirs");
+			using var p = Process.Start(psi);
+			p.WaitForExit(); // 期望非 0（三块冲突）
+			return root;
+		}
+
 		/// <summary>stash 仓库：2 个 stash 条目。</summary>
 		public static string CreateStash()
 		{
