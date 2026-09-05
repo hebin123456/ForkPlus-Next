@@ -350,6 +350,28 @@
     
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
   </ControlTheme>
+  <!-- Migration note（2026-09-05，"自动补全建议浮层显示类名"修复）：原 WPF 把这三个按 DataType 的
+       DataTemplate 放在下方 AutocompleteListBoxItemStyle 的 ControlTemplate.Resources 内；Avalonia 的
+       ControlTemplate 无 Resources，迁移时被注释化而代码侧查找键 "AutocompleteListBoxItemTemplate" 保留，
+       ItemTemplate=null → 列表按 ToString() 渲染类名。现恢复为顶层资源，并新增分发器
+       AutoCompleteSuggestionTemplateSelector 作为复合模板（按运行时类型路由到下面三个模板之一）。 -->
+  <DataTemplate x:Key="AutoCompleteSuggestionTemplate" DataType="controls:AutoCompleteSuggestion">
+    <TextBlock FontSize="13" TextTrimming="CharacterEllipsis" Text="{Binding Suggestion}" />
+  </DataTemplate>
+  <DataTemplate x:Key="UserIdentityAutoCompleteSuggestionTemplate" DataType="controls:UserIdentityAutoCompleteSuggestion">
+    <DockPanel>
+      <controls:AvatarImage Margin="0" DockPanel.Dock="Left" VerticalAlignment="Center" Height="14" Width="14" UserIdentity="{Binding UserIdentity}" />
+      <TextBlock FontSize="13" Margin="4,0,0,0" TextTrimming="CharacterEllipsis" Text="{Binding Suggestion}" />
+    </DockPanel>
+  </DataTemplate>
+  <DataTemplate x:Key="GitmojiAutoCompleteSuggestionTemplate" DataType="controls:GitmojiAutoCompleteSuggestion">
+    <DockPanel>
+      <TextBlock DockPanel.Dock="Left" Margin="0" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe UI, Segoe UI Emoji" Width="22" TextAlignment="Center" Text="{Binding Entry.Emoji}" />
+      <TextBlock DockPanel.Dock="Left" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="13" FontFamily="Consolas" TextTrimming="CharacterEllipsis" Text="{Binding Entry.ShortName}" />
+      <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" TextTrimming="CharacterEllipsis" Text="{Binding Entry.Description}" />
+    </DockPanel>
+  </DataTemplate>
+  <controls:AutoCompleteSuggestionTemplateSelector x:Key="AutocompleteListBoxItemTemplate" />
   <ControlTheme x:Key="AutoCompleteListBoxStyle" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="HorizontalAlignment" Value="Left" />
