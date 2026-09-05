@@ -237,6 +237,83 @@ namespace ForkPlus.Tests
 			return path;
 		}
 
+		/// <summary>图片对比仓库（供模块9 二进制/图片 diff 测试）：360x240 大图（Swipe/OnionSkin
+		/// 视觉可辨），committed 版本纯绿、工作区改为纯橙（未暂存修改 → Commit 视图两侧都加载）。
+		/// 同尺寸双图 → DiffImageSource（品红差异图）可生成，HighlightPixels 开关路径可达。</summary>
+		public static string CreateImageDiff()
+		{
+			string root = NewTempDir("imgdiff");
+			Init(root);
+			File.WriteAllBytes(Path.Combine(root, "img.png"), MakePngBytes(360, 240, 40, 150, 80));
+			Run(root, "add .");
+			Run(root, "commit -q -m " + Quote("image base"));
+			File.WriteAllBytes(Path.Combine(root, "img.png"), MakePngBytes(360, 240, 230, 140, 30));
+			return root;
+		}
+
+		/// <summary>任意尺寸纯色 PNG（RGBA8，无滤波）。MakeSolidPng 只支持 8x8（IHDR 单字节宽高），
+		/// 这里宽高用 4 字节大端——供需要大图的视图测试（Swipe 分割线/OnionSkin 透明度可见）。
+		/// 块序按 PNG 规范 [length][type][data][CRC]，CRC 覆盖 type+data（探针实证 2026-09-05：
+		/// 旧 MakeSolidPng 的 [type][length] 序 + CRC 覆盖 length+data 是错的，Skia 拒绝解码——
+		/// "Unable to load bitmap from provided data"，从未暴露是因为没人真解过码）。</summary>
+		private static byte[] MakePngBytes(int w, int h, byte r, byte g, byte b)
+		{
+			byte[] raw = new byte[h * (1 + w * 4)];
+			for (int y = 0; y < h; y++)
+			{
+				int off = y * (1 + w * 4);
+				raw[off] = 0;
+				for (int x = 0; x < w; x++)
+				{
+					raw[off + 1 + x * 4] = r;
+					raw[off + 2 + x * 4] = g;
+					raw[off + 3 + x * 4] = b;
+					raw[off + 4 + x * 4] = 255;
+				}
+			}
+			byte[] compressed;
+			using (var ms = new MemoryStream())
+			{
+				ms.WriteByte(0x78);
+				ms.WriteByte(0x01);
+				using (var ds = new System.IO.Compression.DeflateStream(ms, System.IO.Compression.CompressionMode.Compress, leaveOpen: true))
+				{
+					ds.Write(raw, 0, raw.Length);
+				}
+				uint adler = Adler32(raw);
+				ms.WriteByte((byte)(adler >> 24));
+				ms.WriteByte((byte)(adler >> 16));
+				ms.WriteByte((byte)(adler >> 8));
+				ms.WriteByte((byte)adler);
+				compressed = ms.ToArray();
+			}
+			using var png = new MemoryStream();
+			png.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, 0, 8);
+			// IHDR：[length=13][IHDR][宽4][高4][深度8][色型6][压0][滤0][交0][CRC(type+data)]
+			byte[] ihdr = new byte[13 + 12];
+			ihdr[0] = 0; ihdr[1] = 0; ihdr[2] = 0; ihdr[3] = 13;
+			ihdr[4] = (byte)'I'; ihdr[5] = (byte)'H'; ihdr[6] = (byte)'D'; ihdr[7] = (byte)'R';
+			// 宽高 4 字节大端（360x240 超单字节）
+			ihdr[8] = (byte)(w >> 24); ihdr[9] = (byte)(w >> 16); ihdr[10] = (byte)(w >> 8); ihdr[11] = (byte)w;
+			ihdr[12] = (byte)(h >> 24); ihdr[13] = (byte)(h >> 16); ihdr[14] = (byte)(h >> 8); ihdr[15] = (byte)h;
+			ihdr[16] = 8; ihdr[17] = 6; ihdr[18] = 0; ihdr[19] = 0; ihdr[20] = 0;
+			uint crc = Crc32(ihdr, 4, 17); // type(4)+data(13)
+			ihdr[21] = (byte)(crc >> 24); ihdr[22] = (byte)(crc >> 16); ihdr[23] = (byte)(crc >> 8); ihdr[24] = (byte)crc;
+			png.Write(ihdr, 0, 25);
+			// IDAT：[length][IDAT][zlib 数据][CRC(type+data)]
+			byte[] idat = new byte[compressed.Length + 12];
+			int cl = compressed.Length;
+			idat[0] = (byte)(cl >> 24); idat[1] = (byte)(cl >> 16); idat[2] = (byte)(cl >> 8); idat[3] = (byte)cl;
+			idat[4] = (byte)'I'; idat[5] = (byte)'D'; idat[6] = (byte)'A'; idat[7] = (byte)'T';
+			Buffer.BlockCopy(compressed, 0, idat, 8, cl);
+			uint crc2 = Crc32(idat, 4, 4 + cl); // type(4)+data(cl)
+			idat[8 + cl] = (byte)(crc2 >> 24); idat[9 + cl] = (byte)(crc2 >> 16); idat[10 + cl] = (byte)(crc2 >> 8); idat[11 + cl] = (byte)crc2;
+			png.Write(idat, 0, idat.Length);
+			byte[] iend = { 0, 0, 0, 0, (byte)'I', (byte)'E', (byte)'N', (byte)'D', 0xAE, 0x42, 0x60, 0x82 };
+			png.Write(iend, 0, iend.Length);
+			return png.ToArray();
+		}
+
 		private static byte[] MakeSolidPng(int channel)
 		{
 			int w = 8, h = 8;
@@ -272,10 +349,11 @@ namespace ForkPlus.Tests
 			}
 			using var png = new MemoryStream();
 			png.Write(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, 0, 8);
+			// 块序 [length][type][data][CRC]、CRC 覆盖 type+data（与 MakePngBytes 同步修复：
+			// 旧实现的 [type][length] 序 + CRC 覆盖 length+data 不符合 PNG 规范，Skia 拒绝解码）
 			byte[] ihdr = new byte[13 + 12];
-			ihdr[0] = (byte)'I'; ihdr[1] = (byte)'H'; ihdr[2] = (byte)'D'; ihdr[3] = (byte)'R';
-			byte[] len = { 0, 0, 0, 13 };
-			ihdr[4] = len[0]; ihdr[5] = len[1]; ihdr[6] = len[2]; ihdr[7] = len[3];
+			ihdr[0] = 0; ihdr[1] = 0; ihdr[2] = 0; ihdr[3] = 13;
+			ihdr[4] = (byte)'I'; ihdr[5] = (byte)'H'; ihdr[6] = (byte)'D'; ihdr[7] = (byte)'R';
 			ihdr[8] = 0; ihdr[9] = 0; ihdr[10] = 0; ihdr[11] = (byte)w;
 			ihdr[12] = 0; ihdr[13] = 0; ihdr[14] = 0; ihdr[15] = (byte)h;
 			ihdr[16] = 8; ihdr[17] = 6; ihdr[18] = 0; ihdr[19] = 0; ihdr[20] = 0;
@@ -284,8 +362,8 @@ namespace ForkPlus.Tests
 			png.Write(ihdr, 0, 25);
 			byte[] idat = new byte[compressed.Length + 12];
 			int cl = compressed.Length;
-			idat[0] = (byte)'I'; idat[1] = (byte)'D'; idat[2] = (byte)'A'; idat[3] = (byte)'T';
-			idat[4] = (byte)(cl >> 24); idat[5] = (byte)(cl >> 16); idat[6] = (byte)(cl >> 8); idat[7] = (byte)cl;
+			idat[0] = (byte)(cl >> 24); idat[1] = (byte)(cl >> 16); idat[2] = (byte)(cl >> 8); idat[3] = (byte)cl;
+			idat[4] = (byte)'I'; idat[5] = (byte)'D'; idat[6] = (byte)'A'; idat[7] = (byte)'T';
 			Buffer.BlockCopy(compressed, 0, idat, 8, cl);
 			uint crc2 = Crc32(idat, 4, 4 + cl);
 			idat[8 + cl] = (byte)(crc2 >> 24); idat[9 + cl] = (byte)(crc2 >> 16); idat[10 + cl] = (byte)(crc2 >> 8); idat[11 + cl] = (byte)crc2;
