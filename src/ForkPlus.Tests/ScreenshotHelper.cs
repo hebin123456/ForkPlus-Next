@@ -1,23 +1,36 @@
 // E2E 测试基建（阶段0，2026-09-05）：截图证据统一入口。
-// 约定：截图存 docs/evidence/e2e/<模块短名>/<场景>.png（模块短名如 "01-welcome"、"07-textdiff"），
+// 约定：截图存 docs/evidence/e2e/<模块短名>/<场景>.png（模块短名如 "01-welcome"、"07-textdiff"，
 // 每张截图自动做"非空白"像素断言；SnapDiff 额外断言交互前后存在可见差异。
 // 必须在 UI 线程内调用（HeadlessAppBootstrap.Run 的回调里）。
+//
+// 截图口径（2026-09-05 用户约定）：统一 1920×1280 最大化截图。实现 = 放大窗口 → 布局 → 截帧
+// → 复原窗口尺寸与全部滚动容器偏移（模块 1-9 的证据已随全量回归按新口径重生成；高度受
+// 内容约束的窗口——SizeToContent/固定高——按自然高度渲染，宽度仍放大到 1920）。
+// 复原滚动偏移的原因（模块 7/10 教训：AvaloniaEdit TextView 的滚动
+// extent 只由可见行决定，且布局期会把超界偏移钳回）：放大瞬间 viewport 超过文档 extent
+// 会把 ScrollViewer.Offset 钳到 0，截图点之后仍要断言滚动位置的用例（滚动同步回归）会被
+// 截图过程本身破坏——只复原尺寸不复原偏移不够，必须两者都复原。
 using System;
 using System.IO;
+using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace ForkPlus.Tests
 {
 	internal static class ScreenshotHelper
 	{
-		/// <summary>截图并断言非空白。返回非空白像素数（可做进一步断言）。</summary>
+		private const double CaptureWidth = 1920.0;
+		private const double CaptureHeight = 1280.0;
+
+		/// <summary>截图并断言非空白（1920×1280 最大化口径）。返回非空白像素数（可做进一步断言）。</summary>
 		public static int Snap(Window window, string scenario, string moduleDir)
 		{
-			Dispatcher.UIThread.RunJobs();
-			using WriteableBitmap frame = window.CaptureRenderedFrame()
+			using WriteableBitmap frame = CaptureMaximized(window)
 				?? throw new InvalidOperationException("CaptureRenderedFrame 返回 null（渲染管线未产出帧）");
 			int nonBlank = CountNonBlankPixels(frame);
 			string dir = EvidenceDir(moduleDir);
@@ -45,6 +58,40 @@ namespace ForkPlus.Tests
 			Dispatcher.UIThread.RunJobs();
 			using WriteableBitmap frame = window.CaptureRenderedFrame();
 			return frame == null ? 0 : CountNonBlankPixels(frame);
+		}
+
+		/// <summary>1920×1280 最大化截图：放大 → 截帧 → 复原尺寸与全部滚动偏移（见类头注释）。</summary>
+		private static WriteableBitmap CaptureMaximized(Window window)
+		{
+			Dispatcher.UIThread.RunJobs();
+			// 1) 记录原窗口尺寸 + 全部滚动容器偏移（含 AvaloniaEdit 的 PART_ScrollViewer：
+			//    TextEditor 的滚动状态就是它，复原 Offset 即复原 TextView.ScrollOffset）
+			double oldWidth = window.Width;
+			double oldHeight = window.Height;
+			ScrollViewer[] scrollers = window.GetVisualDescendants().OfType<ScrollViewer>().ToArray();
+			Vector[] offsets = scrollers.Select(s => s.Offset).ToArray();
+
+			// 2) 最大化 + 布局（偏移可能在此期间被钳制，属预期，第 4 步复原）
+			window.Width = CaptureWidth;
+			window.Height = CaptureHeight;
+			Dispatcher.UIThread.RunJobs();
+
+			// 3) 截帧
+			WriteableBitmap frame = window.CaptureRenderedFrame();
+
+			// 4) 复原窗口尺寸 → 布局（extent 按原视口重算）→ 复原滚动偏移 → 布局收敛
+			window.Width = oldWidth;
+			window.Height = oldHeight;
+			Dispatcher.UIThread.RunJobs();
+			for (int i = 0; i < scrollers.Length; i++)
+			{
+				if (scrollers[i].Offset != offsets[i])
+				{
+					scrollers[i].Offset = offsets[i];
+				}
+			}
+			Dispatcher.UIThread.RunJobs();
+			return frame;
 		}
 
 		private static void AssertNonBlank(string scenario, int nonBlank, int minimalPixels)

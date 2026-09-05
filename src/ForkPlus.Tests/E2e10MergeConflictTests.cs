@@ -188,8 +188,11 @@ namespace ForkPlus.Tests
 					{
 						// ===== 仅勾 theirs → 点 Choose {theirs}：ResolveConflictGitCommand(Remote) =====
 						UiClick.Toggle(conflict.LocalCheckBox, false);
-						Assert.True(UiClick.ContentText(conflict.ResolveButton)
-							.Contains(E2eMainWindowHarness.Tr("Choose")), "仅勾 theirs 时按钮应变为 Choose 路径");
+					// 断言用 TrFormat("Choose {0}") 全量等值（与用例 1 同口径）——字典里没有裸
+					// "Choose" 键，Tr("Choose") 回退英文原文，中文文案不含它（首跑实证误报）
+					string theirsPointName = conflict.RemoteGitPointView.Value.FriendlyName;
+					Assert.Equal(E2eMainWindowHarness.TrFormat("Choose {0}", theirsPointName),
+						UiClick.ContentText(conflict.ResolveButton));
 						UiClick.Click(conflict.ResolveButton);
 						Dispatcher.UIThread.RunJobs();
 
@@ -492,26 +495,50 @@ namespace ForkPlus.Tests
 								Assert.True(Math.Abs(merged.TextArea.TextView.ScrollOffset.Y - finalY) < 1.0,
 									"交替滚动后 Merged 应与 Local 收敛一致");
 
-								// ===== 4) 冲突块导航：Next → 第二块（滚动位置前进）→ Prev → 回第一块 =====
-								//（NextPrevMergeButtonsContainer 内 XAML 序：[0]=Previous [1]=Next）
-								local.ScrollToVerticalOffsetCompat(0.0);
-								remote.ScrollToVerticalOffsetCompat(0.0);
-								merged.ScrollToVerticalOffsetCompat(0.0);
-								Dispatcher.UIThread.RunJobs();
-								Button next = UiClick.FindAll<Button>(mergeWindow.NextPrevMergeButtonsContainer)[1];
-								Button prev = UiClick.FindAll<Button>(mergeWindow.NextPrevMergeButtonsContainer)[0];
-								// 首块自动滚入视野（SelectFirstConflictedChunk）：先回顶再点 Next
-								double beforeY = local.TextArea.TextView.ScrollOffset.Y;
-								UiClick.Click(next);
-								double afterNextY = local.TextArea.TextView.ScrollOffset.Y;
-								Assert.True(afterNextY > beforeY + 50.0,
-									"Next 应滚动到下一个冲突块（行 62 附近），before=" + beforeY.ToString("F1")
-									+ " after=" + afterNextY.ToString("F1"));
-								UiClick.Click(prev);
-								double afterPrevY = local.TextArea.TextView.ScrollOffset.Y;
-								Assert.True(afterPrevY < afterNextY - 50.0,
-									"Prev 应滚回上一个冲突块，afterNext=" + afterNextY.ToString("F1")
-									+ " afterPrev=" + afterPrevY.ToString("F1"));
+								// ===== 4) 冲突块导航：Next/Prev 基于视口中线行定位（WPF 原版同款 MiddleLine 算法）=====
+							//（NextPrevMergeButtonsContainer 内 XAML 序：[0]=Previous [1]=Next）
+							// 语义：Next = 中线行之后的下一个冲突块；Prev = 中线行之前的上一个冲突块。
+							// 探针实证（WPF 原仓对照 + AvaloniaEdit 源码，非迁移回归）：ScrollToLine 走
+							// ScrollTo(line, -1) → MinimumScrollFraction=0.3 守卫——目标与当前偏移差
+							// < 0.3×视口高时抑制滚动。首块在文件顶部（行 11）时从顶点 Next 目标仅差
+							// ~52px 被抑制（before=0 after=0），且中线行不动，重复点仍指首块（原版同款
+							// 行为——真实用户此时首块已在视野内）。测试模拟"用户已聚焦首块"的真实态：
+							// 把首块第二行滚到视口中线（compat 直设偏移绕过守卫），此后 Next → 第二块
+							//（大位移过守卫）→ Prev → 回首块。中线落点容差：瞄准行 12，行高估算偏差
+							// ±5% 内中线落行 11-13，三者 FindNextChunk 都会跳过首块（首块 Range.Start
+							// 不大于这些行的 EndOffset），断言稳健。
+							local.ScrollToVerticalOffsetCompat(0.0);
+							remote.ScrollToVerticalOffsetCompat(0.0);
+							merged.ScrollToVerticalOffsetCompat(0.0);
+							Dispatcher.UIThread.RunJobs();
+							Button next = UiClick.FindAll<Button>(mergeWindow.NextPrevMergeButtonsContainer)[1];
+							Button prev = UiClick.FindAll<Button>(mergeWindow.NextPrevMergeButtonsContainer)[0];
+
+							MergeConflictView.Chunk firstChunk = local.MergeConflictView.Chunks
+								.First(c => c.Node is MergeConflict.ConflictChunk);
+							int firstChunkLine = firstChunk.Lines[0].LineNumber;
+							Avalonia.Controls.ScrollViewer localSv = UiClick.FindAll<Avalonia.Controls.ScrollViewer>(local)
+								.First(s => s.Name == "PART_ScrollViewer");
+							// 行高 = extent 高 / 行数（均匀单级行高；探针实证：估 17.55 与
+							// ScrollToLine(63)→947.63px 的实测中心定位吻合）
+							double lineHeight = localSv.Extent.Height / local.Document.LineCount;
+							local.ScrollToVerticalOffsetCompat(
+								firstChunkLine * lineHeight + lineHeight / 2.0 - localSv.Viewport.Height / 2.0);
+							Dispatcher.UIThread.RunJobs();
+							double beforeY = local.TextArea.TextView.ScrollOffset.Y;
+							Assert.True(beforeY > 0.0,
+								"聚焦首块应产生正偏移（中线对齐行 " + (firstChunkLine + 1) + "），实际 " + beforeY.ToString("F1"));
+
+							UiClick.Click(next);
+							double afterNextY = local.TextArea.TextView.ScrollOffset.Y;
+							Assert.True(afterNextY > beforeY + 50.0,
+								"Next 应滚动到下一个冲突块（行 62 附近），before=" + beforeY.ToString("F1")
+								+ " after=" + afterNextY.ToString("F1"));
+							UiClick.Click(prev);
+							double afterPrevY = local.TextArea.TextView.ScrollOffset.Y;
+							Assert.True(afterPrevY < afterNextY - 50.0,
+								"Prev 应滚回上一个冲突块，afterNext=" + afterNextY.ToString("F1")
+								+ " afterPrev=" + afterPrevY.ToString("F1"));
 								ScreenshotHelper.Snap(mergeWindow, "11-chunk-navigation", "10-mergeconflict");
 
 								// ===== 5) 布局方向切换：Vertical ↔ Horizontal（Merged 编辑器 Grid 位置迁移）=====

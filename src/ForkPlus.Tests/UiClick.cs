@@ -136,11 +136,18 @@ namespace ForkPlus.Tests
 			Dispatcher.UIThread.RunJobs();
 		}
 
-		/// <summary>设置复选状态。Avalonia 在 IsChecked 属性变化时自动路由 Checked/Unchecked 事件，
-		/// 直接赋值即可触发完整管线（勿手动 RaiseEvent 造成双触发）。</summary>
+		/// <summary>设置复选状态（生产点击序）。
+		/// 真实用户点击 = 先切 IsChecked 再路由 Click 事件；仅赋 IsChecked 只走 Checked/Unchecked
+		/// 管线——Click 绑定的处理器不会执行（模块 10 教训：MergeConflictUserControl 的
+		/// Local/Remote CheckBox 与 WPF 原版同为 Click="MergeCheckBox_Changed" 绑定，
+		/// 程序化 Toggle 后 ResolveButton 文案/启用态不刷新）。故补发 Click 路由事件：
+		/// IsCheckedChanged 绑定的 CheckBox（如 SideBySideMergeWindow 全选框）无 Click
+		/// 订阅者，多发的事件是无害空操作；Click 绑定的则正好补上生产管线。
+		/// （模块 9 教训同源：ToggleButton 生产点击序 = 先设 IsChecked 再 raise Click。）</summary>
 		public static void Toggle(CheckBox checkBox, bool isChecked)
 		{
 			checkBox.IsChecked = isChecked;
+			checkBox.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 			Dispatcher.UIThread.RunJobs();
 		}
 
