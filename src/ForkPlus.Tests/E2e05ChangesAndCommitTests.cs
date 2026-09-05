@@ -2,13 +2,23 @@
 // 覆盖：真实 MainWindow 生产路径打开仓库（TabManager.OpenRepository，IsActiveRepository 管线走通）、
 //   工作区状态装配（未暂存 修改/删除/未跟踪 + 已暂存）、选中文件 working dir diff 加载、
 //   Stage/Unstage 选中文件（真实 git add / reset，UI 列表 + git index 双重验证）、
-//   StageAllButton 智能切换（Stage All ↔ Unstage All）、提交按钮状态与文案。
+//   StageAllButton 智能切换（Stage All ↔ Unstage All）、提交按钮状态与文案、
+//   行级 chunk stage/discard 浮窗（DiffSelectionLayer 悬浮按钮 → ApplyChunk/DiscardChunk 命令 →
+//   git apply 真实执行 + 确认对话框模态泵驱动）、提交消息自动补全（Co-authored-by 建议 → Tab 选中替换）。
 // 截图 → docs/evidence/e2e/05-changescommit/。
 using System;
+using System.IO;
 using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using ForkPlus.Git;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Controls.Editor;
+using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
 using Xunit;
 
@@ -208,6 +218,274 @@ namespace ForkPlus.Tests
 						Assert.Equal(string.Empty, TestRepoFactory.GitOutput(repo, "diff --cached --name-only"));
 						Assert.Equal(E2eMainWindowHarness.Tr("Commit"), commit.CommitButton.Content?.ToString());
 						ScreenshotHelper.Snap(window, "05-unstage-all", "05-changescommit");
+					}
+					finally
+					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+					}
+				});
+			}
+			finally
+			{
+				TestRepoFactory.Cleanup(repo);
+			}
+		}
+		// ===== 模块5第二批共用助手 =====
+
+		/// <summary>等 Commit 视图状态装配完成（3 未暂存 + 1 已暂存）。</summary>
+		private static StageFileUserControl WaitForWorkingDirStatus(CommitUserControl commit)
+		{
+			StageFileUserControl stage = commit.StageFileUserControl;
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				return stage.AllUnstagedFiles.Length == 3 && stage.AllStagedFiles.Length == 1;
+			}), "初始状态未装配：unstaged=" + stage.AllUnstagedFiles.Length + " staged=" + stage.AllStagedFiles.Length);
+			return stage;
+		}
+
+		/// <summary>选中未暂存 a.txt 并等待 working dir diff 加载、编辑器进入可视树。</summary>
+		private static CommitCodeEditor SelectFileAndLoadDiff(Window window, StageFileUserControl stage, CommitUserControl commit)
+		{
+			stage.UnstagedFilesFileListUserControl.SelectFile("a.txt");
+			Dispatcher.UIThread.RunJobs();
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				return commit.FileDiffControl.Content != null && commit.FileDiffControl.Content.Succeeded;
+			}), "a.txt 的 working dir diff 未加载");
+			CommitCodeEditor editor = null;
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				editor = UiClick.FindAll<CommitCodeEditor>(window).FirstOrDefault();
+				return editor != null;
+			}), "diff 编辑器（CommitCodeEditor）未出现在可视树");
+			return editor;
+		}
+
+		/// <summary>程序化选区并强制渲染一帧，令选区浮窗（Stage/Discard 悬浮按钮）出现。</summary>
+		private static void SelectLineAndShowFloatingButtons(Window window, CommitCodeEditor editor, string lineText)
+		{
+			int selStart = editor.Text.IndexOf(lineText, StringComparison.Ordinal);
+			Assert.True(selStart >= 0, "diff 文档中找不到 " + lineText);
+			editor.Select(selStart, (lineText + "\n").Length);
+			Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+			// 强制真实渲染一帧：Render → DrawSelectionBorder → ShowChunkAdorner（选区顶部出浮窗）
+			HeadlessWindowExtensions.CaptureRenderedFrame(window);
+			Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+		}
+
+		private static FloatingButton FindFloatingButton(Window window, string content)
+		{
+			return UiClick.FindAll<FloatingButton>(window)
+				.FirstOrDefault(delegate (FloatingButton b)
+				{
+					return UiClick.ContentText(b) == content;
+				});
+		}
+
+		[Fact]
+		public void CommitView_LineLevelStage_FloatingButton_StagesOnlySelectedLines()
+		{
+			string repo = TestRepoFactory.CreateWorkingDir();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+					try
+					{
+						repoControl.ActivateCommitView();
+						Dispatcher.UIThread.RunJobs();
+						CommitUserControl commit = repoControl.Content.CommitUserControl;
+						StageFileUserControl stage = WaitForWorkingDirStatus(commit);
+						CommitCodeEditor editor = SelectFileAndLoadDiff(window, stage, commit);
+
+						// ===== 1) 选中新增第一行（line4-appended）→ 浮窗出现 [Stage, Discard...] =====
+						SelectLineAndShowFloatingButtons(window, editor, "line4-appended");
+						FloatingButton stageBtn = FindFloatingButton(window, E2eMainWindowHarness.Tr("Stage"));
+						FloatingButton discardBtn = FindFloatingButton(window, E2eMainWindowHarness.Tr("Discard..."));
+						Assert.True(stageBtn != null, "未暂存 diff 选区浮窗应出现 Stage 按钮");
+						Assert.True(discardBtn != null, "未暂存 diff 选区浮窗应出现 Discard... 按钮");
+						ScreenshotHelper.Snap(window, "06-floating-buttons-on-selection", "05-changescommit");
+
+						// ===== 2) 点浮窗 Stage → ApplyChunkCommand → git apply --cached（仅 line4 的部分补丁）=====
+						UiClick.Click(stageBtn);
+
+						// UI 刷新发生在 git apply + RefreshFileStatus 完成之后，作为 git 已执行的信号
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							return stage.AllStagedFiles.Any(delegate (ChangedFile f) { return f.Path == "a.txt"; });
+						}), "部分 stage 后 a.txt 应出现在已暂存列表");
+
+						// git index 事实断言（用 + 前缀匹配真实变更行，git diff 的 context 行也会带原文本）：
+						// 仅 line4 进入暂存区，line5 仍是工作区改动
+						string cached = TestRepoFactory.GitOutput(repo, "diff --cached -- a.txt");
+						Assert.Contains("+line4-appended", cached);
+						Assert.DoesNotContain("+line5-appended", cached);
+						string worktree = TestRepoFactory.GitOutput(repo, "diff -- a.txt");
+						Assert.DoesNotContain("+line4-appended", worktree);
+						Assert.Contains("+line5-appended", worktree);
+
+						// 部分暂存后 a.txt 两端都有差异 → 两侧列表同时存在
+						Assert.Contains("a.txt", stage.AllUnstagedFiles.Select(f => f.Path));
+						ScreenshotHelper.Snap(window, "07-line-level-stage-applied", "05-changescommit");
+					}
+					finally
+					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+					}
+				});
+			}
+			finally
+			{
+				TestRepoFactory.Cleanup(repo);
+			}
+		}
+
+		[Fact]
+		public void CommitView_LineLevelDiscard_FloatingButton_ConfirmDialog_DiscardsSelectedLines()
+		{
+			string repo = TestRepoFactory.CreateWorkingDir();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+					try
+					{
+						repoControl.ActivateCommitView();
+						Dispatcher.UIThread.RunJobs();
+						CommitUserControl commit = repoControl.Content.CommitUserControl;
+						StageFileUserControl stage = WaitForWorkingDirStatus(commit);
+						CommitCodeEditor editor = SelectFileAndLoadDiff(window, stage, commit);
+
+						// ===== 1) 选中新增第二行（line5-appended）→ 浮窗出现 =====
+						SelectLineAndShowFloatingButtons(window, editor, "line5-appended");
+						FloatingButton discardBtn = FindFloatingButton(window, E2eMainWindowHarness.Tr("Discard..."));
+						Assert.True(discardBtn != null, "未暂存 diff 选区浮窗应出现 Discard... 按钮");
+						ScreenshotHelper.Snap(window, "08-discard-floating-button", "05-changescommit");
+
+						// ===== 2) 模态确认框驱动：ShowDialog 走 DispatcherFrame 模态泵，
+						// 先 Post 处理器（泵内执行：找确认框 → 截图 → 点确认），再点击 Discard 触发模态 =====
+						var handled = new bool[1];
+						var handlerError = new string[1];
+						Dispatcher.UIThread.Post(delegate
+						{
+							try
+							{
+								ForkPlus.UI.Dialogs.MessageBoxWindow msgBox = ForkPlus.UI.WpfCompat.WpfApp.Windows
+									.OfType<ForkPlus.UI.Dialogs.MessageBoxWindow>()
+									.FirstOrDefault();
+								if (msgBox == null)
+								{
+									handlerError[0] = "丢弃确认框未出现";
+									return;
+								}
+								// 证据：确认框（标题/描述/按钮）
+								ScreenshotHelper.Snap(msgBox, "09-discard-confirm-dialog", "05-changescommit");
+								// 单行丢弃 → 提交按钮文案 "Discard Line"（DiscardChunkCommand 单复数分支）
+								string submitTitle = E2eMainWindowHarness.Tr("Discard Line");
+								Button submit = UiClick.FindAll<Button>(msgBox)
+									.FirstOrDefault(delegate (Button b) { return UiClick.ContentText(b) == submitTitle; });
+								if (submit == null)
+								{
+									handlerError[0] = "确认框中找不到按钮 " + submitTitle;
+									return;
+								}
+								submit.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+								handled[0] = true;
+							}
+							catch (Exception ex)
+							{
+								handlerError[0] = ex.ToString();
+							}
+						}, DispatcherPriority.Background);
+
+						UiClick.Click(discardBtn); // → ExtractPatchAndApply(Discard) → MessageBoxWindow.ShowDialog → 模态泵
+
+						Assert.True(handled[0], "模态确认框处理器未执行：" + handlerError[0]);
+						Assert.Null(handlerError[0]);
+
+						// ===== 3) git 工作区事实断言：line5 被反向补丁丢弃，line4 保留 =====
+						string expectedContent = "line1\nline2\nline3\nline4-appended\n";
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							return File.ReadAllText(Path.Combine(repo, "a.txt")) == expectedContent;
+						}), "line5 应被丢弃（ApplyWorkingTreeGitCommand 反向补丁）");
+						string worktree = TestRepoFactory.GitOutput(repo, "diff -- a.txt");
+						Assert.DoesNotContain("line5-appended", worktree);
+						Assert.Contains("line4-appended", worktree);
+
+						ScreenshotHelper.Snap(window, "10-line-level-discard-applied", "05-changescommit");
+					}
+					finally
+					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+					}
+				});
+			}
+			finally
+			{
+				TestRepoFactory.Cleanup(repo);
+			}
+		}
+
+		[Fact]
+		public void CommitView_CommitMessageAutocomplete_SuggestsCoAuthoredBy()
+		{
+			string repo = TestRepoFactory.CreateWorkingDir();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+					try
+					{
+						repoControl.ActivateCommitView();
+						Dispatcher.UIThread.RunJobs();
+						CommitUserControl commit = repoControl.Content.CommitUserControl;
+						WaitForWorkingDirStatus(commit);
+
+						// ===== 1) 消息输入：先设主题（FullCommitMessage setter 会以 DisableUpdates 静默写 description，
+						// 不触发建议），再对描述框直接输入 "Co-auth"（走 OnTextChanged → 30ms 防抖建议刷新）=====
+						commit.FullCommitMessage = "write something\n";
+						AutoCompleteTextBox desc = commit.CommitDescriptionTextBox;
+						Dispatcher.UIThread.RunJobs();
+						desc.Text = "Co-auth";
+						// 防抖 30ms 窗口内把 caret 放末尾（RefreshSuggestions 回调执行时读取当前 CaretIndex）
+						desc.CaretIndex = desc.Text.Length;
+
+						// ===== 2) 建议（DelayedAction 30ms → Dispatcher.Post → OpenPopup）=====
+						bool popupOpened = UiClick.WaitFor(delegate
+						{
+							Popup popup = UiClick.TryFind<Popup>(desc, "Popup");
+							return popup != null && popup.IsOpen == true;
+						});
+						Assert.True(popupOpened, "输入 Co-auth 后补全建议浮层未弹出");
+						Popup suggestionPopup = UiClick.TryFind<Popup>(desc, "Popup");
+						// Popup 的内容挂在独立 PopupRoot（不在原窗口可视树），经 Child 直接取
+						ListBox suggestionList = suggestionPopup.Child as ListBox;
+						Assert.NotNull(suggestionList);
+						// 防回归（2026-09-05 修复"建议浮层显示类名"）：ItemTemplate 必须是类型分发器，
+						// 为 null 时 ListBox 按 ToString() 渲染出 AutoCompleteSuggestion 类名
+						Assert.IsType<ForkPlus.UI.Controls.AutoCompleteSuggestionTemplateSelector>(suggestionList.ItemTemplate);
+						Assert.Single(suggestionList.Items);
+						Assert.Equal("Co-authored-by: ",
+							(suggestionList.Items[0] as AutoCompleteSuggestion).Suggestion);
+						ScreenshotHelper.Snap(window, "11-commit-message-autocomplete", "05-changescommit");
+
+						// ===== 3) Tab 选中首条建议（fallbackToFirst）→ 替换 token、caret 定位、浮层关闭 =====
+						desc.RaiseEvent(new KeyEventArgs
+						{
+							RoutedEvent = InputElement.KeyDownEvent,
+							Key = Key.Tab
+						});
+						Dispatcher.UIThread.RunJobs();
+						Assert.Equal("Co-authored-by: ", desc.Text);
+						Assert.Equal("Co-authored-by: ".Length, desc.CaretIndex);
+						Assert.True(suggestionPopup.IsOpen != true, "选中建议后浮层应关闭");
+
+						// FullCommitMessage 组合（getter 为 subject + "\n\n" + description）
+						Assert.Equal("write something\n\nCo-authored-by: ", commit.FullCommitMessage);
 					}
 					finally
 					{

@@ -43,8 +43,11 @@ namespace ForkPlus.Tests
 			return repoControl;
 		}
 
-		/// <summary>收尾：关闭仓库 tab（触发 SaveSession 把临时路径从会话里清掉）。
-		/// 只关 tab 不关窗口——见类头铁律 1。</summary>
+		/// <summary>收尾：关闭仓库 tab（触发 SaveSession 把临时路径从会话里清掉），随后摘除窗口。
+		/// 不能 Close()（见铁律 1），改为 Hide + 从 lifetime 窗口列表移除——残留的可见窗口
+		/// 会参与后续测试（如 ThemeSystemIntegrityTests 切皮肤）的布局，ModernTabControl
+		/// 模板重建时旧 ContentPresenter 与新 ContentPresenter 争抢同一 Grid 抛
+		/// "already has a visual parent"（2026-09-05 实证：E2e05 先跑则主题守卫必崩）。</summary>
 		public static void CloseRepositoryTab(MainWindow window, string repoPath)
 		{
 			try
@@ -55,6 +58,24 @@ namespace ForkPlus.Tests
 			catch
 			{
 				// 收尾尽力而为：仓库目录可能已被 finally 清理，失败不掩盖断言
+			}
+			try
+			{
+				window.Hide();
+				// Avalonia 12 lifetime.Windows 是 IReadOnlyList（不可移除项）；Hide 后窗口
+				// IsVisible=false，不再参与布局/渲染调度。MainWindow.Instance 是
+				// lifetime.MainWindow 的只读投影，从源头清引用避免下个用例误判激活仓库。
+				if (Avalonia.Application.Current?.ApplicationLifetime
+					is Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime lifetime
+					&& lifetime.MainWindow == window)
+				{
+					lifetime.MainWindow = null;
+				}
+				Dispatcher.UIThread.RunJobs();
+			}
+			catch
+			{
+				// 窗口摘除失败不掩盖断言；下个用例创建新 MainWindow 时 Instance 会被覆盖
 			}
 		}
 
