@@ -183,8 +183,12 @@
 
     <Setter Property="Template">
       <Setter.Value>
+        <!-- Migration note（2026-09-04，"字和左/上边框贴得太紧"，同 Textbox.axaml）：
+             Padding 同样经 Margin="{TemplateBinding Padding}" 下传 TextPresenter，保持
+             TextBox 家族模板统一模式（编辑型 ComboBox 文字间距现由外层 Border Padding="4,2"
+             提供，此绑定当前为 0 的无操作，防止将来显式设 Padding 时静默失效）。 -->
         <ControlTemplate TargetType="TextBox">
-          <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
+          <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>

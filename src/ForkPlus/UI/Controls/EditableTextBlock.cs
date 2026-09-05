@@ -98,7 +98,15 @@ namespace ForkPlus.UI.Controls
 			textBox.VerticalAlignment = base.VerticalAlignment;
 			textBox.MaxWidth = base.MaxWidth;
 			textBox.Height = base.Height;
-			textBox.Padding = base.Padding;
+			// Migration note（2026-09-04，"TextBox 里面的字和左/上边框贴得太紧"，同 Textbox.axaml）：
+			// base.Padding 未显式设置时为 0；无条件赋值会以局部值 0 覆盖 TextBox 主题默认
+			// Padding="2,1"（主题经 Margin="{TemplateBinding Padding}" 下传 TextPresenter），
+			// 所有重命名编辑框（仓库管理/侧栏/标签页/子模块）文字重新 0px 贴边框。
+			// 仅在调用方显式给了非零 Padding 时才下传。
+			if (base.Padding != default(global::Avalonia.Thickness))
+			{
+				textBox.Padding = base.Padding;
+			}
 			textBox.Margin = new Thickness(-3.0, 1.0, 0.0, 0.0);
 			textBox.FontSize = base.FontSize;
 			textBox.Background = global::ForkPlus.UI.Theme.BackgroundBrush;

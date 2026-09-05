@@ -20,6 +20,13 @@
     <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}" />
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextBox.Selection.Foreground}" />
     <Setter Property="BorderThickness" Value="1" />
+    <!-- Migration note（2026-09-04，"TextBox 里面的字和左/上边框贴得太紧"）：原版 WPF 的
+         TextBox 模板经 PART_ContentHost（ScrollViewer）自动应用 Padding；迁移模板把
+         TextPresenter 直接放 Border 里且未下传 Padding——所有显式 Padding="4,2,4,2" 的
+         使用处（100+ 处）对真实文字全部无效（只作用于 placeholder），文字 0px 贴边。
+         修复：主题默认 Padding="2,1"（显式设置处局部值优先不受影响），模板经
+         Margin="{TemplateBinding Padding}" 下传到 TextPresenter。 -->
+    <Setter Property="Padding" Value="2,1" />
     <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
 
@@ -33,8 +40,9 @@
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="Border">
             <!-- Migration note（2026-09-03，同上根因）：WPF 模板经 PART_ContentHost（ScrollViewer）
                  自动从 TextBox 渲染选区/光标/密码掩码；Avalonia 必须在 TextPresenter 上显式
-                 TemplateBinding 下传（对齐官方 Fluent 主题），漏一个属性对应功能即静默失效。 -->
-            <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
+                 TemplateBinding 下传（对齐官方 Fluent 主题），漏一个属性对应功能即静默失效。
+                 Padding 同理经 Margin 下传（官方 Fluent 主题做法），否则文字贴边框。 -->
+            <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
           </Border>
 
         </ControlTemplate>

@@ -4,6 +4,8 @@
 //   fix9-before-hover.png / fix9-after-hover.png —— diff 悬浮 Stage/Discard 浮窗（修复9）
 //   fix8-hexdiff.png —— 二进制文件 Hex Diff 视图（修复8）
 //   fix10-before/after-{monokai,yellowdark,dark,light}.png —— 重命名内联编辑框选区颜色（修复10）
+//   fix14-after-textbox-padding.png / fix14-after-rename-editor-padding.png —— TextBox 文字
+//     不再贴左/上边框（修复14：主题默认 Padding=2,1 经 Margin 下传 TextPresenter）
 // 截图同时做像素断言（非全空白、hover 前后有可见差异），测试本身就是回归证明。
 using System;
 using System.IO;
@@ -311,8 +313,122 @@ namespace ForkPlus.Tests
 				Assert.True(File.Exists(path) && new FileInfo(path).Length > 1000, file + " 应生成");
 			}
 			Assert.True(selectionPixelsMonokai[0] > 100,
-				"Monokai 皮肤上选区蓝未渲染（像素=" + selectionPixelsMonokai[0] + "）——修复不可见");
+			"Monokai 皮肤上选区蓝未渲染（像素=" + selectionPixelsMonokai[0] + "）——修复不可见");
+	}
+
+	// ============================ 修复14：TextBox 文字贴左/上边框 ============================
+
+	// 根因（2026-09-04，"TextBox 里面的字和左/上边框贴得太紧"）：原版 WPF 的 TextBox 模板经
+	// PART_ContentHost（ScrollViewer）自动应用 Padding；迁移模板把 TextPresenter 直接放
+	// Border 里且未下传 Padding——所有显式 Padding="4,2,4,2" 的使用处（100+ 处）对真实文字
+	// 全部无效（只作用于 placeholder），未显式设置处文字 0px 贴边框。修复：主题默认
+	// Padding="2,1" + Margin="{TemplateBinding Padding}" 下传 TextPresenter（TextBox/
+	// PlaceholderTextBox/AutoCompleteTextBox/FilterTextBox/ComboBox 编辑模板全覆盖），
+	// 重命名编辑框（EditableTextBlock）不再用局部值 0 覆盖主题默认。
+	// 证据：本测试渲染修复后的普通 TextBox 与重命名编辑框，像素断言 1px 边框内侧的
+	// 左 2px / 上 1px 内边距条带无文字墨色（修复前文字 0px 贴边），文字墨色真实存在于内边距之外。
+
+	[Fact]
+	public void Fix14_TextBoxPadding_ScreenshotEvidence()
+	{
+		HeadlessAppBootstrap.EnsureStarted();
+		(int leftGapInk, int topGapInk, int textInk) = (0, 0, 0);
+		Dispatcher.UIThread.InvokeAsync(delegate
+		{
+			// ── 场景 1：普通 TextBox（主题默认 Padding=2,1，Light 皮肤）──
+			var tb = new TextBox { Text = "padding-check 0123", Width = 220, Height = 30, FontSize = 13 };
+			var w1 = new Window { Width = 300, Height = 90, Content = tb };
+			w1.Show();
+			Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+			using (var frame = HeadlessWindowExtensions.CaptureRenderedFrame(w1))
+			{
+				Assert.NotNull(frame);
+				SaveFrame(frame, "fix14-after-textbox-padding.png");
+				// 墨色判定：与 TextBox 背景色亮度差 > 80（文字前景高对比；边框灰/AA 混色 ~50 不计）
+				Color bg = ((Application.Current!.TryFindResource("TextBox.Static.Background", out object? bgRes)
+					? bgRes : null) as ISolidColorBrush)?.Color ?? Colors.White;
+				int bgLum = (bg.R + bg.G + bg.B) / 3;
+				bool IsInk(Color c)
+				{
+					int lum = (c.R + c.G + c.B) / 3;
+					return Math.Abs(lum - bgLum) > 80;
+				}
+				// TextBox 在窗口中的位置（含 1px 边框）
+				Point origin = tb.TranslatePoint(new Point(0, 0), w1)!.Value;
+				double tx = origin.X, ty = origin.Y;
+				double w = tb.Bounds.Width, h = tb.Bounds.Height;
+				using (var l = frame.Lock())
+				{
+					Color Read(double x, double y)
+					{
+						IntPtr rowPtr = l.Address + (int)y * l.RowBytes;
+						return Color.FromArgb(
+							System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, (int)x * 4 + 3),
+							System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, (int)x * 4),
+							System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, (int)x * 4 + 1),
+							System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, (int)x * 4 + 2));
+					}
+					// 左内边距条带（边框 1px 内侧的 2px）：不得有墨色（修复前文字 0px 贴左边框）
+					for (int y = (int)ty + 3; y <= (int)(ty + h) - 4; y++)
+					{
+						for (int x = (int)tx + 1; x <= (int)tx + 2; x++)
+						{
+							if (IsInk(Read(x, y)))
+							{
+								leftGapInk++;
+							}
+						}
+					}
+					// 上内边距条带（边框 1px 内侧的 1px）：不得有墨色（修复前文字贴上边框）
+					for (int x = (int)tx + 3; x <= (int)(tx + w) - 4; x++)
+					{
+						if (IsInk(Read(x, (int)ty + 1)))
+						{
+							topGapInk++;
+						}
+					}
+					// 文字墨色必须真实存在于内边距之外（x≥边框1+左内边距2，y≥边框1+上内边距1）
+					for (int y = (int)ty + 2; y <= (int)(ty + h) - 3; y++)
+					{
+						for (int x = (int)tx + 3; x <= (int)(tx + w) - 4; x++)
+						{
+							if (IsInk(Read(x, y)))
+							{
+								textInk++;
+							}
+						}
+					}
+				}
+			}
+			w1.Close();
+
+			// ── 场景 2：重命名编辑框（同 Fix10 场景进编辑态，真实重命名路径；内边距不变量
+			//    由 RenameEditorStyleTests 属性断言守卫，此处出视觉证据截图）──
+			var (window, etb) = BuildFix10Scenario();
+			etb.IsInEditMode = true;
+			Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+			System.Threading.Tasks.Task.Delay(100).GetAwaiter().GetResult();
+			Dispatcher.UIThread.RunJobs();
+			TextBox editor = window.GetVisualDescendants().OfType<TextBox>().FirstOrDefault();
+			Assert.NotNull(editor);
+			using (var frame2 = HeadlessWindowExtensions.CaptureRenderedFrame(window))
+			{
+				Assert.NotNull(frame2);
+				SaveFrame(frame2, "fix14-after-rename-editor-padding.png");
+			}
+			window.Close();
+			return 0;
+		}).GetAwaiter().GetResult();
+
+		Assert.True(leftGapInk == 0, "左边框内侧 2px 内边距条带出现文字墨色（" + leftGapInk + " 像素）——文字仍贴左边框");
+		Assert.True(topGapInk == 0, "上边框内侧 1px 内边距条带出现文字墨色（" + topGapInk + " 像素）——文字仍贴上边框");
+		Assert.True(textInk > 100, "内边距之外未见文字墨色（" + textInk + " 像素）——文字未渲染");
+		foreach (string file in new[] { "fix14-after-textbox-padding.png", "fix14-after-rename-editor-padding.png" })
+		{
+			string path = Path.Combine(EvidenceDir(), file);
+			Assert.True(File.Exists(path) && new FileInfo(path).Length > 1000, file + " 应生成");
 		}
+	}
 
 		// ============================ 修复8：二进制 Hex Diff 视图 ============================
 
