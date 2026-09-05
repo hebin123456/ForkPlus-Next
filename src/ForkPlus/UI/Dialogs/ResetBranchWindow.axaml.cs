@@ -55,6 +55,11 @@ namespace ForkPlus.UI.Dialogs
 		public ResetBranchWindow(RepositoryUserControl repositoryUserControl, [Null] LocalBranch activeBranch, Revision destination)
 		{
 			InitializeComponent();
+			// WPF→Avalonia 迁移回归修复：Avalonia ComboBox 的项容器在下拉 Popup 内延迟物化，
+			// axaml 中 Mixed 的 IsSelected="True" 在用户首次展开下拉前不生效（关闭态显示为空；
+			// WPF ComboBox 加载即生成全部容器故无此问题）。编程式选中 Mixed（与 _resetType
+			// 默认值一致），触发 SelectionChanged 同步 _resetType 与命令预览，关闭态正确显示。
+			ResetTypeCombobox.SelectedIndex = 1;
 			_repositoryUserControl = repositoryUserControl;
 			_branch = activeBranch;
 			_destination = destination;

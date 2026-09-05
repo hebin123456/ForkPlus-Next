@@ -326,6 +326,42 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>历史改写仓库（供模块13）：main = c1 "base one"(base.txt) + c2 "base two"(b.txt)，
+		/// feature 自 c1 分叉 = f1 "feat: one" / f2 "feat: two" / f3 "feat: three"（各加新文件，
+		/// 与 main 无重叠 → 合并/变基/拣选均可干净执行）。checkoutFeature=false → main 活跃
+		///（合并/拣选/还原/重置）；true → feature 活跃（变基/交互式变基）。</summary>
+		public static string CreateHistoryRewrite(bool checkoutFeature = false)
+		{
+			string root = NewTempDir("histrewrite");
+			Init(root);
+			Commit(root, "base.txt", "base\n", "base one");
+			Run(root, "checkout -q -b feature");
+			Commit(root, "f1.txt", "f1\n", "feat: one");
+			Commit(root, "f2.txt", "f2\n", "feat: two");
+			Commit(root, "f3.txt", "f3\n", "feat: three");
+			Run(root, "checkout -q main");
+			Commit(root, "b.txt", "b\n", "base two");
+			if (checkoutFeature)
+			{
+				Run(root, "checkout -q feature");
+			}
+			return root;
+		}
+
+		/// <summary>历史改写冲突仓库（供模块13 冲突预检）：main 与 feature 分叉后各自改
+		/// conf.txt 同一行 → MergeBranchWindow 构造期 merge-tree 预检报 "will cause conflicts"</summary>
+		public static string CreateHistoryConflict()
+		{
+			string root = NewTempDir("histconflict");
+			Init(root);
+			Commit(root, "conf.txt", "base line\n", "base");
+			Run(root, "checkout -q -b feature");
+			Commit(root, "conf.txt", "feature line\n", "feature change");
+			Run(root, "checkout -q main");
+			Commit(root, "conf.txt", "main line\n", "main change");
+			return root;
+		}
+
 		public static void Cleanup(string root)
 		{
 			try
