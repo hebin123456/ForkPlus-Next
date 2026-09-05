@@ -165,6 +165,36 @@ namespace ForkPlus.Tests
 			return work;
 		}
 
+		/// <summary>长行仓库（供模块7 文本 Diff 滚动测试）：120 行全部修改（大 hunk，
+		/// 垂直滚动范围）+ 400 字符宽行（水平滚动范围），工作区修改使 old/new 两侧各有长行。</summary>
+		public static string CreateLongLines()
+		{
+			string root = NewTempDir("longlines");
+			Init(root);
+			var baseText = new System.Text.StringBuilder();
+			// 宽行放文件开头（探针实证 2026-09-05：AvaloniaEdit TextView 的宽度 extent 只由
+			// 可见行决定，宽行在文件底部且被垂直滚动出视野时水平 extent 塌缩到短行宽度，
+			// 水平滚动范围消失。放顶部保证初始视口内即有宽行 → 水平 extent ≈3000px）
+			baseText.AppendLine(new string('x', 400));
+			baseText.AppendLine(new string('x', 400));
+			for (int i = 1; i <= 120; i++)
+			{
+				baseText.AppendLine("short line " + i);
+			}
+			Commit(root, "wide.txt", baseText.ToString(), "base");
+			// 工作区修改：全部行内容变化（大 hunk → 垂直 extent ≈2100px，Commit diff 默认
+			// hunk 视图，只改 1 行时 diff 仅 7 行无垂直滚动范围），宽行字符 x→y。
+			var modifiedText = new System.Text.StringBuilder();
+			modifiedText.AppendLine(new string('y', 400));
+			modifiedText.AppendLine(new string('y', 400));
+			for (int j = 1; j <= 120; j++)
+			{
+				modifiedText.AppendLine("modified line " + j);
+			}
+			File.WriteAllText(Path.Combine(root, "wide.txt"), modifiedText.ToString());
+			return root;
+		}
+
 		public static void Cleanup(string root)
 		{
 			try

@@ -16,6 +16,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using ForkPlus.Git;
+using ForkPlus.Settings;
+using ForkPlus.UI;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
@@ -286,8 +288,13 @@ namespace ForkPlus.Tests
 		public void CommitView_LineLevelStage_FloatingButton_StagesOnlySelectedLines()
 		{
 			string repo = TestRepoFactory.CreateWorkingDir();
+			// 固定 Split 布局（单编辑器、diff 文本含 +/- 标记）——行级选区逻辑按 Split 断言，
+			// 防其他测试/历史运行遗留 SideBySide 用户设置（编辑器会变两个，FirstOrDefault 拿到
+			// 左侧旧内容编辑器导致找不到 "+line4-appended"）。
+			DiffLayoutMode originalLayout = ForkPlusSettings.Default.CommitDiffLayoutMode;
 			try
 			{
+				ForkPlusSettings.Default.CommitDiffLayoutMode = DiffLayoutMode.Split;
 				HeadlessAppBootstrap.Run(delegate
 				{
 					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
@@ -337,6 +344,8 @@ namespace ForkPlus.Tests
 			}
 			finally
 			{
+				ForkPlusSettings.Default.CommitDiffLayoutMode = originalLayout;
+				ForkPlusSettings.Default.Save();
 				TestRepoFactory.Cleanup(repo);
 			}
 		}
@@ -345,8 +354,11 @@ namespace ForkPlus.Tests
 		public void CommitView_LineLevelDiscard_FloatingButton_ConfirmDialog_DiscardsSelectedLines()
 		{
 			string repo = TestRepoFactory.CreateWorkingDir();
+			// 固定 Split 布局（同上：防 SideBySide 用户设置残留干扰行级选区断言）。
+			DiffLayoutMode originalLayout = ForkPlusSettings.Default.CommitDiffLayoutMode;
 			try
 			{
+				ForkPlusSettings.Default.CommitDiffLayoutMode = DiffLayoutMode.Split;
 				HeadlessAppBootstrap.Run(delegate
 				{
 					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
@@ -425,6 +437,8 @@ namespace ForkPlus.Tests
 			}
 			finally
 			{
+				ForkPlusSettings.Default.CommitDiffLayoutMode = originalLayout;
+				ForkPlusSettings.Default.Save();
 				TestRepoFactory.Cleanup(repo);
 			}
 		}
