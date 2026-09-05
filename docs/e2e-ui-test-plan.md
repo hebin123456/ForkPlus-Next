@@ -75,7 +75,7 @@ public class E2eXxxTests
 |---|------|---------|---------|------|
 | 1 | 启动与仓库管理 | 欢迎页、仓库列表器（分组/搜索）、打开仓库、Tab 增删切换 | ~10 | 完成 |
 | 2 | 提交历史视图 | 图表渲染、行选择/多选、搜索面板、tooltip、滚动虚拟化 | ~15 | 完成 |
-| 3 | 侧边栏 | 分支/标签/stash/远程/子模块分组展开收起、过滤、右键菜单 | ~12 | 未开始 |
+| 3 | 侧边栏 | 分支/标签/stash/远程/子模块分组展开收起、过滤、右键菜单 | ~12 | 完成 |
 | 4 | 修订详情 | 变更 tab、文件树 tab、摘要、reflog/tags 隐藏开关 | ~8 | 未开始 |
 | 5 | 变更与提交 | 暂存/取消暂存、行级 chunk stage/discard 浮窗、提交消息自动补全 | ~15 | 未开始 |
 | 6 | 工具栏 | push/pull/fetch/stash 按钮状态（领先/落后角标） | ~6 | 未开始 |
@@ -123,3 +123,4 @@ public class E2eXxxTests
 - 2026-09-05：计划固化为本文档；阶段 0 基建（TestRepoFactory/ScreenshotHelper/UiClick）完成。
 - 2026-09-05：模块 1 完成（E2e01WelcomeAndRepoManagerTests：欢迎页表单、仓库列表选中/空态、Tab 增删选切换；截图 01-welcome/）。
 - 2026-09-05：模块 2 完成（E2e02RevisionListTests：真实 git 管线加载、行选中、上下文搜索匹配标记/清空恢复、方向切换；截图 02-revisionlist/）。基建补强：HeadlessAppBootstrap 补 ServiceLocator 初始化（修复 headless 下 DelayedAction 回调被静默丢弃）、UiClick 新增 WaitFor 轮询等待。
+- 2026-09-05：模块 3 完成（E2e03SidebarTests：分组结构断言（main 活跃分支/feature 嵌套文件夹/tags）、文件夹与分组展开收起（生产 IsExpanded setter 完整管线）、过滤防抖→Refilter→IsHidden、清空恢复、分支右键菜单（真实 PointerPressed 管线）、分组右键菜单、stash 分组；截图 03-sidebar/，9 张）。
