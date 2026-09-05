@@ -94,6 +94,19 @@
                           SelectionChanged="ComboBox_SelectionChanged"
                           ItemsSource="{Binding DataContext.InteractiveRebaseComboBoxItemsSource, RelativeSource={RelativeSource AncestorType=dialogs:MultiselectionListView}}"
                           SelectedItem="{Binding Action, Mode=OneWay, Converter={dialogs:InteractiveRebaseActionToInteractiveRebaseComboBoxItemConverter}}">
+                  <!-- 选中后显示在 ComboBox 框内的模板：带颜色圆点 + 标题，与 WPF 原版视觉对齐 -->
+                  <ComboBox.SelectionBoxItemTemplate>
+                    <DataTemplate>
+                      <DockPanel Width="75">
+                        <Ellipse DockPanel.Dock="Left" Height="12" Width="12" Margin="0,0,4,0" IsVisible="{Binding Action, Converter={dialogs:InteractiveRebaseActionToVisibilityConverter}}">
+                          <Ellipse.Fill>
+                            <Binding Path="Action"><Binding.Converter><dialogs:InteractiveRebaseActionToColorConverter /></Binding.Converter></Binding>
+                          </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock Margin="0,0,0,2" FontSize="13" Text="{Binding DisplayTitle}" TextTrimming="CharacterEllipsis" />
+                      </DockPanel>
+                    </DataTemplate>
+                  </ComboBox.SelectionBoxItemTemplate>
                   <ComboBox.ItemTemplate>
                     <DataTemplate>
                       <DockPanel Width="450">

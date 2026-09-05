@@ -198,6 +198,15 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			e.Cancel = true;
+			// 修复（2026-09-05，"多点几下交互式变基弹窗就关不掉"）：
+			// _closing 已为 true 说明已经触发了取消流程（停 RI 进程中），
+			// 此时再点关闭按钮不应重复弹确认框——否则 MessageBox 叠加在已取消
+			// 的关闭流程上，用户点 Yes 后 StopRebaseInteractiveProcess 因
+			// _closing=true 被守卫吞掉，窗口永远关不掉。
+			if (_closing)
+			{
+				return;
+			}
 			if (!IsTodoListChanged() || IrCancelConfirmed())
 			{
 				StopRebaseInteractiveProcess("cancel");
@@ -474,9 +483,18 @@ namespace ForkPlus.UI.Dialogs
 			}
 			else if (action.GetValueOrDefault() == InteractiveRebaseAction.Reword && array.Length == 1)
 			{
+				// 修复（2026-09-05，"下拉框卡住 / 选中后状态不对"）：
+				// 原代码只弹 Reword 对话框但不更新 Action，导致 ComboBox 显示 Reword
+				// 但实际 Action 还是旧值（绑定 OneWay，不会自动回退），视觉与状态
+				// 不一致——用户以为"卡住了"。先把 Action 设为 Reword，保持
+				// SelectedItem 与 Action 同步；取消时 UpdateTodoList 会因
+				// CustomMessage 为 null 把 Action 自动改回 Pick。
+				RevisionEntry first = array.FirstItem();
+				first.Action = action.Value;
+				UpdateTodoList();
 				if (interactiveRebaseComboBoxItem2 != null)
 				{
-					ShowRewordPopup(array.FirstItem());
+					ShowRewordPopup(first);
 				}
 				_updateInProgress = false;
 			}

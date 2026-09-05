@@ -1,9 +1,10 @@
 <UserControl Height="180" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RewordUserControl" KeyDown="UserControl_PreviewKeyDown" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
   <Grid>
     <Grid.Children>
+      <!-- 阴影层 -->
       <Border Margin="8">
         <Border.Background>
-          <DynamicResource ResourceKey="Menu.MenuItem.Static.Background" />
+          <DynamicResource ResourceKey="BackgroundBrush" />
         </Border.Background>
         <Border.CornerRadius>6</Border.CornerRadius>
         <Border.Effect>
@@ -13,16 +14,18 @@
             </DropShadowEffect.Color>
             <DropShadowEffect.Opacity>0.2</DropShadowEffect.Opacity>
 <!-- Migration note：WPF DropShadowEffect.ShadowDepth 已删（Avalonia 用 OffsetY） -->
-
           </DropShadowEffect>
         </Border.Effect>
       </Border>
+      <!-- 内容层：修复（2026-09-05，"改写说明弹窗样式不对"）：
+           原用 Menu.MenuItem.Static.*（菜单项配色），与弹窗视觉不符。
+           改用标准 BackgroundBrush/BorderBrush，对齐 ForkPlus 弹窗家族样式。 -->
       <Border Padding="10" Margin="7" BorderThickness="1" CornerRadius="6">
         <Border.BorderBrush>
-          <DynamicResource ResourceKey="Menu.MenuItem.Static.Border" />
+          <DynamicResource ResourceKey="BorderBrush" />
         </Border.BorderBrush>
         <Border.Background>
-          <DynamicResource ResourceKey="Menu.MenuItem.Static.Background" />
+          <DynamicResource ResourceKey="BackgroundBrush" />
         </Border.Background>
         <Border.Child>
           <Grid Width="600">
