@@ -115,6 +115,25 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>工作区仓库：多种未暂存改动（修改 a.txt / 删除 b.txt / 未跟踪 new.txt）
+		/// + 1 个已暂存修改（c.txt），供模块5 Commit 视图（暂存/取消暂存/提交）测试。</summary>
+		public static string CreateWorkingDir()
+		{
+			string root = NewTempDir("workdir");
+			Init(root);
+			Commit(root, "a.txt", "line1\nline2\nline3\n", "base a");
+			Commit(root, "b.txt", "keep me\n", "base b");
+			Commit(root, "c.txt", "staged content\n", "base c");
+			// 未暂存：修改 a.txt（两行追加，供行级 chunk stage 测试）、删除 b.txt、新增未跟踪 new.txt
+			File.AppendAllText(Path.Combine(root, "a.txt"), "line4-appended\nline5-appended\n");
+			File.Delete(Path.Combine(root, "b.txt"));
+			File.WriteAllText(Path.Combine(root, "new.txt"), "untracked\n");
+			// 已暂存：c.txt 修改后 add（初始 staged 侧非空，供 unstage 测试）
+			File.AppendAllText(Path.Combine(root, "c.txt"), "staged line\n");
+			Run(root, "add c.txt");
+			return root;
+		}
+
 		public static void Cleanup(string root)
 		{
 			try
@@ -128,6 +147,20 @@ namespace ForkPlus.Tests
 			{
 				// Windows 句柄延迟释放：忽略（临时目录，OS 会清理）
 			}
+		}
+
+		/// <summary>执行 git 命令并返回 stdout（测试断言真实仓库/索引状态用，非 UI 层断言）。</summary>
+		public static string GitOutput(string root, string args)
+		{
+			using var p = Process.Start(GitPsi(root, args));
+			string output = p.StandardOutput.ReadToEnd();
+			string err = p.StandardError.ReadToEnd();
+			p.WaitForExit();
+			if (p.ExitCode != 0)
+			{
+				throw new InvalidOperationException("git " + args + " 失败: " + err);
+			}
+			return output;
 		}
 
 		// ============================ 内部工具 ============================

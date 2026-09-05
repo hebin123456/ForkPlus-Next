@@ -77,7 +77,7 @@ public class E2eXxxTests
 | 2 | 提交历史视图 | 图表渲染、行选择/多选、搜索面板、tooltip、滚动虚拟化 | ~15 | 完成 |
 | 3 | 侧边栏 | 分支/标签/stash/远程/子模块分组展开收起、过滤、右键菜单 | ~12 | 完成 |
 | 4 | 修订详情 | 变更 tab、文件树 tab、摘要、reflog/tags 隐藏开关 | ~8 | 完成 |
-| 5 | 变更与提交 | 暂存/取消暂存、行级 chunk stage/discard 浮窗、提交消息自动补全 | ~15 | 未开始 |
+| 5 | 变更与提交 | 暂存/取消暂存、行级 chunk stage/discard 浮窗、提交消息自动补全 | ~15 | 进行中 |
 | 6 | 工具栏 | push/pull/fetch/stash 按钮状态（领先/落后角标） | ~6 | 未开始 |
 
 ### P1 Diff 系统（近期修复集中区）
@@ -125,3 +125,4 @@ public class E2eXxxTests
 - 2026-09-05：模块 2 完成（E2e02RevisionListTests：真实 git 管线加载、行选中、上下文搜索匹配标记/清空恢复、方向切换；截图 02-revisionlist/）。基建补强：HeadlessAppBootstrap 补 ServiceLocator 初始化（修复 headless 下 DelayedAction 回调被静默丢弃）、UiClick 新增 WaitFor 轮询等待。
 - 2026-09-05：模块 3 完成（E2e03SidebarTests：分组结构断言（main 活跃分支/feature 嵌套文件夹/tags）、文件夹与分组展开收起（生产 IsExpanded setter 完整管线）、过滤防抖→Refilter→IsHidden、清空恢复、分支右键菜单（真实 PointerPressed 管线）、分组右键菜单、stash 分组；截图 03-sidebar/，9 张）。
 - 2026-09-05：模块 4 完成（E2e04RevisionDetailsTests：三 tab（Commit 摘要/Changes 变更/File Tree 文件树）真实 git 数据加载与切换、摘要字段断言、diff 内容加载（ParsedDiffContent）、文件树选择→内容预览、Range 双提交对比（Commit/FileTree 禁用+自动切 Changes）、reflog 开关（状态栏文案语言无关断言）、tag 引用过滤（Filtered by 状态栏）、HideTags 开关往返；截图 04-revisiondetails/，8 张）。测试经验：行选中须用 RevisionListViewUserControl.Select（补发 NotifySelectionChangedFromCurrentItems），直接调 DragAndDropListView.Select 会被 IsMultiselectionInProgress 吞掉通知；同秒提交行序不保证，按 Subject 扫行定位。
+- 2026-09-05：模块 5 第一批（E2e05ChangesAndCommitTests 三个用例 + E2eMainWindowHarness 基建）：真实 MainWindow 生产路径打开仓库（TabManager.OpenRepository，解决 headless 下 IsActiveRepository()==null 导致 Commit 视图状态刷新被 _pendingRepositoryStatusUiRefresh 推迟的核心阻塞）、工作区状态装配（修改/删除/未跟踪/已暂存四形态）、选中文件 working dir diff 加载、Stage/Unstage 选中文件（UI 列表 + git index 双重验证）、StageAllButton 智能切换 Stage All ↔ Unstage All；截图 05-changescommit/ 前 5 张。基建新增：TestRepoFactory.CreateWorkingDir（工作区四形态仓库）+ GitOutput（git stdout 断言助手）、E2eMainWindowHarness（真实 MainWindow 挂具：OpenRepository/CloseRepositoryTab/Tr/TrFormat）。测试经验：① 绝不能 Close() MainWindow（Closed→lifetime.Shutdown 会关停 headless App），收尾只 CloseRepositoryTab；② SelectFile 对已选中项会重复 Add 进 TreeView.SelectedItems（生产怪癖），数量断言会得 2，须用去重路径集合；③ Commit 按钮文案走 FormatCurrent（键含 {0} 占位符），断言用 TrFormat("Commit {0} File", n) 而非 Tr("Commit 1 File")；④ 取消暂存 c.txt 后它仍相对 HEAD 有改动 → 回到未暂存列表，Unstage All 期望是 4 项不是 3 项。
