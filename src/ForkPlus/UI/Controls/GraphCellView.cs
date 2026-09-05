@@ -166,6 +166,19 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
+		// 修复（2026-09-05，"轨道图刷出来一片白色，点击才显示"）：
+		// 虚拟化列表回收复用时，容器短暂 detach → DataContext 变化 → InvalidateVisual
+		// 只打脏标记但不真正渲染（控件不在渲染路径上）。重新 attach 后 Avalonia
+		// 只做 Measure/Arrange（Bounds 没变），不会自动触发 Render → 控件透出
+		// 背景色（"白屏"）。点击行触发 ListBoxItem 重绘才把子控件一起画出来。
+		// 修复：AttachedToVisualTree 时强制 InvalidateVisual，确保重新挂树后立即渲染。
+		protected override void OnAttachedToVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+		{
+			base.OnAttachedToVisualTree(e);
+			InvalidateMeasure();
+			InvalidateVisual();
+		}
+
 		protected override void OnPointerEntered(global::Avalonia.Input.PointerEventArgs e)
 		{
 			// Migration note：WPF PointerEventArgs.LeftButton != MouseButtonState.Pressed → GetCurrentPoint().Properties.IsLeftButtonPressed
