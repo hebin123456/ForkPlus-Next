@@ -24,7 +24,9 @@
 // 启动失败不在 ModuleInit 抛（避免连累非 headless 测试加载程序集），记入 startupError，
 // 由首个 headless 测试经 EnsureStarted 显式抛出。
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
@@ -48,6 +50,69 @@ namespace ForkPlus.Tests
 		private static readonly ManualResetEvent Ready = new ManualResetEvent(false);
 		private static int startRequested;
 		private static volatile Exception startupError;
+
+		// ===== 后台错误弹窗看门狗（模块16 回归轮全量挂死根因修复，2026-09-05）=====
+		// 现象：dotnet test 空转挂死 15+ 分钟，CPU 0%，dotnet-stack 实证 UI 线程卡在
+		// 两层嵌套 WindowDialogCompat.ShowDialog → PushFrame；dotnet-dump 读出两个
+		// GitCommandError+BtError 文本：对已被 TestRepoFactory.Cleanup 删除的临时仓库
+		// （/tmp/fpe2e_*/work/.git）打开 bt 仓库失败——前序用例的后台刷新任务在 tab
+		// 关闭后仍在跑，目录删除 → 刷新失败 → RefreshRepositoryCommand 向 Dispatcher
+		// 排队 ErrorWindow.ShowDialog()（模态）→ headless 无人点 Close → 永久死锁。
+		// 看门狗：DispatcherTimer（模态 PushFrame 泵消息期间也会触发）自动关闭任何
+		// 可见 ErrorWindow 并记录其文本——把"无限挂死"变成"带根因文本的测试失败"。
+		internal static readonly List<string> CapturedErrorDialogs = new List<string>();
+
+		private static DispatcherTimer _errorDialogWatchdog;
+
+		/// <summary>扫描并关闭当前所有可见 ErrorWindow，记录其文本（看门狗 tick 与
+		/// Run&lt;T&gt; 收尾同步调用——后者消除 200ms 定时器滞后带来的漏检窗口）。</summary>
+		private static void CloseVisibleErrorDialogs()
+		{
+			try
+			{
+				if (Application.Current?.ApplicationLifetime is not ClassicDesktopStyleApplicationLifetime lifetime)
+				{
+					return;
+				}
+				Window[] windows = lifetime.Windows.ToArray();
+				foreach (Window window in windows)
+				{
+					if (window is global::ForkPlus.UI.Dialogs.ErrorWindow errorWindow && errorWindow.IsVisible)
+					{
+						string text;
+						try
+						{
+							text = errorWindow.MessageTextBox?.Text;
+						}
+						catch
+						{
+							text = null;
+						}
+						lock (CapturedErrorDialogs)
+						{
+							CapturedErrorDialogs.Add(string.IsNullOrEmpty(text)
+								? "<ErrorWindow 无文本>"
+								: text);
+						}
+						errorWindow.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
+					}
+				}
+			}
+			catch
+			{
+				// 看门狗自身异常绝不能影响测试线程
+			}
+		}
+
+		private static void StartErrorDialogWatchdog()
+		{
+			// 在 UI 线程（启动线程）上创建；Default 优先级保证测试里显式 RunJobs() 也会触发 tick
+			_errorDialogWatchdog = new DispatcherTimer(TimeSpan.FromMilliseconds(200), DispatcherPriority.Default, delegate
+			{
+				CloseVisibleErrorDialogs();
+			});
+			_errorDialogWatchdog.Start();
+		}
 
 		[System.Runtime.CompilerServices.ModuleInitializer]
 		internal static void ModuleInit()
@@ -122,13 +187,38 @@ namespace ForkPlus.Tests
 		}
 
 		// 在 UI 线程执行 func 并排空 job 队列（原 4 个测试类各自的 Run<T> 收拢于此）。
+		// 错误弹窗策略（看门狗配套）：动作期间若出现 ErrorWindow（看门狗已自动关闭并
+		// 记录文本），测试以根因文本失败——生产代码弹错误窗说明该用例窗口内有真实
+		// 错误，静默吞掉会把 bug 藏进绿色用例（用户 Bug 修复策略约定）。
 		internal static T Run<T>(Func<T> func)
 		{
 			EnsureStarted();
 			return Dispatcher.UIThread.InvokeAsync(delegate
 			{
+				lock (CapturedErrorDialogs)
+				{
+					if (CapturedErrorDialogs.Count > 0)
+					{
+						// 用例间遗留（上一个用例收尾后的后台任务弹窗）：记控制台不归责当前用例
+						Console.WriteLine("[HeadlessAppBootstrap] 测试间遗留 ErrorWindow（看门狗已关闭）: "
+							+ string.Join(" | ", CapturedErrorDialogs));
+						CapturedErrorDialogs.Clear();
+					}
+				}
 				T result = func();
 				Dispatcher.UIThread.RunJobs();
+				CloseVisibleErrorDialogs(); // 同步扫描一次，消除定时器 200ms 滞后的漏检
+				string[] capturedDuringRun;
+				lock (CapturedErrorDialogs)
+				{
+					capturedDuringRun = CapturedErrorDialogs.ToArray();
+					CapturedErrorDialogs.Clear();
+				}
+				if (capturedDuringRun.Length > 0)
+				{
+					throw new InvalidOperationException("用例执行期间出现 git 错误弹窗（看门狗已自动关闭，根因文本如下）："
+						+ Environment.NewLine + string.Join(Environment.NewLine, capturedDuringRun));
+				}
 				return result;
 			}).GetAwaiter().GetResult();
 		}
@@ -198,7 +288,10 @@ namespace ForkPlus.Tests
 						return;
 					}
 					Ready.Set();
-					Dispatcher.UIThread.MainLoop(new CancellationToken());
+				// 错误弹窗看门狗必须在 MainLoop 之前启动（见类头注释）：此后 UI 线程持续
+				// 泵消息，任何时点（含用例间）出现的 ErrorWindow 都会被自动关闭并记录
+				StartErrorDialogWatchdog();
+				Dispatcher.UIThread.MainLoop(new CancellationToken());
 				});
 				t.IsBackground = true;
 				t.Start();

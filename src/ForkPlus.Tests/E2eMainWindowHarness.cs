@@ -15,6 +15,7 @@
 using System;
 using System.Linq;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ForkPlus.UI;
 using ForkPlus.UI.UserControls;
 using Xunit;
@@ -58,13 +59,31 @@ namespace ForkPlus.Tests
 		}
 
 		/// <summary>收尾：关闭仓库 tab（触发 SaveSession 把临时路径从会话里清掉），随后摘除窗口。
-		/// 不能 Close()（见铁律 1）；窗口摘除细节见 DetachWindow。</summary>
+		/// 不能 Close()（见铁律 1）；窗口摘除细节见 DetachWindow。
+		/// 关 tab 前抓取 RepositoryUserControl 引用，关闭后<b>排空其后台 JobQueue</b>——
+		/// 模块16 回归轮全量挂死根因（dotnet-stack + dotnet-dump 实证，2026-09-05）：
+		/// 后台刷新任务在 tab 关闭后仍在跑，测试 finally 删仓库目录后刷新的
+		/// bt_open_repository 失败（"could not find repository at /tmp/fpe2e_*/work/.git"）
+		/// → RefreshRepositoryCommand 排队模态 ErrorWindow → 下个用例 RunJobs 执行它
+		/// → headless 无人关闭 → 双层 PushFrame 死锁。这里在目录仍存在时等刷新跑完，
+		/// 消除错误源头（HeadlessAppBootstrap 的错误弹窗看门狗兜底防挂死）。</summary>
 		public static void CloseRepositoryTab(MainWindow window, string repoPath)
 		{
 			try
 			{
+				// tab 移除后控件脱离视觉树就找不到了——先按 GitModule.Path 精确定位再关
+				RepositoryUserControl repoControl = window.GetVisualDescendants()
+					.OfType<RepositoryUserControl>()
+					.FirstOrDefault(delegate (RepositoryUserControl r)
+					{
+						return string.Equals(r.GitModule?.Path, repoPath, StringComparison.OrdinalIgnoreCase);
+					});
 				window.TabManager.CloseTab(repoPath);
 				Dispatcher.UIThread.RunJobs();
+				if (repoControl != null)
+				{
+					DrainRepositoryJobs(repoControl);
+				}
 			}
 			catch
 			{
@@ -72,6 +91,31 @@ namespace ForkPlus.Tests
 			}
 			RemoveTestReposFromManager(repoPath);
 			DetachWindow(window);
+		}
+
+		/// <summary>排空仓库后台 JobQueue（刷新等 git 任务）：IsIdle 轮询 + RunJobs 泵回 UI 的
+		/// Post 回调（与 UiClick.WaitFor 同款模式）。上限 10s——超时放弃（看门狗仍兜底），
+		/// 不让个别慢刷新拖垮整个用例。</summary>
+		private static void DrainRepositoryJobs(RepositoryUserControl repoControl)
+		{
+			try
+			{
+				var sw = System.Diagnostics.Stopwatch.StartNew();
+				while (!repoControl.JobQueue.IsIdle && sw.ElapsedMilliseconds < 10000)
+				{
+					Dispatcher.UIThread.RunJobs();
+					if (repoControl.JobQueue.IsIdle)
+					{
+						break;
+					}
+					System.Threading.Tasks.Task.Delay(25).GetAwaiter().GetResult();
+				}
+				Dispatcher.UIThread.RunJobs(); // 末次泵：执行刚完成任务的 Post 回调
+			}
+			catch
+			{
+				// 排空尽力而为：队列不可达等异常不掩盖测试断言
+			}
 		}
 
 		/// <summary>把测试仓库从 RepositoryManager"最近"列表摘除（OpenRepository 经

@@ -405,6 +405,75 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>子模块源仓（供模块16 AddSubmodule）：2 提交（s1 "sub v1" / s2 "sub v2"），
+		/// 作为 URL 被 git submodule add 本地克隆（无网络）。独立临时目录，与宿主仓分开清理。</summary>
+		public static string CreateSubmoduleSource()
+		{
+			string root = NewTempDir("subsrc");
+			Init(root);
+			Commit(root, "s.txt", "sub v1\n", "s1");
+			Commit(root, "s2.txt", "sub v2\n", "s2");
+			return root;
+		}
+
+		/// <summary>子模块仓库（供模块16 DeleteSubmodule/SubmoduleDiff）：root 下 parent + subsrc。
+		/// parent：p1(parent.txt) → submodule add subsrc 到 sub（sub 内先退到 s1 再随 p2 提交——
+		/// 父仓记录 s1）→ sub 内 checkout main 前进到 s2 + 改 s.txt 不提交——parent 处于
+		/// "子模块指针前进 + 子模块工作区脏"双状态：供 SubmoduleDiff（Commit 视图选 sub →
+		/// 1↑ 角标 + 子模块新提交 s2 列表 + "1 uncommitted file"）与 DeleteSubmodule
+		/// （deinit -f + rm 双命令真实执行，脏工作区由 -f 强制）。</summary>
+		public static string CreateSubmodule()
+		{
+			string root = NewTempDir("submodule");
+			string parent = Path.Combine(root, "parent");
+			string subsrc = Path.Combine(root, "subsrc");
+			Run(root, "init -q -b main " + Quote(parent));
+			Run(root, "init -q -b main " + Quote(subsrc));
+			// 两个仓各自的用户配置（Run 的 cwd 是仓库自身）
+			Run(parent, "config user.email test@example.com");
+			Run(parent, "config user.name Test");
+			Run(parent, "config commit.gpgsign false");
+			Run(subsrc, "config user.email test@example.com");
+			Run(subsrc, "config user.name Test");
+			Run(subsrc, "config commit.gpgsign false");
+			Commit(subsrc, "s.txt", "sub v1\n", "s1");
+			Commit(subsrc, "s2.txt", "sub v2\n", "s2");
+			Commit(parent, "parent.txt", "parent\n", "p1");
+			// git ≥ 2.38.1 默认禁止 file transport：本地路径 submodule add 必须放开（探针实证 2026-09-05）
+			Run(parent, "-c protocol.file.allow=always submodule add -q " + Quote(subsrc) + " sub");
+			// 父仓记录 s1：sub 退到上一提交（clone 默认检出 main@s2）→ 随 p2 提交
+			// （rev-parse 输出带尾部换行——不 Trim 会拼进 pathspec 炸 checkout，首跑实证）
+			string s1 = GitOutput(subsrc, "rev-parse main~1").Trim();
+			Run(Path.Combine(parent, "sub"), "checkout -q " + s1);
+			Run(parent, "add sub .gitmodules");
+			Run(parent, "commit -q -m " + Quote("p2 add submodule"));
+			// 子模块前进回 s2（checkout main）+ 工作区脏（改 s.txt 不提交）
+			Run(Path.Combine(parent, "sub"), "checkout -q main");
+			File.AppendAllText(Path.Combine(parent, "sub", "s.txt"), "dirty line\n");
+			return parent;
+		}
+
+		/// <summary>带 worktree 仓库（供模块16）：parent（main + feature/one + feature/two 两提交）
+		/// + feature/one 检出为链接 worktree（root/parent-worktrees/wt-one）。
+		/// 供 DeleteWorktree（git worktree remove 真实执行）与 CheckoutBranchAsWorktree/
+		/// CreateWorktree 的"分支已被 worktree 占用"校验（WorktreesByFullReference 拦截）。</summary>
+		public static string CreateWithWorktree()
+		{
+			string root = NewTempDir("withworktree");
+			string parent = Path.Combine(root, "parent");
+			string wt = Path.Combine(root, "parent-worktrees", "wt-one");
+			Run(root, "init -q -b main " + Quote(parent));
+			Run(parent, "config user.email test@example.com");
+			Run(parent, "config user.name Test");
+			Run(parent, "config commit.gpgsign false");
+			Commit(parent, "main.txt", "main v1\n", "c1");
+			Run(parent, "branch feature/one");
+			Run(parent, "branch feature/two");
+			Commit(parent, "main.txt", "main v2\n", "c2");
+			Run(parent, "worktree add -q " + Quote(wt) + " feature/one");
+			return parent;
+		}
+
 		public static void Cleanup(string root)
 		{
 			try
