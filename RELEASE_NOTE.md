@@ -2,6 +2,14 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.0.0
+
+### 里程碑：跨平台版本重构
+
+- **跨平台版本重构，支持 Linux 和 macOS**：UI 层从 WPF 全面迁移至 Avalonia 12（.NET 10），一套代码运行于 Windows / Linux / macOS 三平台，CI（GitHub Actions）并行产出三平台构建。底层 Rust 引擎（biturbo native）、AI 辅助开发、8 种语言、12 套主题皮肤、git mm 工作流、贡献热力图、仓库树图等能力与 3.x 一致。
+- **自包含（self-contained）发布**：CI 产物自带 .NET 10 运行时，目标机无需安装任何框架，下载解压即用。主程序与 AskPass / RI 两个 git 子进程辅助程序（凭证输入、交互式变基）全部自包含，git 拉起 helper 的完整链路在无运行时环境下可用。
+- **CI 纳入全量测试**：单元测试与 E2E 测试套件（4300+ 用例，Avalonia.Headless 无头运行）加入 GitHub Actions，push / PR 即跑。
+
 ## v3.12.3
 
 ### 修复

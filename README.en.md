@@ -12,7 +12,7 @@ The cross-platform port of [ForkPlus](https://github.com/hebin123456/ForkPlus) (
 
 ## Key Features
 
-- **Cross-platform**: Avalonia 12 based cross-platform UI layer; CI produces Windows x64 / Linux x64 / macOS arm64 builds in parallel
+- **Cross-platform**: Avalonia 12 based cross-platform UI layer; CI produces Windows x64 / Linux x64 / macOS arm64 builds in parallel, published self-contained (no .NET runtime installation needed)
 - **Multi-language support**: Built-in English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish, extensible with more languages via JSON files
 - **Multiple themes**: 12 built-in skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, Purple/Green light & dark) plus user-customizable color overrides applied instantly
 - **git mm workflow**: Bundled `git mm` subcommand providing Lean Branching workflows that manage changes and sync across multiple sub-repositories
@@ -101,7 +101,7 @@ Same mechanism as biturbo: the `RestoreTokei` target (`BeforeTargets=Build`) fet
 
 ### Continuous Integration
 
-The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): on push / PR to `master`, or manual dispatch, it builds in parallel on three platforms and uploads the artifacts:
+The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): on push / PR to `master`, or manual dispatch, it builds in parallel on three platforms, uploads the artifacts, and runs the full unit + E2E test suite on a Linux runner:
 
 | Matrix | Runner | RID |
 |--------|--------|-----|
@@ -109,12 +109,13 @@ The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.
 | linux-x64 | ubuntu-latest | linux-x64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
-The artifacts are **framework-dependent publishes** (the target machine needs the .NET 10 runtime), containing the main app, the AskPass/RI helper trio, the platform's biturbo native library, tokei, and language files. Download them from the corresponding run on the [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) page (Artifacts, retained for 14 days).
+The artifacts are **self-contained publishes** (bundling the .NET 10 runtime; nothing needs to be installed on the target machine), containing the main app, the AskPass/RI helpers (also self-contained, so the git credential and interactive-rebase flows work without a runtime), the platform's biturbo native library, tokei, and language files (~125MB for linux-x64). Download them from the corresponding run on the [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) page (Artifacts, retained for 14 days).
 
 ## Tests
 
 - Unit tests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (incl. Avalonia.Headless UI smoke and end-to-end tests, cross-platform, run together with unit tests)
 - 4000+ cases in total; every key fix during the migration has a regression guard (see [MIGRATION.md](MIGRATION.md))
+- CI runs the full suite (incl. AskPass / RI helper tests) on an ubuntu runner on every push / PR; it depends on gitflow-avh and git-lfs (see the workflow comments)
 
 ## Multi-language Support
 
@@ -159,7 +160,7 @@ The codebase uses the following APIs for internationalization:
 
 ## Download
 
-- CI build artifacts: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) page → the corresponding build run → Artifacts (framework-dependent, requires the .NET 10 runtime)
+- CI build artifacts: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) page → the corresponding build run → Artifacts (self-contained, bundling the .NET 10 runtime; nothing to install)
 - Official releases: [Releases page](https://github.com/hebin123456/ForkPlus-Next/releases)
 - For changes in each version, see the [Release Notes](RELEASE_NOTE.md) (including the WPF edition history)
 

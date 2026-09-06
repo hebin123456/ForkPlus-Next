@@ -15,13 +15,12 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-09-04，"改成 4.0.0-alpha"）：
-//   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]），
-//   预发布后缀 "-alpha" 放进去会编译失败；后缀只写进 AssemblyInformationalVersion。
+// 版本号说明（2026-09-06，"去掉 alpha"）：v4.0.0 正式版（跨平台重构首发）。
+//   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示
-//   "4.0.0-alpha"；程序集标识与文件版本用 4.0.0（.0）。
+//   "4.0.0"；程序集标识与文件版本同为 4.0.0（.0）。
 [assembly: AssemblyFileVersion("4.0.0")]
-[assembly: AssemblyInformationalVersion("4.0.0-alpha")]
+[assembly: AssemblyInformationalVersion("4.0.0")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
 [assembly: AssemblyVersion("4.0.0.0")]

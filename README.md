@@ -12,7 +12,7 @@
 
 ## 主要特性
 
-- **跨平台**：基于 Avalonia 12 的跨平台 UI 层，CI 同时产出 Windows x64 / Linux x64 / macOS arm64 三平台构建
+- **跨平台**：基于 Avalonia 12 的跨平台 UI 层，CI 同时产出 Windows x64 / Linux x64 / macOS arm64 三平台构建，产物为自包含（self-contained）发布，无需安装 .NET 运行时
 - **多语言支持**：内置英语、简体中文、繁體中文、日本語、한국어、Français、Deutsch、Español 8 种语言，并支持通过 JSON 文件扩展更多语言
 - **多主题皮肤**：内置 12 套预设皮肤（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫色/绿色浅色深色），并支持用户自定义颜色覆盖，即时生效
 - **git mm 工作流**：内置 `git mm` 子命令，提供精益分支（Lean Branching）工作流，统一管理多子仓的变更与同步
@@ -109,7 +109,7 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 
 ### 持续集成
 
-项目配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：push / PR 到 `master` 分支或手动触发时，在三平台并行构建并上传产物：
+项目配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：push / PR 到 `master` 分支或手动触发时，在三平台并行构建并上传产物，同时在 Linux runner 上运行全量单元与 E2E 测试：
 
 | 矩阵 | Runner | RID |
 |------|--------|-----|
@@ -117,12 +117,13 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 | linux-x64 | ubuntu-latest | linux-x64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
-产物为 **framework-dependent publish**（目标机需安装 .NET 10 运行时），包含主程序、AskPass/RI 子进程三件套、对应平台的 biturbo native 库、tokei 与语言文件。可在仓库 [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) 页面的对应运行中下载（Artifacts，保留 14 天）。
+产物为 **self-contained publish**（自带 .NET 10 运行时，目标机无需安装任何框架），包含主程序、AskPass/RI 子进程（同样自包含，git 凭证输入与交互式变基链路在无运行时环境可用）、对应平台的 biturbo native 库、tokei 与语言文件（linux-x64 约 125MB）。可在仓库 [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) 页面的对应运行中下载（Artifacts，保留 14 天）。
 
 ## 测试
 
 - 单元测试：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（含 Avalonia.Headless UI 冒烟与端到端测试，跨平台，随单测一起运行）
 - 全量 4000+ 用例；迁移过程中的关键修复均配有回归防线（详见 [MIGRATION.md](MIGRATION.md)）
+- CI 在每次 push / PR 时于 ubuntu runner 上运行全量测试（含 AskPass / RI 辅助程序测试），环境依赖 gitflow-avh 与 git-lfs（见 workflow 注释）
 
 ## 多语言支持
 
@@ -167,7 +168,7 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 
 ## 下载
 
-- CI 构建产物：[Actions](https://github.com/hebin123456/ForkPlus-Next/actions) 页面 → 对应 build 运行 → Artifacts（框架依赖式，需 .NET 10 运行时）
+- CI 构建产物：[Actions](https://github.com/hebin123456/ForkPlus-Next/actions) 页面 → 对应 build 运行 → Artifacts（自包含式，自带 .NET 10 运行时，无需安装任何框架）
 - 正式发布版本：[Releases 页面](https://github.com/hebin123456/ForkPlus-Next/releases)
 - 各版本变更详情请查阅 [Release Notes](RELEASE_NOTE.md)（含原 WPF 版历史）
 

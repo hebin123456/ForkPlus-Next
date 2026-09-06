@@ -79,8 +79,17 @@ cd gitflow-avh && PREFIX="$HOME/.local" make install
 # 原 docs/patches/ 下两个补丁文件（oxyplot-avalonia-avalonia12.patch / ci-build-oxyplot-apply.patch）
 # 已随本变更删除（fork 已内置等效改动）。中间曾短暂用过"build.yml clone 后直接 apply 补丁"
 # 方案（commit e846ec1），已被 fork 发包方案取代。
-# ⚠️ PAT 推送 .github/workflows/ 改动需 workflow scope（无 scope 的 PAT 会被 GitHub 拒绝，
-# 2026-09-06 曾实证；如推送被拒请换带 workflow scope 的凭据）。
+# ── CI 二次更新（2026-09-06，self-contained + 全量测试进 workflow）──
+# ① 产物改 self-contained（主程序 + AskPass/RI 三 exe 同目录自包含发布，目标机免装 .NET 10；
+#   helper 由 git 独立进程拉起，不自带运行时必挂——沙盒实证：runtimeconfig 含 includedFrameworks、
+#   libcoreclr/libhostpolicy 就位、env -i 下 helper 正常走业务退出码、xvfb 下主程序存活）；
+# ② 新增 test job（ubuntu，dotnet test ForkPlus.sln 全量 ~4300 用例；OxyPlot nupkg 与 build
+#   job 同源下载到 third_party/nuget/，需装 gitflow-avh（模块17）+ git-lfs（模块18，runner 预装））；
+# ③ AskPass/RI.Tests 的 ExePath 修了平台命名（原硬编码 .exe，Linux 全挂）。
+# PAT workflow scope：2026-09-06 早先记录"无 workflow scope 推不动 build.yml"，当日稍后
+# 实证推送成功（e846ec1/611a245/fdab343 均含 build.yml 改动）——当前凭据可直接推；若遇
+# "refusing to allow a Personal Access Token to create or update workflow" 拒绝，换带
+# workflow scope 的 PAT 即可。
 
 # ── git 身份（沙盒重置后需重新设置）──
 git config user.name "Test User" && git config user.email "test@example.com"
