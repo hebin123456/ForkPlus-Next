@@ -68,7 +68,7 @@ GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，Escape
 
 现状：`ForkPlus.AskPass` 识别 `get/store/erase` 三个 action，但 IPC 消息只传 mode，action 信息丢失；主程序对三个 action 一律执行"查账号回填"，`store`/`erase` 形同虚设。收编后：
 
-1. 管道协议扩展：mode 增加 `"4"`（store）、`"5"`（erase）。
+1. 管道协议扩展：mode 增加 `"4"`（store）、`"5"`（erase）。落地时发现实现缺口：`ForkPlus.AskPass/Program.cs` 的 mode 映射此前把 get/store/erase 一律折叠成 `"2"/"3"`，action 信息在 IPC 边界就丢了——新增 `GetCredentialHelperMode` 纯函数按 action 分流（get=2/3、store=4、erase=5），否则 App 侧的 4/5 分支是死代码。
 2. `get`：账号命中 → 回填；未命中 → 查 Windows Credential Manager 的 GCM 兼容键（`git:https://<host>`，读用户由 GCM 存下的存量凭据，实现无痛迁移）；仍无 → 返回空，回落 AskPassWindow。
 3. `store`：把凭据写入 Windows Credential Manager（GCM 兼容键，GCM 外部读写互通），下次静默命中。
 4. `erase`：删除对应键。
@@ -94,5 +94,5 @@ GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，Escape
 |--------|------|------|------|
 | Layer 0 | 本方案落档 | 已完成 | 4bfd953 |
 | Layer A | 覆盖链移除 manager、getter 无条件覆盖 + 专项测试（CredentialHelperOverrideTests） | 已实施 | d583ff1 |
-| Layer B | GIT_CONFIG_* / GIT_ASKPASS / GIT_TERMINAL_PROMPT 环境注入（GitCredentialEnv）+ 专项测试 | 已实施 | 本提交 |
-| Layer C | store/erase 语义 + WCM 兼容读写 | 待实施 | - |
+| Layer B | GIT_CONFIG_* / GIT_ASKPASS / GIT_TERMINAL_PROMPT 环境注入（GitCredentialEnv）+ 专项测试 | 已实施 | d1ac91e |
+| Layer C | store/erase 语义 + WCM 兼容读写（GcmCompatibleStore）+ AskPass mode 分流 + 平台守卫（含 ShowAskPassWindowCommand 顺带修复）+ 专项测试 | 已实施 | 本提交 |

@@ -1152,6 +1152,8 @@ namespace ForkPlus
 			bool noPrompt = text2 == "1" || text2 == "3";
 			if (text2 == "2" || text2 == "3")
 			{
+				// 凭据收编（Layer C）get：账号命中回填；未命中查 GCM 兼容键
+				// （GCM 存量凭据无痛迁移）；仍无 → 空响应，git 回落 askpass 链弹 AskPassWindow。
 				CredentialHelperArguments credentialHelperArguments = CredentialHelperArguments.Parse(request);
 				if (credentialHelperArguments != null)
 				{
@@ -1163,6 +1165,34 @@ namespace ForkPlus
 						pipeServer.WriteString(credentialHelperArguments.Export());
 						return;
 					}
+					if (GcmCompatibleStore.TryQuery(credentialHelperArguments.Protocol, credentialHelperArguments.Host, credentialHelperArguments.Username, out string storedUsername, out string storedPassword))
+					{
+						credentialHelperArguments.Username = storedUsername ?? credentialHelperArguments.Username;
+						credentialHelperArguments.Password = storedPassword;
+						pipeServer.WriteString(credentialHelperArguments.Export());
+						return;
+					}
+				}
+				pipeServer.WriteString(string.Empty);
+			}
+			else if (text2 == "4")
+			{
+				// 凭据收编（Layer C）store：认证成功的凭据写 GCM 兼容键，下次 get 静默命中
+				// （GCM 外部读写互通；非 Windows 为空操作，见设计文档权衡一节）。
+				CredentialHelperArguments credentialHelperArguments2 = CredentialHelperArguments.Parse(request);
+				if (credentialHelperArguments2 != null)
+				{
+					GcmCompatibleStore.Store(credentialHelperArguments2.Protocol, credentialHelperArguments2.Host, credentialHelperArguments2.Username, credentialHelperArguments2.Password);
+				}
+				pipeServer.WriteString(string.Empty);
+			}
+			else if (text2 == "5")
+			{
+				// 凭据收编（Layer C）erase：认证失败时 git 通知抹除，删 GCM 兼容键。
+				CredentialHelperArguments credentialHelperArguments3 = CredentialHelperArguments.Parse(request);
+				if (credentialHelperArguments3 != null)
+				{
+					GcmCompatibleStore.Erase(credentialHelperArguments3.Protocol, credentialHelperArguments3.Host, credentialHelperArguments3.Username);
 				}
 				pipeServer.WriteString(string.Empty);
 			}

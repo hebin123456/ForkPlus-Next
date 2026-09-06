@@ -507,6 +507,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/Git/CommitMessageHelper.cs", "class", "CommitMessageHelper", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Content.cs", "class", "Content", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/CredentialHelperArguments.cs", "class", "CredentialHelperArguments", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/Git/GcmCompatibleStore.cs", "class", "GcmCompatibleStore", "CRED-STORE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/DateTimeHelper.cs", "class", "DateTimeHelper", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Diff/Chunk.cs", "class", "Chunk", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Diff/Diff.cs", "class", "Diff", "UNIT-SOURCE-COVERAGE-001"),

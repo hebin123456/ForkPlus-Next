@@ -27,7 +27,7 @@ namespace ForkPlus.AskPass
 				bool noPrompt = string.Equals(Environment.GetEnvironmentVariable(NoPromptVariable), "1", StringComparison.OrdinalIgnoreCase);
 				bool credentialHelperMode = args.Length > 0 && IsCredentialHelperAction(args[0]);
 				string request = credentialHelperMode ? Console.In.ReadToEnd() : string.Join(" ", args);
-				string mode = credentialHelperMode ? (noPrompt ? "3" : "2") : (noPrompt ? "1" : "0");
+				string mode = credentialHelperMode ? GetCredentialHelperMode(args[0], noPrompt) : (noPrompt ? "1" : "0");
 				using (NamedPipeClientStream pipe = CreatePipeClient(AskPassPipeName, processId))
 				{
 					pipe.Connect(30000);
@@ -56,6 +56,23 @@ namespace ForkPlus.AskPass
 			return string.Equals(value, "get", StringComparison.OrdinalIgnoreCase)
 				|| string.Equals(value, "store", StringComparison.OrdinalIgnoreCase)
 				|| string.Equals(value, "erase", StringComparison.OrdinalIgnoreCase);
+		}
+
+		// 凭据收编（Layer C）：get/store/erase 是三种不同语义，必须映射到不同的 IPC mode——
+		// get=2/3（查询，noPrompt 变体为 3）、store=4（写入）、erase=5（抹除）。
+		// 此前三个动作一律走 2/3，App 侧会把 store/erase 误当 get 查询处理，
+		// 凭据永远存不下来（App 新增的 4/5 分支形同虚设）。
+		private static string GetCredentialHelperMode(string action, bool noPrompt)
+		{
+			if (string.Equals(action, "store", StringComparison.OrdinalIgnoreCase))
+			{
+				return "4";
+			}
+			if (string.Equals(action, "erase", StringComparison.OrdinalIgnoreCase))
+			{
+				return "5";
+			}
+			return noPrompt ? "3" : "2";
 		}
 
 		private static NamedPipeClientStream CreatePipeClient(string name, string processId)

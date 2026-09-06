@@ -372,6 +372,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/Git/CommitMessageHelper.cs",
 				"src/ForkPlus/Git/Content.cs",
 				"src/ForkPlus/Git/CredentialHelperArguments.cs",
+				"src/ForkPlus/Git/GcmCompatibleStore.cs",
 				"src/ForkPlus/Git/DateTimeHelper.cs",
 				"src/ForkPlus/Git/Diff/Chunk.cs",
 				"src/ForkPlus/Git/Diff/Diff.cs",
