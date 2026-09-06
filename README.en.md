@@ -63,13 +63,9 @@ ForkPlus-Next/
 ### Build Steps
 
 ```bash
-# ① The charting library OxyPlot.Avalonia is integrated as an out-of-repo source
-#    reference (the csproj points to a sibling directory of this repo), so clone
-#    it next to this repo before the first build. Keep the official version
-#    untouched and do not modify its Avalonia version:
-git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
-
-# ② Build (from the repo root):
+# Build (from the repo root). Third-party artifacts (OxyPlot.Avalonia, biturbo, tokei)
+# are fetched automatically at build time from the latest releases of their repos
+# (see the "third-party sources" sections below); only GitHub network access is needed:
 dotnet build ForkPlus.sln -c Release
 ```
 
@@ -171,7 +167,7 @@ The codebase uses the following APIs for internationalization:
 
 - When modifying the application itself, stay within `src/ForkPlus`; runtime binaries under `third_party/` (the biturbo native library, tokei) are fetched automatically at build time—do not commit binaries manually
 - To upgrade biturbo / tokei, publish a new release in the corresponding repository; the next build of this repo picks it up automatically
-- `../oxyplot-avalonia` is an out-of-repo source reference—keep the official version untouched (see MIGRATION.md for the lesson learned from accidentally modifying its version)
+- OxyPlot.Avalonia is consumed as a prebuilt nupkg from the [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) fork (compiled against Avalonia 12.1.1; the official package is stuck on Avalonia 11 and its XAML IL throws MissingMethodException on 12 at runtime—see MIGRATION.md), fetched at build time from that fork's latest release
 - The environment setup, work in progress, and the chain of historical fixes for the migration (WPF → Avalonia) are documented in [MIGRATION.md](MIGRATION.md)
 
 ## License

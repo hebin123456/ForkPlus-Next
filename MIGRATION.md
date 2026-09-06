@@ -56,28 +56,31 @@ cd gitflow-avh && PREFIX="$HOME/.local" make install
 # ⚠️ 注意：git 查找 git-flow 走 PATH 而非 exec-path——exec-path 方案无效（2026-09-06 探针实证），
 # 跑测试的 shell 必须保证 ~/.local/bin 在 PATH 里（bashrc 只对交互 shell 生效）。
 
-# ── oxyplot-avalonia 是仓库外源码引用（csproj 的 ..\..\..\oxyplot-avalonia），沙盒重置即丢，必须重新克隆 + 打补丁（与 build.yml 的 Clone 步骤同源）──
-git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git /data/user/work/oxyplot-avalonia
-# ⚠️ 必须 Apply 补丁后再 build（2026-09-06 模块20 实证，替代 2026-09-03 的旧结论）：
-git -C /data/user/work/oxyplot-avalonia apply /data/user/work/ForkPlus-Next/docs/patches/oxyplot-avalonia-avalonia12.patch
-# 补丁内容（3 处）：Directory.Build.props AvaloniaVersion 11.0.0→12.1.1；csproj TFM netstandard2.0→net10.0
-# + AvaloniaUseCompiledBindingsByDefault=false；PlotBase.cs 加 using Avalonia.Input.Platform（SetTextAsync
-# 在 Avalonia 12 变为 ClipboardExtensions 扩展方法）。
+# ── oxyplot-avalonia：已改为消费 fork 的预编译 nupkg（2026-09-06），不再克隆源码、不再打补丁 ──
+# 现状：PackageReference 引 hebin123456/oxyplot-avalonia fork release 的
+# OxyPlot.Avalonia.2.1.2-avalonia12.1.nupkg（按 Avalonia 12.1.1 原生编译，net8.0/net10.0），
+# 构建期自动下载到 third_party/nuget/（nuget.config 本地目录源；本地走 csproj 的
+# RestoreOxyPlotAvalonia target，CI 走 build.yml 显式下载步骤）。沙盒重置后无需任何手动操作，
+# dotnet restore/build 自动拉取（仅需网络可达 GitHub）。
+#
+# 历史教训（为什么必须 fork 发包，保留备查）：
 # 根因（运行时实锤，非编译期）：官方版按 Avalonia 11.0.0 编译的 XAML IL 调用 TemplateBinding.ProvideValue()
 # （11 时代签名），运行时 12.1.1 无此方法 → 任何 PlotView 进入布局/模板实例化即 MissingMethodException
 # （布局期异常穿透渲染循环，应用级崩溃）。2026-09-03 的"按 11 编译并存正常"结论只验证了编译通过
 # （当时无任何用例真正渲染过图表）；直到模块20 统计窗口首个 PlotView 布局用例才暴露。
-# 曾在 2026-09-03 走对过一半（改版本+TFM+剪贴板 API+关编译绑定）但因"编译能过就零改动"的错误结论回退。
+# 曾在 2026-09-03 走对过一半（改版本+TFM+剪贴板 API+关编译绑定）但因"编译能过就零改动"的错误结论回退；
+# 2026-09-06 起固化为 fork 仓库（hebin123456/oxyplot-avalonia）打包发版，本仓库零补丁消费。
+# 补丁的具体内容（3 处）已并入 fork：Directory.Build.props AvaloniaVersion 11.0.0→12.1.1；csproj TFM
+# netstandard2.0→net8.0;net10.0 + AvaloniaUseCompiledBindingsByDefault=false；PlotBase.cs 加 using
+# Avalonia.Input.Platform（SetTextAsync 在 Avalonia 12 变为 ClipboardExtensions 扩展方法）。
 # 注意：netstandard2.0 TFM 下直接升 AvaloniaVersion 会 786 个类型解析错误（Avalonia 12 无 netstandard2.0 资产），
 # 必须同步改 TFM；其余 API 断点只有剪贴板一处。
 
-# ── CI（2026-09-06 已直接改 build.yml，原"仓库内补丁"方案已废弃）──
-# build.yml 的 "Clone OxyPlot.Avalonia source and apply Avalonia12 patch" 步骤在 clone 后直接
-# apply docs/patches/oxyplot-avalonia-avalonia12.patch（CI 不打补丁则产物含按 11 编译的
-# OxyPlot → 统计窗口 PlotView 运行时崩溃）。原 ci-build-oxyplot-apply.patch 已删除，
-# 沙盒克隆本仓库后无需再打任何 workflow 补丁。
-# ⚠️ 当前 agent 用的 PAT 无 workflow scope（GitHub 拒绝推送 .github/workflows/ 改动，2026-09-06 实证），
-# 涉及 build.yml 的提交须由 owner 用带 workflow scope 的凭据推送。
+# 原 docs/patches/ 下两个补丁文件（oxyplot-avalonia-avalonia12.patch / ci-build-oxyplot-apply.patch）
+# 已随本变更删除（fork 已内置等效改动）。中间曾短暂用过"build.yml clone 后直接 apply 补丁"
+# 方案（commit e846ec1），已被 fork 发包方案取代。
+# ⚠️ PAT 推送 .github/workflows/ 改动需 workflow scope（无 scope 的 PAT 会被 GitHub 拒绝，
+# 2026-09-06 曾实证；如推送被拒请换带 workflow scope 的凭据）。
 
 # ── git 身份（沙盒重置后需重新设置）──
 git config user.name "Test User" && git config user.email "test@example.com"
@@ -275,6 +278,6 @@ SideBySideCommitTextDiffControl（commit 视图）、HexDiffUserControl（十六
   语义），移除后回落主题原色
 
 
-- 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）、`/data/user/work/oxyplot-avalonia`（图表库源码，仓库外引用）
+- 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）；图表库源码仓库 `/data/user/work/oxyplot-avalonia`（hebin123456 fork，用于发 nupkg，主仓库已改为 PackageReference 消费其 release 产物，不再本地引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批
 - 构建产物不入库（bin/obj 已在 .gitignore；publish/ 已于 2026-09-02 清除，CI 产物走 release artifact）

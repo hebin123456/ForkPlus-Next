@@ -32,6 +32,14 @@
                  所有平台"而触发警告。Windows-only 工程此警告无意义。 -->
     <NoWarn>$(NoWarn);CS0067;CS0108;CS0169;CS0414;CS1522;CS0652;CS8073;CS8632;CA1416;CS0618;CS0619</NoWarn>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <!-- OxyPlot.Avalonia fork 包版本（单点维护）：fork（hebin123456/oxyplot-avalonia）release 产出的
+         预编译 nupkg，按 Avalonia 12.1.1 编译（官方 oxyplot-avalonia 停留在 Avalonia 11 且不发二进制；
+         按 11 编译的旧物在 Avalonia 12 运行时会因 XAML IL 引用 11 时代 TemplateBinding.ProvideValue()
+         签名而 MissingMethodException 崩溃，见 MIGRATION.md）。-avalonia12.x 预发布后缀确保
+         NuGet 恢复只命中 fork 包（nuget.org 官方 OxyPlot.Avalonia 2.1.2 面向 Avalonia 11，
+         永远没有该版本号）。下方 PackageReference 与 RestoreOxyPlotAvalonia target 均由本属性派生，
+         升级 = fork 仓库发新 Release + 只改这里。-->
+    <OxyPlotAvaloniaPackageVersion>2.1.2-avalonia12.1</OxyPlotAvaloniaPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\**\*.*" />
@@ -94,8 +102,12 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NuGet.Versioning" Version="7.6.0" />
-    <ProjectReference Include="..\..\..\oxyplot-avalonia\Source\OxyPlot.Avalonia\OxyPlot.Avalonia.csproj" />
-    <!-- 使用本地源码版 OxyPlot.Avalonia，和主工程一起按 Avalonia 12 编译。 -->
+    <!-- OxyPlot.Avalonia（MIT，fork：hebin123456/oxyplot-avalonia）改为消费 fork release 的预编译
+         nupkg（net8.0/net10.0，按 Avalonia 12.1.1 原生编译），不再克隆上游源码随主工程一起编译。
+         与 tokei / biturbo 一致的"latest release 构建期拉取"模式：nupkg 下载到 third_party/nuget/
+         （nuget.config 注册的本地目录源），由本文件的 RestoreOxyPlotAvalonia target（本地开发）
+         与 CI 的显式下载步骤（build.yml）完成。版本由 OxyPlotAvaloniaPackageVersion 单点维护。-->
+    <PackageReference Include="OxyPlot.Avalonia" Version="$(OxyPlotAvaloniaPackageVersion)" />
     <!-- <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />  已隔离：WPF 绘图控件库（PlotView 继承 WPF Control，引发 PresentationFramework 级联错误）；替代方案：ScottPlot.Avalonia / LiveChartsCore.SkiaSharpView.Avalonia / 手工自绘 -->
     <!-- System.Drawing.Common 通过 OxyPlot.Wpf 等包传递引入，不再显式引用（NU1510）。
          IconTools.cs / AiDevelopmentWindow.xaml.cs 使用 System.Drawing.Color 等仍可用。-->
@@ -144,6 +156,27 @@
          用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
          $(TokeiBaseUrl) 仍由 MSBuild 正常展开（与 RestoreBiturbo 同模式）。-->
     <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\tokei')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then asset=&quot;tokei-x86_64-apple-darwin.tar.gz&quot;; else asset=&quot;tokei-x86_64-unknown-linux-gnu.tar.gz&quot;; fi; url=&quot;$(TokeiBaseUrl)/$asset&quot;; tmp=`mktemp -d`; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$tmp/tokei.tar.gz&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; tar -xzf &quot;$tmp/tokei.tar.gz&quot; -C &quot;$tmp&quot;; mv &quot;$tmp/tokei&quot; ../../third_party/tokei; chmod +x ../../third_party/tokei; rm -rf &quot;$tmp&quot;; echo &quot;Restored ../../third_party/tokei from tokei latest release ($asset)&quot;'" />
+  </Target>
+  <!-- OxyPlot.Avalonia（MIT 协议，fork：hebin123456/oxyplot-avalonia）从 fork 仓库最新 release 拉取
+       预编译 nupkg 到本地 NuGet 源 third_party/nuget/（nuget.config 已注册该目录源）。与 tokei /
+       biturbo 一致的发布产物拉取模式，两点差异：
+       1) BeforeTargets=Restore（而非 Build）——PackageReference 的解析发生在 NuGet restore 阶段，
+          nupkg 必须在 restore 评估本地源之前就位，等 Build 就晚了（首次 restore 会 NU1101 找不到包）；
+          同时挂 Build 兜底 dotnet build --no-restore 的场景。已存在（Exists 守卫）则跳过。
+       2) 资产名含版本号——NuGet 目录源要求 <PackageId>.<version>.nupkg 命名才能被识别，
+          由 OxyPlotAvaloniaPackageVersion 属性派生（见顶部单点维护注释）。
+       CI（build.yml）不走本 Exec（与 tokei/biturbo 同理：规避 macOS runner 上 MSBuild Exec 行为差异），
+       由显式下载步骤提前就位，本 target 的 Exists 守卫直接短路。带 3 次重试（指数退避）。-->
+  <Target Name="RestoreOxyPlotAvalonia" BeforeTargets="Restore;Build">
+    <PropertyGroup>
+      <OxyPlotAvaloniaBaseUrl>https://github.com/hebin123456/oxyplot-avalonia/releases/latest/download</OxyPlotAvaloniaBaseUrl>
+      <OxyPlotAvaloniaAsset>OxyPlot.Avalonia.$(OxyPlotAvaloniaPackageVersion).nupkg</OxyPlotAvaloniaAsset>
+    </PropertyGroup>
+    <!-- Windows: PowerShell 下载 nupkg -->
+    <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\nuget\$(OxyPlotAvaloniaAsset)')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party\nuget' | Out-Null; $url='$(OxyPlotAvaloniaBaseUrl)/$(OxyPlotAvaloniaAsset)'; $out='..\..\third_party\nuget\$(OxyPlotAvaloniaAsset)'; $maxAttempts=3; for($i=1; $i -le $maxAttempts; $i++){ try { Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -UserAgent 'ForkPlus-Build' -TimeoutSec 120; break } catch { $msg = $error[0].Exception.Message; Write-Host &quot;Attempt $i failed: $msg&quot;; if($i -eq $maxAttempts){ throw }; Start-Sleep -Seconds (5*$i) } }; Write-Host 'Restored $(OxyPlotAvaloniaAsset) from oxyplot-avalonia fork latest release'&quot;" />
+    <!-- Unix (Linux/macOS): bash + curl（与 RestoreTokei/RestoreBiturbo 同模式，3 次重试指数退避；
+         用反引号做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；MSBuild 属性正常展开）-->
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('../../third_party/nuget/$(OxyPlotAvaloniaAsset)')" Command="bash -c 'set -e; mkdir -p ../../third_party/nuget; url=&quot;$(OxyPlotAvaloniaBaseUrl)/$(OxyPlotAvaloniaAsset)&quot;; out=&quot;../../third_party/nuget/$(OxyPlotAvaloniaAsset)&quot;; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from oxyplot-avalonia fork latest release&quot;'" />
   </Target>
   <!-- 子进程与 native 库的复制清单（Build 输出与 Publish 输出两处共用）。
        Migration note（CI）两点坑：

@@ -63,14 +63,10 @@ ForkPlus-Next/
 ### Kompilierungsschritte
 
 ```bash
-# ① Die Chartbibliothek OxyPlot.Avalonia wird als „Quellreferenz außerhalb des
-#    Repositorys“ integriert (der csproj-Pfad zeigt auf ein Nachbarverzeichnis
-#    dieses Repositorys); vor dem ersten Build neben dieses Repository klonen.
-#    Die offizielle Version unangetastet lassen und ihre Avalonia-Version nicht
-#    ändern:
-git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
-
-# ② Kompilieren (im Repository-Stammverzeichnis):
+# Kompilieren (im Repository-Stammverzeichnis). Drittanbieter-Artefakte
+# (OxyPlot.Avalonia, biturbo, tokei) werden zur Build-Zeit automatisch aus den
+# jeweiligen latest Releases bezogen (siehe die „Drittanbieter-Quellen“-Abschnitte
+# unten); erforderlich ist nur Netzwerkzugriff auf GitHub:
 dotnet build ForkPlus.sln -c Release
 ```
 
@@ -172,7 +168,7 @@ Die Codebasis verwendet die folgenden APIs für die Internationalisierung:
 
 - Beim Ändern der Anwendung selbst bleiben Sie im Verzeichnis `src/ForkPlus`; Laufzeit-Binärdateien unter `third_party/` (native biturbo-Bibliothek, tokei) werden zur Build-Zeit automatisch bezogen — Binärdateien nicht manuell einchecken
 - Zum Upgrade von biturbo / tokei genügt ein neues Release im jeweiligen Repository; der nächste Build dieses Repositorys holt es automatisch
-- `../oxyplot-avalonia` ist eine Quellreferenz außerhalb des Repositorys — die offizielle Version unangetastet lassen (die Lehre aus einer versehentlich geänderten Version steht in MIGRATION.md)
+- OxyPlot.Avalonia wird als vorkompiliertes nupkg aus dem Fork [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) konsumiert (kompiliert gegen Avalonia 12.1.1; das offizielle Paket steckt auf Avalonia 11 fest und sein XAML IL wirft zur Laufzeit auf 12 eine MissingMethodException — siehe MIGRATION.md), zur Build-Zeit aus dem latest Release dieses Forks bezogen
 - Umgebungsaufbau, laufende Arbeiten und die Kette historischer Fixes der Migration (WPF → Avalonia) sind in [MIGRATION.md](MIGRATION.md) dokumentiert
 
 ## Lizenz

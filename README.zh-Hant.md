@@ -63,11 +63,8 @@ ForkPlus-Next/
 ### 編譯步驟
 
 ```bash
-# ① 圖表庫 OxyPlot.Avalonia 以「倉庫外原始碼引用」方式整合（csproj 相對路徑指向倉庫同級目錄），
-#    首次編譯前先複製到本倉庫旁邊。保持官方原版零改動，勿修改其 Avalonia 版本：
-git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
-
-# ② 編譯（倉庫根目錄）：
+# 編譯（倉庫根目錄）。圖表庫 OxyPlot.Avalonia 與 biturbo / tokei 三方產物均無需手動準備，
+# 建置期自動從對應倉庫的 latest Release 拉取（見下方「三方件來源」各節），僅需網路可達 GitHub：
 dotnet build ForkPlus.sln -c Release
 ```
 
@@ -169,7 +166,7 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 
 - 修改應用程式本身時，保持在 `src/ForkPlus` 目錄內；`third_party/` 下的執行時二進位（biturbo native 庫、tokei）由建置期自動拉取，不要手動提交二進位檔案
 - 如需升級 biturbo / tokei 版本，在對應倉庫發布新 Release 即可，本倉庫下次建置會自動拉取
-- `../oxyplot-avalonia` 為倉庫外原始碼引用，保持官方原版零改動（誤改版本的教訓見 MIGRATION.md）
+- 圖表庫 OxyPlot.Avalonia 消費 [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) fork 的預編譯 nupkg（按 Avalonia 12.1.1 編譯；官方包停留在 Avalonia 11，其 XAML IL 在 12 執行時會 MissingMethodException，教訓見 MIGRATION.md），建置期從該 fork 的 latest Release 拉取
 - 遷移工作（WPF → Avalonia）的環境配置、進行中事項與歷史修復鏈記錄在 [MIGRATION.md](MIGRATION.md)
 
 ## 授權條款

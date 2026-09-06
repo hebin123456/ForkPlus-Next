@@ -63,12 +63,9 @@ ForkPlus-Next/
 ### 빌드 단계
 
 ```bash
-# ① 차트 라이브러리 OxyPlot.Avalonia는 "저장소 외부 소스 참조" 방식으로 통합되어 있습니다
-#    (csproj의 상대 경로가 이 저장소의 형제 디렉터리를 가리킴). 첫 빌드 전에 이 저장소
-#    옆에 클론하세요. 공식 원본을 무수정으로 유지하고 Avalonia 버전을 변경하지 마세요:
-git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
-
-# ② 빌드(저장소 루트에서):
+# 빌드(저장소 루트에서). 서드파티 산출물(OxyPlot.Avalonia, biturbo, tokei)은
+# 빌드 시 각 저장소의 latest Release에서 자동으로 가져옵니다(아래 "서드파티 소스"
+# 참조). GitHub 네트워크 접근만 필요합니다:
 dotnet build ForkPlus.sln -c Release
 ```
 
@@ -170,7 +167,7 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 
 - 애플리케이션 자체를 수정할 때는 `src/ForkPlus` 디렉터리 내에 머무르세요. `third_party/`의 런타임 바이너리(biturbo native 라이브러리, tokei)는 빌드 시 자동으로 가져오므로 바이너리를 수동으로 커밋하지 마세요
 - biturbo / tokei 버전을 업그레이드하려면 해당 저장소에 새 Release를 게시하면 이 저장소의 다음 빌드가 자동으로 가져옵니다
-- `../oxyplot-avalonia`는 저장소 외부 소스 참조이므로 공식 원본을 무수정으로 유지하세요(버전을 잘못 수정한 교훈은 MIGRATION.md 참조)
+- 차트 라이브러리 OxyPlot.Avalonia는 [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) fork의 사전 컴파일된 nupkg를 소비합니다(Avalonia 12.1.1 기준으로 컴파일; 공식 패키지는 Avalonia 11에 머물러 있으며 그 XAML IL은 12 런타임에서 MissingMethodException을 발생시킵니다 — 교훈은 MIGRATION.md 참조). 빌드 시 해당 fork의 latest Release에서 가져옵니다
 - 마이그레이션(WPF → Avalonia)의 환경 구성, 진행 중인 작업, 과거 수정 이력은 [MIGRATION.md](MIGRATION.md)에 기록되어 있습니다
 
 ## 라이선스

@@ -63,11 +63,8 @@ ForkPlus-Next/
 ### 编译步骤
 
 ```bash
-# ① 图表库 OxyPlot.Avalonia 以"仓库外源码引用"方式集成（csproj 相对路径指向仓库同级目录），
-#    首次编译前先克隆到本仓库旁边。保持官方原版零改动，勿修改其 Avalonia 版本：
-git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
-
-# ② 编译（仓库根目录）：
+# 编译（仓库根目录）。图表库 OxyPlot.Avalonia 与 biturbo / tokei 三方产物均无需手动准备，
+# 构建期自动从对应仓库的 latest Release 拉取（见下方"三方件来源"各节），仅需网络可达 GitHub：
 dotnet build ForkPlus.sln -c Release
 ```
 
@@ -100,6 +97,15 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 - macOS 资产为 x86_64，Apple Silicon 经 Rosetta 2 运行
 
 机制与 biturbo 相同：`RestoreTokei` target（`BeforeTargets=Build`）自动拉取，CI 显式下载并校验，`.gitignore` 忽略产物。
+
+### OxyPlot.Avalonia 来源
+
+图表库 [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-avalonia)（MIT 协议）用于统计面板的绘图控件。**官方仓库停留在 Avalonia 11 且不发布二进制**，本仓库消费 [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) fork 发行的**预编译 NuGet 包**（按 Avalonia 12.1.1 原生编译，net8.0 / net10.0 双目标）：
+
+- 包版本带 `-avalonia12.x` 预发布后缀（如 `2.1.2-avalonia12.1`），与 nuget.org 官方 `2.1.2`（面向 Avalonia 11）永不混淆，恢复只命中 fork 包
+- 构建期从 fork 仓库 latest Release 下载 `OxyPlot.Avalonia.<版本>.nupkg` 到 `third_party/nuget/`（仓库根 `nuget.config` 注册的本地目录源），由 `PackageReference` 恢复
+- 拉取机制：ForkPlus.csproj 的 `RestoreOxyPlotAvalonia` target（`BeforeTargets=Restore;Build`，本地开发）+ CI 显式下载步骤（build.yml，规避 macOS runner 上 MSBuild Exec 差异），`.gitignore` 忽略产物
+- 升级 = fork 仓库改 `AvaloniaVersion` 后打 `v*` tag 发新 Release，本仓库改 `ForkPlus.csproj` 的 `OxyPlotAvaloniaPackageVersion` 单点即可
 
 ### 持续集成
 
@@ -169,7 +175,7 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 
 - 修改应用程序本身时，保持在 `src/ForkPlus` 目录内；`third_party/` 下的运行时二进制（biturbo native 库、tokei）由构建期自动拉取，不要手动提交二进制文件
 - 如需升级 biturbo / tokei 版本，在对应仓库发布新 Release 即可，本仓库下次构建会自动拉取
-- `../oxyplot-avalonia` 为仓库外源码引用，保持官方原版零改动（误改版本的教训见 MIGRATION.md）
+- 图表库 OxyPlot.Avalonia 消费 [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) fork 的预编译 nupkg（按 Avalonia 12.1.1 编译；官方包停留在 Avalonia 11，其 XAML IL 在 12 运行时会 MissingMethodException，教训见 MIGRATION.md），构建期从该 fork 的 latest Release 拉取
 - 迁移工作（WPF → Avalonia）的环境配置、进行中事项与历史修复链记录在 [MIGRATION.md](MIGRATION.md)
 
 ## 许可证

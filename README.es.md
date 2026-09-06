@@ -63,14 +63,10 @@ ForkPlus-Next/
 ### Pasos de compilación
 
 ```bash
-# ① La librería de gráficos OxyPlot.Avalonia se integra como «referencia de código
-#    fuera del repositorio» (la ruta relativa del csproj apunta a un directorio
-#    hermano de este repositorio); clónela junto a este repositorio antes de la
-#    primera compilación. Mantenga la versión oficial sin cambios y no modifique
-#    su versión de Avalonia:
-git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
-
-# ② Compilar (en la raíz del repositorio):
+# Compilar (en la raíz del repositorio). Los artefactos de terceros (OxyPlot.Avalonia,
+# biturbo, tokei) se obtienen automáticamente en tiempo de compilación desde las
+# últimas releases de sus repositorios (véanse las secciones de «fuentes de terceros»
+# más abajo); solo se necesita acceso de red a GitHub:
 dotnet build ForkPlus.sln -c Release
 ```
 
@@ -172,7 +168,7 @@ La internacionalización se implementa en el código mediante las siguientes API
 
 - Al modificar la aplicación en sí, manténgase dentro del directorio `src/ForkPlus`; los binarios de tiempo de ejecución bajo `third_party/` (biblioteca nativa biturbo, tokei) se obtienen automáticamente en tiempo de compilación — no suba binarios manualmente
 - Para actualizar biturbo / tokei, publique una nueva versión en el repositorio correspondiente; la próxima compilación de este repositorio la obtendrá automáticamente
-- `../oxyplot-avalonia` es una referencia de código fuera del repositorio — mantenga la versión oficial sin cambios (la lección de modificar su versión por error está en MIGRATION.md)
+- OxyPlot.Avalonia se consume como nupkg precompilado del fork [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) (compilado contra Avalonia 12.1.1; el paquete oficial está detenido en Avalonia 11 y su XAML IL lanza MissingMethodException en 12 en tiempo de ejecución — véase MIGRATION.md), y se obtiene en tiempo de compilación desde la última release de ese fork
 - La configuración del entorno, el trabajo en curso y la cadena de correcciones históricas de la migración (WPF → Avalonia) están documentados en [MIGRATION.md](MIGRATION.md)
 
 ## Licencia

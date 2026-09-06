@@ -7,6 +7,8 @@
 #       Target 兜底，从 hebin123456/Biturbo latest release 拉取：win→biturbo.dll /
 #       linux→libbiturbo.so / macos→libbiturbo.dylib）+ tokei 代码统计工具（hebin123456/tokei
 #       latest release：win→tokei.exe / unix→tokei，Linux/macOS 为 tar.gz 需解压）+
+#       OxyPlot.Avalonia 图表库 nupkg（hebin123456/oxyplot-avalonia fork latest release，
+#       下载到 third_party/nuget/ 本地 NuGet 源，经 nuget.config + PackageReference 恢复）+
 #       AskPass/RI 子进程三件套（apphost/dll/runtimeconfig）。
 #
 # 平台对应关系（与 Biturbo release 资产架构一致）：
@@ -62,20 +64,34 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # OxyPlot.Avalonia 从仓库内置 src/ThirdParty 迁移为仓库外本地源码引用
-      # （ForkPlus.csproj: ..\..\..\oxyplot-avalonia\Source\OxyPlot.Avalonia）。
-      # csproj 引用路径相对 $GITHUB_WORKSPACE 的上一级目录，故 clone 到 ../oxyplot-avalonia。
-      # 官方源码 + Avalonia12 补丁（docs/patches/）随主工程一起按 Avalonia 12 编译：
-      # 官方按 Avalonia 11 编译的 XAML IL 在运行时 12.x 缺 TemplateBinding.ProvideValue()
-      # → PlotView 布局即 MissingMethodException（模块20 E2E 统计窗口实证）。
-      - name: Clone OxyPlot.Avalonia source and apply Avalonia12 patch
+      # OxyPlot.Avalonia 改为消费 fork（hebin123456/oxyplot-avalonia）release 的预编译 nupkg：
+      # 本地 NuGet 源 third_party/nuget/（nuget.config 已注册该目录），csproj 以 PackageReference
+      # 引用（版本 2.1.2-avalonia12.1，由 ForkPlus.csproj 的 OxyPlotAvaloniaPackageVersion 单点维护）。
+      # 包按 Avalonia 12.1.1 原生编译——官方版按 11 编译的 XAML IL 在 12 运行时会
+      # MissingMethodException（见 MIGRATION.md），fork 发包从根上解决，CI 不再克隆源码打补丁。
+      # （曾用 clone 官方源码 + git apply Avalonia12 补丁方案，已被 fork 发包取代。）
+      # 与 tokei / biturbo 同模式显式下载（不走 csproj 的 RestoreOxyPlotAvalonia Exec，规避
+      # macOS runner 上 MSBuild Exec 行为差异；Exists 守卫直接短路）。资产名含版本号
+      # （NuGet 目录源要求 <id>.<version>.nupkg 命名），升级时与 ForkPlus.csproj 同步。
+      - name: Download OxyPlot.Avalonia nupkg
         shell: bash
         run: |
-          git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
-          test -f ../oxyplot-avalonia/Source/OxyPlot.Avalonia/OxyPlot.Avalonia.csproj \
-            || { echo "OxyPlot.Avalonia.csproj not found after clone"; exit 1; }
-          git -C ../oxyplot-avalonia apply docs/patches/oxyplot-avalonia-avalonia12.patch \
-            || { echo "oxyplot-avalonia-avalonia12.patch failed to apply"; exit 1; }
+          mkdir -p third_party/nuget
+          base="https://github.com/hebin123456/oxyplot-avalonia/releases/latest/download"
+          asset="OxyPlot.Avalonia.2.1.2-avalonia12.1.nupkg"
+          out="third_party/nuget/$asset"
+          echo "Downloading $asset ..."
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 "$base/$asset" -o "$out"; then ok=1; break; fi
+            echo "attempt $i failed, retrying in $((i*5))s..."
+            sleep $((i*5))
+          done
+          [ "$ok" = "1" ] || { echo "FAILED to download $asset after 5 attempts"; exit 1; }
+          ls -la "$out"
+          # 非空且 >10KB 校验（实际约数百 KB；拦 0 字节/截断残留）
+          size=$(wc -c < "$out")
+          [ "$size" -gt 10000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
 
       # TODO 迁移（CI）：native 库下载走显式 step 而非只靠 csproj 的 RestoreBiturbo Target
       # —— macOS runner 上该 MSBuild Exec 未产出 dylib（Linux/Windows 均正常，minimal
@@ -167,7 +183,7 @@ jobs:
           missing=0
           for f in ForkPlus.dll ForkPlus.runtimeconfig.json \
                    "ForkPlus.AskPass${ext}" ForkPlus.AskPass.dll ForkPlus.AskPass.runtimeconfig.json \
-                   "ForkPlus.RI${ext}" ForkPlus.RI.dll; do
+                   "ForkPlus.RI${ext}" ForkPlus.RI.dll OxyPlot.Avalonia.dll; do
             [ -f "$f" ] || { echo "MISSING: $f"; missing=1; }
           done
           case "${{ matrix.name }}" in

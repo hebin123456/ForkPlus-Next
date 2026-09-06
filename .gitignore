@@ -12,3 +12,6 @@ third_party/libbiturbo.so
 third_party/libbiturbo.dylib
 third_party/tokei
 third_party/tokei.exe
+# 构建期从 hebin123456/oxyplot-avalonia（fork）latest release 拉取的预编译 nupkg
+# 不入库（RestoreOxyPlotAvalonia Target 与 CI 显式下载步骤负责拉取）
+third_party/nuget/
