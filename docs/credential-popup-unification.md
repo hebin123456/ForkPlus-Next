@@ -1,0 +1,92 @@
+# 原生凭据弹窗收编方案
+
+目标：用户在 ForkPlus 内做任何需要凭据的 git 操作时，只会看到 ForkPlus 自己的 `AskPassWindow`，永远不出现 git 原生链路弹出的窗口（Windows 上典型是 Git Credential Manager 的 GUI，下称 GCM）。本文记录根因分析、已验证的 git 机制、分层实施计划与每一步的落地状态。
+
+## 现状机制
+
+ForkPlus 已经有一套自有的凭据管道：
+
+- 主程序拉起 git 时注入 `SSH_ASKPASS` = `ForkPlus.AskPass`、`SSH_ASKPASS_REQUIRE=force`（`GitRequest.CreateDefaultEnv` / `CreateGitProcessStartInfo`、`ShellRequest.CreateProcessStartInfo`）。
+- `ForkPlus.AskPass` 是一个桥接程序：git/ssh 以 askpass 或 credential helper 身份调用它，它通过命名管道 `Fork_Pipe{pid}_AskPass` 把请求转给主程序。
+- 主程序 `App.AskPassIpcMessageHandler` 分流：askpass 模式弹 `AskPassWindow`；credential helper 模式查 `AccountManager` 里已登录的账号并回填 HTTPS 用户名/密码。
+- 大多数网络类 git 命令（fetch/pull/push/clone/lfs 等，共 53 个调用点）还会前置 `-c credential.helper=...` 覆盖链。
+
+## 根因：三个泄露点
+
+| # | 泄露路径 | 位置 | 触发条件 |
+|---|---------|------|---------|
+| ① | 覆盖链末端显式保留 `credential.helper="manager"` | `App.axaml.cs` 的 `_overrideCredentialHelper` / `_overrideCredentialHelperBt` | 账号管理器里没有匹配该 host 的账号时，AskPass helper 返回空，git 继续遍历到 `manager`，GCM 弹原生窗口 |
+| ② | 无账号时覆盖链退化为空数组 | `App.axaml.cs` 的 `OverrideCredentialHelper` / `OverrideCredentialHelperBt` getter（`Accounts.Length == 0` 返回 `string[0]`） | 用户一个账号都没配时，完全不注入 `-c` 覆盖，走用户系统/全局配置里的 helper 链（Windows 默认就是 GCM） |
+| ③ | git mm 系列路径不挂覆盖链 | `GitMmUserControl.axaml.cs`、`InitGitMmRepositoryWindow.axaml.cs`（`new GitCommand("mm")` 不带 override，只设 `GIT_TERMINAL_PROMPT=0`） | `-c` 参数不随环境传播，git-mm 内部再拉起的 git 子进程拿不到覆盖链；同理 `git submodule update` 的子进程、`clone --recurse-submodules` 也不继承 `-c` |
+
+①解释了"有时候"：对已配置账号的 host 操作完全静默，一旦碰到没配账号的 host（例如公司内网 GitLab），原生弹窗就冒出来。`GIT_TERMINAL_PROMPT=0` 只封终端询问，不封 GCM 的 GUI 弹窗，帮不上忙。
+
+## 已验证的 git 机制
+
+以下事实由 git 2.34.1 本地受控实验（`git credential fill` + 假 helper / 假 askpass）与官方文档双重确认：
+
+| 机制 | 结论 |
+|------|------|
+| helper 链遍历 | git 按顺序跑 `credential.helper` 链，任一 helper 给出完整 username+password 即停止；helper 全部落空才回落 askpass 链 |
+| askpass 回落顺序 | `GIT_ASKPASS` → `core.askPass` → `SSH_ASKPASS` → 终端；`SSH_ASKPASS` 对 HTTPS 用户名/密码询问同样生效（实验 T3 验证） |
+| 空值重置 | `credential.helper` 配置为空字符串会清空当前已累积的 helper 列表，随后的条目重新追加（实验 T4b 验证） |
+| `quit` 属性 | helper 输出 `quit=1` 时，后续 helper 与用户询问全部终止，git 以失败退出（实验 T5b 验证，git 2.34 起可用） |
+| `GIT_CONFIG_COUNT` / `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` | 环境变量形式的 `-c`，且随进程树传播（git ≥ 2.31；本仓库要求 git ≥ 2.40，内置 2.50.1）。这是让 git-mm / submodule 子进程树继承覆盖的关键武器（实验 T1b/T4b 用 env 形式验证了注入与重置均生效） |
+| GCM 弹窗条件 | GCM 被调用且无已存凭据时按 `interactive` 配置决定是否弹 GUI（默认 Auto = 弹） |
+
+## 分层方案
+
+### Layer A：链上收编
+
+改动集中在 `App.axaml.cs`：
+
+1. 两个覆盖数组各删掉末尾的 `credential.helper="manager"` 条目（6 元素 → 4 元素）。删掉后，helper 链只剩"重置 + ForkPlus.AskPass"，账号未命中时 git 落到 askpass 兜底链，`SSH_ASKPASS` 已指向 ForkPlus.AskPass，`AskPassWindow` 成为唯一入口。
+2. `OverrideCredentialHelper` / `OverrideCredentialHelperBt` getter 去掉 `Accounts.Length == 0` 分支，无条件返回覆盖数组；`_defaultCredentialHelper` 字段随之删除。
+3. IPC handler 的未命中分支保持返回空字符串（这正是让 git 回落到 AskPassWindow 的信号，无需 `quit=1`——quit 会连 askpass 兜底一起掐断，交互场景下用户反而没了输入机会）。
+
+### Layer B：环境级收编
+
+`-c` 参数不随进程树传播，环境变量会。在 `GitRequest.CreateDefaultEnv`、`GitRequest.CreateGitProcessStartInfo`、`ShellRequest.CreateProcessStartInfo` 三处统一注入：
+
+```
+GIT_ASKPASS            = ForkPlus.AskPass 路径（封住回落链第一环，防终端继承残留）
+GIT_TERMINAL_PROMPT    = 0（所有 askpass 落空时快速失败，不挂死在不可见的终端询问上）
+GIT_CONFIG_COUNT       = 2
+GIT_CONFIG_KEY_0/VALUE_0 = credential.helper = （空，重置）
+GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，EscapeSpaces 转义>
+```
+
+这一层根治泄露点 ③：git-mm 子进程、`submodule update` 子进程、任何 git-spawns-git 场景都继承同一覆盖语义。
+
+### Layer C：语义收编
+
+现状：`ForkPlus.AskPass` 识别 `get/store/erase` 三个 action，但 IPC 消息只传 mode，action 信息丢失；主程序对三个 action 一律执行"查账号回填"，`store`/`erase` 形同虚设。收编后：
+
+1. 管道协议扩展：mode 增加 `"4"`（store）、`"5"`（erase）。
+2. `get`：账号命中 → 回填；未命中 → 查 Windows Credential Manager 的 GCM 兼容键（`git:https://<host>`，读用户由 GCM 存下的存量凭据，实现无痛迁移）；仍无 → 返回空，回落 AskPassWindow。
+3. `store`：把凭据写入 Windows Credential Manager（GCM 兼容键，GCM 外部读写互通），下次静默命中。
+4. `erase`：删除对应键。
+5. 所有 WCM 访问加 `OperatingSystem.IsWindows()` 守卫——现状 `ShowAskPassWindowCommand.QueryFromWindowsCredentialManager` 在 Linux 上会抛 `DllNotFoundException`，而 `IpcServer` 只捕获 `IOException`，这个异常足以把 IPC 线程带崩，顺带修复。Linux/macOS 上 store/erase 暂为空操作（记录在权衡一节）。
+
+## 已知权衡与风险
+
+- **GCM 存量凭据**：Layer A/B 后 GCM 不再参与凭据获取，但 Layer C 的 `get` 会先读 WCM 里的 GCM 兼容键，Windows 用户由 GCM 存过的凭据可以直接复用，不强制重输。
+- **取消即失败**：用户在 AskPassWindow 点取消后 git 直接失败退出，不出现二次弹窗。符合"感知不到原生弹窗"的目标，代价是没有"跳过本次"的中间态。
+- **平台差异**：Linux/macOS 没有 Windows Credential Manager，Layer C 的持久化在那两个平台暂为空操作（每次重输）。后续可接 `git-credential-store` 文件或系统 keyring，不在本计划内。
+- **预存在的小坑（保持现状，仅记录）**：`_overrideCredentialHelper` 的值同时叠加了字面引号与 `EscapeSpaces()` 反斜杠转义，安装路径含空格时两种转义可能互相打架。默认安装路径不含空格，本计划不动它，避免行为漂移。
+- **`GIT_CONFIG_COUNT` 侵入性**：环境注入对 git-mm / submodule 子树全局生效，包括它们内部读取 git config 的场景（如 `git config --list` 会看到注入项）。仓库内没有读取 credential 配置做展示的代码，影响面可控。
+
+## 验证计划
+
+- 每层提交后跟 CI 全量测试（test job 在 ubuntu 上跑 4255 项）。
+- 补充专项测试：覆盖数组断言不含 `manager`；AskPass 程序 mode 4/5 的协议分支；IPC handler store/erase 分支的平台守卫。
+- 人工场景（Windows 实机）：无账号 + 私有 host 的 fetch（应弹 AskPassWindow 而非 GCM）、输入后二次 fetch（应静默）、git mm 同场景、submodule update 同场景。
+
+## 推进状态
+
+| 里程碑 | 内容 | 状态 | 提交 |
+|--------|------|------|------|
+| Layer 0 | 本方案落档 | 已完成 | 本提交 |
+| Layer A | 覆盖链移除 manager、getter 无条件覆盖 | 待实施 | - |
+| Layer B | GIT_CONFIG_* / GIT_ASKPASS / GIT_TERMINAL_PROMPT 环境注入 | 待实施 | - |
+| Layer C | store/erase 语义 + WCM 兼容读写 | 待实施 | - |
