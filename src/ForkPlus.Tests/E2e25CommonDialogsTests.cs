@@ -462,6 +462,7 @@ namespace ForkPlus.Tests
 				Assert.True(HasAdjacentKeys(badges, "Ctrl", "Shift", "F"),
 					"应存在 Ctrl+Shift+F 键位徽章序列（Fetch），实际徽章: " + string.Join(",", badges));
 				Assert.Contains("Ctrl", badges); // token 原文不翻译
+				Assert.Contains("Delete", badges); // 键名徽章原文（回归锁：自动本地化曾把 Delete 翻成"删除"）
 				// 只读信息窗：Close（Cancel）按钮 + 无 Submit
 				Assert.NotNull(FindButton(shortcuts, Tr("Close")));
 				Assert.Null(FindButton(shortcuts, Tr("OK")));

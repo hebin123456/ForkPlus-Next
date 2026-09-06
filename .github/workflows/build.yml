@@ -65,13 +65,17 @@ jobs:
       # OxyPlot.Avalonia 从仓库内置 src/ThirdParty 迁移为仓库外本地源码引用
       # （ForkPlus.csproj: ..\..\..\oxyplot-avalonia\Source\OxyPlot.Avalonia）。
       # csproj 引用路径相对 $GITHUB_WORKSPACE 的上一级目录，故 clone 到 ../oxyplot-avalonia。
-      # 官方 oxyplot/oxyplot-avalonia 源码随主工程一起按 Avalonia 12 编译，无需单独发版。
-      - name: Clone OxyPlot.Avalonia source
+      # 官方源码 + Avalonia12 补丁（docs/patches/）随主工程一起按 Avalonia 12 编译：
+      # 官方按 Avalonia 11 编译的 XAML IL 在运行时 12.x 缺 TemplateBinding.ProvideValue()
+      # → PlotView 布局即 MissingMethodException（模块20 E2E 统计窗口实证）。
+      - name: Clone OxyPlot.Avalonia source and apply Avalonia12 patch
         shell: bash
         run: |
           git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
           test -f ../oxyplot-avalonia/Source/OxyPlot.Avalonia/OxyPlot.Avalonia.csproj \
             || { echo "OxyPlot.Avalonia.csproj not found after clone"; exit 1; }
+          git -C ../oxyplot-avalonia apply docs/patches/oxyplot-avalonia-avalonia12.patch \
+            || { echo "oxyplot-avalonia-avalonia12.patch failed to apply"; exit 1; }
 
       # TODO 迁移（CI）：native 库下载走显式 step 而非只靠 csproj 的 RestoreBiturbo Target
       # —— macOS runner 上该 MSBuild Exec 未产出 dylib（Linux/Windows 均正常，minimal

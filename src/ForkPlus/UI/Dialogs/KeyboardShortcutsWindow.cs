@@ -91,6 +91,12 @@ namespace ForkPlus.UI.Dialogs
 				new ShortcutRow("Enter", "Open Repository"))
 		};
 
+		// Migration note（2026-09-06 生产 bug）：键位徽章展示的是键名原文（Delete/Ctrl/Enter...），
+		// 不能参与 ForkPlusDialogWindow 的 Loaded 期自动本地化——zh-Hans 字典里有 "Delete"→"删除"，
+		// 会把键位徽章错误翻译成中文。窗口全部可见文案（段落标题/描述/标题栏 chrome）已在构造期
+		// 显式 Translate，关闭自动本地化无副作用（PreferencesWindow 同款口径）。
+		protected override bool ApplyAutomaticLocalization => false;
+
 		public KeyboardShortcutsWindow()
 		{
 			base.Title = PreferencesLocalization.Current("Keyboard Shortcuts");

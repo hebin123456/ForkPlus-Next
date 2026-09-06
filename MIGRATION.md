@@ -71,12 +71,13 @@ git -C /data/user/work/oxyplot-avalonia apply /data/user/work/ForkPlus-Next/docs
 # 注意：netstandard2.0 TFM 下直接升 AvaloniaVersion 会 786 个类型解析错误（Avalonia 12 无 netstandard2.0 资产），
 # 必须同步改 TFM；其余 API 断点只有剪贴板一处。
 
-# ── CI 待办（2026-09-06，仓库 owner 手动执行）──
-# build.yml 需在 "Clone OxyPlot.Avalonia source" 步骤追加补丁 apply（CI 不打补丁则产物含按 11 编译的
-# OxyPlot → 统计窗口 PlotView 运行时崩溃）。改动已固化为仓库内补丁：
-git apply docs/patches/ci-build-oxyplot-apply.patch && git commit -am "ci: OxyPlot clone 后 apply Avalonia12 补丁" && git push
+# ── CI（2026-09-06 已直接改 build.yml，原"仓库内补丁"方案已废弃）──
+# build.yml 的 "Clone OxyPlot.Avalonia source and apply Avalonia12 patch" 步骤在 clone 后直接
+# apply docs/patches/oxyplot-avalonia-avalonia12.patch（CI 不打补丁则产物含按 11 编译的
+# OxyPlot → 统计窗口 PlotView 运行时崩溃）。原 ci-build-oxyplot-apply.patch 已删除，
+# 沙盒克隆本仓库后无需再打任何 workflow 补丁。
 # ⚠️ 当前 agent 用的 PAT 无 workflow scope（GitHub 拒绝推送 .github/workflows/ 改动，2026-09-06 实证），
-# 须由 owner 用带 workflow scope 的凭据执行上述命令上库。
+# 涉及 build.yml 的提交须由 owner 用带 workflow scope 的凭据推送。
 
 # ── git 身份（沙盒重置后需重新设置）──
 git config user.name "Test User" && git config user.email "test@example.com"

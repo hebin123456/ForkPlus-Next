@@ -188,12 +188,6 @@ namespace ForkPlus.UI.WpfCompat
         SoftwareOnly = 1,
     }
 
-    /// <summary>WPF System.Windows.PresentationTraceSources no-op。</summary>
-    public static class PresentationTraceSources
-    {
-        public static void SetTraceLevel(object obj, object level) { }
-    }
-
     // ===== 键盘导航 =====
 
     public enum FocusNavigationDirection
@@ -261,13 +255,6 @@ namespace ForkPlus.UI.WpfCompat
         }
     }
 
-    // ===== ContextMenuClosing =====
-
-    public class ContextMenuClosingEventArgs : EventArgs
-    {
-        public bool Cancel { get; set; }
-    }
-
     // ===== Win32 互操作 =====
 
     /// <summary>WPF System.Windows.Interop.WindowInteropHelper。</summary>
@@ -314,42 +301,11 @@ namespace ForkPlus.UI.WpfCompat
         }
     }
 
-    // ===== WPF 视觉杂项 stub =====
-
-    /// <summary>WPF System.Windows.Media.DrawingVisual：轻量自绘视觉。Avalonia 侧由 Control.Render 承担。</summary>
-    public class DrawingVisual : global::Avalonia.Controls.Control
-    {
-        public new void Render(DrawingContext context) { }
-    }
-
-    /// <summary>WPF FormatConvertedBitmap stub。</summary>
-    public class FormatConvertedBitmap
-    {
-        public global::Avalonia.Media.IImage Source { get; set; }
-    }
-
-    /// <summary>WPF IScrollInfo stub。</summary>
-    public interface IScrollInfo
-    {
-        bool CanVerticallyScroll { get; set; }
-        bool CanHorizontallyScroll { get; set; }
-    }
-
-    /// <summary>WPF FrameworkContentElement stub。</summary>
-    public class FrameworkContentElement : AvaloniaObject { }
-
-    /// <summary>WPF Visual3D stub。</summary>
-    public class Visual3D : AvaloniaObject { }
-
-    /// <summary>WPF ScrollContentPresenter stub（Avalonia 同名类在 Primitives，复杂场景手工迁移）。</summary>
-    public class ScrollContentPresenterStub { }
-
-    // ===== WPF 动画体系 stub =====
+    // ===== WPF 动画体系 shim =====
     // Migration note：Avalonia 动画模型完全不同（Animation + Transitions，声明式）。
     // 这里只保留类型形状让代码编译；视觉动效待后续按控件逐个移植。
 
     public enum FillBehavior { HoldEnd, Stop }
-    public enum HandoffBehavior { SnapshotAndReplace, Compose }
 
     /// <summary>WPF Duration。</summary>
     public struct Duration
@@ -392,15 +348,6 @@ namespace ForkPlus.UI.WpfCompat
         internal void RaiseCompleted() => Completed?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>WPF ThicknessAnimation stub。</summary>
-    public class ThicknessAnimation
-    {
-        public Thickness? From { get; set; }
-        public Thickness? To { get; set; }
-        public Duration Duration { get; set; }
-        public FillBehavior FillBehavior { get; set; } = FillBehavior.HoldEnd;
-    }
-
     /// <summary>缓动函数公共标记（形状兼容）。</summary>
     public interface IEasingFunctionBase { }
 
@@ -409,41 +356,9 @@ namespace ForkPlus.UI.WpfCompat
         public EasingMode EasingMode { get; set; } = EasingMode.EaseOut;
     }
 
-    public class CubicEase : IEasingFunctionBase
-    {
-        public EasingMode EasingMode { get; set; } = EasingMode.EaseOut;
-    }
-
-    public class PowerEase : IEasingFunctionBase
-    {
-        public EasingMode EasingMode { get; set; } = EasingMode.EaseOut;
-        public double Power { get; set; } = 2;
-    }
-
-    /// <summary>WPF FrameworkElement：Avalonia 12 无此类型，语义由 Control 承担。</summary>
-    public class FrameworkElement : global::Avalonia.Controls.Control
-    {
-        /// <summary>WPF ActualWidth/ActualHeight（Avalonia Bounds）。</summary>
-        public double ActualWidth => Bounds.Width;
-        public double ActualHeight => Bounds.Height;
-        public Size RenderSize => Bounds.Size;
-    }
-
-    /// <summary>WPF Storyboard stub：Begin/SetTarget 等全 no-op。</summary>
-    public class Storyboard
-    {
-        public System.Collections.IList Children { get; } = new System.Collections.ArrayList();
-        public void Begin() { }
-        public void Begin(Visual containingObject) { }
-        public void Stop() { }
-        public static void SetTarget(object timeline, AvaloniaObject target) { }
-        public static void SetTargetName(object timeline, string name) { }
-        public static void SetTargetProperty(object timeline, object propertyPath) { }
-    }
-
     /// <summary>
     /// WPF element.BeginAnimation(property, animation) 的等价物。
-    /// 对 double 属性用 DispatcherTimer 做线性补间；Thickness/其他类型 no-op。
+    /// 对 double 属性用 DispatcherTimer 做线性补间；其他类型 no-op。
     /// 同一 (target, property) 的新动画会顶掉旧动画（对应 WPF HandoffBehavior.SnapshotAndReplace 近似）。
     /// Migration note：正式实现请改用 Avalonia Animations/Transitions。
     /// </summary>
@@ -489,27 +404,6 @@ namespace ForkPlus.UI.WpfCompat
                 _running[(target, property)] = timer;
                 timer.Start();
             }
-            else if (animation is ThicknessAnimation ta && property.PropertyType == typeof(Thickness))
-            {
-                if (ta.To.HasValue)
-                    target.SetValue(property, ta.To.Value); // Migration note：Thickness 补间，当前直接跳到终值
-            }
         }
-    }
-
-}
-
-// WPF 命名空间占位（Storyboard.SetTarget 等签名引用用）
-namespace System.Windows.Media.Animation
-{
-    using ForkPlus.UI.WpfCompat;
-
-    /// <summary>WPF Timeline 基类 stub（DoubleAnimation 等的基类形状）。</summary>
-    public class TimelineShim { }
-
-    public static class Timeline
-    {
-        // WPF Timeline.SetDesiredFrameRate 等 no-op
-        public static void SetDesiredFrameRate(TimelineShim t, int? fps) { }
     }
 }
