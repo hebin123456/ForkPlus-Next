@@ -86,7 +86,7 @@ GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，Escape
 
 | 里程碑 | 内容 | 状态 | 提交 |
 |--------|------|------|------|
-| Layer 0 | 本方案落档 | 已完成 | 本提交 |
-| Layer A | 覆盖链移除 manager、getter 无条件覆盖 | 待实施 | - |
+| Layer 0 | 本方案落档 | 已完成 | 4bfd953 |
+| Layer A | 覆盖链移除 manager、getter 无条件覆盖 + 专项测试（CredentialHelperOverrideTests） | 已实施 | 本提交 |
 | Layer B | GIT_CONFIG_* / GIT_ASKPASS / GIT_TERMINAL_PROMPT 环境注入 | 待实施 | - |
 | Layer C | store/erase 语义 + WCM 兼容读写 | 待实施 | - |

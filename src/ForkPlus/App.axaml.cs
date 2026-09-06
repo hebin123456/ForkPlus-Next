@@ -75,8 +75,6 @@ namespace ForkPlus
 
 		public static readonly string ForkCredentialHelperPath;
 
-		private static readonly string[] _defaultCredentialHelper;
-
 		private static readonly string[] _overrideCredentialHelper;
 
 		private static readonly string[] _overrideCredentialHelperBt;
@@ -118,29 +116,17 @@ namespace ForkPlus
 
 		private bool _loggedVisualParentingFirstChanceException;
 
-		public static string[] OverrideCredentialHelperBt
-		{
-			get
-			{
-				if (AccountManager.Current.Accounts.Length == 0)
-				{
-					return _defaultCredentialHelper;
-				}
-				return _overrideCredentialHelperBt;
-			}
-		}
+		/// <summary>
+		/// 凭据收编（Layer A）：无论账号管理器里有没有账号，都无条件注入覆盖链。
+		/// 原先无账号时返回空数组、任由 git 走用户系统/全局配置里的 helper 链（GCM 等），
+		/// 是原生凭据弹窗的泄露点之一；账号未命中时 AskPass helper 自会弹出 ForkPlus 自己的窗口。
+		/// </summary>
+		public static string[] OverrideCredentialHelperBt => _overrideCredentialHelperBt;
 
-		public static string[] OverrideCredentialHelper
-		{
-			get
-			{
-				if (AccountManager.Current.Accounts.Length == 0)
-				{
-					return _defaultCredentialHelper;
-				}
-				return _overrideCredentialHelper;
-			}
-		}
+		/// <summary>
+		/// 凭据收编（Layer A）：同 <see cref="OverrideCredentialHelperBt"/>，无条件注入覆盖链。
+		/// </summary>
+		public static string[] OverrideCredentialHelper => _overrideCredentialHelper;
 
 		public static string GitPath => EnvironmentGitInstancePath ?? ForkPlusSettings.Default.GitInstancePath ?? ForkGitInstancePath;
 
@@ -361,24 +347,23 @@ namespace ForkPlus
 			RepositoriesFilePath = Path.Combine(ForkDataDirectoryPath, "repositories.toml");
 			InstanceDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			ForkCredentialHelperPath = Path.Combine(AppContext.BaseDirectory, Consts.ForkPlus.AskPassFilename);
-			_defaultCredentialHelper = new string[0];
-			_overrideCredentialHelper = new string[6]
+			// 凭据收编（Layer A）：覆盖链显式清空系统/全局配置里的所有 helper 后只挂 ForkPlus 自带的
+			// AskPass helper。链末端原先还显式保留 "manager"（GCM），账号未命中时 git 会继续遍历到它，
+			// 弹出操作系统原生的凭据窗口——与"只感知 ForkPlus 自己的弹窗"目标冲突，故移除。
+			// 无账号命中时 AskPass helper 会经 IPC 弹出 ForkPlus 自己的窗口向用户索要凭据。
+			_overrideCredentialHelper = new string[4]
 			{
 				"-c",
 				"credential.helper=\"\"",
 				"-c",
-				"credential.helper=\"" + PathHelper.NormalizeUnix(ForkCredentialHelperPath).EscapeSpaces() + "\"",
-				"-c",
-				"credential.helper=\"manager\""
+				"credential.helper=\"" + PathHelper.NormalizeUnix(ForkCredentialHelperPath).EscapeSpaces() + "\""
 			};
-			_overrideCredentialHelperBt = new string[6]
+			_overrideCredentialHelperBt = new string[4]
 			{
 				"-c",
 				"credential.helper=",
 				"-c",
-				"credential.helper=" + PathHelper.NormalizeUnix(ForkCredentialHelperPath).EscapeSpaces(),
-				"-c",
-				"credential.helper=manager"
+				"credential.helper=" + PathHelper.NormalizeUnix(ForkCredentialHelperPath).EscapeSpaces()
 			};
 			EnvironmentGitInstancePath = GetEnvironmentGitInstancePath();
 			ForkGitInstancePath = GetForkGitInstancePath();
