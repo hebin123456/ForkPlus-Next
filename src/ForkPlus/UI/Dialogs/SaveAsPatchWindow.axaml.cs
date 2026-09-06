@@ -40,13 +40,19 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogDescription = Translate("Save commit as patch");
 			base.SubmitButtonTitle = Translate("Save");
 			RevisionsTextBlock.Text = Translate(dst.HasValue ? "Revisions:" : "Revision:");
+			// Migration note（根因，模块19 探针实证）：WPF 原仓在 OnInitialized override 里加载
+			// revisions——WPF 的 Initialized 在构造完成后触发，字段已就绪。Avalonia 12 的
+			// Initialized 在 TopLevel 基类构造链中触发（PresentationSource..ctor →
+			// OnAttachedToVisualTreeCore → InitializeIfNeeded → OnInitialized），此刻派生类
+			// 构造器字段全未赋值（_gitModule=null → GitRequest NRE → 列表永远装配不上）。
+			// Avalonia 等价时机 = 构造器尾部（InitializeComponent 之后），逻辑与原版逐字节一致。
+			LoadRevisions();
 		}
 
-		protected override async void OnInitialized()
+		private async void LoadRevisions()
 		{
 			try
 			{
-				base.OnInitialized();
 				SetStatus(ForkPlusDialogStatus.InProgress, "Loading...");
 				GitCommandResult<GetRevisionsInRangeGitCommand.Result> gitCommandResult = await Task.Run(() => new GetRevisionsInRangeGitCommand().Execute(_gitModule, _src, _dst));
 				if (!gitCommandResult.Succeeded)
@@ -63,7 +69,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			catch (Exception ex)
 			{
-				Log.Error("OnInitialized failed", ex);
+				Log.Error("SaveAsPatchWindow load revisions failed", ex);
 			}
 		}
 

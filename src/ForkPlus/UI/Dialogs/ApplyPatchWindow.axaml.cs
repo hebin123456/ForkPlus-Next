@@ -136,6 +136,15 @@ namespace ForkPlus.UI.Dialogs
 
 		private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
 	{
+		if (_patchData != null)
+		{
+			// Migration note（根因，模块19 探针实证）：剪贴板模式下 PathTextBox 已折叠且非真相源，
+			// WPF 原仓此路径从不触发 TextChanged（构造器未赋 Text）。Avalonia 12 的 PlaceholderTextBox
+			// 初始化会异步派发一次空 TextChanged，若不守卫会把 _patchContainsCommitHeader 重置为
+			// false（File.ReadAllText("") 失败）——From 头补丁的 Create commit 勾选框会在弹窗
+			// 打开后消失（生产 bug）。剪贴板模式直接忽略路径文本事件。
+			return;
+		}
 		_patchContainsCommitHeader = PatchContainsCommitHeader(PathTextBox.Text.Trim());
 		RefreshCreateCommitsCheckBoxVisibility();
 		UpdateSubmitButton();
