@@ -530,7 +530,7 @@ namespace ForkPlus.Tests
 		/// （lfs install --local + track *.bin + data.bin 提交）+ work 克隆。返回 work。
 		/// 对象传输闭环（2026-09-06 探针实证）：src 的 pre-push 钩子在 push 时把 LFS 对象复制进
 		/// bare 的 lfs/objects（远程 URL 必须<b>绝对路径</b>——相对路径远程不触发传输）；
-		/// work 克隆检出指针文件（无全局 lfs filter 配置时 clone 不 smudge），再 install
+		/// work 克隆检出指针文件（-c 进程级关闭 lfs smudge，见下），再 install
 		/// --local（pull 的 smudge 需要；指针文件的 clean 幂等——status 仍干净，探针实证）。
 		/// bare/src 与 work 同级（Cleanup 须清整个 root）。</summary>
 		public static string CreateLfsRemoteBehind()
@@ -552,11 +552,18 @@ namespace ForkPlus.Tests
 			Run(root, "init -q -b main --bare " + Quote(bare));
 			Run(src, "remote add origin " + Quote(bare));
 			Run(src, "push -q origin main"); // 钩子把 LFS 对象送进 bare/lfs/objects
-			Run(root, "clone -q " + Quote(bare) + " " + Quote(work)); // 指针检出、无本地对象
+			// 指针检出、无本地对象。-c 进程级覆盖关闭 lfs smudge（等价 GIT_LFS_SKIP_SMUDGE=1，
+			// git clone 的 -c 配置在检出前生效且写入 work 的本地配置）：GitHub ubuntu runner
+			// 预装 git-lfs 且全局已 install（~/.gitconfig 含 [filter "lfs"]，2026-09-06 CI 实证），
+			// 普通 clone 会把 data.bin smudge 成真实内容、Fetch/Pull 的指针前置断言必挂；
+			// 沙盒无全局配置不受影响。install --local 须 --force 覆写 filter 三键（-c 持久化的
+			// required=false 会让无 --force 的 install 以 exit 2 拒绝执行，探针实证），pull smudge 不受影响。
+			Run(root, "clone -q -c filter.lfs.smudge= -c filter.lfs.process= -c filter.lfs.required=false "
+				+ Quote(bare) + " " + Quote(work));
 			Run(work, "config user.email test@example.com");
 			Run(work, "config user.name Test");
 			Run(work, "config commit.gpgsign false");
-			Run(work, "lfs install --local"); // pull smudge 需要；fetch 不需要
+			Run(work, "lfs install --local --force"); // pull smudge 需要；fetch 不需要
 			return work;
 		}
 

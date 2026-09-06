@@ -467,28 +467,35 @@ namespace ForkPlus.Tests
 				frame7.Dispose();
 
 				// === 截图 8：SelectionBox 颜色点验证 ===
-				// 先把第一行设为 Edit，然后找第一个 ComboBox 验证颜色
+				// 先把第一行设为 Edit，然后取第 0 行 ComboBox 验证颜色
 				entries.Move(3, 5); // 先移回去，恢复顺序
 				entries[0].Action = InteractiveRebaseAction.Edit;
 				Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
 				Dispatcher.UIThread.RunJobs();
 
+				// 确定性取第 0 行的 ComboBox（2026-09-06 CI 实证修复）：原先取"视觉树第一个
+				// ComboBox"（combosAfter[0]）——GitHub ubuntu runner 上其视觉序与行序不一致
+				// （截图4 reparent listView + 双 Move 后虚拟化容器顺序漂移），首项落在非 Edit
+				// 行，黄色像素断言恒 0（沙盒恰好序一致故全绿）。ContainerFromIndex(0) 按索引
+				// 定位恒为第 0 行（刚被设为 Edit，黄点必在）；先滚到位再截图，截图与扫描区域一致。
+				var combosAfter = listView.GetVisualDescendants().OfType<ComboBox>().ToList();
+				ComboBox selectionCombo = combosAfter.Count > 0 ? GetRowCombo(listView, 0) : null;
+				Dispatcher.UIThread.RunJobs();
+
 				var frame8 = HeadlessWindowExtensions.CaptureRenderedFrame(window);
 				SaveFrame(frame8, "ir-08-selection-box-color.png");
 
-				// 选中框内黄色像素（在列表区域左上角找黄色像素）
+				// 选中框内黄色像素（扫描第 0 行 ComboBox 的渲染区域）
 				int selBoxYellow = 0;
-				var combosAfter = listView.GetVisualDescendants().OfType<ComboBox>().ToList();
-				if (combosAfter.Count > 0)
+				if (selectionCombo != null)
 				{
-					var firstCombo = combosAfter[0];
-					var c2w = firstCombo.TransformToVisual(window);
+					var c2w = selectionCombo.TransformToVisual(window);
 					if (c2w.HasValue)
 					{
 						var tl = c2w.Value.Transform(new Point(0, 0));
 						int x0 = (int)tl.X, y0 = (int)tl.Y;
-						int x1 = (int)(tl.X + firstCombo.Bounds.Width);
-						int y1 = (int)(tl.Y + firstCombo.Bounds.Height);
+						int x1 = (int)(tl.X + selectionCombo.Bounds.Width);
+						int y1 = (int)(tl.Y + selectionCombo.Bounds.Height);
 						using (var l = frame8.Lock())
 						{
 							for (int y = Math.Max(0, y0); y < Math.Min(l.Size.Height, y1); y++)

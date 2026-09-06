@@ -518,10 +518,20 @@ namespace ForkPlus.Tests
 					RunJobs();
 					try
 					{
-						// —— 候选装配：ForkPlus Git（内置）+ System PATH（/usr/bin/git）至少两项 ——
+						// —— 候选装配：环境自适应（2026-09-06 CI 实证修复，与 E2e21PreferencesTests 同款分叉）——
+						// 沙盒/开发机装有内置 git 实例（gitInstance/2.50.1）→ 探测链首候选源为 "ForkPlus Git"；
+						// CI runner 无内置实例，HeadlessAppBootstrap 兜底注入 forkgitinstance 环境变量 →
+						// 首候选源变为 "Environment Git"（原断言在 GitHub runner 上必挂）。
 						var candidates = window.GitCandidatesListBox.Items.OfType<ConfigureGitInstanceWindow.GitCandidate>().ToList();
 						Assert.True(candidates.Count >= 2, "内置 git 与 PATH git 应同时入候选: " + candidates.Count);
-						Assert.Contains(candidates, c => c.Source == Tr("ForkPlus Git"));
+						if (global::ForkPlus.App.EnvironmentGitInstancePath != null)
+						{
+							Assert.Contains(candidates, c => c.Source == Tr("Environment Git"));
+						}
+						else
+						{
+							Assert.Contains(candidates, c => c.Source == Tr("ForkPlus Git"));
+						}
 						Assert.Contains(candidates, c => c.Source == Tr("System PATH"));
 						Assert.All(candidates, c => Assert.Matches("^\\d+\\.\\d+", c.Version)); // 真实 git --version
 

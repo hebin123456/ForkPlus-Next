@@ -246,7 +246,10 @@ jobs:
   #      拉取（Linux 下 MSBuild Exec 正常，无需像 macOS 那样显式 curl）。
   # 仅在 Linux 跑（沙盒全量验证过的平台，Windows/macOS 暂不扩矩阵）。测试写仓库级
   # git config、像素断言为同帧相对比较（无固定参考图），不依赖环境字体/全局配置。
-  # 已知偶发：InteractiveRebase 像素断言等用例历史记录"单跑即绿"，CI 偶红属已知问题。
+  # 2026-09-06 首轮 CI 实证修复三处环境假设：① GitHub runner 全局已 git lfs install →
+  #   LFS 测试工厂的 clone 会 smudge（改 -c 进程级关闭 lfs smudge）；② runner 无内置 git
+  #   实例 → SSH 测试的候选源断言改环境自适应；③ InteractiveRebase 选中框扫描改按索引
+  #   定位第 0 行（视觉序首项在 runner 上与行序不一致）。
   test:
     name: test (linux-x64)
     runs-on: ubuntu-latest
@@ -300,3 +303,13 @@ jobs:
       - name: Run tests
         shell: bash
         run: dotnet test ForkPlus.sln --nologo
+
+      # 失败时上传证据截图（docs/evidence/，像素断言失败可下载 PNG 定位），便于 CI 红灯诊断
+      - name: Upload test evidence (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-evidence-linux-x64
+          path: docs/evidence/
+          retention-days: 7
+          if-no-files-found: ignore
