@@ -73,7 +73,12 @@ namespace ForkPlus
 		/// </summary>
 		public static void ApplyToProcessStartInfo(ProcessStartInfo processStartInfo)
 		{
-			int startIndex = ParseConfigCount(processStartInfo.EnvironmentVariables[ConfigCountKey]);
+			// 环境字典的索引器对缺失键抛 KeyNotFoundException——干净进程环境（CI runner
+			// 即如此，无 GIT_CONFIG_COUNT）必须 TryGetValue；ParseConfigCount(null) 视为 0。
+			// 首次 CI 全量跑实证：此处的 KeyNotFoundException 会让所有 psi 路径的 git 请求
+			// 整体失败，E2E 用例连锁红（109 项）。
+			processStartInfo.EnvironmentVariables.TryGetValue(ConfigCountKey, out string rawCount);
+			int startIndex = ParseConfigCount(rawCount);
 			(string, string)[] pairs = BuildAllPairs(startIndex);
 			for (int i = 0; i < pairs.Length; i++)
 			{
