@@ -10,8 +10,9 @@
 3. 截图证据存 `docs/evidence/e2e/<两位模块号>-<模块短名>/<场景>.png`，随代码入库。
 4. 测试写法严格遵循「测试基建约定」；禁止截图识别定位控件（用控件树查找 + RaiseEvent）。
 5. 一次提交只做一个模块（或基建步骤），commit message 格式：`test(e2e): <模块> <一句话>`。
-6. 每个模块完成后：跑该测试类 → 全绿 → 截图入库 → 更新本表 → commit+push（凭据见仓库 remote，勿写入代码）。
-7. 全部完成后生成 `docs/evidence/e2e/index.html` 截图索引报告。
+6. **🚨 推送一律 `git push origin master`**（本仓库只用 `master` 分支，远程 `main` 已于 2026-09-06 删除——此前多个 agent 误推过 `main`，勿再犯）。
+7. 每个模块完成后：跑该测试类 → 全绿 → 截图入库 → 更新本表 → commit+push（凭据见仓库 remote，勿写入代码）。
+8. 全部完成后生成 `docs/evidence/e2e/index.html` 截图索引报告。
 
 ## 测试基建约定（阶段 0 已建）
 

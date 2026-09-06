@@ -7,6 +7,11 @@
 
 **📍 路径说明：仓库位于 `/data/user/work/ForkPlus-Next`**（沙盒重置后重新克隆的位置）。
 
+**🚨 分支约定（2026-09-06 用户明确，务必遵守）**：
+- 本仓库（ForkPlus-Next）**只使用 `master` 分支**，远程 `main` 分支已删除。
+- 所有提交一律 `git push origin master`；**不要**新建/推送 `main` 分支（此前多个 agent 误把提交推到 `main`，已清理）。
+- 若在仓库里看到 `origin/main` 残留引用：`git fetch --prune origin` 清掉即可。
+
 ```bash
 # dotnet 不在默认 PATH，必须先 export（沙盒环境重置后 SDK 装在 ~/.dotnet）
 export PATH="$HOME/.dotnet:$PATH"
