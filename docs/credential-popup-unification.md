@@ -95,4 +95,7 @@ GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，Escape
 | Layer 0 | 本方案落档 | 已完成 | 4bfd953 |
 | Layer A | 覆盖链移除 manager、getter 无条件覆盖 + 专项测试（CredentialHelperOverrideTests） | 已实施 | d583ff1 |
 | Layer B | GIT_CONFIG_* / GIT_ASKPASS / GIT_TERMINAL_PROMPT 环境注入（GitCredentialEnv）+ 专项测试 | 已实施 | d1ac91e |
-| Layer C | store/erase 语义 + WCM 兼容读写（GcmCompatibleStore）+ AskPass mode 分流 + 平台守卫（含 ShowAskPassWindowCommand 顺带修复）+ 专项测试 | 已实施 | 本提交 |
+| Layer C | store/erase 语义 + WCM 兼容读写（GcmCompatibleStore）+ AskPass mode 分流 + 平台守卫（含 ShowAskPassWindowCommand 顺带修复）+ 专项测试 | 已实施 | fdd5251 |
+| CI 修复① | GitCredentialEnvTests 缺 `using System`（CS0103，test job 编译失败） | 已实施 | 3c75a4e |
+| CI 修复② | `ApplyToProcessStartInfo` 对缺失 `GIT_CONFIG_COUNT` 抛 KeyNotFoundException（干净环境 git 请求整体失败，E2E 连锁 109 红）→ ContainsKey 两段式；第一版误用 `StringDictionary.TryGetValue`（不存在，CS1061 四平台编译挂）→ 修正 | 已实施 | 4b82d98 |
+| CI 全量验证 | 4b82d98：linux test job 4302/4302 绿 + AskPass 10/10 + RI 6/6，三平台 build 绿。注：Layer B 的测试与运行时 bug 此前一直被编译错误掩盖，直到 3c75a4e 首次真正执行才暴露 | 通过 | 4b82d98 |
