@@ -556,8 +556,11 @@ namespace ForkPlus.Tests
 			// git clone 的 -c 配置在检出前生效且写入 work 的本地配置）：GitHub ubuntu runner
 			// 预装 git-lfs 且全局已 install（~/.gitconfig 含 [filter "lfs"]，2026-09-06 CI 实证），
 			// 普通 clone 会把 data.bin smudge 成真实内容、Fetch/Pull 的指针前置断言必挂；
-			// 沙盒无全局配置不受影响。install --local 须 --force 覆写 filter 三键（-c 持久化的
-			// required=false 会让无 --force 的 install 以 exit 2 拒绝执行，探针实证），pull smudge 不受影响。
+			// -c 关闭对无全局配置的环境无害（filter 本就不生效）。install --local 须 --force
+			// 覆写 filter 三键（-c 持久化的 required=false 会让无 --force 的 install 以
+			// exit 2 拒绝执行，探针实证），pull smudge 不受影响。
+			// 双环境实证（2026-09-06）：沙盒全局配置被探针实验写入后与 runner 同形态
+			// （~/.gitconfig 含 filter 三键），全量回归 4255/4255 绿。
 			Run(root, "clone -q -c filter.lfs.smudge= -c filter.lfs.process= -c filter.lfs.required=false "
 				+ Quote(bare) + " " + Quote(work));
 			Run(work, "config user.email test@example.com");
