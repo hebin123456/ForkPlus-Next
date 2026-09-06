@@ -64,12 +64,28 @@ namespace ForkPlus.Tests
 
 		private static DispatcherTimer _errorDialogWatchdog;
 
+		// 模块 25（2026-09-06）：ErrorWindow 自身 E2E 用例的看门狗暂停开关——
+		// 看门狗每 200ms 自动关闭任何可见 ErrorWindow（含 RunJobs 触发），而模块 25
+		// 用例需要窗口存活断言/截图/点击修复按钮。暂停期间用例必须自己 Close 窗口；
+		// 恢复后 Run&lt;T&gt; 收尾的 CloseVisibleErrorDialogs 仍会兜底关残留（防挂死不回退）。
+		private static bool _errorDialogWatchdogSuspended;
+
+		/// <summary>暂停/恢复错误弹窗看门狗（ErrorWindow 自身用例专用；finally 必须恢复）。</summary>
+		internal static void SetErrorDialogWatchdogSuspended(bool suspended)
+		{
+			_errorDialogWatchdogSuspended = suspended;
+		}
+
 		/// <summary>扫描并关闭当前所有可见 ErrorWindow，记录其文本（看门狗 tick 与
 		/// Run&lt;T&gt; 收尾同步调用——后者消除 200ms 定时器滞后带来的漏检窗口）。</summary>
 		private static void CloseVisibleErrorDialogs()
 		{
 			try
 			{
+				if (_errorDialogWatchdogSuspended)
+				{
+					return;
+				}
 				if (Application.Current?.ApplicationLifetime is not ClassicDesktopStyleApplicationLifetime lifetime)
 				{
 					return;

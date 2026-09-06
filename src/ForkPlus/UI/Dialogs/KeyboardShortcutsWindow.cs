@@ -102,18 +102,11 @@ namespace ForkPlus.UI.Dialogs
 			base.Height = 620.0;
 			base.SizeToContent = global::Avalonia.Controls.SizeToContent.Manual;
 			Content = CreateContent();
-			if (TitleTextBlock != null && Footer != null)
-			{
-				ApplyDialogChrome();
-			}
-			else
-			{
-				Initialized += KeyboardShortcutsWindow_Initialized;
-			}
-		}
-
-		private void KeyboardShortcutsWindow_Initialized(object sender, System.EventArgs e)
-		{
+			// Migration note（根因，模块25 E2E 实证，FileHistoryWindow/SaveAsPatchWindow 同类 bug）：
+			// WPF 原版在 Initialized 事件里 ApplyDialogChrome——WPF 的 Initialized 在构造完成后
+			// 触发。Avalonia 12 的 Initialized 在 TopLevel 基类构造链中就触发（早于本构造器
+			// 的订阅语句），下方订阅是死代码：ApplyDialogChrome 从不执行 → Cancel 按钮恒显示
+			// "Cancel"（WPF 原版为 "Close"）+ 描述文本丢失。Avalonia 等价时机 = 构造器尾部。
 			ApplyDialogChrome();
 		}
 
