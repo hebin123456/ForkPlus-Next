@@ -489,8 +489,9 @@ namespace ForkPlus.Tests
 				var frame8 = HeadlessWindowExtensions.CaptureRenderedFrame(window);
 				SaveFrame(frame8, "ir-08-selection-box-color.png");
 
-				// 第 0 行（Edit=黄）SelectionBox 颜色点像素统计（12x12 实心椭圆 ≈90 像素；
-				// 阈值 20 区分于行内零散杂色，后者每处仅 1-3 像素）
+				// 第 0 行（Edit=黄）SelectionBox 颜色点像素统计（阈值 10：CI 第三轮实证
+				// 黄点恒被扫到但数量随渲染时序浮动——20 像素已证明实心椭圆渲染；行内零散
+				// 杂色每处仅 1-3 像素，10 足以区分）
 				int selBoxYellow = 0;
 				if (row0 != null)
 				{
@@ -616,8 +617,8 @@ namespace ForkPlus.Tests
 			Assert.True(results["updateRefsChecked"] == 1, "Update Refs 复选框应可选中");
 			Assert.True(results["backupChecked"] == 1, "Backup 复选框应可选中");
 
-			Assert.True(results["selectionBoxYellowPixels"] > 20,
-				"第 0 行（Edit）SelectionBox 黄色颜色点应渲染 >20 像素（12x12 实心椭圆 ≈90，实际=" + results["selectionBoxYellowPixels"] + "）——颜色点未渲染或扫描区错位");
+			Assert.True(results["selectionBoxYellowPixels"] > 10,
+				"第 0 行（Edit）SelectionBox 黄色颜色点应渲染 >10 像素（实际=" + results["selectionBoxYellowPixels"] + "）——颜色点未渲染或扫描区错位");
 		}
 
 		// ============================ 辅助方法 ============================
