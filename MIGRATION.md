@@ -47,6 +47,15 @@ GI="$HOME/.local/share/ForkPlus/gitInstance/2.50.1" && mkdir -p "$GI/bin" \
   && ln -sf /usr/local/bin/git "$GI/bin/git"
 # 验证：/usr/local/bin/git --version → 2.50.1；$GI/bin/git --exec-path → /usr/local/libexec/git-core
 
+# ── gitflow-avh 安装（2026-09-06 实测，模块17 测试起必装）──
+# E2E 模块17 的 GitFlow 用例（flow init/start/finish）依赖 git-flow 子命令，纯净 git 没有。
+# 源码安装 gitflow-avh 到 ~/.local/bin（已写入 ~/.bashrc）：
+cd /tmp && git clone --depth 1 https://github.com/petervanderdoes/gitflow-avh.git
+cd gitflow-avh && PREFIX="$HOME/.local" make install
+# 验证：export PATH="$HOME/.local/bin:$PATH" && git flow version → 1.12.4-dev0 (AVH Edition)
+# ⚠️ 注意：git 查找 git-flow 走 PATH 而非 exec-path——exec-path 方案无效（2026-09-06 探针实证），
+# 跑测试的 shell 必须保证 ~/.local/bin 在 PATH 里（bashrc 只对交互 shell 生效）。
+
 # ── oxyplot-avalonia 是仓库外源码引用（csproj 的 ..\..\..\oxyplot-avalonia），沙盒重置即丢，必须重新克隆（与 build.yml 的 Clone 步骤同源）──
 git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git /data/user/work/oxyplot-avalonia
 # ⚠️ 教训（2026-09-03 实证）：克隆后直接 dotnet build，一行都不要改！

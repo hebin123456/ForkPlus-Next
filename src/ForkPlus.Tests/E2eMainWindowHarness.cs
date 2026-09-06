@@ -45,6 +45,22 @@ namespace ForkPlus.Tests
 			return repoControl;
 		}
 
+		/// <summary>创建真实 MainWindow 并按生产入口（TabManager.OpenRepository）打开路径，
+		/// 但<b>不断言</b>激活的 RepositoryUserControl——GitMm 工作区等场景 TabManager 分流建
+		/// 专用 tab（ActiveRepositoryUserControl 为 null），由调用方自行定位目标控件。</summary>
+		public static void OpenTab(string path, out MainWindow window)
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			window = new MainWindow();
+			window.Width = 1400;
+			window.Height = 900;
+			window.Show();
+			Dispatcher.UIThread.RunJobs(); // Loaded → RestoreSession（空工作区 → 仓库管理 tab）
+			bool opened = window.TabManager.OpenRepository(path);
+			Assert.True(opened, "TabManager.OpenRepository 应成功打开 " + path);
+			Dispatcher.UIThread.RunJobs();
+		}
+
 		/// <summary>创建真实 MainWindow（不打开仓库，默认停留在仓库管理 tab）。
 		/// 供模块6 等无仓库场景测试工具栏禁用态；收尾用 DetachWindow。</summary>
 		public static MainWindow CreateWindow()
@@ -91,6 +107,13 @@ namespace ForkPlus.Tests
 			}
 			RemoveTestReposFromManager(repoPath);
 			DetachWindow(window);
+		}
+
+		/// <summary>测试内主动等待仓库后台 JobQueue 排空（模块17 起）：入队型命令
+		/// （LeanBranchingSyncCommand 等）真实执行后，用它等命令完成再断言仓库终态。</summary>
+		internal static void WaitForRepositoryJobs(RepositoryUserControl repoControl)
+		{
+			DrainRepositoryJobs(repoControl);
 		}
 
 		/// <summary>排空仓库后台 JobQueue（刷新等 git 任务）：IsIdle 轮询 + RunJobs 泵回 UI 的

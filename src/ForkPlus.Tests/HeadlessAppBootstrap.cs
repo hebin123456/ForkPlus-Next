@@ -190,36 +190,100 @@ namespace ForkPlus.Tests
 		// 错误弹窗策略（看门狗配套）：动作期间若出现 ErrorWindow（看门狗已自动关闭并
 		// 记录文本），测试以根因文本失败——生产代码弹错误窗说明该用例窗口内有真实
 		// 错误，静默吞掉会把 bug 藏进绿色用例（用户 Bug 修复策略约定）。
+		// 例外：ExpectErrorDialogs() 声明的用例（如模块17 Lean sync "You must sync"
+		// 校验路径——错误弹窗本身就是被测行为），收尾不抛，测试用 TakeCapturedErrorDialogs
+		// 取文本断言。
+		private static bool _expectErrorDialogs;
+
+		/// <summary>声明"本用例预期会出现错误弹窗"：看门狗照旧关闭+记录，Run 收尾不因
+		/// 捕获到弹窗而失败。调用后用 TakeCapturedErrorDialogs() 取捕获文本断言。</summary>
+		internal static void ExpectErrorDialogs()
+		{
+			_expectErrorDialogs = true;
+			lock (CapturedErrorDialogs)
+			{
+				CapturedErrorDialogs.Clear();
+			}
+		}
+
+		/// <summary>取走（并清空）看门狗捕获的错误弹窗文本快照。</summary>
+		internal static string[] TakeCapturedErrorDialogs()
+		{
+			lock (CapturedErrorDialogs)
+			{
+				string[] snapshot = CapturedErrorDialogs.ToArray();
+				CapturedErrorDialogs.Clear();
+				return snapshot;
+			}
+		}
+
+		/// <summary>窥视（不清空）当前已捕获的错误弹窗文本——供用例内轮询等待预期弹窗
+		/// 被看门狗处理（后台 Task 弹窗有 200ms 看门狗滞后）。</summary>
+		internal static string[] PeekCapturedErrorDialogs()
+		{
+			lock (CapturedErrorDialogs)
+			{
+				return CapturedErrorDialogs.ToArray();
+			}
+		}
+
 		internal static T Run<T>(Func<T> func)
 		{
 			EnsureStarted();
 			return Dispatcher.UIThread.InvokeAsync(delegate
 			{
-				lock (CapturedErrorDialogs)
+				bool expectErrors = _expectErrorDialogs;
+				_expectErrorDialogs = false; // 声明只对本次 Run 生效
+				string[] capturedDuringRun = null;
+				try
 				{
-					if (CapturedErrorDialogs.Count > 0)
+					lock (CapturedErrorDialogs)
 					{
-						// 用例间遗留（上一个用例收尾后的后台任务弹窗）：记控制台不归责当前用例
-						Console.WriteLine("[HeadlessAppBootstrap] 测试间遗留 ErrorWindow（看门狗已关闭）: "
-							+ string.Join(" | ", CapturedErrorDialogs));
+						if (!expectErrors && CapturedErrorDialogs.Count > 0)
+						{
+							// 用例间遗留（上一个用例收尾后的后台任务弹窗）：记控制台不归责当前用例
+							Console.WriteLine("[HeadlessAppBootstrap] 测试间遗留 ErrorWindow（看门狗已关闭）: "
+								+ string.Join(" | ", CapturedErrorDialogs));
+						}
+						if (expectErrors)
+						{
+							CapturedErrorDialogs.Clear(); // 预期场景：遗留弹窗不干扰本用例断言
+						}
+						else
+						{
+							CapturedErrorDialogs.Clear();
+						}
+					}
+					T result = func();
+					Dispatcher.UIThread.RunJobs();
+					CloseVisibleErrorDialogs(); // 同步扫描一次，消除定时器 200ms 滞后的漏检
+					lock (CapturedErrorDialogs)
+					{
+						capturedDuringRun = CapturedErrorDialogs.ToArray();
 						CapturedErrorDialogs.Clear();
 					}
+					if (capturedDuringRun.Length > 0 && !expectErrors)
+					{
+						throw new InvalidOperationException("用例执行期间出现 git 错误弹窗（看门狗已自动关闭，根因文本如下）："
+							+ Environment.NewLine + string.Join(Environment.NewLine, capturedDuringRun));
+					}
+					return result;
 				}
-				T result = func();
-				Dispatcher.UIThread.RunJobs();
-				CloseVisibleErrorDialogs(); // 同步扫描一次，消除定时器 200ms 滞后的漏检
-				string[] capturedDuringRun;
-				lock (CapturedErrorDialogs)
+				finally
 				{
-					capturedDuringRun = CapturedErrorDialogs.ToArray();
-					CapturedErrorDialogs.Clear();
+					if (expectErrors)
+					{
+						// 快照回填：func 期间捕获的弹窗文本交还 TakeCapturedErrorDialogs（调用方断言）
+						// ——上面"捕获后清空"在预期场景会把文本丢掉，这里从局部变量恢复
+						lock (CapturedErrorDialogs)
+						{
+							if (CapturedErrorDialogs.Count == 0 && capturedDuringRun != null)
+							{
+								CapturedErrorDialogs.AddRange(capturedDuringRun);
+							}
+						}
+					}
 				}
-				if (capturedDuringRun.Length > 0)
-				{
-					throw new InvalidOperationException("用例执行期间出现 git 错误弹窗（看门狗已自动关闭，根因文本如下）："
-						+ Environment.NewLine + string.Join(Environment.NewLine, capturedDuringRun));
-				}
-				return result;
 			}).GetAwaiter().GetResult();
 		}
 

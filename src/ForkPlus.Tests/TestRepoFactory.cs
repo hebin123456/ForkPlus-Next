@@ -405,6 +405,41 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>干净仓库（供模块17 GitFlowInit）：main 单提交，无脏文件无多余分支——
+		/// InitGitFlowGitCommand 前置校验 ChangedFiles 必须为空（WorkingDirectoryIsDirty 拦截）。</summary>
+		public static string CreateClean()
+		{
+			string root = NewTempDir("clean");
+			Init(root);
+			Commit(root, "a.txt", "a\n", "c1");
+			return root;
+		}
+
+		/// <summary>已初始化 GitFlow 的仓库（供模块17 Start/Finish 测试）：main 单提交 +
+		/// develop 分支 + 完整 gitflow config（master=main 探针实证：InitGitFlowGitCommand
+		/// 同款链路——branch develop + 写 9 项 config + flow init -d 保留自定义 master=main）。
+		/// 依赖沙箱 gitflow-avh（~/.local/bin，跑测试须 PATH 含之）。</summary>
+		public static string CreateGitFlow()
+		{
+			string root = NewTempDir("gitflow");
+			Init(root);
+			Commit(root, "a.txt", "a\n", "c1");
+			Run(root, "branch develop");
+			// gitflow config 全量预置（flow init -d 读这些值，master 自定义为 main——
+			// 与 InitGitFlowGitCommand 在 MainBranch() 检测到 main 时的写入一致）
+			Run(root, "config gitflow.branch.master main");
+			Run(root, "config gitflow.branch.develop develop");
+			Run(root, "config gitflow.prefix.feature feature/");
+			Run(root, "config gitflow.prefix.release release/");
+			Run(root, "config gitflow.prefix.hotfix hotfix/");
+			Run(root, "config gitflow.prefix.versiontag \"\"");
+			Run(root, "config gitflow.prefix.bugfix bugfix/");
+			Run(root, "config gitflow.prefix.support support/");
+			Run(root, "config gitflow.path.hooks .git/hooks");
+			Run(root, "flow init -d");
+			return root;
+		}
+
 		/// <summary>子模块源仓（供模块16 AddSubmodule）：2 提交（s1 "sub v1" / s2 "sub v2"），
 		/// 作为 URL 被 git submodule add 本地克隆（无网络）。独立临时目录，与宿主仓分开清理。</summary>
 		public static string CreateSubmoduleSource()
