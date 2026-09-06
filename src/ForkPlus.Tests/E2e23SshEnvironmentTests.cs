@@ -245,9 +245,13 @@ namespace ForkPlus.Tests
 						Assert.Equal(global::Avalonia.Media.FontStyle.Italic, window.SshConfigurationTextBlock.FontStyle);
 						Assert.False(window.SshConfigurationIcon.IsVisible);
 						// 空态详情字段：SelectedIndex=0 在空列表上不触发 SelectionChanged → RefreshDetails
-					// 未跑，TextBlock.Text 保持 XAML 初始 null（探针实证；生产缺陷是 Cosmetic 非 bug）
+					// 未跑，控件保持 XAML 初始值——Path/Sha256 两个 SelectableTextBlock 未设 Text（null），
+					// PublicKeyTextBox 显式 Text=""（""）。探针实证（本环境单跑+整类跑一致；
+					// 上轮 agent "全 null" 记录不实——首版断言只核对了 SelectableTextBlock 形态）。
+					// （Cosmetic 差异非生产 bug：真实用户打不开空态详情场景。）
 					Assert.Null(window.SshKeyPathTextBlock.Text);
-					Assert.Null(window.SshKeyPublicKeyTextBox.Text);
+					Assert.Null(window.SshKeySha256TextBox.Text);
+					Assert.Equal(string.Empty, window.SshKeyPublicKeyTextBox.Text);
 
 						ScreenshotHelper.Snap(window, "01-ssh-keys-empty", ModuleDir);
 
@@ -619,41 +623,44 @@ namespace ForkPlus.Tests
 
 							ScreenshotHelper.Snap(window, "05-workspaces", ModuleDir);
 
-							// —— 删除（MessageBox 确认泵：Post Background 内点 Delete）——
-							window.WorkspacesListBox.SelectedItem = afterAdd.First(vm => vm.Name == "Home");
-							RunJobs();
-							var deleteHandled = new bool[1];
-							var deleteError = new string[1];
-							Dispatcher.UIThread.Post(delegate
+							// —— 删除（MessageBox 确认泵：Post Background 内点 Delete；模块 5 同款模式）——
+						window.WorkspacesListBox.SelectedItem = afterAdd.First(vm => vm.Name == "Home");
+						RunJobs();
+						var deleteHandled = new bool[1];
+						var deleteError = new string[1];
+						// ⚠️ 探针实证（E2e23ProbeTests，已删）：RunJobs() 默认泵会消费 Background 优先级
+						// job——Post 与 Click 之间的 RunJobs() 会把关闭处理器提前执行（确认框尚未弹出 →
+						// msgBox==null 即返回），随后模态框弹出无人关闭 → PushFrame 永久等待 → 用例挂死
+						// （首个 agent 全量挂起 15 分钟的根因）。因此：选中变化先泵，Post 之后直接 Click。
+						window.WorkspacesListBox.SelectedItem = added;
+						RunJobs();
+						Dispatcher.UIThread.Post(delegate
+						{
+							try
 							{
-								try
+								MessageBoxWindow msgBox = global::ForkPlus.UI.WpfCompat.WpfApp.Windows
+									.OfType<MessageBoxWindow>().FirstOrDefault();
+								if (msgBox == null)
 								{
-									MessageBoxWindow msgBox = global::ForkPlus.UI.WpfCompat.WpfApp.Windows
-										.OfType<MessageBoxWindow>().FirstOrDefault();
-									if (msgBox == null)
-									{
-										deleteError[0] = "删除确认框未出现";
-										return;
-									}
-									Button delete = UiClick.FindAll<Button>(msgBox)
-										.FirstOrDefault(b => UiClick.ContentText(b) == Tr("Delete"));
-									if (delete == null)
-									{
-										deleteError[0] = "确认框中找不到 Delete 按钮";
-										return;
-									}
-									delete.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-									deleteHandled[0] = true;
+									deleteError[0] = "删除确认框未出现";
+									return;
 								}
-								catch (Exception ex)
+								Button delete = UiClick.FindAll<Button>(msgBox)
+									.FirstOrDefault(b => UiClick.ContentText(b) == Tr("Delete"));
+								if (delete == null)
 								{
-									deleteError[0] = ex.ToString();
+									deleteError[0] = "确认框中找不到 Delete 按钮";
+									return;
 								}
-							}, DispatcherPriority.Background);
-							// 选中 E2E Space 再删（删的是选中项）
-							window.WorkspacesListBox.SelectedItem = added;
-							RunJobs();
-							UiClick.Click(window.RemoveWorkspaceButton);
+								delete.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+								deleteHandled[0] = true;
+							}
+							catch (Exception ex)
+							{
+								deleteError[0] = ex.ToString();
+							}
+						}, DispatcherPriority.Background);
+						UiClick.Click(window.RemoveWorkspaceButton);
 							Assert.True(deleteHandled[0], "删除确认框处理器未执行: " + deleteError[0]);
 							Assert.Null(deleteError[0]);
 							RunJobs();

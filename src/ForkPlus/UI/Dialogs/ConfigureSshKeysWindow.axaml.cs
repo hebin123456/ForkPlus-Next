@@ -52,8 +52,14 @@ namespace ForkPlus.UI.Dialogs
 
 		private void SshKeyCheckBox_Changed(object sender, RoutedEventArgs e)
 		{
-			if (((sender as CheckBox)?.Parent as DockPanel)?.DataContext is SshKeyViewModel sshKeyViewModel)
+			CheckBox checkBox = sender as CheckBox;
+			if (checkBox != null && ((checkBox.Parent as DockPanel)?.DataContext is SshKeyViewModel sshKeyViewModel))
 			{
+				// Migration note：WPF 原仓 Checked/Unchecked 事件触发时 TwoWay 绑定已把 IsChecked 写回
+				// VM.IsActive（直接读 VM 是新值）；Avalonia 12 的 IsCheckedChanged 先于绑定回写触发，
+				// 从 VM 读到旧值 → 勾选后验证被跳过、配置文本不联动（用户可见）。处理器内直接读
+				// IsChecked 同步推回 VM，消除对绑定回写时序的依赖（CreatePartialStashWindow 同款修复）。
+				sshKeyViewModel.IsActive = checkBox.IsChecked == true;
 				if (sshKeyViewModel.IsActive)
 				{
 					sshKeyViewModel.IsActive = ValidateSshKey(sshKeyViewModel.KeyFileName, sshKeyViewModel.KeyPath);
