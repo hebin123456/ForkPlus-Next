@@ -560,6 +560,25 @@ namespace ForkPlus.Tests
 			return work;
 		}
 
+		/// <summary>AI 提交拆分仓库（供模块24）：3 个 staged 文件、两个逻辑组——
+		/// 源码组（src/app.cs 修改 + src/util.cs 新增）+ 文档组（docs/notes.md 新增），
+		/// 供 AiCommitComposerWindow 分组/Apply All 断言（Apply 后应产出 2 个提交）。</summary>
+		public static string CreateAiStaged()
+		{
+			string root = NewTempDir("aistaged");
+			Init(root);
+			Commit(root, "src/app.cs", "class App { }\n", "base app");
+			Commit(root, "readme.md", "# base\n", "base readme");
+			// 源码组：修改 app.cs + 新增 util.cs
+			File.WriteAllText(Path.Combine(root, "src/app.cs"), "class App { static void Main() { } }\n");
+			File.WriteAllText(Path.Combine(root, "src/util.cs"), "static class Util { }\n");
+			// 文档组：新增 notes.md（docs/ 目录尚不存在，先建）
+			Directory.CreateDirectory(Path.Combine(root, "docs"));
+			File.WriteAllText(Path.Combine(root, "docs/notes.md"), "notes v2\n");
+			Run(root, "add src/app.cs src/util.cs docs/notes.md");
+			return root;
+		}
+
 		/// <summary>LFS 测试用确定性二进制内容（2048 字节）——工厂与用例同种子复算，
 		/// pull 后内容断言用（不落盘共享文件，避免用例间污染）。</summary>
 		internal static byte[] LfsBytes()
