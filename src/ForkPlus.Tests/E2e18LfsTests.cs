@@ -121,7 +121,13 @@ namespace ForkPlus.Tests
 					}), "空模式预览应回退 0 files match（15s 超时）");
 
 					// 单模式：提交启用 + 命令预览 + 匹配文件预览（0.3s 防抖 + 后台 ls-files 真实执行）
+					// ⚠️ Avalonia 12 的 TextBox.TextChanged 是异步派发（RaiseTextChangeEvents 内
+					// Dispatcher.UIThread.Post(…, Normal)，跟随 WinUI 语义——TextChanging 才同步），
+					// 程序化 .Text 赋值后必须泵一次 RunJobs 让派发事件落地再断言（模块 11/14/15/17
+					// 全部如此；本用例首版漏泵 → "非空模式提交应启用"确定性失败，非生产 bug——
+					// 真实应用有消息循环，事件必然在用户可感知前派发）。
 					dialog.PatternTextBox.Text = "*.dat";
+					Dispatcher.UIThread.RunJobs();
 					Assert.True(footer.SubmitButton.IsEnabled, "非空模式提交应启用");
 					Assert.Equal("git lfs track *.dat", CommandPreviewOf(dialog));
 					Assert.True(UiClick.WaitFor(delegate
@@ -132,8 +138,9 @@ namespace ForkPlus.Tests
 					Assert.Contains("extra2.dat", dialog.PreviewTextBox.Text);
 					ScreenshotHelper.Snap(dialog, "01-track-preview", ModuleDir);
 
-					// 多行模式：命令按行拼接
+					// 多行模式：命令按行拼接（同样须泵：TextChanged 异步派发）
 					dialog.PatternTextBox.Text = "*.dat\n*.bin";
+					Dispatcher.UIThread.RunJobs();
 					Assert.Equal("git lfs track *.dat *.bin", CommandPreviewOf(dialog));
 
 					// 真实提交：git lfs track *.dat *.bin → .gitattributes 追加 *.dat（*.bin 已存在——
