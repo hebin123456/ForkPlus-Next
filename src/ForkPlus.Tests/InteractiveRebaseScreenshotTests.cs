@@ -467,47 +467,63 @@ namespace ForkPlus.Tests
 				frame7.Dispose();
 
 				// === 截图 8：SelectionBox 颜色点验证 ===
-				// 先把第一行设为 Edit，然后取第 0 行 ComboBox 验证颜色
+				// 先把第一行设为 Edit，然后扫描第 0 行区域验证颜色点
 				entries.Move(3, 5); // 先移回去，恢复顺序
 				entries[0].Action = InteractiveRebaseAction.Edit;
 				Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
 				Dispatcher.UIThread.RunJobs();
 
-				// 确定性取第 0 行的 ComboBox（2026-09-06 CI 实证修复）：原先取"视觉树第一个
-				// ComboBox"（combosAfter[0]）——GitHub ubuntu runner 上其视觉序与行序不一致
-				// （截图4 reparent listView + 双 Move 后虚拟化容器顺序漂移），首项落在非 Edit
-				// 行，黄色像素断言恒 0（沙盒恰好序一致故全绿）。ContainerFromIndex(0) 按索引
-				// 定位恒为第 0 行（刚被设为 Edit，黄点必在）；先滚到位再截图，截图与扫描区域一致。
+				// 确定性取第 0 行容器 + 整行区域扫描（2026-09-06 两轮 CI 实证修复）：
+				// ①第一轮：原取"视觉树第一个 ComboBox"，runner 上 reparent + 双 Move 后视觉
+				// 序与行序不一致，首项落在非 Edit 行 → 改 ContainerFromIndex(0) 按索引定位；
+				// ②第二轮：索引定位已拿对行（CI evidence 帧实证黄点渲染在第 0 行 y≈164-175、
+				// x≈13-22），但扫描用的 ComboBox.TransformToVisual 与实际渲染位置错开（或返回
+				// null 被静默跳过），黄点恒在扫描矩形外。行容器由 ItemsPanel 直接布局、坐标
+				// 更可信，扫描区改为行容器 Bounds 整行；行容器变换失败时退化为列表顶部第一
+				// 行带（ScrollIntoView(0) 已把第 0 行滚到顶部）。数据驱动模式（无 ComboBox
+				// 容器）沿用原固定区域扫描。
 				var combosAfter = listView.GetVisualDescendants().OfType<ComboBox>().ToList();
-				ComboBox selectionCombo = combosAfter.Count > 0 ? GetRowCombo(listView, 0) : null;
+				Control row0 = combosAfter.Count > 0 ? GetRowContainer(listView, 0) : null;
 				Dispatcher.UIThread.RunJobs();
 
 				var frame8 = HeadlessWindowExtensions.CaptureRenderedFrame(window);
 				SaveFrame(frame8, "ir-08-selection-box-color.png");
 
-				// 选中框内黄色像素（扫描第 0 行 ComboBox 的渲染区域）
+				// 第 0 行（Edit=黄）SelectionBox 颜色点像素统计（12x12 实心椭圆 ≈90 像素；
+				// 阈值 20 区分于行内零散杂色，后者每处仅 1-3 像素）
 				int selBoxYellow = 0;
-				if (selectionCombo != null)
+				if (row0 != null)
 				{
-					var c2w = selectionCombo.TransformToVisual(window);
-					if (c2w.HasValue)
+					Rect scan;
+					var r2w = row0.TransformToVisual(window);
+					if (r2w.HasValue && row0.Bounds.Width > 1 && row0.Bounds.Height > 1)
 					{
-						var tl = c2w.Value.Transform(new Point(0, 0));
-						int x0 = (int)tl.X, y0 = (int)tl.Y;
-						int x1 = (int)(tl.X + selectionCombo.Bounds.Width);
-						int y1 = (int)(tl.Y + selectionCombo.Bounds.Height);
-						using (var l = frame8.Lock())
+						var tl = r2w.Value.Transform(new Point(0, 0));
+						scan = new Rect(tl.X, tl.Y, row0.Bounds.Width, row0.Bounds.Height);
+					}
+					else
+					{
+						// 退化：行容器变换不可用时按列表顶部第一行带扫描
+						var lv2w = listView.TransformToVisual(window);
+						Assert.True(lv2w.HasValue, "listView 应在窗口视觉树内");
+						var tl = lv2w.Value.Transform(new Point(0, 0));
+						double rowH = row0.Bounds.Height > 1 ? row0.Bounds.Height : 24;
+						scan = new Rect(tl.X, tl.Y, listView.Bounds.Width, rowH + 6);
+					}
+					int x0 = Math.Max(0, (int)scan.X), y0 = Math.Max(0, (int)scan.Y);
+					int x1 = (int)(scan.X + scan.Width);
+					int y1 = (int)(scan.Y + scan.Height);
+					using (var l = frame8.Lock())
+					{
+						for (int y = y0; y < Math.Min(l.Size.Height, y1); y++)
 						{
-							for (int y = Math.Max(0, y0); y < Math.Min(l.Size.Height, y1); y++)
+							IntPtr rowPtr = l.Address + y * l.RowBytes;
+							for (int x = x0; x < Math.Min(l.Size.Width, x1); x++)
 							{
-								IntPtr rowPtr = l.Address + y * l.RowBytes;
-								for (int x = Math.Max(0, x0); x < Math.Min(l.Size.Width, x1); x++)
-								{
-									byte b = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4);
-									byte g = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4 + 1);
-									byte r = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4 + 2);
-									if (r > 180 && g > 160 && b < 100) selBoxYellow++;
-								}
+								byte b = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4);
+								byte g = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4 + 1);
+								byte r = System.Runtime.InteropServices.Marshal.ReadByte(rowPtr, x * 4 + 2);
+								if (r > 180 && g > 160 && b < 100) selBoxYellow++;
 							}
 						}
 					}
@@ -600,8 +616,8 @@ namespace ForkPlus.Tests
 			Assert.True(results["updateRefsChecked"] == 1, "Update Refs 复选框应可选中");
 			Assert.True(results["backupChecked"] == 1, "Backup 复选框应可选中");
 
-			Assert.True(results["selectionBoxYellowPixels"] > 2,
-				"ComboBox 选中框内黄色像素应 > 2（实际=" + results["selectionBoxYellowPixels"] + "）——SelectionBoxItemTemplate 颜色点未渲染");
+			Assert.True(results["selectionBoxYellowPixels"] > 20,
+				"第 0 行（Edit）SelectionBox 黄色颜色点应渲染 >20 像素（12x12 实心椭圆 ≈90，实际=" + results["selectionBoxYellowPixels"] + "）——颜色点未渲染或扫描区错位");
 		}
 
 		// ============================ 辅助方法 ============================
@@ -622,7 +638,7 @@ namespace ForkPlus.Tests
 			grid.Children.Add(tb);
 		}
 
-		private static ComboBox GetRowCombo(ListBox listBox, int rowIndex)
+		private static Control GetRowContainer(ListBox listBox, int rowIndex)
 		{
 			// 滚动到该行并强制布局更新，确保虚拟化容器已创建
 			listBox.ScrollIntoView(listBox.Items[rowIndex]);
@@ -640,9 +656,7 @@ namespace ForkPlus.Tests
 				retry++;
 			}
 			Assert.True(container != null, $"第 {rowIndex} 行容器不存在（重试 {retry} 次后）");
-			var combo = container.GetVisualDescendants().OfType<ComboBox>().FirstOrDefault();
-			Assert.True(combo != null, $"第 {rowIndex} 行找不到 ComboBox");
-			return combo;
+			return container;
 		}
 
 		private static void SetComboAction(ComboBox combo, string title)

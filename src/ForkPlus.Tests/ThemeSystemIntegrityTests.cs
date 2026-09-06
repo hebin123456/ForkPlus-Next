@@ -177,14 +177,14 @@ namespace ForkPlus.Tests
 				var command = new global::ForkPlus.UI.Commands.SwitchApplicationThemeCommand();
 
 				command.Execute(ThemeType.Monokai, followSystemTheme: false);
-				Dispatcher.UIThread.RunJobs();
+				RunJobsSkipRender();
 				Assert.True(ThemeVariant.Equals(app.RequestedThemeVariant, ThemeVariant.Dark),
 					"切到 Monokai（暗基底）后 Fluent 变体应为 Dark，实际 " + app.RequestedThemeVariant);
 				Assert.True(App.FindThemeResourceInclude()?.Source?.OriginalString.Contains("Generic.Monokai") == true,
 					"主题字典应为 Generic.Monokai.axaml");
 
 				command.Execute(ThemeType.Light, followSystemTheme: false);
-				Dispatcher.UIThread.RunJobs();
+				RunJobsSkipRender();
 				Assert.True(ThemeVariant.Equals(app.RequestedThemeVariant, ThemeVariant.Light),
 					"切回 Light 后 Fluent 变体应为 Light，实际 " + app.RequestedThemeVariant);
 				Assert.True(App.FindThemeResourceInclude()?.Source?.OriginalString.Contains("Generic.Light") == true,
@@ -193,6 +193,20 @@ namespace ForkPlus.Tests
 				// 还原设置默认值，避免污染 ForkPlusSettings（UseCustomColors 被命令置 false 等副作用）
 				return 0;
 			}).GetAwaiter().GetResult();
+		}
+
+		/// <summary>RunJobs 但跳过 Render 优先级（2026-09-06 CI 实证修复）：全量 RunJobs 会
+		/// 派发 MediaContext.Render（DispatcherPriority.Render 调度，Avalonia 源码实证），
+		/// 主题字典热替换瞬间 Compositor 提交批次会跨线程引用旧 Brush——headless Compositor
+		/// 的渲染线程与 UI 线程在慢速 runner 上偶发 Brush.OnReferencedFromCompositor 的
+		/// VerifyAccess 竞态（InvalidOperationException）。本测试断言的是同步逻辑状态
+		/// （RequestedThemeVariant / 主题字典 Uri），Execute 全同步无 dispatcher 排队步骤，
+		/// 跳过渲染 pass 不影响断言；Render 及以下任务留在队列由后续测试自然消化。
+		/// RunJobs(priority) 语义（沙盒探针实证）：执行优先级值 >= priority 的任务；
+		/// Send(9) > Render(4)，故仅执行 Send 级任务。</summary>
+		private static void RunJobsSkipRender()
+		{
+			Dispatcher.UIThread.RunJobs(DispatcherPriority.Send);
 		}
 	}
 }
