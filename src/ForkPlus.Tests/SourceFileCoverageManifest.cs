@@ -507,6 +507,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/Git/UpstreamStatusCache.cs",
 				"src/ForkPlus/Git/UserIdentity.cs",
 				"src/ForkPlus/Git/Worktree.cs",
+				"src/ForkPlus/GitCredentialEnv.cs",
 				"src/ForkPlus/GlobalUsings.cs",
 				"src/ForkPlus/Guard.cs",
 				"src/ForkPlus/IListExtensions.cs",

@@ -678,6 +678,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/Git/UpstreamStatusCache.cs", "class", "UpstreamStatusCache", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/UserIdentity.cs", "class", "UserIdentity", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Worktree.cs", "struct", "Worktree", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/GitCredentialEnv.cs", "class", "GitCredentialEnv", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Guard.cs", "class", "Guard", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/IListExtensions.cs", "class", "IListExtensions", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/IO/Ipc/NamedPipeHelper.cs", "class", "NamedPipeHelper", "UNIT-SOURCE-COVERAGE-001"),

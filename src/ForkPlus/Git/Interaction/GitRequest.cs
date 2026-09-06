@@ -613,12 +613,19 @@ namespace ForkPlus.Git.Interaction
 					processStartInfo.EnvironmentVariables[tuple.Item1] = tuple.Item2;
 				}
 			}
+			// 凭据收编（Layer B）：环境级注入（GIT_ASKPASS / GIT_TERMINAL_PROMPT / GIT_CONFIG_*）。
+			// 必须放在 environmentVariables 应用之后：GIT_CONFIG_COUNT 读取的是合并后的值，
+			// 我们的条目顺延编号不覆盖调用方注入。-c 不随进程树传播，env 形式才能让
+			// git-mm / submodule 等内部再拉起的 git 子进程继承同一收编语义。
+			GitCredentialEnv.ApplyToProcessStartInfo(processStartInfo);
 			return processStartInfo;
 		}
 
 		private static string[] CreateDefaultEnv([Null] string currentDir, [Null] (string, string)[] additionalEnv)
 		{
-			List<string> list = new List<string>(2 * (4 + additionalEnv?.Length).GetValueOrDefault());
+			// 容量基数 11 = SSH_ASKPASS_REQUIRE/SSH_ASKPASS/FORK_PLUS_PROCESS_ID/FORK_REPOSITORY_PATH
+			// 4 项 + Layer B 凭据收编 7 项（GitCredentialEnv.BuildAllPairs 对数）。
+			List<string> list = new List<string>(2 * (11 + additionalEnv?.Length).GetValueOrDefault());
 			list.Add("SSH_ASKPASS_REQUIRE");
 			list.Add("force");
 			list.Add("SSH_ASKPASS");
@@ -655,6 +662,17 @@ namespace ForkPlus.Git.Interaction
 				list.Add("1");
 				list.Add("GIT_TRACE_PERFORMANCE");
 				list.Add("1");
+			}
+			// 凭据收编（Layer B）：环境级注入（GIT_ASKPASS / GIT_TERMINAL_PROMPT / GIT_CONFIG_*）。
+			// 放在 additionalEnv 之后：FindConfigCount 从数组尾部扫描，读取的是"父环境 +
+			// additionalEnv"合并后的有效 COUNT，我们的条目顺延编号不覆盖既有注入。
+			// env 形式随进程树传播——git-mm / submodule 等内部再拉起的 git 子进程继承同一收编语义。
+			int configStartIndex = GitCredentialEnv.FindConfigCount(list);
+			(string, string)[] credentialPairs = GitCredentialEnv.BuildAllPairs(configStartIndex);
+			for (int j = 0; j < credentialPairs.Length; j++)
+			{
+				list.Add(credentialPairs[j].Item1);
+				list.Add(credentialPairs[j].Item2);
 			}
 			return list.ToArray();
 		}

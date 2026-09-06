@@ -232,6 +232,10 @@ namespace ForkPlus.Shell.Interaction
 				}
 				processStartInfo.EnvironmentVariables["GIT_SSH_COMMAND"] = "ssh " + stringBuilder.ToString() + "-F '/dev/null'";
 			}
+			// 凭据收编（Layer B）：环境级注入（GIT_ASKPASS / GIT_TERMINAL_PROMPT / GIT_CONFIG_*）。
+			// FilePath 可能是 git 可执行文件（上方 IsGitExecutable 分支已拼 Layer A 的 -c 覆盖链），
+			// env 形式随进程树传播，git-mm / submodule 等内部再拉起的 git 子进程继承同一收编语义。
+			GitCredentialEnv.ApplyToProcessStartInfo(processStartInfo);
 			return processStartInfo;
 		}
 	}

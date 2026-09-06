@@ -46,7 +46,7 @@ ForkPlus 已经有一套自有的凭据管道：
 
 ### Layer B：环境级收编
 
-`-c` 参数不随进程树传播，环境变量会。在 `GitRequest.CreateDefaultEnv`、`GitRequest.CreateGitProcessStartInfo`、`ShellRequest.CreateProcessStartInfo` 三处统一注入：
+`-c` 参数不随进程树传播，环境变量会。落地为独立 helper 类 `GitCredentialEnv`（`src/ForkPlus/GitCredentialEnv.cs`），在 `GitRequest.CreateDefaultEnv`（Bt 原生 spawn 路径）、`GitRequest.CreateGitProcessStartInfo`（psi 路径）、`ShellRequest.CreateProcessStartInfo`（shell 路径）三处统一注入：
 
 ```
 GIT_ASKPASS            = ForkPlus.AskPass 路径（封住回落链第一环，防终端继承残留）
@@ -56,7 +56,13 @@ GIT_CONFIG_KEY_0/VALUE_0 = credential.helper = （空，重置）
 GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，EscapeSpaces 转义>
 ```
 
-这一层根治泄露点 ③：git-mm 子进程、`submodule update` 子进程、任何 git-spawns-git 场景都继承同一覆盖语义。
+实现细节：
+
+- 已有 `GIT_CONFIG_COUNT`（父环境或调用方 additionalEnv）时，注入条目从现有 index 顺延编号（`FindConfigCount` 从平铺数组尾部扫描、`ApplyToProcessStartInfo` 在 additionalEnv 应用后读字典），不覆盖既有注入。
+- helper 值的引号/转义约定与 `-c` 形式（Layer A）保持一致。
+- 专项测试 `GitCredentialEnvTests`：7 对结构、起点顺延、调用方条目保留、psi 字典应用。
+
+这一层根治泄露点 ③：git-mm 子进程、`submodule update` 子进程、任何 git-spawns-git 场景都继承同一覆盖语义。范围边界：用户自定义命令（`ShCustomCommandAction` / `ProcessCustomCommandAction`）继承用户环境跑任意命令，属用户显式操作，不在收编范围内。
 
 ### Layer C：语义收编
 
@@ -87,6 +93,6 @@ GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，Escape
 | 里程碑 | 内容 | 状态 | 提交 |
 |--------|------|------|------|
 | Layer 0 | 本方案落档 | 已完成 | 4bfd953 |
-| Layer A | 覆盖链移除 manager、getter 无条件覆盖 + 专项测试（CredentialHelperOverrideTests） | 已实施 | 本提交 |
-| Layer B | GIT_CONFIG_* / GIT_ASKPASS / GIT_TERMINAL_PROMPT 环境注入 | 待实施 | - |
+| Layer A | 覆盖链移除 manager、getter 无条件覆盖 + 专项测试（CredentialHelperOverrideTests） | 已实施 | d583ff1 |
+| Layer B | GIT_CONFIG_* / GIT_ASKPASS / GIT_TERMINAL_PROMPT 环境注入（GitCredentialEnv）+ 专项测试 | 已实施 | 本提交 |
 | Layer C | store/erase 语义 + WCM 兼容读写 | 待实施 | - |
