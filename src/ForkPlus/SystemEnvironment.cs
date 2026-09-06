@@ -146,5 +146,75 @@ namespace ForkPlus
 			}
 			return false;
 		}
+
+		/// <summary>
+		/// Migration note：在系统 PATH 里查找可执行文件并返回完整路径（找不到返回 null）。
+		/// </summary>
+		[Null]
+		public static string FindOnPath(string fileName)
+		{
+			try
+			{
+				string pathVariable = Environment.GetEnvironmentVariable("PATH") ?? "";
+				foreach (string directory in pathVariable.Split(Path.PathSeparator))
+				{
+					if (string.IsNullOrWhiteSpace(directory))
+					{
+						continue;
+					}
+					string candidate = Path.Combine(directory.Trim(), fileName);
+					if (File.Exists(candidate))
+					{
+						return candidate;
+					}
+				}
+			}
+			catch
+			{
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Migration note：ssh-keygen 可执行文件路径探测（跨平台）。原代码硬拼
+		/// &lt;gitInstance&gt;/usr/bin/ssh-keygen.exe——Windows 的 Git 布局成立，但 Unix 内置
+		/// git 实例布局只有 bin/git（无 usr/bin），SSH 密钥生成/验证在 Unix 全坏（探针实证：
+		/// gitInstance/2.50.1/ 下仅 bin 目录）。候选链：git 实例 usr/bin/ssh-keygen.exe（原版
+		/// Windows 布局优先）→ usr/bin/ssh-keygen → bin/ssh-keygen.exe → bin/ssh-keygen →
+		/// 系统 PATH ssh-keygen / ssh-keygen.exe。全缺失时返回原版路径（保持可诊断的失败）。
+		/// </summary>
+		public static string GetSshKeygenPath()
+		{
+			string legacyPath = null;
+			try
+			{
+				string gitRoot = Path.GetDirectoryName(Path.GetDirectoryName(App.GitPath));
+				string[] candidates =
+				{
+					Path.Combine(gitRoot, "usr", "bin", "ssh-keygen.exe"),
+					Path.Combine(gitRoot, "usr", "bin", "ssh-keygen"),
+					Path.Combine(gitRoot, "bin", "ssh-keygen.exe"),
+					Path.Combine(gitRoot, "bin", "ssh-keygen")
+				};
+				legacyPath = candidates[0];
+				foreach (string candidate in candidates)
+				{
+					if (File.Exists(candidate))
+					{
+						return candidate;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to resolve ssh-keygen path", ex);
+			}
+			string fromPath = FindOnPath("ssh-keygen") ?? FindOnPath("ssh-keygen.exe");
+			if (fromPath != null)
+			{
+				return fromPath;
+			}
+			return legacyPath ?? Path.Combine(Path.Combine("usr", "bin"), "ssh-keygen.exe");
+		}
 	}
 }
