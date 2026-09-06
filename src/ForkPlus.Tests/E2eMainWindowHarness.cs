@@ -16,6 +16,7 @@ using System;
 using System.Linq;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using ForkPlus.Settings;
 using ForkPlus.UI;
 using ForkPlus.UI.UserControls;
 using Xunit;
@@ -24,11 +25,67 @@ namespace ForkPlus.Tests
 {
 	internal static class E2eMainWindowHarness
 	{
+		/// <summary>new MainWindow() 前清理 Workspaces 持久化状态里的陈旧测试仓库条目。
+		/// 根因（模块25 收尾全量回归实证，2026-09-06）：test host 崩溃时 finally 不执行 →
+		/// OpenRepository 经 AddOrUpdateLastOpened 写入 Workspaces 的 fpe2e_* 条目 +
+		/// ActiveRepository + /tmp 仓库目录三者全部残留 → 下轮 CreateWindow 的
+		/// RestoreSession 恢复该仓库 → "无仓库 tab 按钮禁用"类用例（E2e06）必挂。
+		/// RemoveTestReposFromManager 只清 RepositoryManager（"最近"列表），Workspaces
+		/// 是独立污染面。清理口径：Repositories 移除 fpe2e_ 前缀路径；ActiveRepository
+		/// 为 fpe2e_ 或目录已不存在时置 null（崩溃残留的 /tmp 仓库无法合法恢复）。</summary>
+		private static void PurgeStaleTestWorkspaceEntries()
+		{
+			try
+			{
+				var settings = ForkPlusSettings.Default;
+				var workspaces = settings.Workspaces;
+				if (workspaces?.All == null)
+				{
+					return;
+				}
+				bool changed = false;
+				foreach (var workspace in workspaces.All)
+				{
+					if (workspace == null)
+					{
+						continue;
+					}
+					string[] repos = workspace.Repositories ?? new string[0];
+					string[] kept = repos.Where(delegate (string p)
+					{
+						return p != null && !p.Contains("fpe2e_", StringComparison.Ordinal)
+							&& System.IO.Directory.Exists(p);
+					}).ToArray();
+					if (kept.Length != repos.Length)
+					{
+						workspace.Repositories = kept;
+						changed = true;
+					}
+					string active = workspace.ActiveRepository;
+					if (active != null && (active.Contains("fpe2e_", StringComparison.Ordinal)
+						|| !System.IO.Directory.Exists(active)))
+					{
+						workspace.ActiveRepository = null;
+						changed = true;
+					}
+				}
+				if (changed)
+				{
+					settings.Save();
+				}
+			}
+			catch
+			{
+				// 清理尽力而为，不掩盖测试断言
+			}
+		}
+
 		/// <summary>创建真实 MainWindow 并按生产入口（TabManager.OpenRepository）打开仓库。
 		/// 返回激活的 RepositoryUserControl；窗口经 out 参数交由调用方截图/收尾。</summary>
 		public static RepositoryUserControl OpenRepository(string repoPath, out MainWindow window)
 		{
 			HeadlessAppBootstrap.EnsureStarted();
+			PurgeStaleTestWorkspaceEntries();
 			window = new MainWindow();
 			// 覆盖构造里恢复的窗口几何（保存值可能过小/异常），保证截图布局稳定
 			window.Width = 1400;
@@ -51,6 +108,7 @@ namespace ForkPlus.Tests
 		public static void OpenTab(string path, out MainWindow window)
 		{
 			HeadlessAppBootstrap.EnsureStarted();
+			PurgeStaleTestWorkspaceEntries();
 			window = new MainWindow();
 			window.Width = 1400;
 			window.Height = 900;
@@ -66,6 +124,7 @@ namespace ForkPlus.Tests
 		public static MainWindow CreateWindow()
 		{
 			HeadlessAppBootstrap.EnsureStarted();
+			PurgeStaleTestWorkspaceEntries();
 			MainWindow window = new MainWindow();
 			window.Width = 1400;
 			window.Height = 900;
