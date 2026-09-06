@@ -74,10 +74,14 @@ namespace ForkPlus
 		public static void ApplyToProcessStartInfo(ProcessStartInfo processStartInfo)
 		{
 			// 环境字典的索引器对缺失键抛 KeyNotFoundException——干净进程环境（CI runner
-			// 即如此，无 GIT_CONFIG_COUNT）必须 TryGetValue；ParseConfigCount(null) 视为 0。
+			// 即如此，无 GIT_CONFIG_COUNT）必须先 ContainsKey；ParseConfigCount(null) 视为 0。
+			// 注：EnvironmentVariables 是 StringDictionary（老的非泛型类型，无 TryGetValue，
+			// cb81dc1 的 CI 实证 CS1061），只能 ContainsKey + 索引器两段式。
 			// 首次 CI 全量跑实证：此处的 KeyNotFoundException 会让所有 psi 路径的 git 请求
 			// 整体失败，E2E 用例连锁红（109 项）。
-			processStartInfo.EnvironmentVariables.TryGetValue(ConfigCountKey, out string rawCount);
+			string rawCount = processStartInfo.EnvironmentVariables.ContainsKey(ConfigCountKey)
+				? processStartInfo.EnvironmentVariables[ConfigCountKey]
+				: null;
 			int startIndex = ParseConfigCount(rawCount);
 			(string, string)[] pairs = BuildAllPairs(startIndex);
 			for (int i = 0; i < pairs.Length; i++)
