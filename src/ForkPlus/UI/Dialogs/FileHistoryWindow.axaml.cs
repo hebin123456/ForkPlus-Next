@@ -146,6 +146,14 @@ namespace ForkPlus.UI.Dialogs
 					}
 				}
 			}));
+			// Migration note（根因，模块19 探针实证的同类 bug，模块20 修复）：WPF 原仓在
+			// OnInitialized override 里加载文件历史——WPF 的 Initialized 在构造完成后触发，
+			// 字段已就绪。Avalonia 12 的 Initialized 在 TopLevel 基类构造链中触发
+			// （Window..ctor → TopLevel..ctor → PresentationSource..ctor → OnAttachedToVisualTreeCore
+			// → InitializeIfNeeded → OnInitialized），此刻派生类构造器字段全未赋值
+			// （_repositoryUserControl=null → 第一行 NRE → catch 吞掉 → 历史列表/时间线/diff
+			// 永不装配，生产必现空窗口）。Avalonia 等价时机 = 构造器尾部，逻辑与原版逐字节一致。
+			LoadHistory();
 		}
 
 		// Migration note（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
@@ -183,11 +191,11 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		protected override async void OnInitialized()
+		/// <summary>加载文件历史（WPF 原版 OnInitialized 主体，Avalonia 由构造器尾部调用）。</summary>
+		private async void LoadHistory()
 		{
 			try
 			{
-				base.OnInitialized();
 				RepositoryData repositoryData = _repositoryUserControl.RepositoryData;
 				if (repositoryData == null)
 				{

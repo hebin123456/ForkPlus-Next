@@ -56,14 +56,20 @@ cd gitflow-avh && PREFIX="$HOME/.local" make install
 # ⚠️ 注意：git 查找 git-flow 走 PATH 而非 exec-path——exec-path 方案无效（2026-09-06 探针实证），
 # 跑测试的 shell 必须保证 ~/.local/bin 在 PATH 里（bashrc 只对交互 shell 生效）。
 
-# ── oxyplot-avalonia 是仓库外源码引用（csproj 的 ..\..\..\oxyplot-avalonia），沙盒重置即丢，必须重新克隆（与 build.yml 的 Clone 步骤同源）──
+# ── oxyplot-avalonia 是仓库外源码引用（csproj 的 ..\..\..\oxyplot-avalonia），沙盒重置即丢，必须重新克隆 + 打补丁（与 build.yml 的 Clone 步骤同源）──
 git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git /data/user/work/oxyplot-avalonia
-# ⚠️ 教训（2026-09-03 实证）：克隆后直接 dotnet build，一行都不要改！
-# 官方版 oxyplot 用 Avalonia 11.0.0 + netstandard2.0，与主工程（Avalonia 12.1.1 + net10.0）并存完全正常——
-# 它自己按 11 编译成 netstandard2.0 程序集，主工程直接 ProjectReference 引用，NuGet 各按各的版本还原，互不冲突。
-# 曾错误地把它当"版本不匹配"去改 AvaloniaVersion→12.1.1，结果：netstandard2.0 下大量类型解析失败（786 错），
-# 又继续"救火"改 TFM→net10.0、剪贴板 API SetTextAsync→SetDataAsync、关编译绑定开关……越改越多、全部是白干。
-# 正确姿势：官方原版直接编译即可通过（Build succeeded, 0 Error, ~21s），三方件保持零改动。
+# ⚠️ 必须 Apply 补丁后再 build（2026-09-06 模块20 实证，替代 2026-09-03 的旧结论）：
+git -C /data/user/work/oxyplot-avalonia apply /data/user/work/ForkPlus-Next/docs/patches/oxyplot-avalonia-avalonia12.patch
+# 补丁内容（3 处）：Directory.Build.props AvaloniaVersion 11.0.0→12.1.1；csproj TFM netstandard2.0→net10.0
+# + AvaloniaUseCompiledBindingsByDefault=false；PlotBase.cs 加 using Avalonia.Input.Platform（SetTextAsync
+# 在 Avalonia 12 变为 ClipboardExtensions 扩展方法）。
+# 根因（运行时实锤，非编译期）：官方版按 Avalonia 11.0.0 编译的 XAML IL 调用 TemplateBinding.ProvideValue()
+# （11 时代签名），运行时 12.1.1 无此方法 → 任何 PlotView 进入布局/模板实例化即 MissingMethodException
+# （布局期异常穿透渲染循环，应用级崩溃）。2026-09-03 的"按 11 编译并存正常"结论只验证了编译通过
+# （当时无任何用例真正渲染过图表）；直到模块20 统计窗口首个 PlotView 布局用例才暴露。
+# 曾在 2026-09-03 走对过一半（改版本+TFM+剪贴板 API+关编译绑定）但因"编译能过就零改动"的错误结论回退。
+# 注意：netstandard2.0 TFM 下直接升 AvaloniaVersion 会 786 个类型解析错误（Avalonia 12 无 netstandard2.0 资产），
+# 必须同步改 TFM；其余 API 断点只有剪贴板一处。
 
 # ── git 身份（沙盒重置后需重新设置）──
 git config user.name "Test User" && git config user.email "test@example.com"
