@@ -162,7 +162,7 @@
        biturbo 一致的发布产物拉取模式，两点差异：
        1) BeforeTargets=Restore（而非 Build）——PackageReference 的解析发生在 NuGet restore 阶段，
           nupkg 必须在 restore 评估本地源之前就位，等 Build 就晚了（首次 restore 会 NU1101 找不到包）；
-          同时挂 Build 兜底 dotnet build --no-restore 的场景。已存在（Exists 守卫）则跳过。
+          同时挂 Build 兜底 dotnet build 的 no-restore 场景。已存在（Exists 守卫）则跳过。
        2) 资产名含版本号——NuGet 目录源要求 <PackageId>.<version>.nupkg 命名才能被识别，
           由 OxyPlotAvaloniaPackageVersion 属性派生（见顶部单点维护注释）。
        CI（build.yml）不走本 Exec（与 tokei/biturbo 同理：规避 macOS runner 上 MSBuild Exec 行为差异），
