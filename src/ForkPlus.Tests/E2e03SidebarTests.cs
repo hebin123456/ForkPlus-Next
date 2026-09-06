@@ -62,7 +62,15 @@ namespace ForkPlus.Tests
 					//      ExpandAllChildren，feature 文件夹默认展开——与产品语义一致） =====
 					var oneItem = featureFolder.Children.OfType<LocalBranchSidebarItem>().FirstOrDefault(b => b.Title == "one");
 					Assert.True(oneItem != null, "feature 文件夹应含 one 分支");
-					Assert.True(oneItem.IsVisible, "首开全展开策略下 one 分支应可见");
+					// 首开展开是异步三级链：FilterTextBox 初始化 → 0.1s System.Timers.Timer（线程池）
+					// → Dispatcher.Post 回 UI 线程 → FilterString null→"" → ExpandAllChildren → IsVisible 传播。
+					// 上面的 WaitFor 只等了数据层（Branches.Children 非空），慢 runner 上视觉层
+					// 可能尚未传播完，立即断言 IsVisible 会 flaky（CI 实证：a972c63 纯文档提交挂于此）。
+					bool oneVisible = UiClick.WaitFor(delegate
+					{
+						return oneItem.IsVisible;
+					});
+					Assert.True(oneVisible, "首开全展开策略下 one 分支应可见（15s 超时）");
 					Assert.True(oneItem.LocalBranch.Name.Contains("feature/one"), "分支名应含 feature/one，实际 " + oneItem.LocalBranch.Name);
 					ScreenshotHelper.Snap(window, "02-sidebar-folder-expanded", "03-sidebar");
 
