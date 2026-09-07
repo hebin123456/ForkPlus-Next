@@ -17,5 +17,5 @@ third_party/tokei.exe
 third_party/nuget/
 
 # 测试运行期在仓库根产生的应用数据目录（E2E 以 CWD=仓库根启动）
-ForkPlus/
-ForkPlusData/
+/ForkPlus/
+/ForkPlusData/
