@@ -195,7 +195,7 @@ namespace ForkPlus.Git.Interaction
 				Process process = new Process();
 				try
 				{
-					process.StartInfo = CreateGitProcessStartInfo(_currentDir);
+					process.StartInfo = CreateGitProcessStartInfo(_currentDir, _env);
 					try
 					{
 						process.Start();

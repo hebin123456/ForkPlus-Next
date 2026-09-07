@@ -794,6 +794,92 @@ namespace ForkPlus.Tests
 			}
 		}
 
+		[Fact]
+		public void InteractiveRebase_RealRiFlow_RewordAppliesMessage()
+		{
+			string repo = TestRepoFactory.CreateHistoryRewrite(checkoutFeature: true);
+			bool savedUpdateRefs = ForkPlusSettings.Default.InteractiveRebase_UpdateRefs;
+			bool savedBackup = ForkPlusSettings.Default.InteractiveRebase_CreateBackup;
+			try
+			{
+				EnsureDotnetRootForRiHelper();
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+					InteractiveRebaseWindow dialog = null;
+					try
+					{
+						RepositoryReferences refs = WaitForRefs(repoControl);
+						LocalBranch feature = refs.ActiveBranch;
+						LocalBranch main = BranchNamed(refs, "main");
+
+						// 真实 `git rebase -i` 全链路（sequence.editor=ForkPlus.RI → IPC → todo 装配）
+						dialog = new InteractiveRebaseWindow(repoControl, repoControl.GitModule, feature, main, null);
+						dialog.Show();
+						Dispatcher.UIThread.RunJobs();
+
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							return dialog.RevisionListView.ItemsSource != null
+								&& dialog.RevisionListView.ItemsSource.OfType<RevisionEntry>().Count() == 3;
+						}), "todo 列表应装配 3 个提交（15s 超时）");
+						RevisionEntry[] entries = dialog.RevisionListView.ItemsSource.OfType<RevisionEntry>().ToArray();
+						RevisionEntry f2Entry = entries.First(e => e.Subject == "feat: two");
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							return dialog.RevisionListView.ContainerFromItem(f2Entry) != null;
+						}), "feat: two 行容器应实现（渲染后）");
+
+						// 生产路径等效：Reword 弹窗 OK 后置 Action=Reword + CustomMessage（含正文）
+						f2Entry.Action = InteractiveRebaseAction.Reword;
+						f2Entry.CustomMessage = "feat: two reworded by e2e" + "\n\n" + "reworded body line";
+						Dispatcher.UIThread.RunJobs();
+						Assert.Equal("feat: two reworded by e2e", f2Entry.Subject);
+
+						// 提交 → OnSubmit 写 todo + fork-message-archive → git 执行 reword 指令时
+						// core.editor（ForkPlus.RI）→ IPC → TryApplyArchivedMessage 改写 COMMIT_EDITMSG
+						SubmitAndWaitClose(dialog, "交互式变基（Reword f2）");
+
+						// 真实仓库断言：f2 主题与正文都应变为改写后的消息
+						string[] subjects = SubjectsOf(repo, "feature");
+						Assert.Equal(new[] { "feat: three", "feat: two reworded by e2e", "feat: one", "base two", "base one" }, subjects);
+						string fullBody = TestRepoFactory.GitOutput(repo, "log --format=%B -1 feature~1").Trim();
+						Assert.StartsWith("feat: two reworded by e2e", fullBody);
+						Assert.Contains("reworded body line", fullBody);
+					}
+					finally
+					{
+						try
+						{
+							if (dialog != null)
+							{
+								if (dialog.IsVisible)
+								{
+									typeof(InteractiveRebaseWindow).GetMethod("StopRebaseInteractiveProcess",
+										System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+										?.Invoke(dialog, new object[] { "cancel" });
+									UiClick.WaitFor(delegate { return !dialog.IsVisible; }, 5000);
+								}
+								dialog.Dispose();
+							}
+						}
+						catch
+						{
+							// 兜底尽力而为，不掩盖断言
+						}
+						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+					}
+				});
+			}
+			finally
+			{
+				ForkPlusSettings.Default.InteractiveRebase_UpdateRefs = savedUpdateRefs;
+				ForkPlusSettings.Default.InteractiveRebase_CreateBackup = savedBackup;
+				ForkPlusSettings.Default.Save();
+				TestRepoFactory.Cleanup(repo);
+			}
+		}
+
 		private static Sha ParseSha(string sha)
 		{
 			Assert.True(Sha.TryParse(sha, out Sha parsed), "sha 应可解析: " + sha);

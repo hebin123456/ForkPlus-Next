@@ -8,6 +8,21 @@ namespace ForkPlus.Git.Commands
 	{
 		private static readonly string TokenSeparator = "#!_";
 
+		/// <summary>
+		/// git 的编辑器优先级是 GIT_EDITOR/GIT_SEQUENCE_EDITOR 环境变量 &gt; -c core.editor/sequence.editor。
+		/// 用户（或启动 ForkPlus 的终端）若设置了这些环境变量，会盖掉命令行里的 -c 配置，
+		/// 导致 reword/squash 停下来时 git 调的是外部编辑器而不是 ForkPlus.RI——消息改写静默失效。
+		/// 因此除了 -c 之外，同时以环境变量形式显式钉死两个编辑器。
+		/// </summary>
+		internal static (string, string)[] BuildEditorEnv(string riHelperPath)
+		{
+			return new (string, string)[2]
+			{
+				("GIT_EDITOR", riHelperPath),
+				("GIT_SEQUENCE_EDITOR", riHelperPath)
+			};
+		}
+
 		public GitCommandResult Execute(GitModule gitModule, [Null] IGitPoint destination)
 		{
 			string input = PathHelper.NormalizeUnix(Path.Combine(AppContext.BaseDirectory, Consts.ForkPlus.RIHelperFilename));
@@ -27,7 +42,7 @@ namespace ForkPlus.Git.Commands
 			{
 				gitCommand.Add(destination.ObjectName);
 			}
-			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Execute();
+			GitRequestResult gitRequestResult = new GitRequest(gitModule).Command(gitCommand).Env(BuildEditorEnv(input)).Execute();
 			if (!gitRequestResult.Success)
 			{
 				if (gitRequestResult.Stderr.IndexOf("nothing to do", StringComparison.OrdinalIgnoreCase) != -1 || gitRequestResult.Stderr.Contains("error: Failed to merge in the changes.") || gitRequestResult.Stderr.Contains("Resolve all conflicts manually, mark them as resolved with"))

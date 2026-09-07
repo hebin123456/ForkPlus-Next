@@ -20,7 +20,7 @@ namespace ForkPlus.Git.Commands
 			if (gitRequestResult.Success && gitRequestResult.Stdout == "")
 			{
 				GitCommand command = new GitCommand(App.OverrideCredentialHelper, "-c", "core.commentChar=" + Consts.Git.CommentChar, "-c", "sequence.editor=" + input.EscapeSpaces().Quotify(), "-c", "core.editor=" + input.EscapeSpaces().Quotify(), "rebase", "--skip");
-				GitRequestResult gitRequestResult2 = new GitRequest(gitModule).Command(command).Execute();
+				GitRequestResult gitRequestResult2 = new GitRequest(gitModule).Command(command).Env(RebaseInteractiveGitCommand.BuildEditorEnv(input)).Execute();
 				if (!gitRequestResult2.Success)
 				{
 					return GitCommandResult.Failure(gitRequestResult2.ToGitCommandError());
@@ -43,7 +43,7 @@ namespace ForkPlus.Git.Commands
 			}))
 			{
 				GitCommand command2 = new GitCommand(App.OverrideCredentialHelper, "-c", "core.commentChar=" + Consts.Git.CommentChar, "-c", "sequence.editor=" + input.EscapeSpaces().Quotify(), "-c", "core.editor=" + input.EscapeSpaces().Quotify(), "rebase", "--continue");
-				GitRequestResult gitRequestResult3 = new GitRequest(gitModule).Command(command2).Execute();
+				GitRequestResult gitRequestResult3 = new GitRequest(gitModule).Command(command2).Env(RebaseInteractiveGitCommand.BuildEditorEnv(input)).Execute();
 				if (!gitRequestResult3.Success)
 				{
 					return GitCommandResult.Failure(gitRequestResult3.ToGitCommandError());

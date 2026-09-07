@@ -93,7 +93,7 @@
                           DropDownClosed="ActionsComboBox_DropDownClosed"
                           SelectionChanged="ComboBox_SelectionChanged"
                           ItemsSource="{Binding DataContext.InteractiveRebaseComboBoxItemsSource, RelativeSource={RelativeSource AncestorType=dialogs:MultiselectionListView}}"
-                          SelectedItem="{Binding Action, Mode=OneWay, Converter={dialogs:InteractiveRebaseActionToInteractiveRebaseComboBoxItemConverter}}">
+                          SelectedItem="{Binding Action, Mode=TwoWay, Converter={dialogs:InteractiveRebaseActionToInteractiveRebaseComboBoxItemConverter}}">
                   <!-- 选中后显示在 ComboBox 框内的模板：带颜色圆点 + 标题，与 WPF 原版视觉对齐 -->
                   <ComboBox.SelectionBoxItemTemplate>
                     <DataTemplate>

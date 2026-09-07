@@ -483,18 +483,13 @@ namespace ForkPlus.UI.Dialogs
 			}
 			else if (action.GetValueOrDefault() == InteractiveRebaseAction.Reword && array.Length == 1)
 			{
-				// 修复（2026-09-05，"下拉框卡住 / 选中后状态不对"）：
-				// 原代码只弹 Reword 对话框但不更新 Action，导致 ComboBox 显示 Reword
-				// 但实际 Action 还是旧值（绑定 OneWay，不会自动回退），视觉与状态
-				// 不一致——用户以为"卡住了"。先把 Action 设为 Reword，保持
-				// SelectedItem 与 Action 同步；取消时 UpdateTodoList 会因
-				// CustomMessage 为 null 把 Action 自动改回 Pick。
-				RevisionEntry first = array.FirstItem();
-				first.Action = action.Value;
-				UpdateTodoList();
+				// 与 WPF 原版一致：Reword 只弹说明编辑框，不改 Action、不调 UpdateTodoList。
+				// Action=Reword 由 TwoWay 绑定（或 MessageChanged 回调）写入；
+				// 若在这里提前 UpdateTodoList，会因 CustomMessage 尚未填写把 Reword
+				// 重置回 Pick，导致提交的 todo 里是 p 而非 r，改写说明完全失效。
 				if (interactiveRebaseComboBoxItem2 != null)
 				{
-					ShowRewordPopup(first);
+					ShowRewordPopup(array.FirstItem());
 				}
 				_updateInProgress = false;
 			}
