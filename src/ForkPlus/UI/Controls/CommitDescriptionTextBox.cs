@@ -43,6 +43,27 @@ namespace ForkPlus.UI.Controls
 			};
 		}
 
+		/// <summary>WPF 行为保全（E2e26 快捷键全量测试发现的迁移回归，2026-09-06）：
+		/// 描述框（AcceptsReturn）内按 Ctrl+Enter（提交 secondary）/ Ctrl+Shift+Enter（提交
+		/// primary）/ Ctrl+Alt+Enter（WIP 拆分）在 WPF 里由 CommandManager 在输入预处理阶段
+		/// 匹配窗口/CommitUserControl 级 CommandBinding 的 RoutedCommand 手势（先于 TextBox
+		/// 类处理执行）——行为是"提交且不插入换行"。迁移后 CommandRouter 挂在 TopLevel
+		/// 冒泡阶段，而 Avalonia TextBox.OnKeyDown 对 AcceptsReturn 的 Enter 无条件消费
+		/// （插入换行并置 Handled，不检查修饰键，见 Avalonia 12.1.1 TextBox.cs Key.Enter
+		/// 分支），Ctrl+Enter 永远到不了 CommandRouter——既不提交还多出一个换行。
+		/// 修复：带 Ctrl 的 Enter 不做类处理（不插换行、不置 Handled），让事件继续冒泡，
+		/// 由 CommandRouter 翻译成提交命令（与 WPF 原行为一致）。Shift/Alt 单独按下的
+		/// Enter 仍走 base（插入换行，WPF 同）。</summary>
+		protected override void OnKeyDown(Avalonia.Input.KeyEventArgs e)
+		{
+			if (e.Key == Avalonia.Input.Key.Return
+				&& (e.KeyModifiers & Avalonia.Input.KeyModifiers.Control) == Avalonia.Input.KeyModifiers.Control)
+			{
+				return;
+			}
+			base.OnKeyDown(e);
+		}
+
 		protected override ContextMenu GetContextMenu()
 		{
 			ContextMenu contextMenu = new ContextMenu();

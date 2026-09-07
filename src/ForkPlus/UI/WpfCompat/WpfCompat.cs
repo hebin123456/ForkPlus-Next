@@ -369,12 +369,35 @@ namespace ForkPlus.UI.WpfCompat
             _installed.Add(tl, new object());
             // WPF 在 KeyDown 冒泡结束后才翻译手势；用冒泡阶段替代旧的隧道抢先执行。
             tl.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Bubble);
+            // 例外（模块28 快捷键全量测试发现的迁移回归，2026-09-07）：带修饰键的 Tab。
+            // WPF CommandManager 在 Preview（隧道）阶段匹配手势，永远先于焦点导航；
+            // 迁移后只在冒泡阶段翻译，而 Avalonia 的 KeyboardNavigation 类处理在事件源
+            // 层就消费 Ctrl+Tab / Ctrl+Shift+Tab 移动焦点（探针实证：焦点跑到 MenuItem、
+            // e.Handled=true，TopLevel 冒泡处理器收不到）→ Ctrl+Tab 切 tab 整体失效。
+            // 最小修复：隧道阶段仅拦截"带修饰键的 Tab"做同样的手势翻译（其余手势维持
+            // 冒泡语义不变——14/17 模块用例已验证的既有行为）。
+            tl.AddHandler(InputElement.KeyDownEvent, OnKeyDownTunnelTab, RoutingStrategies.Tunnel);
+        }
+
+        /// <summary>隧道阶段：仅翻译带修饰键的 Tab 手势（SelectNextTab/SelectPreviousTab），
+        /// 防被焦点导航类处理消费。不带修饰键的 Tab（纯焦点导航）与其他键一律放行。</summary>
+        private static void OnKeyDownTunnelTab(object sender, KeyEventArgs e)
+        {
+            if (e.Handled) return;
+            if (e.Key != Key.Tab) return;
+            if (e.KeyModifiers == KeyModifiers.None) return;
+            TranslateGesture(sender, e);
         }
 
         private static void OnKeyDown(object sender, KeyEventArgs e)
         {
             // 规则 2：控件已处理（如搜索框的 Enter）则不再翻译手势。
             if (e.Handled) return;
+            TranslateGesture(sender, e);
+        }
+
+        private static void TranslateGesture(object sender, KeyEventArgs e)
+        {
             if (sender is not TopLevel tl) return;
             if (!_bindings.TryGetValue(tl, out var list)) return;
 
