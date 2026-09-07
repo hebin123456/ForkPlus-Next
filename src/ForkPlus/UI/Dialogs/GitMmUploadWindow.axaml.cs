@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using ForkPlus.Settings;
+using ForkPlus.Services;
 using ForkPlus.UI.UserControls.Preferences;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 
 namespace ForkPlus.UI.Dialogs
@@ -121,6 +123,16 @@ namespace ForkPlus.UI.Dialogs
 			})
 			{
 				checkBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
+			}
+		}
+
+		// Bug 修复（2026-09-07，"命令预览右侧没有复制按钮"）：同 InitGitMmRepositoryWindow——
+		// XAML 内联预览不走基类 AddCommandPreview（自带复制按钮），迁移漏掉了，点击复制到剪贴板。
+		private void CommandPreviewCopyButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (!string.IsNullOrWhiteSpace(CommandPreviewTextBlock.Text))
+			{
+				ServiceLocator.Clipboard.SetText(CommandPreviewTextBlock.Text);
 			}
 		}
 

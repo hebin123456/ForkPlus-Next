@@ -8,6 +8,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Git.Interaction;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
+using ForkPlus.Services;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -149,6 +150,18 @@ namespace ForkPlus.UI.Dialogs
 		{
 			UpdateSubmitButton();
 			RefreshCommandPreview();
+		}
+
+		// Bug 修复（2026-09-07，"初始化 git mm 仓库弹窗命令预览右侧没有复制按钮"）：git mm 四弹窗
+		//（Init/Start/Sync/Upload）的命令预览是 XAML 内联实现，不走
+		// ForkPlusDialogWindow.AddCommandPreview 基类路径——基类那条路自带复制按钮，内联版漏掉了。
+		// 点击复制预览命令到剪贴板（按钮本体/图标见 axaml，样式与基类实现一致）。
+		private void CommandPreviewCopyButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (!string.IsNullOrWhiteSpace(CommandPreviewTextBlock.Text))
+			{
+				ServiceLocator.Clipboard.SetText(CommandPreviewTextBlock.Text);
+			}
 		}
 
 		private void RestoreDefaults()

@@ -532,6 +532,18 @@ namespace ForkPlus.Tests
 				Dispatcher.UIThread.RunJobs();
 				Assert.Equal("git mm init -u \"http://example.com/my manifest.git\" -m deps.xml -b release -g \"team a\"",
 					CommandPreviewOf(dialog));
+
+				// 3b) 复制按钮（2026-09-07，"命令预览右侧没有复制按钮"）：预览右侧存在且可见，
+				//     点击后剪贴板内容与预览一致（Init 窗是 XAML 内联预览，不走基类 AddCommandPreview）
+				Assert.NotNull(dialog.CommandPreviewCopyButton);
+				Assert.True(dialog.CommandPreviewCopyButton.IsVisible, "命令预览右侧的复制按钮应可见");
+				Assert.True(dialog.CommandPreviewCopyButton.Bounds.Left >= dialog.CommandPreviewTextBlock.Bounds.Right - 1,
+					"复制按钮应位于命令预览文本右侧");
+				UiClick.Click(dialog.CommandPreviewCopyButton);
+				Dispatcher.UIThread.RunJobs();
+				Assert.Equal(CommandPreviewOf(dialog),
+					global::ForkPlus.Services.ServiceLocator.Clipboard.GetText());
+
 				ScreenshotHelper.Snap(dialog, "10-gitmm-init-ready", ModuleDir);
 
 				// 4) 目标目录非空拦截：父目录指向已存在非空目录 → MessageBox 拦截
@@ -573,6 +585,58 @@ namespace ForkPlus.Tests
 				Assert.Contains("already exists", messageBoxText); // 非空目录拦截文案
 				ScreenshotHelper.Snap(dialog, "11-gitmm-init-destguard", ModuleDir);
 				dialog.Close();
+			});
+		}
+
+		// ============================ 6b) GitMm 四弹窗命令预览复制按钮（2026-09-07） ============================
+		// "命令预览右侧没有复制按钮"：Init/Start/Sync/Upload 的预览区都是 XAML 内联实现（不走基类
+		// AddCommandPreview，那条自带复制按钮），迁移时四个弹窗一并漏掉了。Start/Sync/Upload 依赖
+		// 真实 workspace 子仓扫描才有完整流程（见类头"环境不可测"），这里直接以哑参数构造做
+		// 构造级冒烟：按钮存在/可见/位于预览右侧，点击后剪贴板与预览一致。
+
+		[Fact]
+		public void GitMmDialogs_CommandPreviewCopyButton_Works()
+		{
+			HeadlessAppBootstrap.Run(delegate
+			{
+				ForkPlusDialogWindow[] dialogs =
+				{
+					new GitMmStartWindow(null, null),
+					new GitMmSyncWindow("/tmp/fpe2e_gitmm_ws"),
+					new GitMmUploadWindow("/tmp/fpe2e_gitmm_ws")
+				};
+				try
+				{
+					foreach (ForkPlusDialogWindow dialog in dialogs)
+					{
+						dialog.Show();
+						Dispatcher.UIThread.RunJobs();
+
+						TextBlock preview = dialog.GetVisualDescendants().OfType<TextBlock>()
+							.FirstOrDefault(t => t.Name == "CommandPreviewTextBlock");
+						Assert.NotNull(preview);
+						Assert.False(string.IsNullOrWhiteSpace(preview.Text),
+							dialog.GetType().Name + " 命令预览应有文本");
+
+						Button copyButton = dialog.GetVisualDescendants().OfType<Button>()
+							.FirstOrDefault(b => b.Name == "CommandPreviewCopyButton");
+						Assert.NotNull(copyButton);
+						Assert.True(copyButton.IsVisible, dialog.GetType().Name + " 复制按钮应可见");
+						Assert.True(copyButton.Bounds.Left >= preview.Bounds.Right - 1,
+							dialog.GetType().Name + " 复制按钮应位于命令预览右侧");
+
+						UiClick.Click(copyButton);
+						Dispatcher.UIThread.RunJobs();
+						Assert.Equal(preview.Text, global::ForkPlus.Services.ServiceLocator.Clipboard.GetText());
+					}
+				}
+				finally
+				{
+					foreach (ForkPlusDialogWindow dialog in dialogs)
+					{
+						dialog.Close();
+					}
+				}
 			});
 		}
 

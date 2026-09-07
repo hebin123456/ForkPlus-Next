@@ -108,9 +108,20 @@
         </Grid>
       </Expander>
       <TextBlock Grid.Column="0" Grid.Row="7" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
-      <ScrollViewer Grid.Column="1" Grid.Row="7" MaxHeight="120" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="8,8,0,0">
-        <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
-      </ScrollViewer>
+      <Grid Grid.Column="1" Grid.Row="7" Margin="8,8,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.Column="0" MaxHeight="120" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="CommandPreviewTextBlock" />
+        </ScrollViewer>
+        <!-- Bug 修复（2026-09-07，"命令预览右侧没有复制按钮"）：同 InitGitMmRepositoryWindow——
+             XAML 内联预览不走基类 AddCommandPreview，迁移漏掉了复制按钮。 -->
+        <Button Grid.Column="1" Click="CommandPreviewCopyButton_Click" Background="Transparent" BorderThickness="0" Padding="2" Margin="4,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Cursor="Hand" ToolTip.Tip="Copy to clipboard">
+          <Path Width="14" Height="14" Stretch="Uniform" Fill="{DynamicResource SecondaryLabelBrush}" Data="M4,2 L12,2 L12,14 L4,14 Z M6,4 L6,12 L10,12 L10,4 Z M2,4 L2,16 L14,16 L14,14 L13,14 L13,15 L3,15 L3,5 L4,5 L4,4 Z" />
+        </Button>
+      </Grid>
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

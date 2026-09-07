@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using ForkPlus.Settings;
+using ForkPlus.Services;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
@@ -232,6 +233,16 @@ namespace ForkPlus.UI.Dialogs
 			AllowCommitCheckBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
 			AllowNoTrackCheckBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
 			HeadCheckBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
+		}
+
+		// Bug 修复（2026-09-07，"命令预览右侧没有复制按钮"）：同 InitGitMmRepositoryWindow——
+		// XAML 内联预览不走基类 AddCommandPreview（自带复制按钮），迁移漏掉了，点击复制到剪贴板。
+		private void CommandPreviewCopyButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (!string.IsNullOrWhiteSpace(CommandPreviewTextBlock.Text))
+			{
+				ServiceLocator.Clipboard.SetText(CommandPreviewTextBlock.Text);
+			}
 		}
 
 		private void RefreshCommandPreview()
