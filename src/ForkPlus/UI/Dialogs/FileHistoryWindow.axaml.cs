@@ -576,6 +576,16 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RefreshDiff(HistoryEntryViewModel[] historyEntries)
 		{
+			// 守卫空参数：构造期订阅的 DiffContextSizeChanged/DiffIgnoreWhitespacesChanged/
+			// DiffShowEntireFileChanged 走 _delayedAction.ReinvokeNow()——DelayedAction 会用
+			// 最近一次 InvokeWithDelay 的参数重放；窗口从未发生选择时 _parameter 仍是 null，
+			// 此处不守卫直接 NRE（WPF 原版同样存在，正常使用序不触发；Avalonia 迁移的
+			// NotificationCenter 全局事件更早可达——设置面板或其它窗口改偏好时，
+			// 历史窗口尚无选择即收到事件）。无选择 = 无 diff 可刷新，保持当前视图。
+			if (historyEntries == null || historyEntries.Length == 0)
+			{
+				return;
+			}
 			if (historyEntries.Length > 2)
 			{
 				FallbackUserControl fallbackUserControl = new FallbackUserControl();

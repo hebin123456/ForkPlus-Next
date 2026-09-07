@@ -241,7 +241,10 @@ namespace ForkPlus.UI.Dialogs
 
 		private void CheckoutActionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 	{
-		if (e.AddedItems[0] is CheckoutSyncOptionComboBoxItem { ActionType: { } actionType })
+		// 守卫空 AddedItems：SelectionChanged 处理器在 ComboBox 容器物化管线内同步执行，
+		// 无守卫索引会在选区清除事件时抛 IndexOutOfRangeException 并中断项物化
+		// （同类级联故障见 ResetBranchWindow.axaml 2026-09-07 Migration note）。
+		if (e.AddedItems.Count > 0 && e.AddedItems[0] is CheckoutSyncOptionComboBoxItem { ActionType: { } actionType })
 		{
 			_actionType = actionType;
 			RefreshTitle();

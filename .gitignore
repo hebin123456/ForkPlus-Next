@@ -15,3 +15,7 @@ third_party/tokei.exe
 # 构建期从 hebin123456/oxyplot-avalonia（fork）latest release 拉取的预编译 nupkg
 # 不入库（RestoreOxyPlotAvalonia Target 与 CI 显式下载步骤负责拉取）
 third_party/nuget/
+
+# 测试运行期在仓库根产生的应用数据目录（E2E 以 CWD=仓库根启动）
+ForkPlus/
+ForkPlusData/

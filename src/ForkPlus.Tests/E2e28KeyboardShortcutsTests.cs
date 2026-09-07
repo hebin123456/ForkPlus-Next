@@ -232,45 +232,76 @@ namespace ForkPlus.Tests
 		/// <summary>看门狗变体：不限定类型，关闭按键后出现的任何非白名单可见窗口
 		/// （用于"按键必须无弹窗"的负向断言——DidCloseAnything==false 即全程无弹窗）。</summary>
 		private sealed class AnyDialogWatchdog : IDisposable
+	{
+		private readonly DispatcherTimer _timer;
+
+		private readonly Window[] _keepAlive;
+
+		public Window ClosedWindow;
+
+		/// <summary>关闭窗口时抓取的诊断文本（ErrorWindow 的 MessageTextBox 内容等），
+		/// 负向断言失败时打印，避免只看到窗口类型而看不到根因。</summary>
+		public string ClosedWindowText;
+
+		public static AnyDialogWatchdog Arm(params Window[] keepAlive)
 		{
-			private readonly DispatcherTimer _timer;
-			private readonly Window[] _keepAlive;
+			return new AnyDialogWatchdog(keepAlive);
+		}
 
-			public Window ClosedWindow;
+		private AnyDialogWatchdog(Window[] keepAlive)
+		{
+			_keepAlive = keepAlive ?? new Window[0];
+			_timer = new DispatcherTimer(TimeSpan.FromMilliseconds(50), DispatcherPriority.Default, Tick);
+			_timer.Start();
+		}
 
-			public static AnyDialogWatchdog Arm(params Window[] keepAlive)
+		private void Tick(object sender, EventArgs e)
+		{
+			try
 			{
-				return new AnyDialogWatchdog(keepAlive);
-			}
-
-			private AnyDialogWatchdog(Window[] keepAlive)
-			{
-				_keepAlive = keepAlive ?? new Window[0];
-				_timer = new DispatcherTimer(TimeSpan.FromMilliseconds(50), DispatcherPriority.Default, Tick);
-				_timer.Start();
-			}
-
-			private void Tick(object sender, EventArgs e)
-			{
-				try
+				foreach (Window window in WpfApp.Windows.ToArray())
 				{
-					foreach (Window window in WpfApp.Windows.ToArray())
+					if (window.IsVisible && !_keepAlive.Contains(window))
 					{
-						if (window.IsVisible && !_keepAlive.Contains(window))
-						{
-							ClosedWindow = window;
-							window.Close();
-							_timer.Stop();
-							return;
-						}
+						ClosedWindow = window;
+						ClosedWindowText = DescribeWindow(window);
+						window.Close();
+						_timer.Stop();
+						return;
 					}
 				}
-				catch
-				{
-				}
 			}
+			catch
+			{
+			}
+		}
 
-			public void Dispose()
+		/// <summary>关闭前提取窗口可诊断文本：ErrorWindow 取 MessageTextBox.Text（git 错误正文），
+		/// 其它窗口退化为类型名。FindControl 必须在 Close 前调用（视觉树拆除后取不到）。</summary>
+		private static string DescribeWindow(Window window)
+		{
+			try
+			{
+				if (window is global::ForkPlus.UI.Dialogs.ErrorWindow)
+				{
+					global::Avalonia.Controls.TextBox textBox = window.FindControl<global::Avalonia.Controls.TextBox>("MessageTextBox");
+					string text = textBox?.Text;
+					if (!string.IsNullOrWhiteSpace(text))
+					{
+						string trimmed = text.Trim();
+						return trimmed.Length > 400 ? trimmed.Substring(0, 400) + "..." : trimmed;
+					}
+					return "<ErrorWindow 无文本>";
+				}
+				return window.GetType().Name;
+			}
+			catch
+			{
+				return window.GetType().Name;
+			}
+		}
+
+		public void Dispose()
 		{
 			_timer.Stop();
 		}
@@ -1228,7 +1259,7 @@ namespace ForkPlus.Tests
 							PressKeyUp(window, Key.F, KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Shift);
 							E2eMainWindowHarness.WaitForRepositoryJobs(repoControl);
 							Assert.True(guard.ClosedWindow == null,
-								"QuickFetch 不应弹窗: " + (guard.ClosedWindow?.GetType().Name ?? "?"));
+								"QuickFetch 不应弹窗: " + (guard.ClosedWindow != null ? guard.ClosedWindow.GetType().Name + " → " + guard.ClosedWindowText : "?"));
 						}
 						Assert.True(UiClick.WaitFor(delegate { return Git(work, "rev-parse origin/main") == remoteMain; }),
 							"QuickFetch 后 origin/main 应前进到远端 main");
@@ -1241,7 +1272,7 @@ namespace ForkPlus.Tests
 							PressKeyOnFocused(window, Key.L, KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Shift);
 							E2eMainWindowHarness.WaitForRepositoryJobs(repoControl);
 							Assert.True(guard.ClosedWindow == null,
-								"QuickPull 不应弹窗: " + (guard.ClosedWindow?.GetType().Name ?? "?"));
+								"QuickPull 不应弹窗: " + (guard.ClosedWindow != null ? guard.ClosedWindow.GetType().Name + " → " + guard.ClosedWindowText : "?"));
 						}
 						Assert.True(UiClick.WaitFor(delegate { return HeadSha(work) == remoteMain; }),
 							"QuickPull 应把本地 main 快进到远端 main");
@@ -1283,7 +1314,7 @@ namespace ForkPlus.Tests
 							PressKeyOnFocused(window, Key.P, KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Shift);
 							E2eMainWindowHarness.WaitForRepositoryJobs(repoControl);
 							Assert.True(guard.ClosedWindow == null,
-								"有上游时 QuickPush 应静默推送不弹窗: " + (guard.ClosedWindow?.GetType().Name ?? "?"));
+								"有上游时 QuickPush 应静默推送不弹窗: " + (guard.ClosedWindow != null ? guard.ClosedWindow.GetType().Name + " → " + guard.ClosedWindowText : "?"));
 						}
 						Assert.True(UiClick.WaitFor(delegate { return Git(bare, "rev-parse main") == localMain; }),
 							"QuickPush 应把领先的提交推到远端（bare main 前进到本地 main）");
@@ -1398,7 +1429,7 @@ namespace ForkPlus.Tests
 							PressKeyOnFocused(window, Key.F5);
 							E2eMainWindowHarness.WaitForRepositoryJobs(repoControl);
 							Assert.True(guard.ClosedWindow == null,
-								"F5 刷新不应弹窗: " + (guard.ClosedWindow?.GetType().Name ?? "?"));
+								"F5 刷新不应弹窗: " + (guard.ClosedWindow != null ? guard.ClosedWindow.GetType().Name + " → " + guard.ClosedWindowText : "?"));
 						}
 						PressKeyOnFocused(window, Key.D0, KeyModifiers.Control); // Ctrl+0 复选 head
 						var revList = repoControl.Content.RevisionListViewUserControl;
@@ -1442,7 +1473,7 @@ namespace ForkPlus.Tests
 						Dispatcher.UIThread.RunJobs();
 						Assert.True(guard.ClosedWindow == null,
 							"无文件管理器环境 Ctrl+Alt+O 应静默降级不弹窗: "
-							+ (guard.ClosedWindow?.GetType().Name ?? "?"));
+							+ (guard.ClosedWindow != null ? guard.ClosedWindow.GetType().Name + " → " + guard.ClosedWindowText : "?"));
 					}
 
 					// ===== 2) Ctrl+Alt+T（ShellTool，CommandRouter 绑定）：弹配置错误窗 =====
@@ -1458,8 +1489,13 @@ namespace ForkPlus.Tests
 						return HeadlessAppBootstrap.PeekCapturedErrorDialogs().Length > 0;
 					}), "Ctrl+Alt+T 在 ShellTool 未配置时应弹 ErrorWindow（看门狗捕获，15s 超时）");
 					string[] captured = HeadlessAppBootstrap.TakeCapturedErrorDialogs();
-					Assert.Contains(E2eMainWindowHarness.TrFormat(
-						"Cannot find shellToolPath at '{0}'", shellPath), captured);
+				// 口径对齐（2026-09-07 ExternalToolManager 跨平台修复）：Unix 上 ShellTool.
+				// ApplicationPath 可能为 null（沙盒无终端模拟器），错误提示回退为候选终端列表
+				// （镜像生产 OpenRepositoryInShellToolCommand.Execute 的 notFoundDisplay 逻辑），
+				// 用户能看出该装哪个终端。
+				string expectedDisplay = shellPath ?? string.Join("/", global::ForkPlus.UI.ShellTool.UnixTerminalEmulatorCandidates);
+				Assert.Contains(E2eMainWindowHarness.TrFormat(
+					"Cannot find shellToolPath at '{0}'", expectedDisplay), captured);
 					ScreenshotHelper.Snap(window, "15-manual-handlers-shelltool-error", ModuleDir);
 
 					// ===== 3) 应用仍可响应：视图切换照常工作 =====
@@ -1522,7 +1558,7 @@ namespace ForkPlus.Tests
 							Assert.Equal("SENTINEL", ClipboardText());
 
 							Assert.True(guard.ClosedWindow == null,
-								"负向按键不应弹任何窗口: " + (guard.ClosedWindow?.GetType().Name ?? "?"));
+								"负向按键不应弹任何窗口: " + (guard.ClosedWindow != null ? guard.ClosedWindow.GetType().Name + " → " + guard.ClosedWindowText : "?"));
 						}
 						ScreenshotHelper.Snap(window, "14-scope-negatives", ModuleDir);
 					}

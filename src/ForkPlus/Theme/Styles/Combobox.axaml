@@ -272,6 +272,22 @@
          由 App 级样式 Theme/GlobalFrameworkCompatStyles.axaml 负责（App.Styles 走 InheritanceParent
          链，快照 attach 时可收到）。 -->
     <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <!-- Migration note（2026-09-07 修复，"重置弹窗重置类型下拉框点了啥也没有"）：Avalonia ComboBox
+         的 ItemsPanel 默认 VirtualizingStackPanel（ComboBox.cs 静态构造 OverrideDefaultValue 实证），
+         WPF ComboBox 默认是普通 StackPanel（WPF 里 VirtualizingStackPanel 只是 ListBox/ListView 等
+         的默认项面板）。VSP 在 Popup 弹层里有致命组合缺陷（诊断测试 ResetBranchPopupDiagnosticTests
+         实证）：弹层首测时无已测容器 → 估算项尺寸偏差 → 实现范围只含第 1 项；选中项走 focus/selection
+         的 post-materialization 补实现路径（进面板但不参与布局，Bounds 0×0）；其余项不实现。
+         结果 = 3 项只渲染 1 项、选中项空白。改回 WPF 同款 StackPanel：容器在弹层首次测量时
+         全量物化+布局，行为与 WPF 完全一致。下拉项均为少量静态项（重置类型 3 项/主题/实例选择器等），
+         无虚拟化收益。 -->
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <StackPanel />
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
     <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}" />
     
   

@@ -55,10 +55,12 @@ namespace ForkPlus.UI.Dialogs
 		public ResetBranchWindow(RepositoryUserControl repositoryUserControl, [Null] LocalBranch activeBranch, Revision destination)
 		{
 			InitializeComponent();
-			// WPF→Avalonia 迁移回归修复：Avalonia ComboBox 的项容器在下拉 Popup 内延迟物化，
-			// axaml 中 Mixed 的 IsSelected="True" 在用户首次展开下拉前不生效（关闭态显示为空；
-			// WPF ComboBox 加载即生成全部容器故无此问题）。编程式选中 Mixed（与 _resetType
-			// 默认值一致），触发 SelectionChanged 同步 _resetType 与命令预览，关闭态正确显示。
+			// WPF→Avalonia 迁移回归修复：axaml 中 Mixed 的 IsSelected="True" 已移除（见 axaml 内
+			// Migration note——XAML 本地值会在容器物化时触发 Avalonia 单选 toggle 反选，把已选中项
+			// 清成 -1 并让 SelectionChanged 携带空 AddedItems）。初始选中改为在此编程式设置
+			// （SelectedIndex 走 SelectionModel，容器物化时经 MarkContainerSelected/SetCurrentValue
+			// 同步，不产生 IsSet 本地值、不反选、不产生空 AddedItems 事件），与 _resetType 默认值
+			// 一致，SelectionChanged 同步 _resetType 与命令预览，关闭态正确显示 Mixed。
 			ResetTypeCombobox.SelectedIndex = 1;
 			_repositoryUserControl = repositoryUserControl;
 			_branch = activeBranch;
@@ -150,9 +152,19 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ResetTypeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			// 守卫空 AddedItems（选区清除事件：AddedItems 空/RemovedItems 非空）。此处理器在
+			// 容器物化管线内同步执行，任何异常都会中断 PanelContainerGenerator 的物化循环，
+			// 造成"下拉只剩前两项"的级联故障（2026-09-07 根因修复的一部分，见 axaml 注释）。
+			if (e.AddedItems.Count == 0)
+			{
+				return;
+			}
 			ComboBoxItem comboBoxItem = e.AddedItems[0] as ComboBoxItem;
-			_resetType = (BranchResetType)comboBoxItem.Tag;
-			RefreshCommandPreview();
+			if (comboBoxItem?.Tag is BranchResetType resetType)
+			{
+				_resetType = resetType;
+				RefreshCommandPreview();
+			}
 		}
 
 		public static string GetResetTypeName(BranchResetType resetType)

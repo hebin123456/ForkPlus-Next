@@ -20,7 +20,23 @@ namespace ForkPlus.UI.Controls
 			base.OnIsCheckedChanged(e);
 			if (base.IsChecked == true)
 			{
-				OpenDropdown();
+				// Migration note（2026-09-07 修复，"外观/工作区按钮无下拉"）：真实点击序 =
+				// ToggleButton.OnClick 先切 IsChecked（本回调）→ 再同步 raise Click 路由事件
+				// （UiClick.cs 与 E2e07 注释实证；宿主常在 Click 处理器里构建菜单项，如
+				// ToolbarUserControl 的 InitializeAppearanceToolBarButtonContextMenu）。若在此立即
+				// Open()，打开的是空菜单（axaml 里 <p:ContextMenu/> 无项），而 Avalonia 已打开的
+				// ContextMenu 不会为后加入的 Items 重新物化/渲染弹层（WPF 会，headless 复现实证
+				// popupRoot 内 MenuItem=0），用户看到"点了没下拉"。Undo/Stash 按钮正常是因为它们在
+				// Opened 事件（Open 调用栈内、布局未跑）里构建项。修复 = 延迟一个 dispatcher 周期再
+				// Open，让同一交互内紧随其后的 Click 路由事件先完成菜单项构建（对 Opened 构建型
+				// 按钮时序不变，仅晚一拍打开）。
+				Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+				{
+					if (base.IsChecked == true)
+					{
+						OpenDropdown();
+					}
+				}, Avalonia.Threading.DispatcherPriority.Background);
 			}
 			else
 			{
