@@ -100,7 +100,12 @@
           <ItemsControl Margin="0,16,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="DiffList">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <ListBoxItem Theme="{DynamicResource DiffListListBoxItemStyle}">
+                <!-- Migration note（v3.13 修复）：原版 ListBoxItem 绑定了 ContextMenuOpening（WPF）
+                     打开前填充菜单项，迁移时丢失绑定——ContextMenu 为空壳导致右键无菜单。
+                     Avalonia 对应事件为 ContextRequested（与 RevisionChanges/FileTree 等视图
+                     既有迁移模式一致）；HorizontalContentAlignment="Stretch" 同步补齐（右键
+                     命中区域覆盖整行，含文件名右侧空白）。 -->
+                <ListBoxItem HorizontalContentAlignment="Stretch" ContextRequested="ListBoxItem_ContextMenuOpening" Theme="{DynamicResource DiffListListBoxItemStyle}">
                   <ListBoxItem.ContextMenu>
                     <ContextMenu />
                   </ListBoxItem.ContextMenu>
