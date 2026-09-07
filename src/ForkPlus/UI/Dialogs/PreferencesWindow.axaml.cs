@@ -63,6 +63,7 @@ namespace ForkPlus.UI.Dialogs
 			AiReviewPreferencesUserControl.Initialize();
 			IntegrationUserControl.Initialize(this);
 			GitUserControl.Initialize(this);
+			CredentialsUserControl.Initialize(this);
 			CustomCommandsUserControl.InitializeGlobal(this);
 			ImportExportUserControl.Initialize(this);
 			ApplyLocalization();
@@ -85,6 +86,7 @@ namespace ForkPlus.UI.Dialogs
 			CommitTabItem.Header = PreferencesLocalization.Translate("Commit", language);
 			AiReviewTabItem.Header = PreferencesLocalization.Translate("AI Enhancement", language);
 			GitTabItem.Header = PreferencesLocalization.Translate("Git", language);
+			CredentialsTabItem.Header = PreferencesLocalization.Translate("Credentials", language);
 			IntegrationTabItem.Header = PreferencesLocalization.Translate("Integration", language);
 			CustomCommandsTab.Header = PreferencesLocalization.Translate("Custom Commands", language);
 			ImportExportTab.Header = PreferencesLocalization.Translate("Import/Export", language);
@@ -116,6 +118,10 @@ namespace ForkPlus.UI.Dialogs
 				if (selectedTab.Content is IntegrationUserControl integrationUserControl)
 				{
 					integrationUserControl.ApplyLocalization();
+				}
+				if (selectedTab.Content is CredentialsUserControl credentialsUserControl)
+				{
+					credentialsUserControl.ApplyLocalization();
 				}
 				_localizedTabLanguages[selectedTab] = language;
 			}

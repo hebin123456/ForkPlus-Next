@@ -1673,12 +1673,21 @@ namespace ForkPlus
 						return;
 					}
 					if (GcmCompatibleStore.TryQuery(credentialHelperArguments.Protocol, credentialHelperArguments.Host, credentialHelperArguments.Username, out string storedUsername, out string storedPassword))
-					{
-						credentialHelperArguments.Username = storedUsername ?? credentialHelperArguments.Username;
-						credentialHelperArguments.Password = storedPassword;
-						pipeServer.WriteString(credentialHelperArguments.Export());
-						return;
-					}
+				{
+					credentialHelperArguments.Username = storedUsername ?? credentialHelperArguments.Username;
+					credentialHelperArguments.Password = storedPassword;
+					pipeServer.WriteString(credentialHelperArguments.Export());
+					return;
+				}
+				// 凭据记忆（Layer D）：用户勾选过"记住密码"的 host 静默回填（跨平台，
+				// 非 Windows 上 GCM 兼容键为空操作——这里是 Linux/macOS 自动填充的主路径）。
+				if (SavedCredentialStore.Current.TryGetPassword(credentialHelperArguments.Host, out string rememberedUsername, out string rememberedPassword))
+				{
+					credentialHelperArguments.Username = rememberedUsername ?? credentialHelperArguments.Username;
+					credentialHelperArguments.Password = rememberedPassword;
+					pipeServer.WriteString(credentialHelperArguments.Export());
+					return;
+				}
 				}
 				pipeServer.WriteString(string.Empty);
 			}
@@ -1700,6 +1709,9 @@ namespace ForkPlus
 				if (credentialHelperArguments3 != null)
 				{
 					GcmCompatibleStore.Erase(credentialHelperArguments3.Protocol, credentialHelperArguments3.Host, credentialHelperArguments3.Username);
+					// 凭据记忆（Layer D）联动：密码已失效——清"记住的密码"防死循环
+					// （否则 get 永远命中旧密码、永远认证失败），保留账号记忆与"不再询问"标记。
+					SavedCredentialStore.Current.ForgetPassword(credentialHelperArguments3.Host);
 				}
 				pipeServer.WriteString(string.Empty);
 			}

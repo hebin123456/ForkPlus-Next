@@ -78,9 +78,28 @@ GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，Escape
 
 - **GCM 存量凭据**：Layer A/B 后 GCM 不再参与凭据获取，但 Layer C 的 `get` 会先读 WCM 里的 GCM 兼容键，Windows 用户由 GCM 存过的凭据可以直接复用，不强制重输。
 - **取消即失败**：用户在 AskPassWindow 点取消后 git 直接失败退出，不出现二次弹窗。符合"感知不到原生弹窗"的目标，代价是没有"跳过本次"的中间态。
-- **平台差异**：Linux/macOS 没有 Windows Credential Manager，Layer C 的持久化在那两个平台暂为空操作（每次重输）。后续可接 `git-credential-store` 文件或系统 keyring，不在本计划内。
+- **平台差异**：Linux/macOS 没有 Windows Credential Manager，Layer C 的持久化在那两个平台暂为空操作（每次重输）。~~后续可接 `git-credential-store` 文件或系统 keyring，不在本计划内~~ → 已由 Layer D 补齐（见下）。
 - **预存在的小坑（保持现状，仅记录）**：`_overrideCredentialHelper` 的值同时叠加了字面引号与 `EscapeSpaces()` 反斜杠转义，安装路径含空格时两种转义可能互相打架。默认安装路径不含空格，本计划不动它，避免行为漂移。
 - **`GIT_CONFIG_COUNT` 侵入性**：环境注入对 git-mm / submodule 子树全局生效，包括它们内部读取 git config 的场景（如 `git config --list` 会看到注入项）。仓库内没有读取 credential 配置做展示的代码，影响面可控。
+
+### Layer D：跨平台凭据记忆（记住账号 / 记住密码 / 不再询问）
+
+Layer C 落地后 Linux/macOS 仍是"每次重输"（WCM 平台守卫使 store/erase 空操作）。Layer D 以独立存储 `SavedCredentialStore`（`src/ForkPlus/Git/SavedCredentialStore.cs`，`ForkDirectoryPath/credentials.json`，AtomicWrite 落盘）补齐，并把凭据弹窗升级为三档记忆：
+
+| 档位 | 触发 | 效果 |
+|------|------|------|
+| 记住账号（默认勾选） | HTTP(S) Username 询问提交 | host → username 落盘，下次询问预填 |
+| 记住密码（显式勾选） | HTTP(S) Password 询问提交 | credential `get`（App IPC mode 2/3）静默命中回填——askpass 链根本不触发，自动填充；askpass 侧（`ShowAskPassWindowCommand`）留兜底路径 |
+| 不再询问（显式勾选） | HTTP(S) Password 询问提交 | 凭据缺失时空响应快速失败，不弹窗；偏好设置 > Credentials 可单条/全局重新开启 |
+
+落地细节：
+
+1. `App.AskPassIpcMessageHandler` 的 `get` 分支在 GCM 兼容键未命中后追加 `SavedCredentialStore.TryGetPassword`（非 Windows 自动填充的主路径）；`erase` 分支（mode 5）联动 `ForgetPassword`——密码失效时只清密码，保留账号记忆与"不再询问"标记，防"get 永远命中旧密码"死循环。
+2. `AskPassWindow`：Username 模式预填已记住账号 + "记住账号"默认勾选；HTTP(S) Password 模式新增"记住密码"/"不再询问"两个选项（SSH 场景的 RememberCheckBox 语义不变）。prompt 解析（`TryParseUsernamePrompt`/`TryParsePasswordPrompt`）只认 `http(s)://` URL，SSH 询问不受影响。
+3. `ShowAskPassWindowCommand`：HTTP(S) 询问在弹窗前查记忆——已记住密码直接回填（兜底），"不再询问"主机空响应快速失败。
+4. 偏好设置新增 Credentials 页（`CredentialsUserControl`）：条目列表（host/账号/状态）、单条 Remove、单条 Ask Again（重新询问的开关）、全局 Ask Again for All Hosts。凭据操作即时落盘，无 Save 按钮。
+5. 明文密码是已知权衡：Linux 无跨桌面环境统一 keyring 抽象（libsecret 依赖 D-Bus session，CI/远程环境普遍缺失），与 accounts.json 的既有处理一致，依赖用户主目录权限保护。
+6. 专项测试：`SavedCredentialStoreTests`（prompt 解析 / CRUD 语义 / 落盘重载 / Command 静默路径）+ `CredentialsRememberUiTests`（弹窗三档装配与提交写入 / 偏好页列表与按钮，SwapForTests 注入隔离 store）。
 
 ## 验证计划
 
@@ -99,3 +118,4 @@ GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，Escape
 | CI 修复① | GitCredentialEnvTests 缺 `using System`（CS0103，test job 编译失败） | 已实施 | 3c75a4e |
 | CI 修复② | `ApplyToProcessStartInfo` 对缺失 `GIT_CONFIG_COUNT` 抛 KeyNotFoundException（干净环境 git 请求整体失败，E2E 连锁 109 红）→ ContainsKey 两段式；第一版误用 `StringDictionary.TryGetValue`（不存在，CS1061 四平台编译挂）→ 修正 | 已实施 | 4b82d98 |
 | CI 全量验证 | 4b82d98：linux test job 4302/4302 绿 + AskPass 10/10 + RI 6/6，三平台 build 绿。注：Layer B 的测试与运行时 bug 此前一直被编译错误掩盖，直到 3c75a4e 首次真正执行才暴露 | 通过 | 4b82d98 |
+| Layer D | 跨平台凭据记忆：SavedCredentialStore（credentials.json）+ AskPassWindow 三档记忆 + get/erase 链路接入 + 偏好设置 Credentials 页 + 专项测试 29 项 | 已实施 | （本次提交） |

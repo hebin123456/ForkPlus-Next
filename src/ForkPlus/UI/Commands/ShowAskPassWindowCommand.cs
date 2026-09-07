@@ -25,6 +25,32 @@ namespace ForkPlus.UI.Commands
 					return;
 				}
 			}
+			// 凭据记忆（Layer D）：HTTP(S) 询问的静默路径——
+			// 已记住密码 → 直接回填（askpass 链不弹窗，自动填充的兜底路径；
+			// 主路径在 credential helper get 层已静默命中）；"不再询问"的主机凭据
+			// 缺失时快速失败（空响应），后续可在偏好设置 > Credentials 重新开启。
+			// （先试 Password：out promptUsername 需在所有路径有值，避免 || 短路后 CS0165；
+			//  一个 prompt 至多匹配二者之一。）
+			string host = null;
+			string promptUsername = null;
+			if (SavedCredentialStore.TryParsePasswordPrompt(request, out host, out promptUsername)
+				|| SavedCredentialStore.TryParseUsernamePrompt(request, out host))
+			{
+				SavedCredentialStore.SavedCredential entry = SavedCredentialStore.Current.FindEntry(host);
+				if (entry != null)
+				{
+					if (entry.HasPassword && promptUsername != null)
+					{
+						result = entry.Password;
+						return;
+					}
+					if (entry.NeverAskAgain)
+					{
+						result = string.Empty;
+						return;
+					}
+				}
+			}
 			if (noPrompt)
 			{
 				result = string.Empty;

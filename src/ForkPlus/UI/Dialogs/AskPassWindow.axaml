@@ -17,11 +17,20 @@
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Password:" x:Name="InputTextBlock" />
       <TextBox Text="" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="InputTextBox" />
-      <TextBox Text="" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="InputPasswordBox" PasswordChar="●" />
+      <TextBox Text="" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" PasswordChar="●" x:Name="InputPasswordBox" />
       <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember in Credential Manager" ToolTip.Tip="Remember in Windows Credential Manager" x:Name="RememberCheckBox" />
+      <!-- 凭据记忆（Layer D）：HTTP(S) 用户名询问的"记住账号"（默认勾选，预填已记住账号） -->
+      <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember user name for this host" ToolTip.Tip="Pre-fills the user name next time this host asks" x:Name="RememberAccountCheckBox" />
+      <!-- HTTP(S) 密码询问的"记住密码"：勾选后 credential get 静默命中（自动填充，不再弹窗） -->
+      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember password" ToolTip.Tip="Fills in automatically next time" x:Name="RememberPasswordCheckBox" />
+      <!-- HTTP(S) 凭据询问的"不再询问"：凭据缺失时快速失败，可在 Preferences &gt; Credentials 重新开启 -->
+      <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Never ask again for this host" ToolTip.Tip="Use saved credentials silently and fail fast when they are missing (re-enable in Preferences &gt; Credentials)" x:Name="NeverAskCheckBox" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

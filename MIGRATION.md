@@ -357,6 +357,35 @@ CI 新沙箱每轮干净）。GUI 冒烟取证（修复后工作区 tab 无警�
 教训：**XAML 控件补丁与引用它的测试必须同一提交**——x:Name/事件双改点（Click 与
 Name）一个都不能漏，否则仓库在任何 checkout 点都无法构建。
 
+## CI 红灯：清单缺登记 + 手势测试在 CI 环境不稳定（2026-09-07）
+
+test job（ubuntu）4 项红，两类根因：
+
+1. **`SourceFileCoverageManifestTests` / `ClassCoverageManifestTests` 各 1 红**：
+   1b43544（fsmonitor 修复）新增 `src/ForkPlus/Git/Commands/ReliableGitFlags.cs`
+   未登记进两个 coverage manifest（本仓纪律：生产源文件/类型必须注册，且每个类型
+   至少 1 个 AutomatedCase）。按字母序补两处条目。顺带清理 manifest 里的重复条目
+   （`Coder` 5 份 / `Keys` 3 份 / `ServiceResult` 2 份——同名嵌套类每声明一处曾被
+   重复登记，xUnit theory 生成 duplicate case ID 告警）。去重教训：**不能
+   `awk '!seen[$0]++'` 全局去重**——清单里 `},` 等结构行同内容不同位置会误删，
+   直接把文件结构打坏（CS1514）；必须只对 `new ClassCoverageEntry(` 行去重。
+2. **`E2e05bDoubleClickStageTests` 2 红**：真实指针手势序列（GetPosition 模拟链）
+   的双击 stage 测试。本地全绿、CI 红且"双击后列表完全无变化"（手势识别未触发），
+   fsmonitor 变体在本地也暴露 `UiClick.WaitFor` 条件对 `Items == null`（状态装配
+   未完成）解引用 NRE 的测试自身缺陷。stage 功能本身已被 `ReliableGitFlags` 修复
+   （`E2e05` 合成事件测试覆盖），真实手势序列测试属多余且跨环境不稳定——整文件
+   删除（用户拍板）。
+
+## 凭据管理器三档记忆：记住账号 / 记住密码 / 不再询问（2026-09-07）
+
+设计见 `docs/credential-popup-unification.md` Layer D 一节（在 Layer A/B/C 之后）。
+要点：`SavedCredentialStore`（credentials.json，跨平台）补齐 Layer C 在
+Linux/macOS 的持久化空操作；`AskPassWindow` HTTP(S) 询问三档记忆（记住账号默认
+勾选+预填、记住密码勾选后 credential get 静默命中、不再询问后快速失败）；erase
+联动 `ForgetPassword` 防旧密码死循环；偏好设置新增 Credentials 页（单条/全局
+"Ask Again" 重新弹出开关 + Remove）。测试隔离用 `SwapForTests`（internal，
+InternalsVisibleTo 已有），29 项专项测试。
+
 
 - 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）；图表库源码仓库 `/data/user/work/oxyplot-avalonia`（hebin123456 fork，用于发 nupkg，主仓库已改为 PackageReference 消费其 release 产物，不再本地引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批

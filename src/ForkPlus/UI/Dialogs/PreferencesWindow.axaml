@@ -18,6 +18,9 @@
       <TabItem Header="Git" x:Name="GitTabItem">
         <preferences:GitUserControl Margin="0,10,0,0" x:Name="GitUserControl" />
       </TabItem>
+      <TabItem Header="Credentials" x:Name="CredentialsTabItem">
+        <preferences:CredentialsUserControl Margin="0,10,0,0" x:Name="CredentialsUserControl" />
+      </TabItem>
       <TabItem Header="Integration" x:Name="IntegrationTabItem">
         <preferences:IntegrationUserControl Margin="0,10,0,0" x:Name="IntegrationUserControl" />
       </TabItem>

@@ -18,6 +18,15 @@ namespace ForkPlus.UI.Dialogs
 
 		private string _arguments;
 
+		[Null]
+		private string _httpsUsernameHost;
+
+		[Null]
+		private string _httpsPasswordHost;
+
+		[Null]
+		private string _httpsPasswordUsername;
+
 		public string Result { get; private set; }
 
 		public AskPassWindow(string arguments, string repositoryPath)
@@ -26,6 +35,9 @@ namespace ForkPlus.UI.Dialogs
 			_askPassRequest = AskPassRequest.Parse(arguments);
 			_arguments = arguments;
 			RememberCheckBox.Hide();
+			RememberAccountCheckBox.Hide();
+			RememberPasswordCheckBox.Hide();
+			NeverAskCheckBox.Hide();
 			base.DialogTitle = ((repositoryPath != "") ? Path.GetFileName(repositoryPath) : PreferencesLocalization.Current("Credentials Required"));
 			if (_arguments.StartsWith("Username for"))
 			{
@@ -34,6 +46,17 @@ namespace ForkPlus.UI.Dialogs
 				InputTextBox.Show();
 				InputPasswordBox.Hide();
 				InputTextBox.Focus();
+				// 凭据记忆（Layer D）：HTTP(S) 用户名询问——预填已记住账号 + 默认勾选"记住账号"
+				if (SavedCredentialStore.TryParseUsernamePrompt(_arguments, out _httpsUsernameHost))
+				{
+					SavedCredentialStore.SavedCredential saved = SavedCredentialStore.Current.FindEntry(_httpsUsernameHost);
+					if (saved?.Username != null)
+					{
+						InputTextBox.Text = saved.Username;
+					}
+					RememberAccountCheckBox.IsChecked = true;
+					RememberAccountCheckBox.Show();
+				}
 			}
 			else if (_askPassRequest is AskPassRequest.SshPassphrase sshPassphrase)
 			{
@@ -61,6 +84,17 @@ namespace ForkPlus.UI.Dialogs
 				InputPasswordBox.Focus();
 				RememberCheckBox.Show();
 			}
+			else if (SavedCredentialStore.TryParsePasswordPrompt(_arguments, out _httpsPasswordHost, out _httpsPasswordUsername))
+			{
+				// 凭据记忆（Layer D）：HTTP(S) 密码询问——"记住密码"（自动填充）+ "不再询问"选项
+				base.DialogDescription = _arguments;
+				InputTextBlock.Text = PreferencesLocalization.Current("Password:");
+				InputTextBox.Hide();
+				InputPasswordBox.Show();
+				InputPasswordBox.Focus();
+				RememberPasswordCheckBox.Show();
+				NeverAskCheckBox.Show();
+			}
 			else
 			{
 				base.DialogDescription = _arguments;
@@ -77,6 +111,24 @@ namespace ForkPlus.UI.Dialogs
 			if (_arguments.StartsWith("Username for"))
 			{
 				Result = InputTextBox.Text;
+				// 凭据记忆（Layer D）：记住账号（默认勾选）——host → username，下次询问预填
+				if (_httpsUsernameHost != null && RememberAccountCheckBox.IsChecked.GetValueOrDefault() && !string.IsNullOrEmpty(Result))
+				{
+					SavedCredentialStore.Current.RememberUsername(_httpsUsernameHost, Result);
+				}
+			}
+			else if (_httpsPasswordHost != null)
+			{
+				Result = InputPasswordBox.Text;
+				// 凭据记忆（Layer D）：记住密码（勾选后 credential get 静默命中）+ 不再询问
+				if (RememberPasswordCheckBox.IsChecked.GetValueOrDefault() && !string.IsNullOrEmpty(Result))
+				{
+					SavedCredentialStore.Current.RememberPassword(_httpsPasswordHost, _httpsPasswordUsername, Result);
+				}
+				if (NeverAskCheckBox.IsChecked.GetValueOrDefault())
+				{
+					SavedCredentialStore.Current.SetNeverAsk(_httpsPasswordHost, true);
+				}
 			}
 			else
 			{
