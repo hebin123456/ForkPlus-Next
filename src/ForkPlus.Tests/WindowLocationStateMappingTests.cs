@@ -79,7 +79,7 @@ namespace ForkPlus.Tests
 		{
 			// 文档化为何不能直接强转：记录旧 bug 的具体表现。
 			// WPF 时代：(WindowState)3 是未定义值（Normal=0/Minimized=1/Maximized=2）。
-			// TODO 迁移：Avalonia 的 WindowState 多了 FullScreen=3——强转 (WindowState)3
+			// 迁移适配：Avalonia 的 WindowState 多了 FullScreen=3——强转 (WindowState)3
 			// 不再产生非法枚举，而是**语义错误**的 FullScreen（最大化窗口被恢复成全屏）。
 			// 坑换了形态依然存在：唯一正确路径仍是 FromShowCmd(SW_SHOWMAXIMIZED)→Maximized。
 			int swShowMaximized = 3;

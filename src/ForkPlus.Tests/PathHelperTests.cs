@@ -6,7 +6,7 @@ namespace ForkPlus.Tests
 {
 	public class PathHelperTests
 	{
-		// TODO 迁移：PathHelper.Normalize 已跨平台化（Windows→'\'，Unix→'/'，修复破坏
+		// 迁移适配：PathHelper.Normalize 已跨平台化（Windows→'\'，Unix→'/'，修复破坏
 		// /usr/bin/git 那类路径的连锁问题），原测试硬编码 Windows 期望值在 Linux 上必挂。
 		// 期望值按当前平台分隔符计算。
 		[Theory]
