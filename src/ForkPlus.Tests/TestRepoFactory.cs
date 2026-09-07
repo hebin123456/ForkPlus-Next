@@ -415,6 +415,20 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>空仓库（供模块27 启动崩溃回归，2026-09-07 Linux 用户反馈）：git init 后零提交、
+		/// 零引用、unborn HEAD——复现"重启后打不开"的最小仓库形态。withUntracked=true 再加一个
+		/// 未跟踪文件（在非空目录 init 的常见初始状态，Changes 视图有内容）。</summary>
+		public static string CreateEmpty(bool withUntracked = false)
+		{
+			string root = NewTempDir("empty");
+			Init(root);
+			if (withUntracked)
+			{
+				File.WriteAllText(Path.Combine(root, "untracked.txt"), "hello\n");
+			}
+			return root;
+		}
+
 		/// <summary>已初始化 GitFlow 的仓库（供模块17 Start/Finish 测试）：main 单提交 +
 		/// develop 分支 + 完整 gitflow config（master=main 探针实证：InitGitFlowGitCommand
 		/// 同款链路——branch develop + 写 9 项 config + flow init -d 保留自定义 master=main）。

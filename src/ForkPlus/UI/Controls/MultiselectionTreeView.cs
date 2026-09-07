@@ -70,6 +70,11 @@ namespace ForkPlus.UI.Controls
 
 		private TreeViewControlItem _previewNodeView;
 
+		// 最近一次同步过 IsSelected 的选中节点快照（对象引用）。
+		// 见 OnSelectionChanged 的 Migration note：Avalonia 12 的事件参数是按索引惰性解析的
+		// 视图，源收缩后不可枚举，选中差集只能按引用维护。
+		private readonly HashSet<MultiselectionTreeViewItem> _knownSelectedNodes = new HashSet<MultiselectionTreeViewItem>();
+
 		public MultiselectionTreeViewItem RootItem
 		{
 			get
@@ -210,14 +215,31 @@ namespace ForkPlus.UI.Controls
 
 		protected void OnSelectionChanged(SelectionChangedEventArgs e)
 		{
-			foreach (MultiselectionTreeViewItem removedItem in e.RemovedItems)
+			// Migration note（Linux 启动必崩修复，2026-09-07）：WPF 的 SelectionChangedEventArgs.
+			// RemovedItems/AddedItems 是对象引用快照，可安全枚举；Avalonia 12 中它们是
+			// SelectedItems<T> 惰性视图——按 SelectionModel 记录的【索引】对当前 ItemsSourceView
+			// 现场解析。若源集合在选中索引记录之后收缩（本控件 _flattener_CollectionChanged 的
+			// Remove 回调内 UpdateFocusedNode → SelectedItems.Clear() 正是此情形：提交的取消选中
+			// 集合携带收缩前的过期索引，枚举时经 ItemsSourceView.GetAt → Flattener.get_Item 越界抛
+			// ArgumentOutOfRangeException），Linux 用户实测启动即崩（仓库管理器单仓库时选中项即
+			// 可见序列末项，后台重扫描 → Refresh → Children.Clear() 后索引必然越界，进程终止）。
+			// 修复：不枚举事件参数的惰性视图，改按引用集合 SelectedItems（真实对象引用，无索引
+			// 解析——UpdateFocusedNode 里 .Cast<>() 先行执行未崩即实证）与上次已知选中快照求差集，
+			// 同步节点 IsSelected（保持原语义：新选中置 true / 不再选中置 false）。
+			HashSet<MultiselectionTreeViewItem> currentSelection = new HashSet<MultiselectionTreeViewItem>(base.SelectedItems.OfType<MultiselectionTreeViewItem>());
+			foreach (MultiselectionTreeViewItem previouslySelectedNode in _knownSelectedNodes)
 			{
-				removedItem.IsSelected = false;
+				if (!currentSelection.Contains(previouslySelectedNode))
+				{
+					previouslySelectedNode.IsSelected = false;
+				}
 			}
-			foreach (MultiselectionTreeViewItem addedItem in e.AddedItems)
+			foreach (MultiselectionTreeViewItem selectedNode in currentSelection)
 			{
-				addedItem.IsSelected = true;
+				selectedNode.IsSelected = true;
 			}
+			_knownSelectedNodes.Clear();
+			_knownSelectedNodes.UnionWith(currentSelection);
 			// Migration note：WPF 在 override 末尾调 base.OnSelectionChanged(e) 触发 ListBox 的 SelectionChanged 事件；
 			// Avalonia 12 中本方法改为由 SelectionChanged 事件回调（见构造函数订阅），事件已由基类触发，无需再转发。
 		}
@@ -444,7 +466,13 @@ namespace ForkPlus.UI.Controls
 			}
 			if (base.SelectedItem == null)
 			{
-				base.SelectedIndex = topSelectedIndex;
+				// 边界保护（2026-09-07）：Flattener 刚收缩，topSelectedIndex 按 OldStartingIndex 计算
+				// 可能已越界（Avalonia SelectionModel 对超界索引同样抛 ArgumentOutOfRangeException）；
+				// WPF SelectedIndex 越界赋值仅静默忽略，按此语义钳制。
+				if (topSelectedIndex >= 0 && topSelectedIndex < base.Items.Count)
+				{
+					base.SelectedIndex = topSelectedIndex;
+				}
 			}
 		}
 	}

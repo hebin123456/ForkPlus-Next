@@ -50,9 +50,9 @@ footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border);
 </header>
 
 <div class="stats">
-<div class="stat"><b>27</b><span>模块（阶段0 + 26 功能模块）</span></div>
-<div class="stat"><b>147</b><span>E2E 用例</span></div>
-<div class="stat"><b>214</b><span>截图证据</span></div>
+<div class="stat"><b>28</b><span>模块（阶段0 + 27 功能模块）</span></div>
+<div class="stat"><b>151</b><span>E2E 用例</span></div>
+<div class="stat"><b>217</b><span>截图证据</span></div>
 <div class="stat"><b>1920×1080 · 自然比例</b><span>截图口径（主窗口 / 弹窗）</span></div>
 </div>
 <nav class="chips">
@@ -83,6 +83,7 @@ footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border);
 <a href="#m24-ai">24 · AI 功能</a>
 <a href="#m25-common-dialogs">25 · 通用对话框</a>
 <a href="#m26-quicklaunch">26 · Quick Launch 快速启动</a>
+<a href="#m27-startup-selection-crash">27 · 启动选中越界崩溃</a>
 </nav>
 <table class="sum"><tr><th>模块</th><th>覆盖内容</th><th>E2E 用例</th><th>截图</th></tr>
 <tr><td><a href="#m00-infra">阶段 0 · 测试基建</a></td><td>headless 启动、截图助手、控件树查找基建冒烟</td><td class="num">7</td><td class="num">1</td></tr>
@@ -112,7 +113,8 @@ footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border);
 <tr><td><a href="#m24-ai">24 · AI 功能</a></td><td>AI 提交/代码审查/开发助手（UI + OpenAI stub 全链路）</td><td class="num">6</td><td class="num">8</td></tr>
 <tr><td><a href="#m25-common-dialogs">25 · 通用对话框</a></td><td>MessageBox/Error/AskPass/颜色/快捷键/About/更新/诊断/通知</td><td class="num">7</td><td class="num">11</td></tr>
 <tr><td><a href="#m26-quicklaunch">26 · Quick Launch 快速启动</a></td><td>命令面板点击"切换工作区"进参数态（Linux NRE 崩溃回归 + 单元级根因锁定）</td><td class="num">2</td><td class="num">1</td></tr>
-<tr><td><b>合计</b></td><td></td><td class="num"><b>147</b></td><td class="num"><b>214</b></td></tr>
+<tr><td><a href="#m27-startup-selection-crash">27 · 启动选中越界崩溃</a></td><td>源收缩下选中链路（控件级三变体）、仓库管理器单仓库确定性形态、Recent 重选语义、完整启动路径（Linux 每次启动必崩回归）</td><td class="num">4</td><td class="num">3</td></tr>
+<tr><td><b>合计</b></td><td></td><td class="num"><b>151</b></td><td class="num"><b>217</b></td></tr>
 </table>
 <section id="m00-infra">
 <h2>阶段 0 · 测试基建 <small style="color:var(--muted);font-size:13px">1 张 · 7 用例</small></h2>
@@ -488,6 +490,15 @@ footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border);
 <p class="desc">命令面板点击"切换工作区"进参数态（Linux 用户实测 NRE 崩溃回归：PushSection 清空输入写 null → 模板 TwoWay 绑定上传 → RefreshCommandList 的 .Text.Trim() 崩）+ 单元级根因锁定</p>
 <div class="grid">
 <figure><a href="26-quicklaunch/01-quicklaunch-switchworkspace-argument.png" target="_blank"><img loading="lazy" src="26-quicklaunch/01-quicklaunch-switchworkspace-argument.png" alt="01-quicklaunch-switchworkspace-argument.png"></a><figcaption>01-quicklaunch-switchworkspace-argument.png</figcaption></figure>
+</div>
+</section>
+<section id="m27-startup-selection-crash">
+<h2>27 · 启动选中越界崩溃 <small style="color:var(--muted);font-size:13px">3 张 · 4 用例</small></h2>
+<p class="desc">Linux 用户实测"重启后每次启动必崩"回归：Avalonia 12 的 SelectionChanged 事件参数是按索引惰性解析的视图，Flattener 收缩后枚举过期索引越界（WPF 是对象引用快照无此问题）。修复 = OnSelectionChanged 引用差集同步 + SelectedIndex 钳制；红绿验证（还原修复 3 用例抛同款异常）</p>
+<div class="grid">
+<figure><a href="27-startup-selection-crash/01-repomanager-single-repo-refresh-survived.png" target="_blank"><img loading="lazy" src="27-startup-selection-crash/01-repomanager-single-repo-refresh-survived.png" alt="01-repomanager-single-repo-refresh-survived.png"></a><figcaption>01-repomanager-single-repo-refresh-survived.png</figcaption></figure>
+<figure><a href="27-startup-selection-crash/02-repomanager-recent-reselect.png" target="_blank"><img loading="lazy" src="27-startup-selection-crash/02-repomanager-recent-reselect.png" alt="02-repomanager-recent-reselect.png"></a><figcaption>02-repomanager-recent-reselect.png</figcaption></figure>
+<figure><a href="27-startup-selection-crash/03-startup-manager-refresh-survived.png" target="_blank"><img loading="lazy" src="27-startup-selection-crash/03-startup-manager-refresh-survived.png" alt="03-startup-manager-refresh-survived.png"></a><figcaption>03-startup-manager-refresh-survived.png</figcaption></figure>
 </div>
 </section>
 <footer>生成日期 2026-09-07 · 截图随代码入库（docs/evidence/e2e/）· 每张截图至少配一条状态断言（铁律）· 生产 bug 修复均随模块提交并在测试计划变更日志记录</footer>
