@@ -17,7 +17,9 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 {
 	internal class MergeLineNumberMargin : ClearTypeLineNumberMargin
 	{
-		private static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas"), FontStyles.Normal, FontWeights.Normal);
+		// v3.13 修复（v3.12 同款）：WPF 原版 Typeface 第 5 参 fallback FontFamily("Courier New")
+		// 迁移时丢失——非 Windows 无 Consolas 时回退到等宽字体，避免行号测量与实际渲染宽度不一致。
+		private static readonly Typeface _typeface = new Typeface(new FontFamily("Consolas, Courier New, monospace"), FontStyles.Normal, FontWeights.Normal);
 
 		private static readonly Brush _textBrush = new SolidColorBrush(Color.FromRgb(192, 192, 192));
 
@@ -141,7 +143,10 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 				}
 				if (_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out var value))
 				{
-					drawingContext.DrawText(CreateFormattedText(value.ToString(), brush), new Point(base.Bounds.Size.Width - HorizontalMargin, visualLine.VisualTop - base.TextView.ScrollOffset.Y + 1.0));
+					// v3.13 修复（行号被代码区遮挡）：WPF 的 RTL FormattedText DrawText(origin) 以 origin
+					// 为右上角向左绘制；Avalonia 的 origin 恒为左上角，须显式减去文本宽度防右缘溢出。
+					FormattedText text = CreateFormattedText(value.ToString(), brush);
+					drawingContext.DrawText(text, new Point(base.Bounds.Size.Width - HorizontalMargin - text.Width, visualLine.VisualTop - base.TextView.ScrollOffset.Y + 1.0));
 				}
 			}
 			drawingContext.DrawLine(_separatorPen, new Point(base.Bounds.Size.Width - 2.0, 0.0), new Point(base.Bounds.Size.Width - 2.0, base.Bounds.Size.Height));
