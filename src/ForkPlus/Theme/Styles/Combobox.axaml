@@ -15,9 +15,15 @@
     <Setter Property="Padding" Value="4,0" />
     <Setter Property="Margin" Value="1,1" />
     <Setter Property="Height" Value="22" />
+    <!-- Migration note（v3.13 修复）：项内容水平对齐继承 ancestor ItemsControl.HorizontalContentAlignment
+         （WPF 语义）。WPF Popup 内容逻辑树连通（ComboBoxItem←…←Popup←ComboBox），FindAncestor 可达；
+         Avalonia 弹层内容挂独立 PopupRoot（ILogicalRoot）——逻辑链在那里断开，AncestorType ItemsControl
+         永远找不到 → 绑定失败回默认 Stretch，定宽项面板（280/370）在弹层 extent 里被居中。加
+         FallbackValue=Left：绑定失败时回退 WPF ItemsControl.HorizontalContentAlignment 默认 Left
+         （显式设 Stretch 的 ComboBox 在 Avalonia 下同样断链——统一回退 Left 与 WPF 主流观感一致）。 -->
     <Setter Property="HorizontalContentAlignment">
       <Setter.Value>
-        <Binding Path="HorizontalContentAlignment"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
+        <Binding Path="HorizontalContentAlignment" FallbackValue="Left"><Binding.RelativeSource><RelativeSource AncestorType="{x:Type ItemsControl}" /></Binding.RelativeSource></Binding>
       </Setter.Value>
     </Setter>
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -256,6 +262,16 @@
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="Padding" Value="6,3,0,3" />
     <Setter Property="Height" Value="24" />
+    <!-- Migration note（v3.13 修复）：WPF Control.HorizontalContentAlignment 默认 Left（Control.cs
+         Register 默认值实证），Avalonia 默认 Stretch——弹层项内容（ComboBoxItem.HorizontalContentAlignment
+         绑 ancestor ItemsControl 的本属性）与关闭态 presenter（模板 TemplateBinding 本属性）都会被
+         "Stretch+定宽=居中"排列，可见区只剩内容中段。补回 WPF 默认 Left 后：弹层项内容左对齐、
+         presenter 自身左对齐。显式设 Stretch 的 ComboBox（GitUserControl 实例选择器等）局部值优先
+         不受影响。关闭态快照 Rectangle 的左对齐无法在此修复——它运行时生成、无 TemplatedParent，
+         ControlTheme 嵌套样式够不到（ApplyTemplatedParentControlTheme 只作用于模板部件）——
+         由 App 级样式 Theme/GlobalFrameworkCompatStyles.axaml 负责（App.Styles 走 InheritanceParent
+         链，快照 attach 时可收到）。 -->
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}" />
     
   

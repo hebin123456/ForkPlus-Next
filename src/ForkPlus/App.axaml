@@ -19,7 +19,12 @@
          必须手动 Include 主题——缺了它 PlotBase(TemplatedControl) 无 ControlTemplate，
          OnApplyTemplate 找不到 PART_Panel → canvas 永不创建 → 统计页图表空白
          （StatisticsUserControl.LinePlot 实测）。 -->
-    <StyleInclude Source="avares://OxyPlot.Avalonia/Themes/Default.axaml" /></Application.Styles>  <!-- Migration note：原 WPF Theme/Styles/Sidebar.axaml 13 个 DataTemplateKey 类型模板。
+    <StyleInclude Source="avares://OxyPlot.Avalonia/Themes/Default.axaml" />
+    <!-- Migration note（v3.13 修复）：全局框架兼容样式——Avalonia 对"Stretch+显式宽超槽位"
+         居中排列（WPF 退化为左对齐），ComboBox 关闭态 VisualBrush 快照 Rectangle（运行时
+         生成、无 TemplatedParent、ControlTheme 嵌套样式够不到）需要 App 级样式补左对齐，
+         详见 Theme/GlobalFrameworkCompatStyles.axaml 注释。 -->
+    <StyleInclude Source="avares://ForkPlus/Theme/GlobalFrameworkCompatStyles.axaml" /></Application.Styles>  <!-- Migration note：原 WPF Theme/Styles/Sidebar.axaml 13 个 DataTemplateKey 类型模板。
        WPF 按类型隐式查找（app 级 merged dictionary + DataTemplateKey），Avalonia 12
        ContentPresenter 只走 FindDataTemplate（逻辑树 Control.DataTemplates → 全局），
        资源字典字符串 key 永不命中 → 侧栏树渲染 ToString() 类型名。搬入
