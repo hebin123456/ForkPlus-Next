@@ -234,14 +234,37 @@ namespace ForkPlus.Tests
 		}
 		// ===== 模块5第二批共用助手 =====
 
-		/// <summary>等 Commit 视图状态装配完成（3 未暂存 + 1 已暂存）。</summary>
+		/// <summary>
+		/// 等 Commit 视图状态装配完成（3 未暂存 + 1 已暂存）。
+		/// 装配期间 <see cref="CommitUserControl.StageFileUserControl"/>（x:Name 字段，XAML 加载完成前）
+		/// 或其内文件列表可为 null——WaitFor 条件必须空安全（条件里解引用 null 会直接 NRE 炸出
+		/// WaitFor 而不是等到超时，2026-09-07 沙盒慢机实证；与 E2e05b 同款测试自身缺陷）。
+		/// </summary>
 		private static StageFileUserControl WaitForWorkingDirStatus(CommitUserControl commit)
 		{
-			StageFileUserControl stage = commit.StageFileUserControl;
+			StageFileUserControl stage = null;
 			Assert.True(UiClick.WaitFor(delegate
 			{
-				return stage.AllUnstagedFiles.Length == 3 && stage.AllStagedFiles.Length == 1;
-			}), "初始状态未装配：unstaged=" + stage.AllUnstagedFiles.Length + " staged=" + stage.AllStagedFiles.Length);
+				// 装配竞态防御：慢机（沙盒）上视图装配期间属性链可能瞬态抛 NRE
+				// （2026-09-07 实证：同一用例两次运行 NRE 位置不同——commit 链 vs 文件列表链，
+				// 都是装配中途快照）。捕获后视为"本轮未就绪"继续轮询；真装配完成则条件成立，
+				// 真永久失败则超时走诊断消息，不再把装配瞬态当成测试崩溃。
+				try
+				{
+					stage = commit.StageFileUserControl;
+					return stage != null
+						&& stage.UnstagedFilesFileListUserControl != null
+						&& stage.StagedFilesFileListUserControl != null
+						&& stage.AllUnstagedFiles.Length == 3
+						&& stage.AllStagedFiles.Length == 1;
+				}
+				catch (NullReferenceException)
+				{
+					return false;
+				}
+			}), "初始状态未装配：stage=" + (stage == null ? "<null>" : "就绪")
+				+ " unstaged=" + (stage == null ? "?" : stage.AllUnstagedFiles.Length.ToString())
+				+ " staged=" + (stage == null ? "?" : stage.AllStagedFiles.Length.ToString()));
 			return stage;
 		}
 
@@ -284,6 +307,23 @@ namespace ForkPlus.Tests
 				});
 		}
 
+		/// <summary>
+		/// 轮询等待选区浮窗按钮出现（每轮强制渲染一帧：浮窗经 Render → DrawSelectionBorder →
+		/// ShowChunkAdorner 链路出现）。立即断言在冷启动/慢机下假红：首个触发该路径的用例
+		/// 必挂、后续同款全过（2026-09-07 沙盒实证，浮窗首用初始化时序）。
+		/// </summary>
+		private static FloatingButton WaitForFloatingButton(Window window, string content)
+		{
+			FloatingButton button = null;
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				HeadlessWindowExtensions.CaptureRenderedFrame(window);
+				button = FindFloatingButton(window, content);
+				return button != null;
+			}), "选区浮窗按钮未出现：" + content);
+			return button;
+		}
+
 		[Fact]
 		public void CommitView_LineLevelStage_FloatingButton_StagesOnlySelectedLines()
 		{
@@ -308,8 +348,8 @@ namespace ForkPlus.Tests
 
 						// ===== 1) 选中新增第一行（line4-appended）→ 浮窗出现 [Stage, Discard...] =====
 						SelectLineAndShowFloatingButtons(window, editor, "line4-appended");
-						FloatingButton stageBtn = FindFloatingButton(window, E2eMainWindowHarness.Tr("Stage"));
-						FloatingButton discardBtn = FindFloatingButton(window, E2eMainWindowHarness.Tr("Discard..."));
+						FloatingButton stageBtn = WaitForFloatingButton(window, E2eMainWindowHarness.Tr("Stage"));
+						FloatingButton discardBtn = WaitForFloatingButton(window, E2eMainWindowHarness.Tr("Discard..."));
 						Assert.True(stageBtn != null, "未暂存 diff 选区浮窗应出现 Stage 按钮");
 						Assert.True(discardBtn != null, "未暂存 diff 选区浮窗应出现 Discard... 按钮");
 						ScreenshotHelper.Snap(window, "06-floating-buttons-on-selection", "05-changescommit");
@@ -372,7 +412,7 @@ namespace ForkPlus.Tests
 
 						// ===== 1) 选中新增第二行（line5-appended）→ 浮窗出现 =====
 						SelectLineAndShowFloatingButtons(window, editor, "line5-appended");
-						FloatingButton discardBtn = FindFloatingButton(window, E2eMainWindowHarness.Tr("Discard..."));
+						FloatingButton discardBtn = WaitForFloatingButton(window, E2eMainWindowHarness.Tr("Discard..."));
 						Assert.True(discardBtn != null, "未暂存 diff 选区浮窗应出现 Discard... 按钮");
 						ScreenshotHelper.Snap(window, "08-discard-floating-button", "05-changescommit");
 
