@@ -120,7 +120,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private void ScriptPathButton_Click(object sender, RoutedEventArgs e)
 		{
 			string initialDirectory = RepositoryManager.Instance.DefaultSourceDir();
-			if (OpenDialog.SelectFile(this, "Select File", initialDirectory, "Executable files", "*.bat; *.exe; *.cmd", out var filePath))
+			// Bug 修复（2026-09-07，git-mm 同款）：*.bat;*.exe;*.cmd 过滤器在 Linux/macOS 上滤掉
+			// 无扩展名可执行文件（脚本/解释器本体）——Unix 端退化为无过滤器。
+			if (OpenDialog.SelectFile(this, "Select File", initialDirectory, "Executable files", OpenDialog.ExecutableFilterOrNullOnUnix("*.bat; *.exe; *.cmd"), out var filePath))
 			{
 				ScriptPathTextBox.Text = filePath;
 			}

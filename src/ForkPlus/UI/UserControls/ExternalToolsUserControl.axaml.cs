@@ -84,7 +84,9 @@ namespace ForkPlus.UI.UserControls
 			catch
 			{
 			}
-			if (OpenDialog.SelectFile(_parentWindow, "Select external tool", initialDirectory, "Applications", "*.exe; *.cmd", out var filePath))
+			// Bug 修复（2026-09-07，git-mm 同款）：*.exe;*.cmd 过滤器在 Linux/macOS 上滤掉无扩展名
+			// 可执行文件（terminal/editor 本体）——Unix 端退化为无过滤器。
+			if (OpenDialog.SelectFile(_parentWindow, "Select external tool", initialDirectory, "Applications", OpenDialog.ExecutableFilterOrNullOnUnix("*.exe; *.cmd"), out var filePath))
 			{
 				ToolPathTextBox.Text = filePath;
 			}

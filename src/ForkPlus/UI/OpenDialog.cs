@@ -60,11 +60,27 @@ namespace ForkPlus.UI
                         return false;
                 }
 
+                /// <summary>
+                /// Windows 专用的可执行文件过滤器（*.exe / *.cmd / *.bat）在非 Windows 平台退化为 null：
+                /// Unix 可执行文件无扩展名，任何 exe 类 glob 都会把它们滤掉（选择器里看不见目标文件）。
+                /// 调用方把 Windows 过滤串传入 SelectFile 即可，Unix 端经空模式（SelectFile 的
+                /// extensionPattern 空值分支）变成"无过滤器"；SelectExecutableFile 走上面的
+                /// SelectAnyFile 显式分支，语义相同。
+                /// </summary>
+                public static string ExecutableFilterOrNullOnUnix(string windowsPattern)
+                {
+                        return OperatingSystem.IsWindows() ? windowsPattern : null;
+                }
+
                 public static bool SelectFile([Null] Window parent, string title, string initialDirectory, string fileTypeName, string extensionPattern, out string filePath)
                 {
                         try
                         {
-                                var filters = new[] { (Translate(fileTypeName), extensionPattern) };
+                                // extensionPattern 为 null/空 → 不带过滤器（选择器显示全部文件）；
+                                // 用于非 Windows 平台选择无扩展名的可执行文件（git-mm 等）。
+                                var filters = string.IsNullOrEmpty(extensionPattern)
+                                        ? null
+                                        : new[] { (Translate(fileTypeName), extensionPattern) };
                                 if (ShowOpen(parent, Translate(title), initialDirectory, folderPicker: false, filters, out filePath))
                                 {
                                         return true;

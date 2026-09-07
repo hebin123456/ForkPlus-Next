@@ -103,17 +103,29 @@ namespace ForkPlus.UI
 			return file?.TryGetLocalPath();
 		}
 
-		private static System.Collections.Generic.List<FilePickerFileType> BuildFileTypes((string name, string spec)[] filters)
+		// internal（InternalsVisibleTo）：回归测试直接断言过滤串解析（多模式拆分 / 空模式无过滤器）。
+		internal static System.Collections.Generic.List<FilePickerFileType> BuildFileTypes((string name, string spec)[] filters)
 		{
 			// Migration note：ForkPlus 的过滤串全部是单模式（如 *.exe / *.patch），逐一映射成 Patterns。
+			// Bug 修复（2026-09-07）：WPF 语法允许 "*.a; *.b" 多模式串——整串塞进单个 Pattern
+			// 是非法 glob（portal/NSOpenPanel 上恒不匹配，选择器里选不到任何文件），
+			// 按 ';' 拆成独立模式。
 			if (filters == null || filters.Length == 0)
 			{
 				return null;
 			}
-			return filters
+			var result = filters
 				.Where(f => !string.IsNullOrEmpty(f.spec))
-				.Select(f => new FilePickerFileType(f.name) { Patterns = new[] { f.spec } })
+				.Select(f => new FilePickerFileType(f.name) { Patterns = SplitPatterns(f.spec) })
 				.ToList();
+			// 全部条目被空模式筛掉 → 返回 null（无过滤器）而非空列表——
+			// 部分 picker 实现把空 FileTypeFilter 与 null 区别对待。
+			return result.Count > 0 ? result : null;
+		}
+
+		private static string[] SplitPatterns(string spec)
+		{
+			return spec.Split(';').Select(p => p.Trim()).Where(p => p.Length > 0).ToArray();
 		}
 
 		private static async Task<IStorageFolder> TryGetStartLocation(IStorageProvider provider, string initialDirectory)

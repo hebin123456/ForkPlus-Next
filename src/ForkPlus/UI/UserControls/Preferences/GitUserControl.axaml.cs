@@ -314,6 +314,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 				break;
 			case GitInstanceType.AddCustom:
 			{
+				// Bug 修复（2026-09-07，"自定义 git 实例的下拉框在弹出选择文件的资源管理器后没法消失，
+				// 只有资源管理器关了才消失"）：SelectionChanged 里同步阻塞弹文件对话框（StorageProvider
+				// 经 PushFrame 嵌套消息循环），ComboBox 自己"点击项后收起下拉"的处理排在本次事件之后，
+				// 阻塞期间下拉恒开。弹对话框前显式收起（Linux/macOS 的 portal 对话框是独立进程，
+				// 不会夺走本窗口焦点触发 Avalonia 的失焦自动收起）。
+				GitInstanceComboBox.IsDropDownOpen = false;
 				string initialDirectory = SystemEnvironment.UserProfileDirectory;
 				if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git instance"), initialDirectory, out var filePath))
 				{
@@ -519,6 +525,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 			break;
 		case GitInstanceType.AddCustom:
 		{
+			// Bug 修复（2026-09-07，"自定义 git-mm 实例的下拉框在弹出选择文件的资源管理器后没法消失"）：
+			// 同 GitInstanceComboBox_SelectionChanged——弹对话框前显式收起下拉（详见彼处注释）。
+			GitMmInstanceComboBox.IsDropDownOpen = false;
 			string initialDirectory = SystemEnvironment.UserProfileDirectory;
 			if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git-mm instance"), initialDirectory, out var filePath))
 			{
@@ -633,6 +642,8 @@ namespace ForkPlus.UI.UserControls.Preferences
 			break;
 		case GitInstanceType.AddCustom:
 		{
+			// Bug 修复（2026-09-07）：同 GitInstanceComboBox_SelectionChanged——弹对话框前显式收起下拉。
+			GitAiInstanceComboBox.IsDropDownOpen = false;
 			string initialDirectory = SystemEnvironment.UserProfileDirectory;
 			if (OpenDialog.SelectExecutableFile(_parentWindow, PreferencesLocalization.Current("Select git-ai instance"), initialDirectory, out var filePath))
 			{
