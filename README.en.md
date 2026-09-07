@@ -99,6 +99,15 @@ Therefore the first build requires network access to GitHub; on CI the workflow 
 
 Same mechanism as biturbo: the `RestoreTokei` target (`BeforeTargets=Build`) fetches it automatically, CI downloads and verifies it explicitly, and `.gitignore` excludes the artifacts.
 
+### OxyPlot.Avalonia source
+
+The charting library [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-avalonia) (MIT licensed) powers the plotting controls of the statistics panel. **The official repository is stuck on Avalonia 11 and publishes no binaries**; this repo consumes the **prebuilt NuGet package** published by the [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) fork (compiled natively against Avalonia 12.1.1, dual-targeting net8.0 / net10.0):
+
+- Package versions carry an `-avalonia12.x` prerelease suffix (e.g. `2.1.2-avalonia12.1`), never colliding with the official `2.1.2` on nuget.org (which targets Avalonia 11); restores only ever hit the fork package
+- At build time, `OxyPlot.Avalonia.<version>.nupkg` is downloaded from the fork's latest Release into `third_party/nuget/` (a local directory source registered by the repo-root `nuget.config`) and restored via `PackageReference`
+- Fetch mechanism: the `RestoreOxyPlotAvalonia` target in ForkPlus.csproj (`BeforeTargets=Restore;Build`, for local development) plus an explicit CI download step (build.yml, working around MSBuild Exec differences on macOS runners); `.gitignore` excludes the artifacts
+- Upgrading = change `AvaloniaVersion` in the fork, tag `v*` and publish a new Release; on this side, only the single `OxyPlotAvaloniaPackageVersion` point in `ForkPlus.csproj` needs changing
+
 ### Continuous Integration
 
 The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): on push / PR to `master`, or manual dispatch, it builds in parallel on three platforms, uploads the artifacts, and runs the full unit + E2E test suite on a Linux runner:

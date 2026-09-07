@@ -98,6 +98,15 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 
 機制與 biturbo 相同：`RestoreTokei` target（`BeforeTargets=Build`）自動拉取，CI 明確下載並校驗，`.gitignore` 忽略產物。
 
+### OxyPlot.Avalonia 來源
+
+圖表庫 [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-avalonia)（MIT 授權）用於統計面板的繪圖控制項。**官方倉庫停留在 Avalonia 11 且不發布二進位**，本倉庫消費 [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) fork 發行的**預編譯 NuGet 套件**（按 Avalonia 12.1.1 原生編譯，net8.0 / net10.0 雙目標）：
+
+- 套件版本帶 `-avalonia12.x` 預發布後綴（如 `2.1.2-avalonia12.1`），與 nuget.org 官方 `2.1.2`（面向 Avalonia 11）永不混淆，還原只會命中 fork 套件
+- 建置期從 fork 倉庫 latest Release 下載 `OxyPlot.Avalonia.<版本>.nupkg` 到 `third_party/nuget/`（倉庫根 `nuget.config` 註冊的本地目錄來源），由 `PackageReference` 還原
+- 拉取機制：ForkPlus.csproj 的 `RestoreOxyPlotAvalonia` target（`BeforeTargets=Restore;Build`，本地開發用）+ CI 明確下載步驟（build.yml，規避 macOS runner 上 MSBuild Exec 的差異），`.gitignore` 忽略產物
+- 升級 = fork 倉庫改 `AvaloniaVersion` 後打 `v*` tag 發布新 Release，本倉庫只需改 `ForkPlus.csproj` 中 `OxyPlotAvaloniaPackageVersion` 單點
+
 ### 持續整合
 
 專案配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：push / PR 到 `master` 分支或手動觸發時，在三平台並行建置並上傳產物，同時在 Linux runner 上執行全量單元與 E2E 測試：

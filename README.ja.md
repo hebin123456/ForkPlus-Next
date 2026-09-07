@@ -12,7 +12,7 @@
 
 ## 主な特徴
 
-- **クロスプラットフォーム**: Avalonia 12 ベースのクロスプラットフォーム UI 層。CI では Windows x64 / Linux x64 / macOS arm64 の 3 プラットフォーム分を並行ビルド
+- **クロスプラットフォーム**: Avalonia 12 ベースのクロスプラットフォーム UI 層。CI では Windows x64 / Linux x64 / macOS arm64 の 3 プラットフォーム分を並行ビルドし、自己完結型（self-contained、.NET ランタイムのインストール不要）で公開
 - **多言語サポート**: 英語、簡体字中国語、繁体字中国語、日本語、한국어、Français、Deutsch、Español の 8 言語を内蔵し、JSON ファイルによる追加言語の拡張も可能
 - **マルチテーマスキン**: 12 種類の内蔵スキン（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫/緑のライト&ダーク）に加え、ユーザーカスタムカラーの上書きが即時反映
 - **git mm ワークフロー**: `git mm` サブコマンドを内蔵し、リーンブランチング（Lean Branching）ワークフローで複数サブリポジトリの変更と同期を一元管理
@@ -63,13 +63,9 @@ ForkPlus-Next/
 ### ビルド手順
 
 ```bash
-# ① チャートライブラリ OxyPlot.Avalonia は「リポジトリ外ソース参照」として統合されており
-#    （csproj の相対パスがリポジトリの隣のディレクトリを指す）、初回ビルド前に
-#    本リポジトリの隣にクローンしてください。公式版を無改変のまま保ち、その Avalonia
-#    バージョンを変更しないでください：
-git clone --depth 1 https://github.com/oxyplot/oxyplot-avalonia.git ../oxyplot-avalonia
-
-# ② ビルド（リポジトリ直下で）：
+# ビルド（リポジトリ直下で実行）。サードパーティ成果物（OxyPlot.Avalonia、biturbo、tokei）は
+# ビルド時に各リポジトリの最新 Release から自動取得されます（下記の各「入手元」節を参照）。
+# GitHub へのネットワークアクセスのみが必要です：
 dotnet build ForkPlus.sln -c Release
 ```
 
@@ -103,9 +99,18 @@ biturbo native（Rust 製）はリポジトリツリーマップのレイアウ�
 
 仕組みは biturbo と同じ：`RestoreTokei` ターゲット（`BeforeTargets=Build`）が自動取得し、CI が明示的にダウンロードして検証、`.gitignore` が成果物を除外します。
 
+### OxyPlot.Avalonia の入手元
+
+チャートライブラリ [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-avalonia)（MIT ライセンス）は統計パネルの描画コントロールに使用されます。**公式リポジトリは Avalonia 11 で止まっておりバイナリを公開していない**ため、本リポジトリは [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) フォークが発行する**プリビルド NuGet パッケージ**を利用します（Avalonia 12.1.1 対応のネイティブコンパイル、net8.0 / net10.0 デュアルターゲット）：
+
+- パッケージバージョンには `-avalonia12.x` プレリリースサフィックスが付く（例：`2.1.2-avalonia12.1`）ため、nuget.org の公式 `2.1.2`（Avalonia 11 向け）と混同されることはなく、復元は必ずフォークのパッケージだけにヒットします
+- ビルド時にフォークリポジトリの最新 Release から `OxyPlot.Avalonia.<バージョン>.nupkg` を `third_party/nuget/` へダウンロードし（リポジトリ直下の `nuget.config` に登録されたローカルディレクトリソース）、`PackageReference` で復元されます
+- 取得メカニズム：ForkPlus.csproj の `RestoreOxyPlotAvalonia` ターゲット（`BeforeTargets=Restore;Build`、ローカル開発用）+ CI の明示的ダウンロードステップ（build.yml、macOS ランナーでの MSBuild Exec の差異を回避）、`.gitignore` が成果物を除外
+- アップグレード = フォークリポジトリで `AvaloniaVersion` を変更し `v*` タグを打って新規 Release を公開、本リポジトリ側は `ForkPlus.csproj` の `OxyPlotAvaloniaPackageVersion` の 1 点を変更するだけです
+
 ### 継続的インテグレーション
 
-プロジェクトには GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）が設定されています。`master` ブランチへの push / PR、または手動トリガー時に、3 プラットフォームで並列ビルドして成果物をアップロードします：
+プロジェクトには GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）が設定されています。`master` ブランチへの push / PR、または手動トリガー時に、3 プラットフォームで並列ビルドして成果物をアップロードし、Linux ランナー上で単体 + E2E テストスイート全量を実行します：
 
 | マトリクス | Runner | RID |
 |------|--------|-----|
@@ -113,12 +118,13 @@ biturbo native（Rust 製）はリポジトリツリーマップのレイアウ�
 | linux-x64 | ubuntu-latest | linux-x64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
-成果物は**フレームワーク依存パブリッシュ**（実行には .NET 10 ランタイムが必要）で、メインアプリ、AskPass/RI サブプロセス一式、各プラットフォームの biturbo native ライブラリ、tokei、言語ファイルを含みます。リポジトリの [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) ページの該当実行からダウンロードできます（Artifacts、14 日間保持）。
+成果物は**自己完結型（self-contained）パブリッシュ**（.NET 10 ランタイムを同梱、ターゲットマシンへのインストールは一切不要）で、メインアプリ、AskPass/RI ヘルパー（これらも自己完結型のため、ランタイムのない環境でも git 認証情報入力とインタラクティブ rebase のフローが動作します）、各プラットフォームの biturbo native ライブラリ、tokei、言語ファイルを含みます（linux-x64 で約 125MB）。リポジトリの [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) ページの該当実行からダウンロードできます（Artifacts、14 日間保持）。
 
 ## テスト
 
 - 単体テスト: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（クロスプラットフォーム対応の Avalonia.Headless UI スモーク・E2E テストを含み、単体テストと一緒に実行されます）
 - 全 4000+ ケース。移行過程の主要な修正にはすべて回帰防止テストが付いています（詳細は [MIGRATION.md](MIGRATION.md)）
+- CI では push / PR ごとに ubuntu ランナーでフルテストスイート（AskPass / RI ヘルパーのテストを含む）を実行します。gitflow-avh と git-lfs に依存します（workflow のコメントを参照）
 
 ## 多言語サポート
 
@@ -163,7 +169,7 @@ biturbo native（Rust 製）はリポジトリツリーマップのレイアウ�
 
 ## ダウンロード
 
-- CI ビルド成果物: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) ページ → 該当する build 実行 → Artifacts（フレームワーク依存方式、.NET 10 ランタイムが必要）
+- CI ビルド成果物: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) ページ → 該当する build 実行 → Artifacts（自己完結型、.NET 10 ランタイム同梱、インストール不要）
 - 正式リリース: [Releases ページ](https://github.com/hebin123456/ForkPlus-Next/releases)
 - 各バージョンの変更内容は [Release Notes](RELEASE_NOTE.md) を参照してください（元 WPF 版の履歴を含む）
 
@@ -171,7 +177,7 @@ biturbo native（Rust 製）はリポジトリツリーマップのレイアウ�
 
 - アプリケーション自体を変更する場合は `src/ForkPlus` ディレクトリ内にとどまってください。`third_party/` 配下のランタイムバイナリ（biturbo native ライブラリ、tokei）はビルド時に自動取得されるため、バイナリを手動でコミットしないでください
 - biturbo / tokei をアップグレードする場合は、該当リポジトリで新しい Release を公開するだけで、本リポジトリの次回ビルドが自動的に取得します
-- `../oxyplot-avalonia` はリポジトリ外ソース参照です。公式版を無改変のまま保ってください（バージョンを誤って変更した教訓は MIGRATION.md 参照）
+- OxyPlot.Avalonia は [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) フォークのプリビルド nupkg として利用されます（Avalonia 12.1.1 対応でコンパイル済み。公式パッケージは Avalonia 11 で止まっており、その XAML IL は 12 のランタイムで MissingMethodException をスローします——詳細は MIGRATION.md）。ビルド時にこのフォークの最新 Release から自動取得されます
 - 移行作業（WPF → Avalonia）の環境構成、進行中の事項、過去の修正履歴は [MIGRATION.md](MIGRATION.md) に記録されています
 
 ## ライセンス

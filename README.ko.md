@@ -12,7 +12,7 @@
 
 ## 주요 기능
 
-- **크로스 플랫폼**: Avalonia 12 기반 크로스 플랫폼 UI 레이어. CI에서 Windows x64 / Linux x64 / macOS arm64 3개 플랫폼 빌드를 병렬 생성
+- **크로스 플랫폼**: Avalonia 12 기반 크로스 플랫폼 UI 레이어. CI에서 Windows x64 / Linux x64 / macOS arm64 3개 플랫폼 빌드를 병렬 생성하고, 자체 포함(self-contained) 방식으로 게시(.NET 런타임 설치 불필요)
 - **다국어 지원**: 영어, 간체 중국어, 번체 중국어, 일본어, 한국어, 프랑스어, 독일어, 스페인어 8개 언어 내장, JSON 파일로 추가 언어 확장 지원
 - **다중 테마 스킨**: 12개 내장 스킨(Light/Dark, Solarized, GitHub, Dracula, Monokai, 보라/초록 라이트&다크)과 사용자 정의 색상 덮어쓰기를 즉시 적용
 - **git mm 워크플로우**: `git mm` 하위 명령을 내장하여 린 브랜칭(Lean Branching) 워크플로우로 여러 서브 저장소의 변경과 동기를 통합 관리
@@ -99,9 +99,18 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 
 메커니즘은 biturbo와 동일: `RestoreTokei` 타깃(`BeforeTargets=Build`)이 자동으로 가져오고, CI가 명시적으로 다운로드·검증하며, `.gitignore`가 산출물을 제외합니다.
 
+### OxyPlot.Avalonia 출처
+
+차트 라이브러리 [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-avalonia)(MIT 라이선스)는 통계 패널의 플롯 컨트롤에 사용됩니다. **공식 저장소는 Avalonia 11에 머물러 있고 바이너리를 게시하지 않으므로**, 이 저장소는 [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) 포크가 게시하는 **사전 빌드된 NuGet 패키지**를 사용합니다(Avalonia 12.1.1 기준 네이티브 컴파일, net8.0 / net10.0 듀얼 타깃):
+
+- 패키지 버전에는 `-avalonia12.x` 시험판 접미사가 붙어(예: `2.1.2-avalonia12.1`) nuget.org 공식 `2.1.2`(Avalonia 11 대상)와 절대 혼동되지 않으며, 복원은 항상 포크 패키지만 찾습니다
+- 빌드 시 포크 저장소의 최신 Release에서 `OxyPlot.Avalonia.<버전>.nupkg`를 `third_party/nuget/`로 다운로드하여(저장소 루트의 `nuget.config`에 등록된 로컬 디렉터리 소스) `PackageReference`로 복원됩니다
+- 가져오기 메커니즘: ForkPlus.csproj의 `RestoreOxyPlotAvalonia` 타깃(`BeforeTargets=Restore;Build`, 로컬 개발용) + CI 명시적 다운로드 단계(build.yml, macOS 러너에서의 MSBuild Exec 차이 회피), `.gitignore`가 산출물을 제외합니다
+- 업그레이드 = 포크 저장소에서 `AvaloniaVersion`을 변경한 뒤 `v*` 태그로 새 Release를 게시하고, 이 저장소는 `ForkPlus.csproj`의 `OxyPlotAvaloniaPackageVersion` 한 곳만 바꾸면 됩니다
+
 ### 지속적 통합
 
-프로젝트는 GitHub Actions([`.github/workflows/build.yml`](.github/workflows/build.yml))로 구성되어 있습니다. `master` 브랜치에 push / PR하거나 수동 트리거하면 3개 플랫폼에서 병렬 빌드 후 산출물을 업로드합니다:
+프로젝트는 GitHub Actions([`.github/workflows/build.yml`](.github/workflows/build.yml))로 구성되어 있습니다. `master` 브랜치에 push / PR하거나 수동 트리거하면 3개 플랫폼에서 병렬 빌드 후 산출물을 업로드하고, Linux 러너에서 단위 + E2E 테스트 스위트 전체를 실행합니다:
 
 | 매트릭스 | Runner | RID |
 |------|--------|-----|
@@ -109,12 +118,13 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 | linux-x64 | ubuntu-latest | linux-x64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
-산출물은 **프레임워크 의존 게시**(대상 머신에 .NET 10 런타임 필요)로, 메인 앱, AskPass/RI 하위 프로세스 3종, 해당 플랫폼의 biturbo native 라이브러리, tokei, 언어 파일을 포함합니다. 저장소의 [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) 페이지에서 해당 실행의 Artifacts(14일 보관)로 다운로드할 수 있습니다.
+산출물은 **자체 포함(self-contained) 게시**(.NET 10 런타임 동봉, 대상 머신에는 아무것도 설치할 필요 없음)로, 메인 앱, AskPass/RI 도우미(역시 자체 포함이라 런타임 없는 환경에서도 git 자격 증명 입력과 인터랙티브 rebase 흐름이 동작합니다), 해당 플랫폼의 biturbo native 라이브러리, tokei, 언어 파일을 포함합니다(linux-x64 기준 약 125MB). 저장소의 [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) 페이지에서 해당 실행의 Artifacts(14일 보관)로 다운로드할 수 있습니다.
 
 ## 테스트
 
 - 단위 테스트: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`(크로스 플랫폼 Avalonia.Headless UI 스모크·E2E 테스트 포함, 단위 테스트와 함께 실행)
 - 전체 4000+ 케이스. 마이그레이션 과정의 주요 수정에는 모두 회귀 방어 테스트가 있습니다(자세한 내용은 [MIGRATION.md](MIGRATION.md))
+- CI는 push / PR마다 ubuntu 러너에서 전체 스위트(AskPass / RI 도우미 테스트 포함)를 실행합니다. gitflow-avh와 git-lfs에 의존합니다(workflow 주석 참조)
 
 ## 다국어 지원
 
@@ -159,7 +169,7 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 
 ## 다운로드
 
-- CI 빌드 산출물: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) 페이지 → 해당 build 실행 → Artifacts(프레임워크 의존 방식, .NET 10 런타임 필요)
+- CI 빌드 산출물: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions) 페이지 → 해당 build 실행 → Artifacts(자체 포함 방식, .NET 10 런타임 동봉, 설치 불필요)
 - 정식 릴리스: [Releases 페이지](https://github.com/hebin123456/ForkPlus-Next/releases)
 - 각 버전의 변경 사항은 [Release Notes](RELEASE_NOTE.md)를 참조하세요(원본 WPF 버전의 역사 포함)
 

@@ -12,7 +12,7 @@ Die plattformübergreifende Portierung von [ForkPlus](https://github.com/hebin12
 
 ## Hauptfunktionen
 
-- **Plattformübergreifend**: Auf Avalonia 12 basierende UI-Schicht; die CI erzeugt parallel Builds für Windows x64 / Linux x64 / macOS arm64
+- **Plattformübergreifend**: Auf Avalonia 12 basierende UI-Schicht; die CI erzeugt parallel Builds für Windows x64 / Linux x64 / macOS arm64, veröffentlicht als eigenständige (self-contained) Builds (keine Installation der .NET-Runtime nötig)
 - **Mehrsprachigkeit**: 8 integrierte Sprachen (Englisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch, Koreanisch, Französisch, Deutsch, Spanisch), per JSON-Dateien erweiterbar
 - **Mehrere Themes**: 12 eingebaute Skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, Lila/Grün hell & dunkel) sowie benutzerdefinierte Farbüberschreibungen, die sofort angewendet werden
 - **git mm-Workflow**: Mitgelieferter `git mm`-Unterbefehl für Lean-Branching-Workflows zur einheitlichen Verwaltung und Synchronisierung von Änderungen über mehrere Sub-Repositories
@@ -100,9 +100,18 @@ Daher benötigt der erste Build Netzwerkzugriff auf GitHub; in der CI lädt der 
 
 Gleicher Mechanismus wie bei biturbo: das `RestoreTokei`-Target (`BeforeTargets=Build`) holt es automatisch, die CI lädt und prüft es explizit, und `.gitignore` schließt die Artefakte aus.
 
+### Quelle für OxyPlot.Avalonia
+
+Die Diagrammbibliothek [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-avalonia) (MIT-lizenziert) liefert die Plotting-Steuerelemente des Statistik-Panels. **Das offizielle Repository hängt auf Avalonia 11 fest und veröffentlicht keine Binärdateien**; dieses Repo konsumiert das **vorkompilierte NuGet-Paket** des Forks [hebin123456/oxyplot-avalonia](https://github.com/hebin123456/oxyplot-avalonia) (nativ gegen Avalonia 12.1.1 kompiliert, Dual-Targeting net8.0 / net10.0):
+
+- Die Paketversionen tragen ein Vorabrelease-Suffix `-avalonia12.x` (z. B. `2.1.2-avalonia12.1`) und kollidieren nie mit dem offiziellen `2.1.2` auf nuget.org (für Avalonia 11); die Wiederherstellung trifft ausschließlich das Fork-Paket
+- Zur Buildzeit wird `OxyPlot.Avalonia.<Version>.nupkg` aus der neuesten Release des Forks nach `third_party/nuget/` heruntergeladen (vom `nuget.config` im Repo-Stamm registrierte lokale Verzeichnisquelle) und per `PackageReference` wiederhergestellt
+- Abrufmechanismus: `RestoreOxyPlotAvalonia`-Target in ForkPlus.csproj (`BeforeTargets=Restore;Build`, für lokale Entwicklung) plus expliziter CI-Download-Schritt (build.yml, um MSBuild-Exec-Unterschieden auf macOS-Runnern auszuweichen); `.gitignore` schließt die Artefakte aus
+- Upgrade = im Fork `AvaloniaVersion` ändern, ein `v*`-Tag setzen und eine neue Release veröffentlichen; dieses Repo ändert nur den einzelnen Punkt `OxyPlotAvaloniaPackageVersion` in `ForkPlus.csproj`
+
 ### Kontinuierliche Integration
 
-Das Projekt ist mit GitHub Actions konfiguriert ([`.github/workflows/build.yml`](.github/workflows/build.yml)): Bei Push / PR auf `master` oder manuellem Start wird parallel auf drei Plattformen kompiliert und die Artefakte hochgeladen:
+Das Projekt ist mit GitHub Actions konfiguriert ([`.github/workflows/build.yml`](.github/workflows/build.yml)): Bei Push / PR auf `master` oder manuellem Start wird parallel auf drei Plattformen kompiliert, die Artefakte hochgeladen und die vollständige Unit- + E2E-Testsuite auf einem Linux-Runner ausgeführt:
 
 | Matrix | Runner | RID |
 |--------|--------|-----|
@@ -110,12 +119,13 @@ Das Projekt ist mit GitHub Actions konfiguriert ([`.github/workflows/build.yml`]
 | linux-x64 | ubuntu-latest | linux-x64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
-Die Artefakte sind **frameworkabhängige Publishes** (der Zielrechner benötigt die .NET-10-Runtime) und enthalten die Haupt-App, das AskPass/RI-Hilfsprogramm-Trio, die biturbo-Nativbibliothek der Plattform, tokei und die Sprachdateien. Download über den entsprechenden Lauf auf der [Actions](https://github.com/hebin123456/ForkPlus-Next/actions)-Seite (Artifacts, 14 Tage aufbewahrt).
+Die Artefakte sind **eigenständige (self-contained) Publishes** (die .NET-10-Runtime ist gebündelt; auf dem Zielrechner muss nichts installiert werden) und enthalten die Haupt-App, die AskPass/RI-Hilfsprogramme (ebenfalls eigenständig, damit die Git-Credential- und Interactive-Rebase-Abläufe auch ohne Runtime funktionieren), die biturbo-Nativbibliothek der Plattform, tokei und die Sprachdateien (linux-x64 ca. 125 MB). Download über den entsprechenden Lauf auf der [Actions](https://github.com/hebin123456/ForkPlus-Next/actions)-Seite (Artifacts, 14 Tage aufbewahrt).
 
 ## Tests
 
 - Einheitentests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (inkl. plattformübergreifender Avalonia.Headless-UI-Rauch- und End-to-End-Tests, zusammen mit den Einheitentests)
 - Insgesamt 4000+ Fälle; jeder wichtige Fix der Migration hat eine Regressionssicherung (siehe [MIGRATION.md](MIGRATION.md))
+- Die CI führt bei jedem Push / PR auf einem Ubuntu-Runner die vollständige Suite (inkl. der Tests der AskPass-/RI-Hilfsprogramme) aus; sie hängt von gitflow-avh und git-lfs ab (siehe die Workflow-Kommentare)
 
 ## Mehrsprachigkeitsunterstützung
 
@@ -160,7 +170,7 @@ Die Codebasis verwendet die folgenden APIs für die Internationalisierung:
 
 ## Download
 
-- CI-Build-Artefakte: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions)-Seite → der entsprechende Build-Lauf → Artifacts (frameworkabhängig, .NET-10-Runtime erforderlich)
+- CI-Build-Artefakte: [Actions](https://github.com/hebin123456/ForkPlus-Next/actions)-Seite → der entsprechende Build-Lauf → Artifacts (eigenständig, .NET-10-Runtime gebündelt, nichts zu installieren)
 - Offizielle Releases: [Releases-Seite](https://github.com/hebin123456/ForkPlus-Next/releases)
 - Die Änderungen der einzelnen Versionen finden Sie in den [Release Notes](RELEASE_NOTE.md) (inkl. der Geschichte der WPF-Edition)
 
