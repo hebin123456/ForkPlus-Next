@@ -1,0 +1,26 @@
+MIGRATION.md
+  h_e858f2c2faea28 389-446
+src/ForkPlus.Tests/E2e21PreferencesTests.cs
+  h_e858f2c2faea28 78-98,490-496
+src/ForkPlus.Tests/GitAiSubcommandPathTests.cs
+  h_e858f2c2faea28 1-348
+src/ForkPlus/App.axaml.cs
+  h_e858f2c2faea28 699-702,704-716,735,765-844
+src/ForkPlus/Git/Commands/GetGitAiStatsGitCommand.cs
+  h_e858f2c2faea28 52-63,75-83
+src/ForkPlus/Git/Commands/GitAiVersionChecker.cs
+  h_e858f2c2faea28 34-41,45-53
+src/ForkPlus/UI/UserControls/Preferences/GitUserControl.axaml.cs
+  h_e858f2c2faea28 597-606,621-623
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "fd03bba8c9716dfde5e38bd8d9a2d89e143cf37a",
+  "prompts": {},
+  "humans": {
+    "h_e858f2c2faea28": {
+      "author": "Test User <test@example.com>"
+    }
+  }
+}
