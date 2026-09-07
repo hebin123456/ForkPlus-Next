@@ -241,15 +241,18 @@ namespace ForkPlus
 
 		/// <summary>
 		/// 在"系统位置"找到的 git-mm 路径（带缓存）。系统位置 = PATH 中各 git 的 exec-path + 用户
-		/// 私有 bin 目录（~/.local/bin、~/bin）。供偏好设置 UI 列出候选，并作为 ResolveGitMmPath
-		/// 的最后一步兜底。
+		/// 私有 bin 目录（~/.local/bin、~/bin）+ 用户 shell 环境（.bashrc/.zshrc 等只在 shell 里
+		/// 生效的 PATH 目录，见 <see cref="FindExecutableInShellEnvironment"/>）。供偏好设置 UI
+		/// 列出候选，并作为 ResolveGitMmPath 的最后一步兜底。
 		///
 		/// 背景（2026-09-07 用户报告"命令行可以运行 git mm sync，GUI 报 git: 'mm' is not a git
 		/// command"，沙盒实证复现）：git 查找自定义子命令沿"自身 exec-path + 进程 PATH"，而 GUI 与
 		/// 命令行在两处都可能不同——① GUI 用自带 git 实例（gitInstance/2.50.1），exec-path 与系统
 		/// git 不同：企业 git-mm 装在系统 git 的 git-core 目录时只有系统 git 找得到；② 桌面启动的
-		/// GUI 进程 PATH 可能缺 ~/.local/bin 等用户 bin（只进 shell）。两处差异都会让命令行可用、
-		/// GUI 不可用。此探测找到后，配合 PrependGitMmDirectoryToPath 把目录注入 git 子进程 PATH 封堵。
+		/// GUI 进程 PATH 可能缺 ~/.local/bin 等用户 bin（只进 shell）；③ 首轮修复后用户实测仍复现
+		/// ——git-mm 装在 nvm（~/.nvm/versions/node/*/bin）或 .bashrc 里 export 进 PATH 的 /opt
+		/// 自定义目录、Homebrew shellenv 目录，exec-path 与用户 bin 都探测不到，只有 shell 初始化
+		/// 文件里有。此探测找到后，配合 PrependGitMmDirectoryToPath 把目录注入 git 子进程 PATH 封堵。
 		/// </summary>
 		public static string GitMmPathFromSystemLocations
 		{
@@ -266,6 +269,17 @@ namespace ForkPlus
 
 		private static string FindGitMmInSystemLocations()
 		{
+			return FindExecutableInSystemLocations(GitMmExecutableName);
+		}
+
+		/// <summary>
+		/// 在"系统位置"查找指定可执行文件（git-mm / git-ai 共用）。系统位置 = ① PATH 中各 git 的
+		/// exec-path（git-core 目录，git 扩展的常见安装位）+ ② 用户私有 bin 目录（~/.local/bin、
+		/// ~/bin）+ ③ 用户 shell 环境（.bashrc/.zshrc 等只在 shell 里生效的 PATH 目录，见
+		/// <see cref="FindExecutableInShellEnvironment"/>）。找不到返回 null。
+		/// </summary>
+		private static string FindExecutableInSystemLocations(string executableName)
+		{
 			try
 			{
 				// 1. PATH 中各 git 的 exec-path（企业 git-mm 的常见安装位置——git-core 目录里，
@@ -277,7 +291,7 @@ namespace ForkPlus
 					{
 						continue;
 					}
-					string candidate = Path.Combine(execPath, GitMmExecutableName);
+					string candidate = Path.Combine(execPath, executableName);
 					if (File.Exists(candidate))
 					{
 						return Path.GetFullPath(candidate);
@@ -294,17 +308,238 @@ namespace ForkPlus
 					};
 					foreach (string bin in userBins)
 					{
-						string candidate = Path.Combine(bin, GitMmExecutableName);
+						string candidate = Path.Combine(bin, executableName);
 						if (File.Exists(candidate))
 						{
 							return Path.GetFullPath(candidate);
 						}
 					}
 				}
+				// 3. 用户 shell 环境（残余盲区：nvm / .bashrc 里 export PATH 的 /opt 目录 /
+				//    Homebrew shellenv——①②都探测不到，只有 shell 初始化文件里有，命令行可用）。
+				string fromShell = FindExecutableInShellEnvironment(executableName);
+				if (fromShell != null)
+				{
+					return fromShell;
+				}
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Failed to find git-mm in system locations", ex);
+				Log.Error("Failed to find '" + executableName + "' in system locations", ex);
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// 在用户 shell 环境中查找可执行文件——按"命令行会看到什么"的口径兜底。桌面启动的 GUI
+		/// 进程不执行 shell 初始化文件（.bashrc/.zshrc/.profile 等），nvm（~/.nvm/versions/node/*/bin）、
+		/// .bashrc 里 export 进 PATH 的 /opt 自定义目录、Homebrew shellenv 等只对 shell 可见——
+		/// 这是"命令行可用、GUI 报 not a git command"在 exec-path / 用户 bin 探测之后的残余盲区
+		/// （2026-09-07 首轮修复后用户实测仍复现的场景）。探测方式：依次运行用户 shell（$SHELL，
+		/// 交互非登录模式最接近真实终端——桌面终端里的 bash/zsh 只读 .bashrc/.zshrc，登录模式
+		/// 反而不读 .bashrc）与 /bin/bash、/bin/sh 兜底，执行
+		/// <c>command -v &lt;name&gt;</c>；输出中存在"文件名匹配且真实存在"的绝对路径即采用
+		/// （shell 别名/函数的输出非绝对路径，天然排除）。stdin 立即关闭（等效 &lt;/dev/null，
+		/// 防 rc 里的 read/交互提示挂死）+ 2 秒超时兜底；仅在前两步都失败时执行，且结果进程级缓存
+		/// （GitMmPathFromSystemLocations），不会反复拉起 shell。Windows 返回 null——GUI 与 shell
+		/// 的 PATH 同源于注册表环境变量，无此盲区。
+		/// </summary>
+		private static string FindExecutableInShellEnvironment(string executableName)
+		{
+			return FindExecutableInShellEnvironment(executableName, BuildShellProbeCandidates());
+		}
+
+		/// <summary>
+		/// 同 <see cref="FindExecutableInShellEnvironment(string)"/>，但允许注入 shell 候选列表。
+		/// 测试用 fake shell 脚本验证探测与输出解析逻辑，不依赖测试机的真实 shell 配置。
+		/// </summary>
+		internal static string FindExecutableInShellEnvironment(string executableName, string[] shellCandidates)
+		{
+			if (OperatingSystem.IsWindows() || string.IsNullOrWhiteSpace(executableName) || shellCandidates == null)
+			{
+				return null;
+			}
+			// 参数模式按"最接近用户真实终端"排序（bash 启动文件规则：登录读 .profile 系列，
+			// 交互非登录读 .bashrc——两者互不覆盖，桌面终端里的 bash 是交互非登录形态）：
+			// ① 交互非登录（-i -c）：.bashrc / .zshrc / config.fish——Linux 桌面终端的默认形态，
+			//    nvm 等 hook 所在（沙盒实证：-l -i 不读 .bashrc，缺此模式用户场景探测不到）；
+			// ② 登录+交互（-l -i -c）：.profile/.bash_profile/.zprofile + zsh 的 .zshrc
+			//   （zsh 交互即读 .zshrc）——macOS Terminal 等 SSH 登录形态；
+			// ③ 仅登录（-l -c）：.profile 系列——防个别 rc 对无 tty 的 -i 模式防御性早退。
+			// 每个 shell 按序尝试，命中即返回。
+			string[][] argumentModes = new string[3][]
+			{
+				new string[3] { "-i", "-c", "command -v " + executableName },
+				new string[4] { "-l", "-i", "-c", "command -v " + executableName },
+				new string[3] { "-l", "-c", "command -v " + executableName }
+			};
+			foreach (string shell in shellCandidates)
+			{
+				if (string.IsNullOrWhiteSpace(shell) || !File.Exists(shell))
+				{
+					continue;
+				}
+				foreach (string[] arguments in argumentModes)
+				{
+					string found = RunShellProbe(shell, arguments, executableName);
+					if (found != null)
+					{
+						return found;
+					}
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// shell 探测候选：$SHELL（GUI 进程从桌面会话继承，指向用户默认 shell）优先，
+		/// /bin/bash、/bin/sh 兜底（$SHELL 未设置或指向不可用 shell 时）。按完整路径去重。
+		/// </summary>
+		private static string[] BuildShellProbeCandidates()
+		{
+			string[] shells = new string[3]
+			{
+				Environment.GetEnvironmentVariable("SHELL"),
+				"/bin/bash",
+				"/bin/sh"
+			};
+			HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
+			List<string> result = new List<string>(shells.Length);
+			foreach (string shell in shells)
+			{
+				if (string.IsNullOrWhiteSpace(shell))
+				{
+					continue;
+				}
+				string full;
+				try
+				{
+					full = Path.GetFullPath(shell.Trim());
+				}
+				catch
+				{
+					full = shell.Trim();
+				}
+				if (seen.Add(full))
+				{
+					result.Add(full);
+				}
+			}
+			return result.ToArray();
+		}
+
+		/// <summary>
+		/// 运行单个 shell 探测进程并解析输出。shell 无法启动/超时/输出无匹配均返回 null（换下个
+		/// 候选继续）。stdout/stderr 均异步读取：rc 文件的杂音可能超过管道缓冲区，只同步读一侧会
+		/// 被另一侧卡死；超时后 Kill，管道随进程关闭，读取任务自然结束。
+		/// </summary>
+		private static string RunShellProbe(string shell, string[] arguments, string executableName)
+		{
+			try
+			{
+				ProcessStartInfo processStartInfo = new ProcessStartInfo
+				{
+					FileName = shell,
+					UseShellExecute = false,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					RedirectStandardInput = true,
+					CreateNoWindow = true
+				};
+				foreach (string argument in arguments)
+				{
+					processStartInfo.ArgumentList.Add(argument);
+				}
+				using (Process process = Process.Start(processStartInfo))
+				{
+					if (process == null)
+					{
+						return null;
+					}
+					// 立即关闭 stdin（等效 </dev/null）：rc 里的 read/交互提示立刻拿到 EOF 而非挂死
+					process.StandardInput.Close();
+					Task<string> stdoutTask = Task.Run(delegate
+					{
+						return process.StandardOutput.ReadToEnd();
+					});
+					Task<string> stderrTask = Task.Run(delegate
+					{
+						return process.StandardError.ReadToEnd();
+					});
+					if (!process.WaitForExit(2000))
+					{
+						try
+						{
+							process.Kill();
+						}
+						catch
+						{
+						}
+						return null;
+					}
+					string stdout = null;
+					try
+					{
+						if (stdoutTask.Wait(1000))
+						{
+							stdout = stdoutTask.Result;
+						}
+					}
+					catch
+					{
+					}
+					try
+					{
+						stderrTask.Wait(200);
+					}
+					catch
+					{
+					}
+					return MatchExecutablePathInShellOutput(stdout, executableName);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Shell environment probe failed for '" + shell + "'", ex);
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// 从 shell 探测输出中解析目标可执行文件的绝对路径。rc 文件可能向 stdout 打印杂音
+		/// （motd/fortune 等），逐行过滤：仅接受 Unix 绝对路径（以 / 开头）、文件名与目标一致
+		/// 且真实存在的行；shell 别名/函数的输出（"alias git-mm=..." / 函数名）非绝对路径，
+		/// 天然排除。未匹配返回 null。纯函数（输出校验除外），供单元测试直接覆盖。
+		/// </summary>
+		internal static string MatchExecutablePathInShellOutput([Null] string stdout, string executableName)
+		{
+			if (string.IsNullOrWhiteSpace(stdout) || string.IsNullOrEmpty(executableName))
+			{
+				return null;
+			}
+			string[] lines = stdout.Split('\n');
+			foreach (string raw in lines)
+			{
+				string line = raw.TrimEnd('\r').Trim();
+				if (line.Length == 0 || line[0] != '/')
+				{
+					continue;
+				}
+				if (!string.Equals(Path.GetFileName(line), executableName, StringComparison.Ordinal))
+				{
+					continue;
+				}
+				try
+				{
+					string full = Path.GetFullPath(line);
+					if (File.Exists(full))
+					{
+						return full;
+					}
+				}
+				catch
+				{
+				}
 			}
 			return null;
 		}
