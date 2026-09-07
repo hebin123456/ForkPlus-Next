@@ -1057,12 +1057,15 @@ namespace ForkPlus.UI.UserControls
 		}
 	}
 
-	/// <summary>Bug 修复（2026-09-04，"命令输出弹窗位置跑到别的地方去了"）：锚定命令输出按钮。
-	/// WPF 原版 OutputPopup 用 Placement="Mouse"（弹出在鼠标点击点——即主状态栏的命令
-	/// 输出按钮处）；迁移版覆盖层固定在 git mm 区域右下角，与按钮相距甚远。现在每次
-	/// 显示前从宿主窗口视觉树找 GitMmOutputButton，把其左边缘换算到 RootGrid 坐标，
-	/// 覆盖层左对齐按钮、底边贴本控件底部（即按钮正上方区域），并做右边界收窄防溢出。
-	/// 按钮找不到（未挂树/git mm 未激活的边缘路径）时保持 XAML 默认右下位置。</summary>
+	/// <summary>Bug 修复（2026-09-07，"git mm 命令输出弹窗在很下面，应该在命令输出按钮点下去
+	/// 的位置"）：垂直方向改为锚定按钮下方。2026-09-04 那轮修复错在假设按钮在窗口底部——
+	/// 实际 GitMmOutputButton 在主窗口顶部工具栏（ToolbarUserControl Row0，StatusUserControl
+	/// Column1），迁移版 VerticalAlignment=Bottom 把弹窗钉死在 git mm 内容区底部，与顶部按钮
+	/// 相距整个窗口高度——即用户看到的"在很下面"。原版 WPF OutputPopup 用 Placement="Mouse"
+	/// VerticalOffset="-4"（弹在鼠标点击点=按钮处，浮层可遮挡下方内容）。现在弹窗顶边贴按钮
+	/// 底缘 +2px：按钮在 RootGrid 上方时 y 为负值，覆盖层经负 Top margin 上浮遮挡标签头
+	///（宿主链 ClosableTabControlTheme 模板无 ClipToBounds，越界渲染不被裁剪；ZIndex=10
+	/// 且渲染顺序在工具栏之后，可完整覆盖显示）。</summary>
 	private void PositionOutputOverlayAtCommandOutputButton()
 	{
 		global::Avalonia.Controls.Button button = FindGitMmOutputButton();
@@ -1075,13 +1078,33 @@ namespace ForkPlus.UI.UserControls
 		{
 			return;
 		}
-		double x = p.Value.X;
-		// 右边界收窄：覆盖层宽 720，越过 RootGrid 右缘时整体左移，留 16px 边距。
-		double maxX = Math.Max(0.0, RootGrid.Bounds.Width - OutputOverlayBorder.Width - 16.0);
-		x = Math.Min(x, maxX);
+		OutputOverlayBorder.Margin = ComputeOutputOverlayAnchor(p.Value, button.Bounds.Height,
+			RootGrid.Bounds.Width, RootGrid.Bounds.Height, OutputOverlayBorder.Width, OutputOverlayBorder.Height);
 		OutputOverlayBorder.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Left;
-		OutputOverlayBorder.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Bottom;
-		OutputOverlayBorder.Margin = new global::Avalonia.Thickness(x, 0, 0, 0);
+		OutputOverlayBorder.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Top;
+	}
+
+	/// <summary>覆盖层锚定计算（internal 供回归测试直调真实生产逻辑）：
+	/// x=按钮左缘（右缘越界收窄 16px）；y=按钮底缘+2px（WPF Placement=Mouse 在点击点
+	/// 弹出的近似），底边不得越过 RootGrid 底部（留 8px）。y 为负合法——按钮在内容区
+	/// 上方（顶部工具栏）时覆盖层上浮，见 PositionOutputOverlayAtCommandOutputButton 注释。</summary>
+	internal static global::Avalonia.Thickness ComputeOutputOverlayAnchor(
+		global::Avalonia.Point buttonTopLeftInRoot, double buttonHeight,
+		double rootWidth, double rootHeight, double overlayWidth, double overlayHeight)
+	{
+		double x = buttonTopLeftInRoot.X;
+		double maxX = Math.Max(0.0, rootWidth - overlayWidth - 16.0);
+		if (x > maxX)
+		{
+			x = maxX;
+		}
+		double y = buttonTopLeftInRoot.Y + buttonHeight + 2.0;
+		double maxTop = rootHeight - overlayHeight - 8.0;
+		if (y > maxTop)
+		{
+			y = maxTop;
+		}
+		return new global::Avalonia.Thickness(x, y, 0, 0);
 	}
 
 	/// <summary>在宿主窗口视觉树中查找主状态栏的命令输出按钮（git mm 激活时可见）。</summary>
