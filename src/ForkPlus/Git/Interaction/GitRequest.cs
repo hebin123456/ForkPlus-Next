@@ -618,6 +618,16 @@ namespace ForkPlus.Git.Interaction
 			// 我们的条目顺延编号不覆盖调用方注入。-c 不随进程树传播，env 形式才能让
 			// git-mm / submodule 等内部再拉起的 git 子进程继承同一收编语义。
 			GitCredentialEnv.ApplyToProcessStartInfo(processStartInfo);
+			// git-mm 子命令可见性（2026-09-07，"GUI 报 git: 'mm' is not a git command"）：
+			// git 查找 mm 走"自身 exec-path + 进程 PATH"，GUI 的自带 git 实例 exec-path 与系统 git
+			// 不同、桌面启动的进程 PATH 又可能缺用户 bin——解析到 git-mm 后把其目录前置进 git
+			// 子进程 PATH。幂等（目录已在 PATH 则不注入）；自带 exec-path 优先级更高，既有命令不受影响。
+			string pathWithGitMm = App.PrependGitMmDirectoryToPath(
+				processStartInfo.EnvironmentVariables.ContainsKey("PATH") ? processStartInfo.EnvironmentVariables["PATH"] : null);
+			if (pathWithGitMm != null)
+			{
+				processStartInfo.EnvironmentVariables["PATH"] = pathWithGitMm;
+			}
 			return processStartInfo;
 		}
 
@@ -673,6 +683,14 @@ namespace ForkPlus.Git.Interaction
 			{
 				list.Add(credentialPairs[j].Item1);
 				list.Add(credentialPairs[j].Item2);
+			}
+			// git-mm 子命令可见性（同 CreateGitProcessStartInfo 处注释）：Bt 路径的 env 数组是
+			// 叠加在继承环境之上的增量覆盖集——这里写入"git-mm 目录 + 本进程 PATH"的完整合并值。
+			string pathWithGitMm = App.PrependGitMmDirectoryToPath(Environment.GetEnvironmentVariable("PATH"));
+			if (pathWithGitMm != null)
+			{
+				list.Add("PATH");
+				list.Add(pathWithGitMm);
 			}
 			return list.ToArray();
 		}

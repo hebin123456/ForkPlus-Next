@@ -437,8 +437,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 		}
 
 		/// <summary>
-	/// 填充 git-mm 实例下拉框。候选项：PATH 中发现的 git-mm.exe、用户已保存的自定义路径、
-	/// 以及"添加自定义..."入口。未找到任何 git-mm.exe 时仍展示"添加自定义..."以便用户手动指定。
+	/// 填充 git-mm 实例下拉框。候选项：PATH 中发现的 git-mm、git 同目录与系统位置
+	/// （系统 git exec-path / 用户 bin）发现的 git-mm、用户已保存的自定义路径、
+	/// 以及"添加自定义..."入口。未找到任何 git-mm 时仍展示"添加自定义..."以便用户手动指定。
 	/// </summary>
 	private void RefreshGitMmInstanceComboBox()
 	{
@@ -446,7 +447,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		try
 		{
 			List<GitInstanceItem> list = new List<GitInstanceItem>(4);
-			// 1. PATH 中查找的 git-mm.exe（走缓存）
+			// 1. PATH 中查找的 git-mm（走缓存）
 			string pathCandidate = App.GitMmPathFromPath;
 			if (!string.IsNullOrWhiteSpace(pathCandidate))
 			{
@@ -454,13 +455,13 @@ namespace ForkPlus.UI.UserControls.Preferences
 				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + pathCandidate;
 				list.Add(new GitInstanceItem(label, pathCandidate, GitInstanceType.System));
 			}
-			// 2. git.exe 同目录的 git-mm.exe
+			// 2. git 可执行文件同目录的 git-mm（跨平台命名，2026-09-07：原硬编码 git-mm.exe 在 Unix 上永远找不到）
 			try
 			{
 				string gitDir = Path.GetDirectoryName(App.GitPath);
 				if (gitDir != null)
 				{
-					string sibling = Path.Combine(gitDir, "git-mm.exe");
+					string sibling = Path.Combine(gitDir, App.GitMmExecutableName);
 					if (File.Exists(sibling) && (pathCandidate == null || !string.Equals(pathCandidate, sibling, StringComparison.OrdinalIgnoreCase)))
 					{
 						string version = GitMmVersionText(sibling);
@@ -472,6 +473,15 @@ namespace ForkPlus.UI.UserControls.Preferences
 			catch (Exception ex)
 			{
 				Log.Error("Failed to check git-mm in git directory", ex);
+			}
+			// 2b. 系统位置发现的 git-mm（系统 git 的 exec-path / 用户 bin——Linux 上"命令行可用
+			// 但 GUI 找不到"的两处根因位置，2026-09-07 git mm 子命令可见性修复的探测面）
+			string systemCandidate = App.GitMmPathFromSystemLocations;
+			if (!string.IsNullOrWhiteSpace(systemCandidate) && !list.ContainsItem((GitInstanceItem x) => string.Equals(x.GitPath, systemCandidate, StringComparison.OrdinalIgnoreCase)))
+			{
+				string version = GitMmVersionText(systemCandidate);
+				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + systemCandidate;
+				list.Add(new GitInstanceItem(label, systemCandidate, GitInstanceType.System));
 			}
 			// 3. 用户已保存的自定义路径（若不在上述候选中）
 			string savedPath = ForkPlusSettings.Default.GitMmInstancePath;

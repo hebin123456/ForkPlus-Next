@@ -286,6 +286,77 @@ SideBySideCommitTextDiffControl（commit 视图）、HexDiffUserControl（十六
 - `ResourceLookup_LastMergedDictionaryWins`：末尾合并字典优先命中（自定义覆盖
   语义），移除后回落主题原色
 
+## 命令行可用、GUI 报 git: 'mm' is not a git command（2026-09-07）
+
+用户报告：linux 上 git-mm 已装好，命令行可以运行 `git mm sync` 之类命令，界面里反而报
+`git: 'mm' is not a git command`。沙盒造场景实证（fake git-mm 脚本装进系统 git 的
+git-core 目录，GUI 发起 `git mm version`）：复现成功。
+
+根因：git 查找自定义子命令（`git-foo`）沿"**自身 exec-path + 进程 PATH**"两路，而
+GUI 与命令行在这两处都可能不同：
+1. **exec-path 不同**：GUI 优先用自带 git 实例（`gitInstance/2.50.1`，exec-path 指向
+   自己的 git-core），企业 git-mm 常装在**系统 git** 的 git-core 目录——只有系统 git
+   （命令行）找得到；
+2. **PATH 不同**：桌面启动的 GUI 进程 PATH 可能缺 `~/.local/bin` 等用户 bin（这些只
+   在 shell rc 里追加）——命令行 git 找得到，GUI 的 git 找不到。
+
+任一处差异都造成"命令行可用、GUI not a git command"。另有一个叠加放大器：原版
+`App.GitMmPath` 硬编码 `git-mm.exe`，Unix 上根本无此文件名——即使 git-mm 在 GUI 进程
+PATH 里，ForkPlus 侧也解析不到（与 git-ai 的跨平台命名同款坑）。
+
+修复（三层：`App.axaml.cs` / `GitRequest.cs` / `GitUserControl.axaml.cs`）：
+1. **跨平台可执行名**：`App.GitMmExecutableName`（Windows `git-mm.exe`、Unix
+   `git-mm`），PATH 查找/同目录探测/偏好设置列表全部改用；
+2. **系统位置兜底探测**：`App.GitMmPathFromSystemLocations`（带缓存）= PATH 中各 git
+   的 `--exec-path`（企业 git-mm 常见安装位）+ 用户 bin（`~/.local/bin`、`~/bin`），
+   作为 `GitMmPath` 解析链最后一步；偏好设置 Git 实例下拉同源列出（标注来源路径）；
+3. **git 子进程 PATH 注入**：`App.PrependGitMmDirectoryToPath`，`GitRequest` 两条执行
+   路径（Process StartInfo / Bt env 数组）把 git-mm 所在目录前置进子进程 PATH——封堵
+   "GUI 用哪个 git 实例 + 进程 PATH 初始如何"的所有组合。幂等（目录已在 PATH 不注入）；
+   git 执行 git-foo 时自身 exec-path 前置优先级更高，自带实例的既有命令不受影响；
+   每次 git 请求都过（热路径），全走缓存/字符串操作，无子进程开销。
+
+教训：
+- WPF 原版硬编码 `git-mm.exe` 是 Windows-only 假设；跨平台审计除了路径拼接，
+  "可执行文件名字符串"同样要过一遍（`SystemEnvironment.GitExecutableName` 模式）。
+- GUI 与命令行的差异不止 git 本身：**git 子命令查找 = 自身 exec-path + 进程 PATH**，
+  两处都要对账。桌面进程的 PATH 是登录会话的子集，凡"shell 里装的工具"（git 扩展、
+  CLI hook）都可能在 GUI 里找不到——依赖外部工具要么全路径解析，要么显式注入 PATH。
+- 2026-09-06 的 gitflow-avh 探针已实证"exec-path 方案无效（git 找 git-flow 走 PATH）"；
+  本问题同源——**注入 PATH 才是通用解**，第 3 层即为这类外部子命令兜底。
+
+回归防线：`GitMmSubcommandPathTests`（5 用例）：
+- `GitMmExecutableName_IsPlatformCorrect`：平台可执行名正确
+- `PrependGitMmDirectoryToPath_InjectsWhenDirMissing` / `IdempotentWhenDirPresent` /
+  `EmptyPathGetsDirOnly`：注入/幂等/空 PATH（段级比较，防目录名互为子串误判）
+- `GitRequest_Execute_GitMm_FindsExecutableOutsidePath`：端到端——fake git-mm 装在
+  测试进程 PATH 之外的目录，`GitRequest("mm","version")` 经注入后真实执行成功
+  （修复前红：git: 'mm' is not a git command）
+
+⚠️ 测试环境残留坑（2026-09-07 实录）：造场景时装进 `/usr/lib/git-core/git-mm`
+（系统 git 2.34 的 exec-path）的 fake 会打破"沙箱无 git-mm CLI"前提——
+`GitMmWorkspace_TabOpensAndWarnsMissingCli`（E2e17）期望 missing 警告弹窗，探测层
+找到系统位置的 git-mm 后不再弹（恰是修复生效的证据，但断言前提被污染）。跑测试前
+`rm -f /usr/lib/git-core/git-mm` 清残留。同类坑（手工造场景用 fake 跑过真实
+`git mm init` 后）：workspace 会写进 settings 的 `GitMm.Workspaces` 且目标目录留有
+`.mm`——`RepositoryManagerUserControl.Refresh/ctor` 的 `ImportKnownGitMmWorkspaces`
+按存在性把这些目录重新导入仓库列表，让 E2e01（空态视图）/E2e27（单仓库选中末项）
+凭空多出条目而红。清理：删掉残留目录 + 从 `~/.local/share/ForkPlus/settings.json`
+的 `GitMm.Workspaces` 移除 fpe2e_ 条目（提交的测试套自身不会造成此污染：守卫用例被
+MessageBox 拦截不真跑 init，临时 ws 用例 finally 删目录、残留条目被存在性过滤，
+CI 新沙箱每轮干净）。GUI 冒烟取证（修复后工作区 tab 无警告 + `git mm sync` 成功）：
+`verification/gitmm-fix-workspace-cli-found.png`。
+
+## 复制按钮缺 x:Name：测试引用拿不到控件、HEAD 编译不过（2026-09-07）
+
+上轮 a240bcd"四弹窗补复制按钮"提交的 XAML 里 Button 只挂了 `Click` 事件没给
+`x:Name`，而 E2e17 测试已按强类型属性 `dialog.CommandPreviewCopyButton`（Init 弹窗）
+与可视树 `b.Name == "CommandPreviewCopyButton"`（Start/Sync/Upload）断言——Avalonia
+的 x:Name 才生成控件字段，缺失即 CS1061，HEAD 处于编译不过的中间态。
+补 `x:Name="CommandPreviewCopyButton"`（四弹窗），编译恢复、E2e17 全绿。
+教训：**XAML 控件补丁与引用它的测试必须同一提交**——x:Name/事件双改点（Click 与
+Name）一个都不能漏，否则仓库在任何 checkout 点都无法构建。
+
 
 - 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）；图表库源码仓库 `/data/user/work/oxyplot-avalonia`（hebin123456 fork，用于发 nupkg，主仓库已改为 PackageReference 消费其 release 产物，不再本地引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批

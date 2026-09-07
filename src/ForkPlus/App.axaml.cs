@@ -166,20 +166,25 @@ namespace ForkPlus
 		}
 
 		/// <summary>
-		/// PATH 查找 git-mm.exe 的缓存。PATH 在运行时通常不变，缓存避免每次访问 GitMmPath 都遍历 PATH。
+		/// PATH 查找 git-mm 的缓存。PATH 在运行时通常不变，缓存避免每次访问 GitMmPath 都遍历 PATH。
 		/// </summary>
 		private static string _cachedGitMmFromPath;
 		private static bool _gitMmFromPathResolved;
 
+		/// <summary>git-mm 可执行文件名（Migration note：原版硬编码 git-mm.exe，Unix 上无扩展名，
+		/// 与 git-ai 同模式跨平台——2026-09-07 "GUI 报 git: 'mm' is not a git command" 修复的一部分）。</summary>
+		public static string GitMmExecutableName => OperatingSystem.IsWindows() ? "git-mm.exe" : "git-mm";
+
 		/// <summary>
 		/// git-mm 可执行文件路径。优先使用用户在偏好设置中指定的路径；
-		/// 否则在 PATH 环境变量中查找 <c>git-mm.exe</c>；
-		/// 再否则在 git.exe 同目录查找。三者都找不到返回 null。
+		/// 否则在 PATH 环境变量中查找（Windows 为 <c>git-mm.exe</c>，Unix 为 <c>git-mm</c>）；
+		/// 再否则在 git 可执行文件同目录查找；最后在系统位置查找（各 git 的 exec-path 与用户 bin，见
+		/// <see cref="GitMmPathFromSystemLocations"/>）。四者都找不到返回 null。
 		/// </summary>
 		public static string GitMmPath => ResolveGitMmPath();
 
 	/// <summary>
-	/// 仅从 PATH 查找的 git-mm.exe 路径（带缓存）。供偏好设置 UI 列出候选时使用，
+	/// 仅从 PATH 查找的 git-mm 路径（带缓存）。供偏好设置 UI 列出候选时使用，
 	/// 避免直接调用 FindExecutableInPath 绕过缓存导致每次刷新都遍历 PATH。
 	/// </summary>
 	public static string GitMmPathFromPath
@@ -188,7 +193,7 @@ namespace ForkPlus
 		{
 			if (!_gitMmFromPathResolved)
 			{
-				_cachedGitMmFromPath = FindExecutableInPath("git-mm.exe");
+				_cachedGitMmFromPath = FindExecutableInPath(GitMmExecutableName);
 				_gitMmFromPathResolved = true;
 			}
 			return _cachedGitMmFromPath;
@@ -212,7 +217,7 @@ namespace ForkPlus
 			string gitDir = Path.GetDirectoryName(GitPath);
 			if (gitDir != null)
 			{
-				string sibling = Path.Combine(gitDir, "git-mm.exe");
+				string sibling = Path.Combine(gitDir, GitMmExecutableName);
 				if (File.Exists(sibling))
 				{
 					return sibling;
@@ -223,7 +228,228 @@ namespace ForkPlus
 			{
 				Log.Error("Failed to resolve git-mm path from git directory", ex);
 			}
+			// 系统位置兜底（系统 git exec-path / 用户 bin）——修复"命令行 git mm 可用、GUI 报
+			// git: 'mm' is not a git command"（详见 GitMmPathFromSystemLocations 注释）。
+			return GitMmPathFromSystemLocations;
+		}
+
+		/// <summary>
+		/// 系统位置查找 git-mm 的缓存（进程生命周期内只探一次，内部会跑 git --exec-path 子进程）。
+		/// </summary>
+		private static string _cachedGitMmFromSystemLocations;
+		private static bool _gitMmFromSystemLocationsResolved;
+
+		/// <summary>
+		/// 在"系统位置"找到的 git-mm 路径（带缓存）。系统位置 = PATH 中各 git 的 exec-path + 用户
+		/// 私有 bin 目录（~/.local/bin、~/bin）。供偏好设置 UI 列出候选，并作为 ResolveGitMmPath
+		/// 的最后一步兜底。
+		///
+		/// 背景（2026-09-07 用户报告"命令行可以运行 git mm sync，GUI 报 git: 'mm' is not a git
+		/// command"，沙盒实证复现）：git 查找自定义子命令沿"自身 exec-path + 进程 PATH"，而 GUI 与
+		/// 命令行在两处都可能不同——① GUI 用自带 git 实例（gitInstance/2.50.1），exec-path 与系统
+		/// git 不同：企业 git-mm 装在系统 git 的 git-core 目录时只有系统 git 找得到；② 桌面启动的
+		/// GUI 进程 PATH 可能缺 ~/.local/bin 等用户 bin（只进 shell）。两处差异都会让命令行可用、
+		/// GUI 不可用。此探测找到后，配合 PrependGitMmDirectoryToPath 把目录注入 git 子进程 PATH 封堵。
+		/// </summary>
+		public static string GitMmPathFromSystemLocations
+		{
+			get
+			{
+				if (!_gitMmFromSystemLocationsResolved)
+				{
+					_cachedGitMmFromSystemLocations = FindGitMmInSystemLocations();
+					_gitMmFromSystemLocationsResolved = true;
+				}
+				return _cachedGitMmFromSystemLocations;
+			}
+		}
+
+		private static string FindGitMmInSystemLocations()
+		{
+			try
+			{
+				// 1. PATH 中各 git 的 exec-path（企业 git-mm 的常见安装位置——git-core 目录里，
+				//    系统 git（命令行）能找到，GUI 的自带 git 实例 exec-path 不同而找不到）。
+				foreach (string gitExe in FindGitExecutablesInPath())
+				{
+					string execPath = GetGitExecPath(gitExe);
+					if (string.IsNullOrWhiteSpace(execPath))
+					{
+						continue;
+					}
+					string candidate = Path.Combine(execPath, GitMmExecutableName);
+					if (File.Exists(candidate))
+					{
+						return Path.GetFullPath(candidate);
+					}
+				}
+				// 2. 用户私有 bin 目录（桌面启动的 GUI 进程 PATH 可能不含——shell 里有、GUI 里没有）。
+				string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+				if (!string.IsNullOrEmpty(home))
+				{
+					string[] userBins = new string[2]
+					{
+						Path.Combine(home, ".local", "bin"),
+						Path.Combine(home, "bin")
+					};
+					foreach (string bin in userBins)
+					{
+						string candidate = Path.Combine(bin, GitMmExecutableName);
+						if (File.Exists(candidate))
+						{
+							return Path.GetFullPath(candidate);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to find git-mm in system locations", ex);
+			}
 			return null;
+		}
+
+		/// <summary>枚举 PATH 各目录中的 git 可执行文件（按完整路径去重）。</summary>
+		private static List<string> FindGitExecutablesInPath()
+		{
+			List<string> result = new List<string>();
+			try
+			{
+				string pathEnv = Environment.GetEnvironmentVariable("PATH");
+				if (string.IsNullOrEmpty(pathEnv))
+				{
+					return result;
+				}
+				StringComparer comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+				HashSet<string> seen = new HashSet<string>(comparer);
+				string[] segments = pathEnv.Split(Path.PathSeparator);
+				foreach (string raw in segments)
+				{
+					if (string.IsNullOrWhiteSpace(raw))
+					{
+						continue;
+					}
+					try
+					{
+						string candidate = Path.Combine(raw.Trim(), SystemEnvironment.GitExecutableName);
+						if (File.Exists(candidate))
+						{
+							string full = Path.GetFullPath(candidate);
+							if (seen.Add(full))
+							{
+								result.Add(full);
+							}
+						}
+					}
+					catch (Exception ex)
+					{
+						Log.Error("Failed to check '" + raw + "' in PATH for git", ex);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to search PATH for git executables", ex);
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// 运行 <c>git --exec-path</c> 获取该 git 的子命令查找目录；失败返回 null。
+		/// 本地纯计算（毫秒级），3 秒超时兜底防异常 git 挂死探测线程。
+		/// </summary>
+		private static string GetGitExecPath(string gitExe)
+		{
+			try
+			{
+				ProcessStartInfo processStartInfo = new ProcessStartInfo
+				{
+					FileName = gitExe,
+					Arguments = "--exec-path",
+					UseShellExecute = false,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					CreateNoWindow = true
+				};
+				using (Process process = Process.Start(processStartInfo))
+				{
+					if (process == null)
+					{
+						return null;
+					}
+					string stdout = process.StandardOutput.ReadToEnd();
+					if (!process.WaitForExit(3000))
+					{
+						try
+						{
+							process.Kill();
+						}
+						catch
+						{
+						}
+						return null;
+					}
+					string execPath = stdout.Trim();
+					if (execPath.Length > 0 && Directory.Exists(execPath))
+					{
+						return execPath;
+					}
+					return null;
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to get git exec-path from '" + gitExe + "'", ex);
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// 若已解析到 git-mm 且其目录不在 currentPath 中，返回前置该目录后的完整 PATH；否则返回 null
+		/// （调用方无需修改）。供 GitRequest 两条执行路径注入 git 子进程 PATH：git 查找 mm 这类自定义
+		/// 子命令走"自身 exec-path + 进程 PATH"，注入后无论 GUI 用哪个 git 实例、进程 PATH 初始如何，
+		/// git mm 都能找到。已在 PATH 中时返回 null 保持幂等。
+		///
+		/// 安全性：git 执行 git-foo 时把自身 exec-path 前置到 PATH 再查找——自带实例的内置命令
+		/// 优先级始终高于注入目录，对既有命令无行为变化；注入只让自带 exec-path 没有的外部子命令
+		/// （git-mm）可见。每次 git 请求都会经过（热路径），全部走缓存/字符串操作，无子进程调用。
+		/// </summary>
+		public static string PrependGitMmDirectoryToPath(string currentPath)
+		{
+			try
+			{
+				string gitMmPath = GitMmPath;
+				if (string.IsNullOrWhiteSpace(gitMmPath))
+				{
+					return null;
+				}
+				string gitMmDir = Path.GetDirectoryName(gitMmPath);
+				if (string.IsNullOrEmpty(gitMmDir) || !Directory.Exists(gitMmDir))
+				{
+					return null;
+				}
+				string basePath = currentPath ?? "";
+				// 段级相等比较（而非子串包含），避免目录名互为子串时的误判
+				StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+				string[] segments = basePath.Split(Path.PathSeparator);
+				for (int i = 0; i < segments.Length; i++)
+				{
+					if (string.Equals(segments[i].Trim(), gitMmDir, comparison))
+					{
+						return null;
+					}
+				}
+				if (basePath.Length == 0)
+				{
+					return gitMmDir;
+				}
+				return gitMmDir + Path.PathSeparator + basePath;
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to prepend git-mm directory to PATH", ex);
+				return null;
+			}
 		}
 
 		/// <summary>
