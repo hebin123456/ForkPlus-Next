@@ -7,6 +7,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI.WpfCompat;
 using ForkPlus.Utils.Http;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
@@ -77,6 +78,61 @@ namespace ForkPlus.UI.Dialogs
 		// 当前流式响应的 WebView2（onChunk 追加到 _streamingMarkdown 后节流渲染到这里）
 		private WebView2 _streamingWebView;
 
+		// ── 气泡主题感知（2026-09-07，"AI 辅助开发看不清结果"批量修复） ──
+		// 原先聊天气泡硬编码黑字/半黑底：暗色皮肤下黑字配深底几乎不可见。
+		// 这里集中提供按当前明暗取色的画刷，主题切换时由 RefreshMessagePanelTheme 重刷。
+
+		/// <summary>用户气泡标记（主题刷新时识别）。</summary>
+		private const string UserBubbleTag = "UserBubble";
+
+		private static bool IsDarkTheme()
+		{
+			try
+			{
+				return ForkPlusSettings.Default.Theme.IsDarkBase();
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		/// <summary>气泡小标题（"🤖 AI Response"/"🧑 My Request"）文字色。</summary>
+		private static IBrush BubbleHeaderBrush()
+		{
+			return IsDarkTheme()
+				? new SolidColorBrush(Color.FromArgb(200, 0xEA, 0xE8, 0xE8))
+				: new SolidColorBrush(Color.FromArgb(180, 0, 0, 0));
+		}
+
+		/// <summary>用户气泡正文文字色（原先硬编码 Brushes.Black）。</summary>
+		private static IBrush UserBubbleTextBrush()
+		{
+			return IsDarkTheme() ? new SolidColorBrush(Color.FromRgb(0xEA, 0xE8, 0xE8)) : Brushes.Black;
+		}
+
+		/// <summary>AI 气泡底色（原先 FromArgb(15,0,0,0) 半黑，暗色皮肤下不可见）。</summary>
+		private static IBrush AiBubbleBackgroundBrush()
+		{
+			return IsDarkTheme()
+				? new SolidColorBrush(Color.FromArgb(22, 255, 255, 255))
+				: new SolidColorBrush(Color.FromArgb(15, 0, 0, 0));
+		}
+
+		/// <summary>用户气泡底色（亮色沿用蓝底，暗色改用主题强调蓝的半透明）。</summary>
+		private static IBrush UserBubbleBackgroundBrush()
+		{
+			return IsDarkTheme()
+				? new SolidColorBrush(Color.FromArgb(48, 0x3E, 0x9F, 0xF8))
+				: new SolidColorBrush(Color.FromArgb(25, 0, 120, 215));
+		}
+
+		/// <summary>成功状态文字色（Brushes.Green 暗色下对比不足）。</summary>
+		private static IBrush SuccessStatusBrush()
+		{
+			return IsDarkTheme() ? new SolidColorBrush(Color.FromRgb(0x4E, 0xCA, 0xA0)) : Brushes.Green;
+		}
+
 		public AiDevelopmentWindow(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
 			InitializeComponent();
@@ -95,6 +151,9 @@ namespace ForkPlus.UI.Dialogs
 			};
 			_statusTimer.Tick += StatusTimer_Tick;
 			_skillEntries = new List<AiSkillEntry>();
+			// 主题切换跟随（2026-09-07，AI 气泡"看不清"批量修复）：
+			// 刷新聊天气泡配色；气泡内 WebView 由兼容层自身的主题钩子重渲染。
+			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", OnApplicationThemeChanged);
 			LoadSkillList();
 			// 初始化模型下拉：先显示当前选中模型，再后台拉取完整模型列表
 			InitializeModelComboBox();
@@ -561,7 +620,7 @@ namespace ForkPlus.UI.Dialogs
 									ShowDiffResults(appliedChanges);
 									AddStatusMessage(
 										PreferencesLocalization.FormatCurrent("AI modified {0} files", appliedChanges.Count),
-										Brushes.Green);
+										SuccessStatusBrush());
 								}
 								else
 								{
@@ -755,10 +814,12 @@ namespace ForkPlus.UI.Dialogs
 			try
 			{
 				await webView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
-				webView.CoreWebView2.Profile.PreferredColorScheme =
-				ForkPlusSettings.Default.Theme.IsDarkBase()
-					? CoreWebView2PreferredColorScheme.Dark
-					: CoreWebView2PreferredColorScheme.Light;
+				// 主题修复（2026-09-07，"AI 辅助开发看不清结果"）：
+				// 1. 不再在此固定 PreferredColorScheme——兼容层 CurrentDark() 会回落到"应用当前主题"，
+				//    运行中切皮肤时气泡内 HTML 由兼容层自身的主题钩子自动重渲染；
+				//    原先在这里固定一次，切皮肤后所有已创建气泡都停留在旧配色。
+				// 2. 立即铺主题空白页：首个 chunk 到达前 WebView 一直空白（原生引擎透明表面呈现为黑）。
+				webView.NavigateToString(AiStreamingWebView.BuildThemedBlankDocument());
 				webView.CoreWebView2.ContextMenuRequested += delegate(object s, CoreWebView2ContextMenuRequestedEventArgs e)
 				{
 					e.Handled = true;
@@ -806,12 +867,14 @@ namespace ForkPlus.UI.Dialogs
 		{
 			Border userBorder = new Border
 			{
-				Background = new SolidColorBrush(Color.FromArgb(25, 0, 120, 215)),
+				Background = UserBubbleBackgroundBrush(),
 				CornerRadius = new CornerRadius(6),
 				Padding = new Thickness(10, 6, 10, 6),
 				Margin = new Thickness(0, 4, 0, 4),
 				MaxWidth = 600,
-				HorizontalAlignment = HorizontalAlignment.Right
+				HorizontalAlignment = HorizontalAlignment.Right,
+				// 主题切换刷新识别标记（原先无标记，暗色下黑字不可见也没法批量重刷）
+				Tag = UserBubbleTag
 			};
 
 			TextBlock header = new TextBlock
@@ -820,7 +883,7 @@ namespace ForkPlus.UI.Dialogs
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
-				Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+				Foreground = BubbleHeaderBrush(),
 				Margin = new Thickness(0, 0, 0, 2)
 			};
 
@@ -830,7 +893,7 @@ namespace ForkPlus.UI.Dialogs
 				FontSize = 13,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 				TextWrapping = TextWrapping.Wrap,
-				Foreground = Brushes.Black,
+				Foreground = UserBubbleTextBrush(),
 				IsReadOnly = true,
 				BorderThickness = new Thickness(0),
 				Background = Brushes.Transparent,
@@ -855,7 +918,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			Border aiBorder = new Border
 			{
-				Background = new SolidColorBrush(Color.FromArgb(15, 0, 0, 0)),
+				Background = AiBubbleBackgroundBrush(),
 				CornerRadius = new CornerRadius(6),
 				Padding = new Thickness(10, 6, 10, 6),
 				Margin = new Thickness(0, 4, 0, 4),
@@ -871,7 +934,7 @@ namespace ForkPlus.UI.Dialogs
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
-				Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+				Foreground = BubbleHeaderBrush(),
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 
@@ -984,7 +1047,7 @@ namespace ForkPlus.UI.Dialogs
 						}
 					}
 				}
-				AddStatusMessage(PreferencesLocalization.Current("AI changes reverted"), Brushes.Green);
+				AddStatusMessage(PreferencesLocalization.Current("AI changes reverted"), SuccessStatusBrush());
 				_fileChanges.Clear();
 				_lastBeforeContents.Clear();
 				RefreshRepositoryStatus();
@@ -1154,7 +1217,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			Border aiBorder = new Border
 			{
-				Background = new SolidColorBrush(Color.FromArgb(15, 0, 0, 0)),
+				Background = AiBubbleBackgroundBrush(),
 				CornerRadius = new CornerRadius(6),
 				Padding = new Thickness(10, 6, 10, 6),
 				Margin = new Thickness(0, 4, 0, 4),
@@ -1169,7 +1232,7 @@ namespace ForkPlus.UI.Dialogs
 				FontSize = 11,
 				FontWeight = FontWeights.SemiBold,
 				FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
-				Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+				Foreground = BubbleHeaderBrush(),
 				Margin = new Thickness(0, 0, 0, 4)
 			};
 
@@ -1248,6 +1311,44 @@ namespace ForkPlus.UI.Dialogs
 				return;
 			}
 			aiBorder.Width = Math.Min(aiBorder.MaxWidth, Math.Max(panelWidth, 120.0));
+		}
+
+		/// <summary>应用主题切换：重刷聊天区已存在气泡的配色（2026-09-07，AI 气泡"看不清"修复）。
+		/// 气泡内 WebView 的 HTML 由 WebView2 兼容层自身的主题钩子重导航，无需这里处理。</summary>
+		private void OnApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
+		{
+			base.Dispatcher.Post(delegate
+			{
+				RefreshMessagePanelTheme();
+			});
+		}
+
+		/// <summary>按当前明暗重刷用户/AI 气泡的底色、小标题与正文文字色。</summary>
+		private void RefreshMessagePanelTheme()
+		{
+			foreach (object child in MessagePanel.Children)
+			{
+				Border border = child as Border;
+				StackPanel panel = border?.Child as StackPanel;
+				if (border == null || panel == null || panel.Children.Count == 0)
+				{
+					continue;
+				}
+				string tag = border.Tag as string;
+				if (tag != AiBubbleTag && tag != UserBubbleTag)
+				{
+					continue;
+				}
+				border.Background = tag == AiBubbleTag ? AiBubbleBackgroundBrush() : UserBubbleBackgroundBrush();
+				if (panel.Children[0] is TextBlock header)
+				{
+					header.Foreground = BubbleHeaderBrush();
+				}
+				if (tag == UserBubbleTag && panel.Children.Count > 1 && panel.Children[1] is TextBox content)
+				{
+					content.Foreground = UserBubbleTextBrush();
+				}
+			}
 		}
 
 		private void ScrollToEnd()
@@ -1997,7 +2098,7 @@ Additionally, the user has defined the following coding standards / skills that 
 					FontWeight = FontWeights.Medium,
 					FontFamily = new FontFamily("Segoe UI, Segoe UI Emoji"),
 					Margin = new Thickness(0, 6, 0, 2),
-					Foreground = change.IsNewFile ? Brushes.Green : change.IsDelete ? Brushes.Red : Brushes.DodgerBlue
+					Foreground = change.IsNewFile ? SuccessStatusBrush() : change.IsDelete ? Brushes.Red : Brushes.DodgerBlue
 				};
 				diffs.Children.Add(headerBlock);
 

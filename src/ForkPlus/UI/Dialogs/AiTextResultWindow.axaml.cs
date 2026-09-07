@@ -2,10 +2,12 @@ using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using ForkPlus;
 using ForkPlus.Accounts.AiServices;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI.WpfCompat;
 using ForkPlus.Utils.Http;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -35,7 +37,16 @@ namespace ForkPlus.UI.Dialogs
 		{
 			InitializeComponent();
 			PreferencesLocalization.ApplyCurrent(this);
+			// 主题切换跟随（2026-09-07，AI 内容"看不清"批量修复）：
+			// WebView2 兼容层按 PreferredColorScheme 改写 CSS，运行中切皮肤需重设才会重渲染，
+			// 否则内容停留在旧主题配色（AiCodeReviewWindow 已有同样订阅）。
+			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 			Loaded += AiTextResultWindow_Loaded;
+		}
+
+		private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
+		{
+			AiStreamingView.UpdateTheme();
 		}
 
 		private async void AiTextResultWindow_Loaded(object sender, RoutedEventArgs e)

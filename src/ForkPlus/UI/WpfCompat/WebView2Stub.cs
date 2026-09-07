@@ -161,9 +161,34 @@ namespace Microsoft.Web.WebView2.Wpf
         public WebView2()
         {
             Background = Brushes.Transparent;
+            // 主题表面：挂树前先按当前明暗铺底（挂树后由主题钩子持续跟随）
+            ApplyThemedBackground();
             // 挂树期间监听主题切换（离树退订，重挂再订——控件复用/窗口重建场景不丢事件）
             AttachedToVisualTree += delegate { HookThemeChange(); };
             DetachedFromVisualTree += delegate { UnhookThemeChange(); };
+        }
+
+        /// <summary>
+        /// 主题表面修复（2026-09-07，"AI 弹窗刚打开一片黑"）：
+        /// 控件自身 + 原生 WebView 的背景从 Transparent 改为"按当前明暗的主题底色"——
+        /// 原生引擎（WPE/WebKitGTK 离屏合成）在首次绘制前透明表面会呈现为黑色，
+        /// 内容到达前整个区域黑屏。铺主题底色后，加载期与正文底色一致。
+        /// 调用方显式设置过非透明 DefaultBackgroundColor 时优先尊重调用方。
+        /// </summary>
+        private void ApplyThemedBackground()
+        {
+            System.Drawing.Color explicitColor = DefaultBackgroundColor;
+            Avalonia.Media.Color surface = explicitColor.A > 0
+                ? Avalonia.Media.Color.FromArgb(explicitColor.A, explicitColor.R, explicitColor.G, explicitColor.B)
+                : (CurrentDark()
+                    ? Avalonia.Media.Color.FromRgb(0x28, 0x28, 0x28)
+                    : Avalonia.Media.Color.FromRgb(0xFA, 0xFA, 0xFA));
+            var brush = new SolidColorBrush(surface);
+            Background = brush;
+            if (_native != null)
+            {
+                _native.Background = brush;
+            }
         }
 
         private void HookThemeChange()
@@ -188,6 +213,8 @@ namespace Microsoft.Web.WebView2.Wpf
 
         private void OnApplicationThemeChanged(object sender, EventArgs<ThemeType> e)
         {
+            // 主题底色始终跟随刷新（原先只在已有内容时重导航，空白态表面留在旧色）
+            ApplyThemedBackground();
             if (_lastHtml != null)
             {
                 // 两条路径都用当前明暗重新呈现（原生=重导航带 CSS 强制；降级=重渲染）
@@ -198,8 +225,19 @@ namespace Microsoft.Web.WebView2.Wpf
         /// <summary>WPF WebView2.WebView → 兼容层直接暴露自身。</summary>
         public WebView2 CoreWebView2Host => this;
 
-        /// <summary>WPF WebView2.DefaultBackgroundColor（兼容层：原生 Background=透明呈现）。</summary>
-        public System.Drawing.Color DefaultBackgroundColor { get; set; } = System.Drawing.Color.Transparent;
+        /// <summary>WPF WebView2.DefaultBackgroundColor（兼容层：无文档/加载期呈现的底色）。
+        /// 透明时按主题底色呈现（见 ApplyThemedBackground），非透明值原样尊重。</summary>
+        public System.Drawing.Color DefaultBackgroundColor
+        {
+            get => _defaultBackgroundColor;
+            set
+            {
+                _defaultBackgroundColor = value;
+                ApplyThemedBackground();
+            }
+        }
+
+        private System.Drawing.Color _defaultBackgroundColor = System.Drawing.Color.Transparent;
 
         /// <summary>WPF WebView2.Dispose()：释放原生 WebView 适配器（若实现了 IDisposable）。</summary>
         public void Dispose()
@@ -240,6 +278,7 @@ namespace Microsoft.Web.WebView2.Wpf
         private void NavigateCurrent()
         {
             bool dark = CurrentDark();
+            ApplyThemedBackground();
             string forced = ForcePreferredColorScheme(_lastHtml, dark);
             if (NativeAvailable())
             {
@@ -364,8 +403,10 @@ namespace Microsoft.Web.WebView2.Wpf
             }
             _native = new NativeWebView
             {
+                // 主题底色（非 Transparent）：原生引擎首帧前的表面不再黑屏
                 Background = Brushes.Transparent,
             };
+            ApplyThemedBackground();
             _native.AdapterCreated += delegate
             {
                 _nativeAdapterReady = true;
@@ -580,6 +621,8 @@ namespace Microsoft.Web.WebView2.Wpf
                 CoreWebView2PreferredColorScheme.Light => false,
                 _ => null,
             };
+            // 表面底色跟随明暗偏好（亮暗切换时底色先于内容更新）
+            ApplyThemedBackground();
             if (_lastHtml != null)
             {
                 NavigateCurrent();

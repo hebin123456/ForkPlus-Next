@@ -88,6 +88,30 @@ namespace ForkPlus.UI.Controls
 			return "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'><style>" + GetCss() + "\n</style></head>\n<body>" + bodyHtml + "\n" + scrollScript + "\n</body>\n</html>";
 		}
 
+		/// <summary>
+		/// 主题空白页（2026-09-07，"AI 弹窗刚打开一片黑"修复）：
+		/// 初始化完成到首个 AI chunk 到达之间可能隔数秒，此前 WebView 一直空白
+		/// （原生引擎透明表面呈现为黑）。先导航一张与 md-ai-output.css 正文同底色的空文档，
+		/// 加载期视觉上与最终内容无缝衔接。
+		/// </summary>
+		public static string BuildThemedBlankDocument()
+		{
+			bool dark;
+			try
+			{
+				dark = ForkPlus.Settings.ForkPlusSettings.Default.Theme.IsDarkBase();
+			}
+			catch
+			{
+				dark = false;
+			}
+			string bg = dark ? "#282828" : "#fafafa";
+			string color = dark ? "#e6e6e6" : "#1f2328";
+			return "<!DOCTYPE html>\n<html>\n<head><meta charset='utf-8'>"
+				+ "<style>:root{color-scheme:" + (dark ? "dark" : "light") + ";}html,body{margin:0;padding:0;background-color:" + bg + ";color:" + color + ";}body{min-height:100vh;}</style>"
+				+ "</head>\n<body></body>\n</html>";
+		}
+
 		// ── 实例流式渲染状态 ──
 
 		private StringBuilder _streamingMarkdown;
@@ -97,6 +121,10 @@ namespace ForkPlus.UI.Controls
 		private bool _streamingActive;
 		private bool _pendingStreamingScrollToEnd;
 		private bool _streamingUserAtBottom = true;
+
+		// 当前显示的是否为主题空白页（初始化后、首个 chunk 前的占位）。
+		// 主题切换时只刷新空白页本身，绝不覆盖真实内容/错误页。
+		private bool _blankShown;
 
 		/// <summary>非 scroll-at-bottom 的 web 消息转发给调用方处理（如 AiCodeReviewWindow 的 suggestion 按钮）。</summary>
 		public event Action<string> WebMessageReceived;
@@ -125,6 +153,9 @@ namespace ForkPlus.UI.Controls
 			{
 				await AiResponseWebView.EnsureCoreWebView2Async(await WebView2EnvironmentHelper.GetEnvironmentAsync());
 				UpdateTheme();
+				// 立即铺主题空白页：首个 AI chunk 到达前不再黑屏（"AI 解释刚打开一片黑"修复）
+				_blankShown = true;
+				AiResponseWebView.NavigateToString(BuildThemedBlankDocument());
 				AiResponseWebView.CoreWebView2.ContextMenuRequested += delegate(object s, CoreWebView2ContextMenuRequestedEventArgs e)
 				{
 					e.Handled = true;
@@ -165,6 +196,11 @@ namespace ForkPlus.UI.Controls
 					ForkPlus.Settings.ForkPlusSettings.Default.Theme.IsDarkBase()
 						? CoreWebView2PreferredColorScheme.Dark
 						: CoreWebView2PreferredColorScheme.Light;
+				// 空白占位页跟随主题重铺（真实内容由 stub 的主题钩子重导航，这里不碰）
+				if (_blankShown)
+				{
+					AiResponseWebView.NavigateToString(BuildThemedBlankDocument());
+				}
 			}
 		}
 
@@ -254,6 +290,7 @@ namespace ForkPlus.UI.Controls
 		{
 			try
 			{
+				_blankShown = false;
 				AiResponseWebView.NavigateToString(html);
 				AiResponseWebView.Show();
 			}
@@ -267,6 +304,7 @@ namespace ForkPlus.UI.Controls
 		public void ShowError(string message)
 		{
 			_streamingActive = false;
+			_blankShown = false;
 			string escaped = WebUtility.HtmlEncode(message ?? "");
 			string html = "<!DOCTYPE html><html><head><meta charset='utf-8'><style>" + GetCss() + "</style></head><body><p style='color:#d33'>" + escaped + "</p></body></html>";
 			try
@@ -359,6 +397,7 @@ namespace ForkPlus.UI.Controls
 			string html = BuildHtmlDocument(body, includeScrollScript: true);
 			try
 			{
+				_blankShown = false;
 				AiResponseWebView.NavigateToString(html);
 				AiResponseWebView.Show();
 				BusyIndicator.Collapse();

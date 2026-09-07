@@ -227,13 +227,19 @@ namespace ForkPlus.UI.Dialogs
 
 		private static string CreateHtmlDocument(string bodyHtml)
 		{
+			// 主题修复（2026-09-07，"AI 输出看不清"批量修复同源问题）：
+			// color-scheme 基础值=light、暗色声明进 (prefers-color-scheme: dark) 块——
+			// WebView2Stub.ForcePreferredColorScheme 按应用皮肤改写该媒体查询后，
+			// UA 默认配色（含表单/画布/默认文字）跟随应用主题而非操作系统；
+			// html 显式底色避免原生引擎首帧透明表面呈现为黑。
 			return "<!doctype html><html><head><meta charset=\"utf-8\"><style>"
+				+ "html{background:#fff;color-scheme:light;}"
 				+ "body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.5;margin:18px;color:#222;background:#fff;}"
 				+ "h1{font-size:24px;margin:0 0 16px;}h2{font-size:19px;margin:24px 0 10px;}h3{font-size:16px;margin:18px 0 8px;}"
 				+ "pre{background:#f4f4f4;border:1px solid #ddd;border-radius:4px;padding:10px;overflow:auto;}code{font-family:Consolas,monospace;background:#f4f4f4;padding:1px 3px;border-radius:3px;}"
 				+ "table{border-collapse:collapse;width:100%;margin:10px 0 18px;}th,td{border-bottom:1px solid #ddd;text-align:left;vertical-align:top;padding:6px 10px;}th{background:#f2f2f2;font-weight:600;}"
 				+ "blockquote{border-left:4px solid #ddd;margin-left:0;padding-left:12px;color:#666;}a{color:#2678c8;}"
-				+ "@media (prefers-color-scheme: dark){body{color:#ddd;background:#1e1e1e;}pre,code,th{background:#2d2d2d;}th,td,pre{border-color:#444;}a{color:#6aa9ff;}}"
+				+ "@media (prefers-color-scheme: dark){html{background:#1e1e1e;color-scheme:dark;}body{color:#ddd;background:#1e1e1e;}pre,code,th{background:#2d2d2d;}th,td,pre{border-color:#444;}a{color:#6aa9ff;}}"
 				+ "</style></head><body>" + bodyHtml + "</body></html>";
 		}
 
