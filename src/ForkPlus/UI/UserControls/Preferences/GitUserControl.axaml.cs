@@ -594,6 +594,16 @@ namespace ForkPlus.UI.UserControls.Preferences
 			{
 				Log.Error("Failed to check git-ai in git directory", ex);
 			}
+			// 2b. 系统位置发现的 git-ai（各 git 的 exec-path / 用户 bin / 用户 shell 环境——
+			// git-ai 官方 install.sh 装到 ~/.git-ai/bin 且只把 PATH 写进 shell rc，桌面启动的
+			// GUI 进程两处都看不到，2026-09-07 git-ai 可见性修复的探测面，与 git-mm 同模式）
+			string systemCandidate = App.GitAiPathFromSystemLocations;
+			if (!string.IsNullOrWhiteSpace(systemCandidate) && !list.ContainsItem((GitInstanceItem x) => string.Equals(x.GitPath, systemCandidate, StringComparison.OrdinalIgnoreCase)))
+			{
+				string version = GitAiVersionText(systemCandidate);
+				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + systemCandidate;
+				list.Add(new GitInstanceItem(label, systemCandidate, GitInstanceType.System));
+			}
 			// 3. 用户已保存的自定义路径（若不在上述候选中）
 			string savedPath = ForkPlusSettings.Default.GitAiInstancePath;
 			if (!string.IsNullOrWhiteSpace(savedPath) && !list.ContainsItem((GitInstanceItem x) => string.Equals(x.GitPath, savedPath, StringComparison.OrdinalIgnoreCase)))
@@ -608,8 +618,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 			list.Add(GitInstanceItem.CreateSeparator());
 			list.Add(GitInstanceItem.CreateAddCustomGitAiInstance());
 			GitAiInstanceComboBox.ItemsSource = list.ToArray();
-			// 选中当前生效的路径；未找到时不选中任何项（不 fallback 到 AddCustom，避免在构造期间弹出文件对话框）
-			string current = App.GitAiPath;
+			// 选中当前生效的路径（原始解析结果——staging 链接路径对用户无意义）；未找到时不选中任何项
+			// （不 fallback 到 AddCustom，避免在构造期间弹出文件对话框）
+			string current = App.GitAiResolvedPath;
 			GitInstanceItem match = list.FirstOrDefault((GitInstanceItem x) => x.GitInstanceType != GitInstanceType.Separator && x.GitInstanceType != GitInstanceType.AddCustom && string.Equals(x.GitPath, current, StringComparison.OrdinalIgnoreCase));
 			GitAiInstanceComboBox.SelectedItem = match;
 		}

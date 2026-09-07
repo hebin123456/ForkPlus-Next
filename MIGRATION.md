@@ -386,6 +386,64 @@ Linux/macOS 的持久化空操作；`AskPassWindow` HTTP(S) 询问三档记忆�
 "Ask Again" 重新弹出开关 + Remove）。测试隔离用 `SwapForTests`（internal，
 InternalsVisibleTo 已有），29 项专项测试。
 
+## git-ai stats 报 git: 'stats' is not a git command——argv[0] 代理模式（2026-09-07）
+
+用户报告（截图）：统计页执行 `git-ai stats 'fe8e3ea..HEAD' --json`，stderr 报
+`git: 'stats' is not a git command. See 'git --help'.`。沙盒以 git-ai 1.7.2 实证复现：
+同一二进制复制为非标准名（`git-ai-renamed`）调用 `stats` → 原样报错；以标准名
+`git-ai` 调用 → 正常输出统计（复现/对照双证）。
+
+根因：**git-ai 二进制按 argv[0] 的文件名分发**——文件名为 `git-ai`（Windows 为
+`git-ai.exe`）才走原生命令分支（stats/diff/blame/checkpoint），其他任何文件名
+（手动下载的 `git-ai-linux-x64`、带版本号的副本、改名安装）一律进入 **git 透明代理
+模式**，把参数原样转发给真 git：`git-ai stats ...` 变成 `git stats ...` → 报 not a
+git command。非标准名调 `--version` 输出 "git version 2.50.1"（真 git 的版本串）
+即代理铁证。这与 git-mm 的"路径可见性"问题同症状不同根因——git-mm 是**找不到**
+可执行文件，git-ai 是**找到了但执行名不对**。
+
+修复（三防线：`App.axaml.cs` / `GitAiVersionChecker.cs` / `GetGitAiStatsGitCommand.cs`）：
+1. **staging 符号链接（核心根治）**：`App.EnsureGitAiExecutionPath`——`GitAiPath`
+   解析结果文件名非标准时，在 ForkPlus 数据目录 `git-ai-staging/` 下建标准名符号
+   链接指向原文件，返回链接路径执行（argv[0] basename = git-ai → 原生命令分支）。
+   幂等（目标未变且链接有效零 IO 复用；悬空/被删自动重建）；建链失败（Windows 无
+   符号链接权限）降级返回原路径，不劣于修复前。`GitAiResolvedPath` 保留解析链
+   原样结果供偏好设置 UI 匹配（staging 链接路径对用户无意义）；
+2. **系统位置兜底探测**：`App.GitAiPathFromSystemLocations`（解析链最后一步）——
+   git-ai 官方 install.sh 装到 `~/.git-ai/bin` 且只把 PATH 写进 shell rc，桌面启动
+   的 GUI 进程两处都看不到；按"命令行会看到什么"的口径再探一轮（各 git 的
+   exec-path / 用户 bin / 用户 shell 环境，与 git-mm 2026-09-07 修复同模式）；
+3. **代理症状识别与翻译**：`GitAiVersionChecker.LooksLikeGitProxyVersionOutput`
+   （代理模式 `--version` 输出 "git version x.y.z"，不识别会解析成假版本 ≥1.0.0、
+   检查通过，掩盖配置问题）+ `GetGitAiStatsGitCommand.IsGitProxyForwardingSymptom`
+   （staging 降级的残余场景把 git 原始报错翻译成可定位的提示，不再一脸懵）。
+
+教训：
+- **argv[0] 分发是二进制工具的常见设计**（busybox 同款）：可执行文件名即子命令选择器，
+  跨平台迁移凡是"复制/链接/重命名后调用外部工具"的路径都要核对最终 argv[0]。
+- `File.CreateSymbolicLink` 在 Windows 需开发者模式/管理员权限——所有建链逻辑必须
+  有 try-catch 降级路径，不能假设建链必然成功。
+- 症状相同的两个 bug（git-mm 找不到 vs git-ai 执行名不对）根因可能完全不同：
+  "is not a git command"在 git 生态里至少有三种成因（子命令不在 exec-path/PATH、
+  被代理转发、拼写错误），修复前先沙盒复现定位根因层。
+
+回归防线：`GitAiSubcommandPathTests`（12 用例）：
+- staging 行为五件套：标准名直通（不建目录）/ 空目标原样返回 / 非标准名建标准名链接
+  （LinkTarget 指向原文件）/ 幂等（marker 文件占位证明零 IO 复用）/ 目标变更重定向 +
+  链接被删自动重建
+- 代理识别：`LooksLikeGitProxyVersionOutput` 形态判别（"git version" true、"1.7.2"/
+  "git-ai version" false）/ fake 代理二进制 `GetVersion` 返回 null（修复前解析出
+  假版本 2.50.1）/ fake 原生二进制正常解析 1.7.2
+- stats 症状：用户截图原文 + 多行完整 stderr 命中 / 超时等无关错误不误判
+- 端到端：fake 二进制复刻 argv[0] 分发（basename=git-ai → 原生分支，否则输出
+  "git version 2.50.1" 代理形态）——非标准名直跑进代理分支、经 staging 链接跑进
+  原生分支（修复核心机制的直接证明）
+
+环境备注（2026-09-07 沙盒实录）：git-ai 1.7.2 装在 `/root/.git-ai/bin/git-ai`
+（install.sh 产物），`~/.local/bin/git-ai` 是其符号链接；`dotnet` 不在默认 PATH，
+需 `export PATH="/root/.dotnet:$PATH"`。`third_party/nuget` 目录不存在时 NuGet 对
+Tests 工程直接报 NU1301（先于主工程的 RestoreOxyPlotAvalonia target 执行）——
+`mkdir -p third_party/nuget` 后 target 自动下载 fork nupkg。
+
 
 - 工作目录：`/data/user/work/ForkPlus-Next`（主仓库）；图表库源码仓库 `/data/user/work/oxyplot-avalonia`（hebin123456 fork，用于发 nupkg，主仓库已改为 PackageReference 消费其 release 产物，不再本地引用）
 - 进度截图统一放 `verification/`（仓根），有进展及时提交推送，不攒批

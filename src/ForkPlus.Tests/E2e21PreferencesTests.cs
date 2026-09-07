@@ -75,6 +75,27 @@ namespace ForkPlus.Tests
 			return footer;
 		}
 
+		/// <summary>
+		/// 外部工具（git-mm / git-ai）实例下拉的环境自适应不变量断言：
+		/// 无候选（effectivePath 为 null，工具未安装）→ 恰 2 项（分隔符 + 添加自定义）且无选中；
+		/// 有候选 → ≥3 项（候选项 + 分隔符 + 添加自定义）且选中项路径与当前生效路径一致
+		/// （与 GitUserControl 选中逻辑同口径——按 OrdinalIgnoreCase 匹配，此处直接等值断言）。
+		/// </summary>
+		private static void AssertExternalToolCombo(global::Avalonia.Controls.ComboBox combo, string effectivePath)
+		{
+			int count = combo.ItemsSource.Cast<object>().Count();
+			if (effectivePath == null)
+			{
+				Assert.Equal(2, count);
+				Assert.Null(combo.SelectedItem);
+				return;
+			}
+			Assert.True(count >= 3, "外部工具已安装时下拉应含候选项（候选 + 分隔符 + 添加自定义），实际项数: " + count);
+			var item = combo.SelectedItem as GitUserControl.GitInstanceItem;
+			Assert.NotNull(item);
+			Assert.Equal(effectivePath, item.GitPath);
+		}
+
 		private static PreferencesWindow NewPrefsWindow()
 		{
 			var window = new PreferencesWindow();
@@ -466,11 +487,13 @@ namespace ForkPlus.Tests
 						Assert.Contains("Fork git instance", envItem.FileName);
 					}
 
-						// —— git-mm / git-ai：沙箱无对应可执行 → 仅分隔符 + 添加自定义项，无选中 ——
-						Assert.Equal(2, git.GitMmInstanceComboBox.ItemsSource.Cast<object>().Count());
-						Assert.Null(git.GitMmInstanceComboBox.SelectedItem);
-						Assert.Equal(2, git.GitAiInstanceComboBox.ItemsSource.Cast<object>().Count());
-						Assert.Null(git.GitAiInstanceComboBox.SelectedItem);
+						// —— git-mm / git-ai：环境自适应（2026-09-07 git-ai 可见性修复扩大探测面）——
+						// 沙箱无对应可执行 → 仅分隔符 + 添加自定义项，无选中；装有（PATH / git 同
+						// 目录 / 系统位置探测可见）→ 多出候选项且选中项匹配当前生效路径。原断言
+						// 硬编码 2/Null，在装了 git-ai 的环境被打破（git-mm 同款"断言前提被环境
+						// 打破"，见 MIGRATION.md 2026-09-07 节）。
+						AssertExternalToolCombo(git.GitMmInstanceComboBox, global::ForkPlus.App.GitMmPath);
+						AssertExternalToolCombo(git.GitAiInstanceComboBox, global::ForkPlus.App.GitAiResolvedPath);
 
 						// —— 全局身份：初值来自 git config（快照时全局为空则空串）——
 						Assert.Equal(originalName ?? "", git.UserNameTextBox.Text);

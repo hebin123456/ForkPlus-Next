@@ -696,9 +696,24 @@ namespace ForkPlus
 		/// <summary>
 		/// git-ai 可执行文件路径（https://github.com/git-ai-project/git-ai，AI 代码归属追踪扩展）。
 		/// 优先使用用户在偏好设置中指定的路径；否则在 PATH 环境变量中查找 git-ai（Windows 为 git-ai.exe）；
-		/// 再否则在 git 可执行文件同目录查找。三者都找不到返回 null（AI 归属功能自动降级隐藏）。
+		/// 再否则在 git 可执行文件同目录查找；最后在系统位置查找（各 git 的 exec-path 与用户 bin，
+		/// 见 <see cref="GitAiPathFromSystemLocations"/>）。四者都找不到返回 null（AI 归属功能自动降级隐藏）。
+		/// 解析结果文件名非标准时经 staging 符号链接中转（见 <see cref="EnsureGitAiExecutionPath"/>），
+		/// 保证 git-ai 以正确文件名被执行。
 		/// </summary>
-		public static string GitAiPath => ResolveGitAiPath();
+		public static string GitAiPath => EnsureGitAiExecutionPath(GitAiResolvedPath, GitAiStagingDirectory);
+
+		/// <summary>
+		/// 解析链原样结果（不经过 staging 中转）：偏好设置 → PATH → git 同目录 → 系统位置。
+		/// 供偏好设置 UI 匹配当前选中项（staging 链接路径对用户无意义）与日志显示。
+		/// </summary>
+		public static string GitAiResolvedPath => ResolveGitAiPath();
+
+		/// <summary>git-ai staging 目录（非标准名可执行文件的符号链接中转，位于 ForkPlus 数据目录）。</summary>
+		private static string GitAiStagingDirectory => Path.Combine(ForkDirectoryPath, "git-ai-staging");
+
+		/// <summary>staging 符号链接上次指向的目标（幂等缓存：目标未变且链接有效则不重建）。</summary>
+		private static string _stagedGitAiTarget;
 
 		/// <summary>
 		/// 仅从 PATH 查找的 git-ai 可执行文件路径（带缓存）。供偏好设置 UI 列出候选时使用。
@@ -717,7 +732,7 @@ namespace ForkPlus
 		}
 
 		/// <summary>git-ai 可执行文件名（Migration note：原版 Windows 硬编码 git-ai.exe，此处跨平台）。</summary>
-		private static string GitAiExecutableName => OperatingSystem.IsWindows() ? "git-ai.exe" : "git-ai";
+		internal static string GitAiExecutableName => OperatingSystem.IsWindows() ? "git-ai.exe" : "git-ai";
 
 		private static string ResolveGitAiPath()
 		{
@@ -747,7 +762,86 @@ namespace ForkPlus
 			{
 				Log.Error("Failed to resolve git-ai path from git directory", ex);
 			}
-			return null;
+			// 系统位置兜底（各 git 的 exec-path / 用户 bin / 用户 shell 环境——与 git-mm 同模式）：
+			// git-ai 官方 install.sh 装到 ~/.git-ai/bin 且只把 PATH 写进 shell rc（.bashrc/.zshrc），
+			// 桌面启动的 GUI 进程不执行 shell 初始化文件，PATH/sibling 两步都可能落空——
+			// 此处按"命令行会看到什么"的口径再探一轮，堵住"命令行可用、GUI 找不到"的场景。
+			return GitAiPathFromSystemLocations;
+		}
+
+		/// <summary>git-ai 系统位置查找的缓存（与 GitMmPathFromSystemLocations 同模式：进程级缓存一次）。</summary>
+		private static string _cachedGitAiFromSystemLocations;
+		private static bool _gitAiFromSystemLocationsResolved;
+
+		/// <summary>
+		/// 在"系统位置"找到的 git-ai 路径（带缓存）。系统位置定义与 git-mm 相同（各 git 的
+		/// exec-path + 用户 bin + 用户 shell 环境，见 <see cref="FindExecutableInSystemLocations"/>）。
+		/// 供偏好设置 UI 列出候选，并作为 ResolveGitAiPath 的最后一步兜底。
+		/// </summary>
+		public static string GitAiPathFromSystemLocations
+		{
+			get
+			{
+				if (!_gitAiFromSystemLocationsResolved)
+				{
+					_cachedGitAiFromSystemLocations = FindExecutableInSystemLocations(GitAiExecutableName);
+					_gitAiFromSystemLocationsResolved = true;
+				}
+				return _cachedGitAiFromSystemLocations;
+			}
+		}
+
+		/// <summary>
+		/// 保证 git-ai 以正确文件名被执行的路径（核心修复 2026-09-07 "git-ai stats 报
+		/// git: 'stats' is not a git command"）。git-ai 二进制按 argv[0] 的文件名分发：
+		/// 文件名为 git-ai（Windows 为 git-ai.exe）才走原生命令分支（stats/checkpoint/blame/diff），
+		/// 其他任何文件名（手动下载的 git-ai-linux-x64、带版本号的副本、改名安装）一律进入
+		/// git 透明代理模式，把参数原样转发给真 git——<c>git-ai stats 'a..b' --json</c> 于是变成
+		/// <c>git stats 'a..b' --json</c>，报 git: 'stats' is not a git command（沙盒以 git-ai
+		/// 1.3.0/1.7.1/1.7.2 实证：非标准名调用 --version 输出 "git version 2.50.1" 即代理铁证；
+		/// 同一二进制以 git-ai 名字经符号链接调用则一切正常）。
+		///
+		/// 修复：解析到的路径文件名非标准时，在 staging 目录建标准名符号链接，返回链接路径执行
+		/// （argv[0] 文件名 = git-ai → 原生命令分支）。幂等：目标未变且链接有效时零 IO 复用；
+		/// 建链失败（如 Windows 无符号链接权限）降级返回原路径，行为与修复前一致（不会更糟）。
+		/// </summary>
+		internal static string EnsureGitAiExecutionPath([Null] string resolvedPath, string stagingDirectory)
+		{
+			if (string.IsNullOrWhiteSpace(resolvedPath) || !File.Exists(resolvedPath))
+			{
+				return resolvedPath;
+			}
+			string fileName = Path.GetFileName(resolvedPath);
+			bool isStandardName = OperatingSystem.IsWindows()
+				? string.Equals(fileName, "git-ai.exe", StringComparison.OrdinalIgnoreCase)
+				: string.Equals(fileName, "git-ai", StringComparison.Ordinal);
+			if (isStandardName)
+			{
+				return resolvedPath;
+			}
+			try
+			{
+				string linkPath = Path.Combine(stagingDirectory, GitAiExecutableName);
+				// 幂等：目标未变且链接有效（File.Exists 对悬空链接返回 false，目标被删自动重建）
+				if (string.Equals(_stagedGitAiTarget, resolvedPath, StringComparison.Ordinal) && File.Exists(linkPath))
+				{
+					return linkPath;
+				}
+				Directory.CreateDirectory(stagingDirectory);
+				if (File.Exists(linkPath))
+				{
+					// 目标可能已变（用户换了自定义路径）——只删链接本身，不动目标文件
+					File.Delete(linkPath);
+				}
+				File.CreateSymbolicLink(linkPath, resolvedPath);
+				_stagedGitAiTarget = resolvedPath;
+				return linkPath;
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to stage git-ai execution path for '" + resolvedPath + "'", ex);
+				return resolvedPath;
+			}
 		}
 
 		/// <summary>
