@@ -57,16 +57,13 @@
     <Style Selector="^:focus /template/ Border#Border">
         <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
     </Style>
-    <!--
-      WPF migration note: 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
-      原始片段：
-      <Trigger Property="controls:PlaceholderTextBox.Icon" xmlns="https://github.com/avaloniaui">
-                    <Trigger.Value>
-                      <x:Null xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-                    </Trigger.Value>
-                    <Setter TargetName="IconElement" Property="IsVisible" Value="False" />
-                  </Trigger>
-    --></ControlTheme>
+    <!-- Migration note（2026-09-07 v3.14 修复）：原 WPF Trigger Property=Icon Value=Null →
+         IconElement Collapsed（Auto 列折叠 0 宽）曾被注释丢弃——无图标时空 Image 14x14+
+         Margin4 恒占位，左侧凭空 18px 留白（AI 偏好"推理服务 URL"等 128 处）。Avalonia 选择器
+         无"属性=null"匹配 → 控件类维护 :noicon 伪类（见 PlaceholderTextBox.cs），此处折叠。 -->
+    <Style Selector="^:noicon /template/ Image#IconElement">
+        <Setter Property="IsVisible" Value="False" />
+    </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type controls:AutoCompleteTextBox}" TargetType="controls:AutoCompleteTextBox">
     <Setter Property="Background" Value="{DynamicResource TextBox.Static.Background}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
@@ -126,16 +123,11 @@
     <Style Selector="^:focus /template/ Border#Border">
         <Setter Value="{DynamicResource SystemAccentBrush}" Property="BorderBrush" />
     </Style>
-    <!--
-      WPF migration note: 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
-      原始片段：
-      <Trigger Property="controls:PlaceholderTextBox.Icon" xmlns="https://github.com/avaloniaui">
-                    <Trigger.Value>
-                      <x:Null xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-                    </Trigger.Value>
-                    <Setter TargetName="IconElement" Property="IsVisible" Value="False" />
-                  </Trigger>
-    --></ControlTheme>
+    <!-- Migration note（2026-09-07 v3.14 修复）：同上 PlaceholderTextBox 主题——Icon=null 时
+         折叠 IconElement（:noicon 伪类由控件类维护），消除空图标列 18px 留白。 -->
+    <Style Selector="^:noicon /template/ Image#IconElement">
+        <Setter Property="IsVisible" Value="False" />
+    </Style></ControlTheme>
   <ControlTheme x:Key="CommitPlaceholderTextBox" TargetType="controls:PlaceholderTextBox" BasedOn="{StaticResource {x:Type controls:PlaceholderTextBox}}">
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="FontSize" Value="14" />
@@ -163,16 +155,11 @@
     <Style Selector="^:empty /template/ TextBlock#placeholderElement">
         <Setter Property="IsVisible" Value="True" />
     </Style>
-    <!--
-      WPF migration note: 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
-      原始片段：
-      <Trigger Property="controls:PlaceholderTextBox.Icon" xmlns="https://github.com/avaloniaui">
-                    <Trigger.Value>
-                      <x:Null xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-                    </Trigger.Value>
-                    <Setter TargetName="iconElement" Property="IsVisible" Value="False" />
-                  </Trigger>
-    --></ControlTheme>
+    <!-- Migration note（2026-09-07 v3.14 修复）：原 WPF Trigger Icon=Null → iconElement Collapsed
+         曾被注释丢弃。:noicon 伪类由控件类维护，此处折叠（部件名本主题为小写 iconElement）。 -->
+    <Style Selector="^:noicon /template/ Image#iconElement">
+        <Setter Property="IsVisible" Value="False" />
+    </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type controls:CommitDescriptionTextBox}" TargetType="controls:CommitDescriptionTextBox" BasedOn="{StaticResource {x:Type controls:PlaceholderTextBox}}">
     <Setter Property="FontFamily" Value="Consolas" />
     <Setter Property="FontSize" Value="13" />
@@ -234,16 +221,11 @@
     <Style Selector="^:disabled /template/ Border#Border">
         <Setter Property="Opacity" Value="0.56" />
     </Style>
-    <!--
-      WPF migration note: 条件(controls:PlaceholderTextBox.Icon=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
-      原始片段：
-      <Trigger Property="controls:PlaceholderTextBox.Icon" xmlns="https://github.com/avaloniaui">
-                    <Trigger.Value>
-                      <x:Null xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
-                    </Trigger.Value>
-                    <Setter TargetName="IconElement" Property="IsVisible" Value="False" />
-                  </Trigger>
-    --></ControlTheme>
+    <!-- Migration note（2026-09-07 v3.14 修复）：原 WPF Trigger Icon=Null → IconElement Collapsed
+         曾被注释丢弃。:noicon 伪类由控件类维护，此处折叠（实际用法均带搜索图标，防御性补齐）。 -->
+    <Style Selector="^:noicon /template/ Image#IconElement">
+        <Setter Property="IsVisible" Value="False" />
+    </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type controls:FilterTextBox}" TargetType="controls:FilterTextBox" BasedOn="{StaticResource {x:Type controls:PlaceholderTextBox}}">
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="controls:PlaceholderTextBox.Placeholder" Value="Filter" />
