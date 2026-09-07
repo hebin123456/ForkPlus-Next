@@ -130,6 +130,46 @@ namespace ForkPlus.Tests
 			_errorDialogWatchdog.Start();
 		}
 
+		/// <summary>测试间窗口泄漏兜底（2026-09-07，模块28 全 E2e 回归发现的既有基建缺口）：
+		/// 部分用例非模态 Show 的窗口（TagDetailsWindow / GitLfsStatusWindow / PatchWindow...）
+		/// 结束时未 Close，遗留到进程级 WpfApp.Windows——后续用例的 AnyDialogWatchdog 负向
+		/// 断言（"按键不得弹窗"）会把残留窗口当成本用例的意外弹窗（QuickPush 捕获到
+		/// TagDetailsWindow 等 3 例失败）。Run&lt;T&gt; 收尾统一关闭所有可见窗口：
+		///   ① ErrorWindow 先由 CloseVisibleErrorDialogs 处理（含文本捕获语义），这里跳过；
+		///   ② MainWindow 类型跳过——Closed→lifetime.Shutdown 铁律，生命周期归测试挂具
+		///     （CloseRepositoryTab/DetachWindow）管理，Hide 过的 IsVisible=false 不受影响；
+		/// 模块25 ErrorWindow 自身用例的暂停开关只影响错误看门狗，本兜底照常执行
+		///（用例断言在 func 内已结束，收尾关闭不回退任何既有防线）。</summary>
+		private static void CloseLeftoverTestWindows()
+		{
+			try
+			{
+				if (Application.Current?.ApplicationLifetime is not ClassicDesktopStyleApplicationLifetime lifetime)
+				{
+					return;
+				}
+				foreach (Window window in lifetime.Windows.ToArray())
+				{
+					if (!window.IsVisible || window is global::ForkPlus.UI.MainWindow || window is global::ForkPlus.UI.Dialogs.ErrorWindow)
+					{
+						continue;
+					}
+					try
+					{
+						window.Close();
+					}
+					catch
+					{
+						// 单个窗口关闭失败不阻碍其余清理
+					}
+				}
+			}
+			catch
+			{
+				// 兜底自身异常绝不能影响测试线程
+			}
+		}
+
 		[System.Runtime.CompilerServices.ModuleInitializer]
 		internal static void ModuleInit()
 		{
@@ -286,20 +326,23 @@ namespace ForkPlus.Tests
 					return result;
 				}
 				finally
+			{
+				// 窗口泄漏兜底（func 抛异常路径同样清理）：非模态 Show 未 Close 的测试窗口
+				// 关闭，防遗留到后续用例的负向断言——见 CloseLeftoverTestWindows 注释
+				CloseLeftoverTestWindows();
+				if (expectErrors)
 				{
-					if (expectErrors)
+					// 快照回填：func 期间捕获的弹窗文本交还 TakeCapturedErrorDialogs（调用方断言）
+					// ——上面"捕获后清空"在预期场景会把文本丢掉，这里从局部变量恢复
+					lock (CapturedErrorDialogs)
 					{
-						// 快照回填：func 期间捕获的弹窗文本交还 TakeCapturedErrorDialogs（调用方断言）
-						// ——上面"捕获后清空"在预期场景会把文本丢掉，这里从局部变量恢复
-						lock (CapturedErrorDialogs)
+						if (CapturedErrorDialogs.Count == 0 && capturedDuringRun != null)
 						{
-							if (CapturedErrorDialogs.Count == 0 && capturedDuringRun != null)
-							{
-								CapturedErrorDialogs.AddRange(capturedDuringRun);
-							}
+							CapturedErrorDialogs.AddRange(capturedDuringRun);
 						}
 					}
 				}
+			}
 			}).GetAwaiter().GetResult();
 		}
 

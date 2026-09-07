@@ -381,37 +381,41 @@ namespace ForkPlus.UI.WpfCompat
                 return true;
             }
 
+            // 修饰键位兜底只对左键生效：KeyModifiers 报告不含侧别（Left/Right 无法区分），
+            // 右侧修饰键只能由真实 KeyDown 事件（e.Key == Right*，tracker 首行登记）置位，
+            // 不能按位推断。WPF 语义对齐（OpenRepositoryInFileExplorerCommand 用
+            // IsKeyDown(RightAlt) 做 macOS 右 Alt 特殊输入守卫——左 Alt 组合被按位误判为
+            // 右 Alt 按下时，Ctrl+Alt+O 打开文件管理器会被静默早退，迁移回归）。
             return key switch
             {
-                Key.LeftCtrl or Key.RightCtrl => _lastModifiers.HasFlag(ModifierKeys.Control),
-                Key.LeftShift or Key.RightShift => _lastModifiers.HasFlag(ModifierKeys.Shift),
-                Key.LeftAlt or Key.RightAlt => _lastModifiers.HasFlag(ModifierKeys.Alt),
-                Key.LWin or Key.RWin => _lastModifiers.HasFlag(ModifierKeys.Windows),
+                Key.LeftCtrl => _lastModifiers.HasFlag(ModifierKeys.Control),
+                Key.LeftShift => _lastModifiers.HasFlag(ModifierKeys.Shift),
+                Key.LeftAlt => _lastModifiers.HasFlag(ModifierKeys.Alt),
+                Key.LWin => _lastModifiers.HasFlag(ModifierKeys.Windows),
                 _ => false
             };
         }
 
         private static void AddModifierKeys(ModifierKeys modifiers)
         {
+            // 只登记左键（与 IsKeyDown 兜底同一语义）：右键由真实 KeyDown 事件的
+            // _downKeys.Add(e.Key) 登记。若这里按位把右键也补齐，左侧组合键会被
+            // IsKeyDown(Right*) 误判（Ctrl+Alt+O 早退，见 IsKeyDown 注释）。
             if (modifiers.HasFlag(ModifierKeys.Control))
             {
                 _downKeys.Add(Key.LeftCtrl);
-                _downKeys.Add(Key.RightCtrl);
             }
             if (modifiers.HasFlag(ModifierKeys.Shift))
             {
                 _downKeys.Add(Key.LeftShift);
-                _downKeys.Add(Key.RightShift);
             }
             if (modifiers.HasFlag(ModifierKeys.Alt))
             {
                 _downKeys.Add(Key.LeftAlt);
-                _downKeys.Add(Key.RightAlt);
             }
             if (modifiers.HasFlag(ModifierKeys.Windows))
             {
                 _downKeys.Add(Key.LWin);
-                _downKeys.Add(Key.RWin);
             }
         }
 

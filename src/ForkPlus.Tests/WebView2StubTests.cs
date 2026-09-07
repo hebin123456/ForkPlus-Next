@@ -28,6 +28,13 @@ using Wv2 = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace ForkPlus.Tests
 {
+	// HeadlessAvalonia 集合（2026-09-07 补，全量回归 BinaryDiff 用例修复）：
+	// 本类大量调用 HeadlessAppBootstrap.Run（UI 线程 InvokeAsync），此前缺集合属性
+	// 与 HeadlessAvalonia 集合并行——Run 收尾的 CloseLeftoverTestWindows 会误关并行
+	// 用例正在使用的窗口（BinaryDiff CustomWindow 在 Task.Delay 阻塞 UI 线程期间，
+	// 本类排队的 Run 体经对方 RunJobs() 插队执行，窗口被关 → ObjectDisposedException）。
+	// 所有触碰 Dispatcher.UIThread / HeadlessAppBootstrap 的测试类必须入该集合串行。
+	[Collection("HeadlessAvalonia")]
 	public class WebView2StubTests
 	{
 		// ── A. CSS 强制改写（引擎无关，原生路径用） ──

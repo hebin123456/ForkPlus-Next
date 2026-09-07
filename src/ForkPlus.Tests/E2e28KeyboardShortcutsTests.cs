@@ -191,22 +191,43 @@ namespace ForkPlus.Tests
 					}
 				}
 				catch
-				{
-					// 看门狗自身异常绝不影响测试线程
-				}
-			}
-
-			private void Stop()
 			{
-				_timer.Stop();
-				_watch.Stop();
-			}
-
-			public void Dispose()
-			{
-				Stop();
+				// 看门狗自身异常绝不影响测试线程
 			}
 		}
+
+		private void Stop()
+		{
+			_timer.Stop();
+			_watch.Stop();
+		}
+
+		/// <summary>等待目标窗口被看到（非模态 Show 场景防时序竞争）：DispatcherTimer
+		/// tick 有毫秒级滞后——模态 ShowDialog 按键调用阻塞在 PushFrame 泵消息期间
+		/// tick 正常触发，而非模态 Show 的按键链路（全模块运行 JIT 热身后 &lt;50ms）
+		/// 可能在 timer 到期 tick 前就走到断言（模块28 Ctrl+B 全量绿单独红的根因）。
+		/// 断言前调用本方法：泵消息 + 让真实时间推进过 tick 周期，SeenWindow 就绪即
+		/// 返回；超时返回 false 由调用方断言报错。</summary>
+		public bool WaitForSeen(int timeoutMs = 2000)
+		{
+			Stopwatch watch = Stopwatch.StartNew();
+			while (SeenWindow == null && watch.ElapsedMilliseconds < timeoutMs)
+			{
+				Dispatcher.UIThread.RunJobs();
+				if (SeenWindow != null)
+				{
+					return true;
+				}
+				System.Threading.Thread.Sleep(20);
+			}
+			return SeenWindow != null;
+		}
+
+		public void Dispose()
+		{
+			Stop();
+		}
+	}
 
 		/// <summary>看门狗变体：不限定类型，关闭按键后出现的任何非白名单可见窗口
 		/// （用于"按键必须无弹窗"的负向断言——DidCloseAnything==false 即全程无弹窗）。</summary>
@@ -822,7 +843,11 @@ namespace ForkPlus.Tests
 					Assert.True(before != afterFirst, "Ctrl+Enter 应产生新提交");
 					Assert.Equal("commit via shortcut", Git(repo, "log -1 --format=%s"));
 					// 提交成功后：staged 清空 + 消息清空（生产行为）
-					Assert.Equal(0, stage.AllStagedFiles.Length);
+					// 注：不能直接断言——提交完成回调（Dispatcher.Post）里的 Refresh(SubDomain.All)
+					// 在 WaitForRepositoryJobs 末次泵时才把 status 刷新 job 入队，同步读
+					// AllStagedFiles 读到的是旧值；必须用 WaitFor 泵轮（与模块04 stage 断言同款）。
+					Assert.True(UiClick.WaitFor(delegate { return stage.AllStagedFiles.Length == 0; }),
+						"提交后 staged 列表应清空（status 刷新完成）");
 					Assert.Equal("", commit.FullCommitMessage);
 
 						// ===== 3) Ctrl+Shift+Enter（primary）→ commit-and-push（生产语义）=====
@@ -1096,6 +1121,7 @@ namespace ForkPlus.Tests
 						using (var watchdog = ModalDialogWatchdog.WaitForAndClose<QuickLaunchWindow>(window))
 						{
 							PressKeyOnFocused(window, Key.P, KeyModifiers.Control);
+							watchdog.WaitForSeen(); // 非模态：断言前等 timer tick（防时序竞争）
 							Assert.True(watchdog.SeenWindow is QuickLaunchWindow, "Ctrl+P 应打开 QuickLaunchWindow");
 						}
 						Assert.True(UiClick.WaitFor(delegate
@@ -1107,6 +1133,7 @@ namespace ForkPlus.Tests
 						using (var watchdog = ModalDialogWatchdog.WaitForAndClose<QuickLaunchWindow>(window))
 						{
 							PressKeyOnFocused(window, Key.B, KeyModifiers.Control);
+							watchdog.WaitForSeen(); // 非模态：断言前等 timer tick（防时序竞争）
 							Assert.True(watchdog.SeenWindow is QuickLaunchWindow,
 								"Ctrl+B 应打开 QuickLaunchCheckout（QuickLaunchWindow checkout 模式）");
 						}
@@ -1391,49 +1418,65 @@ namespace ForkPlus.Tests
 			}
 		}
 
-		// ============================ 15) 外部工具手工路径：Ctrl+Alt+O / Ctrl+Alt+T（无工具环境优雅降级） ============================
+		// ============================ 15) 外部工具手工路径：Ctrl+Alt+O / Ctrl+Alt+T ============================
 
-		[Fact]
-		public void ManualHandlers_CtrlAltO_FileExplorer_CtrlAltT_ShellTool_GracefulWithoutTools()
+	[Fact]
+	public void ManualHandlers_CtrlAltO_SilentDegradation_CtrlAltT_ShellToolConfigError()
+	{
+		string repo = TestRepoFactory.CreateBasic();
+		try
 		{
-			string repo = TestRepoFactory.CreateBasic();
-			try
+			HeadlessAppBootstrap.Run(delegate
 			{
-				HeadlessAppBootstrap.Run(delegate
+				RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+				try
 				{
-					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
-					try
+					// ===== 1) Ctrl+Alt+O（FileExplorer，MainWindow.OnKeyDown 手工路径）：静默降级 =====
+					// 口径（2026-09-07 与 WPF 原版逐行对齐后定夺）：沙盒无 xdg-open，
+					// Process.Start(UseShellExecute) 抛 Win32Exception → catch(Log.Warn) 静默，
+					// 不弹窗、不崩。前置修复：Keyboard shim 左右修饰键语义（此前左 Alt 组合被
+					// IsKeyDown(RightAlt) 按位误判 → Ctrl+Alt+O 静默早退，连 Process.Start 都走不到）。
+					using (var guard = AnyDialogWatchdog.Arm(window))
 					{
-						// headless 沙箱无 xdg-open / 未配置 ShellTool：两条路径都必须优雅降级
-						//（FileExplorer 的 Process.Start 失败被 catch(Log.Warn)；ShellTool 路径
-						// 不存在时 Log.Error + return），不崩、不弹窗、应用仍可交互。
-						using (var guard = AnyDialogWatchdog.Arm(window))
-						{
-							// Ctrl+Alt+O：MainWindow.OnKeyDown 手工处理（读 Keyboard shim 修饰键状态）
-							PressKeyOnFocused(window, Key.O, KeyModifiers.Control | KeyModifiers.Alt);
-							// Ctrl+Alt+T：OpenRepositoryInShellTool（CommandRouter 绑定）
-							PressKeyOnFocused(window, Key.T, KeyModifiers.Control | KeyModifiers.Alt);
-							Dispatcher.UIThread.RunJobs();
-							Assert.True(guard.ClosedWindow == null,
-								"无外部工具环境下两个快捷键都不应弹窗: "
-								+ (guard.ClosedWindow?.GetType().Name ?? "?"));
-						}
+						PressKeyOnFocused(window, Key.O, KeyModifiers.Control | KeyModifiers.Alt);
+						Dispatcher.UIThread.RunJobs();
+						Assert.True(guard.ClosedWindow == null,
+							"无文件管理器环境 Ctrl+Alt+O 应静默降级不弹窗: "
+							+ (guard.ClosedWindow?.GetType().Name ?? "?"));
+					}
 
-						// 应用仍可响应：视图切换照常工作
-						PressKeyOnFocused(window, Key.D1, KeyModifiers.Control);
-						Assert.Equal(RepositoryViewMode.CommitViewMode, repoControl.ViewMode);
-					}
-					finally
+					// ===== 2) Ctrl+Alt+T（ShellTool，CommandRouter 绑定）：弹配置错误窗 =====
+					// 口径：ShellTool 路径不存在时 Log.Error + ErrorWindow 告知用户——WPF 原版
+					// 逐行一致的生产正确行为（提示用户去配置），不是回归。断言走看门狗捕获
+					//（ErrorWindow.ShowDialog 的模态泵由 200ms 看门狗自动关闭，本段不得挂
+					// AnyDialogWatchdog——50ms 扫描会抢先关窗导致看门狗捕获不到文本）。
+					HeadlessAppBootstrap.ExpectErrorDialogs();
+					PressKeyOnFocused(window, Key.T, KeyModifiers.Control | KeyModifiers.Alt);
+					string shellPath = global::ForkPlus.Settings.ForkPlusSettings.Default.ShellTool.ApplicationPath;
+					Assert.True(UiClick.WaitFor(delegate
 					{
-						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
-					}
-				});
-			}
-			finally
-			{
-				TestRepoFactory.Cleanup(repo);
-			}
+						return HeadlessAppBootstrap.PeekCapturedErrorDialogs().Length > 0;
+					}), "Ctrl+Alt+T 在 ShellTool 未配置时应弹 ErrorWindow（看门狗捕获，15s 超时）");
+					string[] captured = HeadlessAppBootstrap.TakeCapturedErrorDialogs();
+					Assert.Contains(E2eMainWindowHarness.TrFormat(
+						"Cannot find shellToolPath at '{0}'", shellPath), captured);
+					ScreenshotHelper.Snap(window, "15-manual-handlers-shelltool-error", ModuleDir);
+
+					// ===== 3) 应用仍可响应：视图切换照常工作 =====
+					PressKeyOnFocused(window, Key.D1, KeyModifiers.Control);
+					Assert.Equal(RepositoryViewMode.CommitViewMode, repoControl.ViewMode);
+				}
+				finally
+				{
+					E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+				}
+			});
 		}
+		finally
+		{
+			TestRepoFactory.Cleanup(repo);
+		}
+	}
 
 		// ============================ 16) 作用域负向：宿主子树外按键不得越权触发 ============================
 
