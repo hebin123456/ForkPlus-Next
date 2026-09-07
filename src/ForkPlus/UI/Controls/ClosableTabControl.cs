@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
@@ -14,6 +15,23 @@ namespace ForkPlus.UI.Controls
 		protected override Type StyleKeyOverride => typeof(ClosableTabControl);
 
 		private const string AddButton = "PART_Add";
+
+		// 模板重建竞态防护（2026-09-07，"切换主题导致 UI 崩溃"，详见
+		// TabControlContentHostGuard 类注释）：本控件构造函数一次性赋值 Theme（不随
+		// 皮肤字典换装更新，模板从不重建）暂不受影响，但一旦改用
+		// Theme="{DynamicResource 具名key}" 即触发同款竞态——预防性接入。
+		private ContentPresenter _trackedContentHost;
+
+		protected override bool RegisterContentPresenter(ContentPresenter presenter)
+		{
+			bool handled = base.RegisterContentPresenter(presenter);
+			if (handled)
+			{
+				_trackedContentHost = TabControlContentHostGuard.OnSelectedContentHostRegistered(
+					_trackedContentHost, presenter);
+			}
+			return handled;
+		}
 
 		public EventHandler AddButtonClicked;
 

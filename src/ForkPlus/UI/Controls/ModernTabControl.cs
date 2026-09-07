@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Media;
 using global::Avalonia.Animation;
 using Avalonia.Layout;
@@ -19,6 +20,28 @@ namespace ForkPlus.UI.Controls
 		private int _previousTabIndex;
 
 		private double _indicatorWidth;
+
+		// 模板重建竞态防护（2026-09-07，"切换主题导致 UI 崩溃"）：
+		// 跟踪当前 PART_SelectedContentHost，重建时兜底释放旧 presenter 持有的选中内容。
+		// 根因与机制详见 TabControlContentHostGuard 类注释。
+		private ContentPresenter _trackedContentHost;
+
+		/// <summary>皮肤字典换装 → ControlTheme 换新实例 → 模板重建时，旧
+		/// PART_SelectedContentHost 的 Host 已被清 null，Avalonia TabControl 内部的
+		/// ClearOwningContentPresenter（依赖 Host==this）失效——旧 presenter 仍把选中
+		/// 内容持为视觉子级，新 presenter 测量时抛 "already has a visual parent"。
+		/// 这里在新 presenter 注册时显式释放（RepositoryDetailsUserControl 的
+		/// Theme="{DynamicResource RepositoryManagerTabControl}" 实例切主题必现）。</summary>
+		protected override bool RegisterContentPresenter(ContentPresenter presenter)
+		{
+			bool handled = base.RegisterContentPresenter(presenter);
+			if (handled)
+			{
+				_trackedContentHost = TabControlContentHostGuard.OnSelectedContentHostRegistered(
+					_trackedContentHost, presenter);
+			}
+			return handled;
+		}
 
 		// Migration note：WPF `OnSelectionChanged` 是框架调用的虚方法重写（TabControl 基类回调）。
 		// 实证 Avalonia 12 的 SelectingItemsControl/TabControl **没有**该虚方法

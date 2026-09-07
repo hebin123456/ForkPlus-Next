@@ -36,6 +36,10 @@ namespace ForkPlus.UI.Commands
 		// CustomColors 字典保留，用户重新勾选"自定义颜色"时可恢复。
 		ForkPlusSettings.Default.UseCustomColors = false;
 		App.RefreshWindowBorderBrush();
+		// Bug 修复（2026-09-07，"切换主题就有可能导致 UI 崩溃，参见外观下拉的按钮和菜单栏
+		// 窗口里面的按钮"）：换字典前先释放 popup 托管的孤儿 ItemsPresenter——旧模板撕毁的
+		// 视觉树遍历够不到 PopupHost 里的内容，详见 PopupItemsPresenterRelease 类注释。
+		PopupItemsPresenterRelease.ReleaseOrphaned();
 		// 匹配任意 Generic.{SkinName}.xaml（不再写死 Light|Dark），支持多预设皮肤
 		// Migration note：WPF 写法 MergedDictionaries.Where/FirstOrDefault((ResourceDictionary rd) => rd.Source ...)
 		// 在 Avalonia 报 CS1929/CS1061（MergedDictionaries 是 IList<IResourceProvider>，

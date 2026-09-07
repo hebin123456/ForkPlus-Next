@@ -861,6 +861,11 @@ namespace ForkPlus
 	{
 		try
 		{
+			// Bug 修复（2026-09-07，"切换主题就有可能导致 UI 崩溃"）：换字典前先释放 popup 托管的
+			// 孤儿 ItemsPresenter（自定义颜色路径同样替换 Generic 字典 → 全量模板重建，与主题切换
+			// 同一竞态）。详见 PopupItemsPresenterRelease 类注释。
+			global::ForkPlus.UI.PopupItemsPresenterRelease.ReleaseOrphaned();
+
 			// 找到当前的 Generic.{Skin}.axaml 字典（ResourceInclude 且 Source 匹配 avares://ForkPlus/Theme/Generic.*.axaml）
 			// Migration note：原 WPF 代码 foreach(ResourceDictionary rd in MergedDictionaries) + rd.Source 在
 			// Avalonia 报 CS1061（MergedDictionaries 元素是 IResourceProvider，且 ResourceDictionary 无 Source）；
