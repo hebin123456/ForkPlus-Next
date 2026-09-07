@@ -533,11 +533,13 @@ namespace ForkPlus.Tests
 					// 检测期间：CheckingPanel 可见（不定进度）
 					Assert.True(update.CheckingPanel.IsVisible, "检测期间应显示进度面板");
 
-					// 等检测完成（HTTP 失败/超时或成功 → OnCheckCompleted → ResultPanel）
+					// 等检测完成（HTTP 失败/超时或成功 → OnCheckCompleted → ResultPanel）。
+					// UpdateChecker 2026-09 兼容 302 网关劫持后为两段尝试（直连 30s + 系统代理 30s），
+					// 最坏 ~60s+，等待窗口放大到 95s 覆盖直连与代理双双超时的环境。
 					bool done = UiClick.WaitFor(delegate
 					{
 						return update.ResultPanel.IsVisible && !update.CheckingPanel.IsVisible;
-					}, 30000);
+					}, 95000);
 					Assert.True(done, "检测应以终态结束（ResultPanel）");
 
 					// 终态文案：失败 / 已是最新版 / 有新版本 三形态之一

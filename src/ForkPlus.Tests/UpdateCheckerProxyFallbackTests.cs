@@ -98,12 +98,13 @@ namespace ForkPlus.Tests
 		{
 			using (var server = UpdateCheckStubServer.Start())
 			{
-				// 直连黑洞：挂起 3 秒不响应；检查器超时（1s）后回退，第二次立即成功
-				server.Responses.Enqueue(new UpdateCheckStubServer.StubResponse { DelayMilliseconds = 3000 });
+				// 直连黑洞：挂起 7 秒不响应；检查器超时（3s）后回退，第二次立即成功。
+				// 超时预算放宽到 3s：全量并行时本地响应也可能被调度延迟，1s 会误伤回退尝试。
+				server.Responses.Enqueue(new UpdateCheckStubServer.StubResponse { DelayMilliseconds = 7000 });
 				server.Responses.Enqueue(SuccessResponse("v999.0.0"));
-				var checker = new UpdateChecker(server.BaseUrl + ReleasePath, 1);
+				var checker = new UpdateChecker(server.BaseUrl + ReleasePath, 3);
 				UpdateInfo info = checker.CheckLatestRelease();
-				Assert.Equal("", info.ErrorMessage);
+				Assert.True(string.IsNullOrEmpty(info.ErrorMessage), "超时回退后应成功，实际错误: " + info.ErrorMessage);
 				Assert.Equal("999.0.0", info.LatestVersion);
 				Assert.Equal(2, server.RequestCount);
 			}
