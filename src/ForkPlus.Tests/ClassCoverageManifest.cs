@@ -1639,6 +1639,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/UI/UserControls/Preferences/AiSkillEntry.cs", "class", "AiSkillEntry", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/UserControls/Preferences/CommitPreferencesUserControl.axaml.cs", "class", "CommitPreferencesUserControl", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/UserControls/Preferences/CredentialsUserControl.axaml.cs", "class", "CredentialsUserControl", "CRED-STORE-003"),
+				new ClassCoverageEntry("src/ForkPlus/UI/UserControls/Preferences/CredentialsUserControl.axaml.cs", "class", "RowContext", "CRED-STORE-003"),
 				new ClassCoverageEntry("src/ForkPlus/UI/UserControls/Preferences/CustomCommandActionViewModel.cs", "class", "CustomCommandActionViewModel", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/UserControls/Preferences/CustomCommandsUserControl.axaml.cs", "class", "CustomCommandsUserControl", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/UserControls/Preferences/CustomCommandTargetToDescriptionConverter.cs", "class", "CustomCommandTargetToDescriptionConverter", "UNIT-SOURCE-COVERAGE-001"),

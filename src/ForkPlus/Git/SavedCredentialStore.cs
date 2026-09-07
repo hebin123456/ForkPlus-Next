@@ -14,12 +14,14 @@ namespace ForkPlus.Git
 	///
 	/// 背景：Layer C 的 <see cref="GcmCompatibleStore"/> 只在 Windows 上生效（Advapi32），
 	/// Linux/macOS 的 store/erase 一直是空操作——非 Windows 用户每次 fetch/push 都要
-	/// 重输账号密码。本存储补齐该缺口，并落实凭据弹窗三项记忆语义：
-	/// - 记住账号（默认开启）：host → username 映射，Username 弹窗预填；
-	/// - 记住密码（显式勾选）：password 非空即"已记住"，credential get 静默命中
-	///   （askpass 链根本不触发，达到自动填充效果）；
-	/// - 不再询问（显式勾选）：NeverAskAgain 标记，主机凭据缺失时不再弹窗、快速失败，
-	///   可在偏好设置的凭据页重新开启。
+	/// 重输账号密码。本存储补齐该缺口，并落实凭据弹窗三档记忆语义：
+	/// - 第一档（默认行为，无勾选框）：自动记住上次输入的账号，host → username 映射，
+	///   Username 弹窗预填；
+	/// - 第二档"记住密码"（显式勾选）：password 非空即"已记住"，下次仍弹窗但密码框
+	///   预填（弹窗内自动填充，用户确认后提交）；
+	/// - 第三档"记住密码 + 不再弹出"（显式勾选）：password + NeverAskAgain 标记，
+	///   credential get / askpass 全链路静默回填（完全不弹窗），凭据缺失时快速失败，
+	///   可在偏好设置的凭据页用开关重新打开。
 	///
 	/// 记录按 host 唯一（与 git credential helper 的 host 级语义对齐；password prompt
 	/// 携带的 username 只作记录内容，不作键的一部分）。密码失效时 git 调 erase
@@ -173,10 +175,12 @@ namespace ForkPlus.Git
 		}
 
 		/// <summary>
-		/// credential get 主路径：已记住密码的 host 静默回填（自动填充）。
-		/// 仅记账号（无密码）的主机不命中——保持弹窗交互（预填账号）。
+		/// 第三档（记住密码 + 不再弹出）静默命中：password 与 NeverAskAgain 皆备时
+		/// credential get / askpass 直接回填，完全不弹窗。
+		/// 仅"记住密码"未开"不再弹出"（第二档）不命中——保持弹窗（密码框预填）；
+		/// 仅记账号（第一档）同样不命中——弹窗预填账号。
 		/// </summary>
-		public bool TryGetPassword([Null] string host, [Null] out string username, [Null] out string password)
+		public bool TryGetSilentCredential([Null] string host, [Null] out string username, [Null] out string password)
 		{
 			username = null;
 			password = null;
@@ -187,7 +191,7 @@ namespace ForkPlus.Git
 			lock (_sync)
 			{
 				SavedCredential entry = _entries.FirstOrDefault((SavedCredential e) => string.Equals(e.Host, host, StringComparison.OrdinalIgnoreCase));
-				if (entry == null || !entry.HasPassword)
+				if (entry == null || !entry.HasPassword || !entry.NeverAskAgain)
 				{
 					return false;
 				}
@@ -251,6 +255,31 @@ namespace ForkPlus.Git
 			lock (_sync)
 			{
 				FindOrCreate(host).NeverAskAgain = enabled;
+				Save();
+			}
+		}
+
+		/// <summary>
+		/// 偏好设置页整条写入（新增/编辑同源）：账号、密码、"不再弹出"一次性落盘。
+		/// 空 username/password 按 null 存（清空语义）；三样皆空的条目直接删除
+		/// （等价 Remove），避免垃圾条目堆积。
+		/// </summary>
+		public void Upsert([Null] string host, [Null] string username, [Null] string password, bool neverAsk)
+		{
+			if (string.IsNullOrEmpty(host))
+			{
+				return;
+			}
+			lock (_sync)
+			{
+				SavedCredential entry = FindOrCreate(host);
+				entry.Username = (string.IsNullOrEmpty(username) ? null : username);
+				entry.Password = (string.IsNullOrEmpty(password) ? null : password);
+				entry.NeverAskAgain = neverAsk;
+				if (entry.Username == null && entry.Password == null && !entry.NeverAskAgain)
+				{
+					_entries.Remove(entry);
+				}
 				Save();
 			}
 		}

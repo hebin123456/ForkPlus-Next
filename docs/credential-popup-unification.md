@@ -82,22 +82,22 @@ GIT_CONFIG_KEY_1/VALUE_1 = credential.helper = <ForkPlus.AskPass 路径，Escape
 - **预存在的小坑（保持现状，仅记录）**：`_overrideCredentialHelper` 的值同时叠加了字面引号与 `EscapeSpaces()` 反斜杠转义，安装路径含空格时两种转义可能互相打架。默认安装路径不含空格，本计划不动它，避免行为漂移。
 - **`GIT_CONFIG_COUNT` 侵入性**：环境注入对 git-mm / submodule 子树全局生效，包括它们内部读取 git config 的场景（如 `git config --list` 会看到注入项）。仓库内没有读取 credential 配置做展示的代码，影响面可控。
 
-### Layer D：跨平台凭据记忆（记住账号 / 记住密码 / 不再询问）
+### Layer D：跨平台凭据记忆（自动记账号 / 记住密码 / 记住密码 + 不再弹出）
 
 Layer C 落地后 Linux/macOS 仍是"每次重输"（WCM 平台守卫使 store/erase 空操作）。Layer D 以独立存储 `SavedCredentialStore`（`src/ForkPlus/Git/SavedCredentialStore.cs`，`ForkDirectoryPath/credentials.json`，AtomicWrite 落盘）补齐，并把凭据弹窗升级为三档记忆：
 
 | 档位 | 触发 | 效果 |
 |------|------|------|
-| 记住账号（默认勾选） | HTTP(S) Username 询问提交 | host → username 落盘，下次询问预填 |
-| 记住密码（显式勾选） | HTTP(S) Password 询问提交 | credential `get`（App IPC mode 2/3）静默命中回填——askpass 链根本不触发，自动填充；askpass 侧（`ShowAskPassWindowCommand`）留兜底路径 |
-| 不再询问（显式勾选） | HTTP(S) Password 询问提交 | 凭据缺失时空响应快速失败，不弹窗；偏好设置 > Credentials 可单条/全局重新开启 |
+| 记住账号（默认行为，无勾选框） | HTTP(S) Username 询问提交 | host → username 自动落盘，下次询问预填账号 |
+| 记住密码（显式勾选"Remember password"） | HTTP(S) Password 询问提交 | password 落盘；下次弹窗**仍出现**，但密码框自动预填且"记住密码"预勾选（弹窗内自动填充） |
+| 记住密码 + 不再弹出（显式勾选"Remember password and never ask again"） | HTTP(S) Password 询问提交 | password + NeverAskAgain 落盘；credential `get`（App IPC mode 2/3，非 Windows 自动填充的主路径）与 askpass（`ShowAskPassWindowCommand` 兜底）全链路静默回填，完全不弹窗；凭据缺失（被 erase）时空响应快速失败。偏好设置 > Credentials 的"不再弹出"开关可随时重新打开弹窗 |
 
 落地细节：
 
-1. `App.AskPassIpcMessageHandler` 的 `get` 分支在 GCM 兼容键未命中后追加 `SavedCredentialStore.TryGetPassword`（非 Windows 自动填充的主路径）；`erase` 分支（mode 5）联动 `ForgetPassword`——密码失效时只清密码，保留账号记忆与"不再询问"标记，防"get 永远命中旧密码"死循环。
-2. `AskPassWindow`：Username 模式预填已记住账号 + "记住账号"默认勾选；HTTP(S) Password 模式新增"记住密码"/"不再询问"两个选项（SSH 场景的 RememberCheckBox 语义不变）。prompt 解析（`TryParseUsernamePrompt`/`TryParsePasswordPrompt`）只认 `http(s)://` URL，SSH 询问不受影响。
-3. `ShowAskPassWindowCommand`：HTTP(S) 询问在弹窗前查记忆——已记住密码直接回填（兜底），"不再询问"主机空响应快速失败。
-4. 偏好设置新增 Credentials 页（`CredentialsUserControl`）：条目列表（host/账号/状态）、单条 Remove、单条 Ask Again（重新询问的开关）、全局 Ask Again for All Hosts。凭据操作即时落盘，无 Save 按钮。
+1. `App.AskPassIpcMessageHandler` 的 `get` 分支在 GCM 兼容键未命中后追加 `SavedCredentialStore.TryGetSilentCredential`（仅第三档命中：password + NeverAskAgain 皆备；第二档/第一档不命中，回落 askpass 弹窗预填）；`erase` 分支（mode 5）联动 `ForgetPassword`——密码失效时只清密码，保留账号记忆与"不再询问"标记，防"get 永远命中旧密码"死循环。
+2. `AskPassWindow`：Username 模式预填已记住账号，提交即自动记住（第一档，无勾选框）；HTTP(S) Password 模式预填已记住密码 + "记住密码"预勾选，新增"记住密码"/"不再弹出"两个选项（第二/三档；SSH 场景的 RememberCheckBox 语义不变）。prompt 解析（`TryParseUsernamePrompt`/`TryParsePasswordPrompt`）只认 `http(s)://` URL，SSH 询问不受影响。
+3. `ShowAskPassWindowCommand`：HTTP(S) 询问在弹窗前查记忆——第三档静默回填（兜底，主路径在 credential get）；"不再弹出"但凭据缺失 → 空响应快速失败；第二档/第一档 → 弹窗（分别预填密码/账号）。
+4. 偏好设置新增 Credentials 页（`CredentialsUserControl`）：提前录入（host/账号/密码/"不再弹出"开关，Add 即 `Upsert` 整条落盘）、单条行内编辑（账号/密码框 + 开关 + Save）、"不再弹出"ToggleSwitch 即时生效（重新弹出的开关）、单条 Remove（整条删除，下次从零开始）、全局 Ask Again for All Hosts。凭据操作即时落盘，无需整页 Save。
 5. 明文密码是已知权衡：Linux 无跨桌面环境统一 keyring 抽象（libsecret 依赖 D-Bus session，CI/远程环境普遍缺失），与 accounts.json 的既有处理一致，依赖用户主目录权限保护。
 6. 专项测试：`SavedCredentialStoreTests`（prompt 解析 / CRUD 语义 / 落盘重载 / Command 静默路径）+ `CredentialsRememberUiTests`（弹窗三档装配与提交写入 / 偏好页列表与按钮，SwapForTests 注入隔离 store）。
 

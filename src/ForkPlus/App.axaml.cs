@@ -1773,9 +1773,10 @@ namespace ForkPlus
 					pipeServer.WriteString(credentialHelperArguments.Export());
 					return;
 				}
-				// 凭据记忆（Layer D）：用户勾选过"记住密码"的 host 静默回填（跨平台，
-				// 非 Windows 上 GCM 兼容键为空操作——这里是 Linux/macOS 自动填充的主路径）。
-				if (SavedCredentialStore.Current.TryGetPassword(credentialHelperArguments.Host, out string rememberedUsername, out string rememberedPassword))
+				// 凭据记忆（Layer D）第三档（记住密码 + 不再弹出）：静默回填（跨平台，
+				// 非 Windows 上 GCM 兼容键为空操作——这里是 Linux/macOS 不弹窗的主路径）。
+				// 第二档（记住密码未开不再弹出）不命中——回落 askpass 弹窗（密码框预填）。
+				if (SavedCredentialStore.Current.TryGetSilentCredential(credentialHelperArguments.Host, out string rememberedUsername, out string rememberedPassword))
 				{
 					credentialHelperArguments.Username = rememberedUsername ?? credentialHelperArguments.Username;
 					credentialHelperArguments.Password = rememberedPassword;

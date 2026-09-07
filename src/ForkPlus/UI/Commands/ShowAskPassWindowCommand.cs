@@ -26,9 +26,10 @@ namespace ForkPlus.UI.Commands
 				}
 			}
 			// 凭据记忆（Layer D）：HTTP(S) 询问的静默路径——
-			// 已记住密码 → 直接回填（askpass 链不弹窗，自动填充的兜底路径；
-			// 主路径在 credential helper get 层已静默命中）；"不再询问"的主机凭据
-			// 缺失时快速失败（空响应），后续可在偏好设置 > Credentials 重新开启。
+			// 第三档（记住密码 + 不再弹出）→ 直接回填（credential get 层为主路径，此处兜底）；
+			// "不再弹出"但密码缺失（失效被 erase）→ 快速失败（空响应），偏好设置 > Credentials
+			// 的开关可重新打开。第二档（记住密码未开不再弹出）/第一档（仅记账号）→ 弹窗，
+			// 由 AskPassWindow 预填密码/账号。
 			// （先试 Password：out promptUsername 需在所有路径有值，避免 || 短路后 CS0165；
 			//  一个 prompt 至多匹配二者之一。）
 			string host = null;
@@ -37,18 +38,19 @@ namespace ForkPlus.UI.Commands
 				|| SavedCredentialStore.TryParseUsernamePrompt(request, out host))
 			{
 				SavedCredentialStore.SavedCredential entry = SavedCredentialStore.Current.FindEntry(host);
-				if (entry != null)
+				if (entry != null && entry.NeverAskAgain)
 				{
-					if (entry.HasPassword && promptUsername != null)
+					if (entry.HasPassword)
 					{
-						result = entry.Password;
-						return;
+						// 第三档静默：密码询问回密码；账号询问回已记账号（无账号可回则快速失败）
+						if (promptUsername != null || entry.Username != null)
+						{
+							result = ((promptUsername != null) ? entry.Password : entry.Username);
+							return;
+						}
 					}
-					if (entry.NeverAskAgain)
-					{
-						result = string.Empty;
-						return;
-					}
+					result = string.Empty;
+					return;
 				}
 			}
 			if (noPrompt)

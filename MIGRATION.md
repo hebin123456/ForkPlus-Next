@@ -376,15 +376,21 @@ test job（ubuntu）4 项红，两类根因：
    （`E2e05` 合成事件测试覆盖），真实手势序列测试属多余且跨环境不稳定——整文件
    删除（用户拍板）。
 
-## 凭据管理器三档记忆：记住账号 / 记住密码 / 不再询问（2026-09-07）
+## 凭据管理器三档记忆：自动记账号 / 记住密码 / 记住密码+不再弹出（2026-09-07，语义修正版）
 
 设计见 `docs/credential-popup-unification.md` Layer D 一节（在 Layer A/B/C 之后）。
-要点：`SavedCredentialStore`（credentials.json，跨平台）补齐 Layer C 在
-Linux/macOS 的持久化空操作；`AskPassWindow` HTTP(S) 询问三档记忆（记住账号默认
-勾选+预填、记住密码勾选后 credential get 静默命中、不再询问后快速失败）；erase
-联动 `ForgetPassword` 防旧密码死循环；偏好设置新增 Credentials 页（单条/全局
-"Ask Again" 重新弹出开关 + Remove）。测试隔离用 `SwapForTests`（internal，
-InternalsVisibleTo 已有），29 项专项测试。
+三档语义（用户 2026-09-07 拍板）：
+- 第一档：**自动记住上次输入的账号**——默认行为，无勾选框；Username 弹窗预填；
+- 第二档："记住密码"（勾选）——密码落盘，**下次弹窗仍出现但密码框自动预填**；
+- 第三档："记住密码 + 不再弹出"（勾选）——credential get（App IPC 主路径）与
+  askpass（`ShowAskPassWindowCommand` 兜底）全链路静默回填，完全不弹窗；凭据
+  失效被 erase 后快速失败；偏好设置 > Credentials 的"不再弹出"ToggleSwitch 可
+  随时重新打开（`SetNeverAsk`），也可提前录入账号密码并设置不再弹出（`Upsert`）。
+`SavedCredentialStore`（credentials.json，跨平台）补齐 Layer C 在 Linux/macOS
+的持久化空操作（第三档静默命中查询 = `TryGetSilentCredential`，仅 password +
+NeverAskAgain 皆备）；erase 联动 `ForgetPassword` 防旧密码死循环。测试隔离用
+`SwapForTests`（internal，InternalsVisibleTo 已有），36 项专项测试
+（`SavedCredentialStoreTests` + `CredentialsRememberUiTests`）。
 
 ## git-ai stats 报 git: 'stats' is not a git command——argv[0] 代理模式（2026-09-07）
 

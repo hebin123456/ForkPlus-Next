@@ -72,7 +72,7 @@ namespace ForkPlus.Tests
 		// ============================ CRUD 语义 ============================
 
 		[Fact]
-		public void RememberUsername_StoresUsernameOnly_NoPasswordHit()
+		public void RememberUsername_StoresUsernameOnly_NoSilentHit()
 		{
 			_store.RememberUsername("example.com", "octocat");
 
@@ -80,17 +80,57 @@ namespace ForkPlus.Tests
 			Assert.NotNull(entry);
 			Assert.Equal("octocat", entry.Username);
 			Assert.False(entry.HasPassword, "只记账号不应命中密码查询");
-			Assert.False(_store.TryGetPassword("example.com", out _, out _));
+			Assert.False(_store.TryGetSilentCredential("example.com", out _, out _), "只记账号（第一档）不应静默回填");
 		}
 
 		[Fact]
-		public void RememberPassword_TryGetPasswordHits()
+		public void RememberPassword_StoresButNotSilent_WithoutNeverAsk()
 		{
 			_store.RememberPassword("example.com", "octocat", "secret123");
 
-			Assert.True(_store.TryGetPassword("example.com", out string username, out string password));
+			SavedCredentialStore.SavedCredential entry = _store.FindEntry("example.com");
+			Assert.NotNull(entry);
+			Assert.Equal("octocat", entry.Username);
+			Assert.Equal("secret123", entry.Password);
+			Assert.True(entry.HasPassword);
+			// 第二档（记住密码、未开不再弹出）：不静默——下次仍弹窗，由弹窗预填密码
+			Assert.False(_store.TryGetSilentCredential("example.com", out _, out _), "记住密码未开不再弹出（第二档）不应静默回填");
+		}
+
+		[Fact]
+		public void SilentCredential_OnlyHitsWhenPasswordAndNeverAsk()
+		{
+			// 三档矩阵：仅 password + NeverAskAgain 皆备（第三档）才静默命中
+			_store.RememberPassword("example.com", "octocat", "secret123");
+			Assert.False(_store.TryGetSilentCredential("example.com", out _, out _));
+
+			_store.SetNeverAsk("example.com", enabled: true);
+			Assert.True(_store.TryGetSilentCredential("example.com", out string username, out string password));
 			Assert.Equal("octocat", username);
 			Assert.Equal("secret123", password);
+
+			// 凭据失效（erase 联动清密码）后不命中，但标记保留（快速失败由 Command 层处理）
+			_store.ForgetPassword("example.com");
+			Assert.False(_store.TryGetSilentCredential("example.com", out _, out _));
+			Assert.True(_store.FindEntry("example.com").NeverAskAgain);
+		}
+
+		[Fact]
+		public void Upsert_OverwritesEntry_AndRemovesBareEntry()
+		{
+			_store.RememberPassword("example.com", "octocat", "secret123");
+
+			// 偏好页编辑：改账号/密码 + 开"不再弹出"，一次写入
+			_store.Upsert("example.com", "newcat", "newsecret", neverAsk: true);
+			SavedCredentialStore.SavedCredential entry = _store.FindEntry("example.com");
+			Assert.Equal("newcat", entry.Username);
+			Assert.Equal("newsecret", entry.Password);
+			Assert.True(entry.NeverAskAgain);
+			Assert.True(_store.TryGetSilentCredential("example.com", out _, out _));
+
+			// 三样皆空 → 条目删除（避免垃圾条目堆积）
+			_store.Upsert("example.com", "", "", neverAsk: false);
+			Assert.Null(_store.FindEntry("example.com"));
 		}
 
 		[Fact]
@@ -179,7 +219,7 @@ namespace ForkPlus.Tests
 			_store.RememberUsername("other.com", "someone");
 
 			var reloaded = new SavedCredentialStore(_tempFile);
-			Assert.True(reloaded.TryGetPassword("example.com", out string username, out string password));
+			Assert.True(reloaded.TryGetSilentCredential("example.com", out string username, out string password));
 			Assert.Equal("octocat", username);
 			Assert.Equal("secret123", password);
 			Assert.True(reloaded.FindEntry("example.com").NeverAskAgain);
@@ -219,16 +259,42 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void Command_RememberedPassword_AutoFillsWithoutPrompting()
+		public void Command_RememberedPasswordWithoutNeverAsk_DoesNotSilentlyFill()
 		{
 			SavedCredentialStore previous = SavedCredentialStore.SwapForTests(_store);
 			try
 			{
+				// 第二档（记住密码、未开不再弹出）：不静默——下次弹窗仍出现（密码框预填）。
+				// noPrompt=true 时走到弹窗判断返回空，证明静默路径未命中（误吞则同样返回空
+				// 无法区分，故正向断言见第三档用例，此处守住"第二档绝不静默"的回归线）。
 				_store.RememberPassword("example.com", "octocat", "secret123");
+				var command = new ShowAskPassWindowCommand();
+
+				command.Execute("Password for 'https://octocat@example.com':", noPrompt: true, "", out string result);
+				Assert.Equal("", result);
+			}
+			finally
+			{
+				SavedCredentialStore.SwapForTests(previous);
+			}
+		}
+
+		[Fact]
+		public void Command_SilentCredential_WhenRememberedPasswordAndNeverAsk()
+		{
+			SavedCredentialStore previous = SavedCredentialStore.SwapForTests(_store);
+			try
+			{
+				// 第三档（记住密码 + 不再弹出）：askpass 兜底路径静默回填（主路径在 credential get）
+				_store.RememberPassword("example.com", "octocat", "secret123");
+				_store.SetNeverAsk("example.com", enabled: true);
 				var command = new ShowAskPassWindowCommand();
 
 				command.Execute("Password for 'https://octocat@example.com':", noPrompt: false, "", out string result);
 				Assert.Equal("secret123", result);
+
+				command.Execute("Username for 'https://example.com':", noPrompt: false, "", out string result2);
+				Assert.Equal("octocat", result2);
 			}
 			finally
 			{
