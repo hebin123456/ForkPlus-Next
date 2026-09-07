@@ -395,41 +395,53 @@
            Avalonia 迁移版 UpdateResizableColumnWidth 是 no-op，行内 Auto 列（多 lane 轨道图、超长 refs
            徽章）desired 超过视口时 extent 随之变宽 → 横向滚动条冒出来（用户报告"有点超出"）。
            修复：横向滚动禁用（ScrollViewer 以视口宽测量行、超宽裁剪，与 WPF 列宽钳制语义对齐）。 -->
+      <!-- Bug2 修复（2026-09-07，"轨道太多/徽章太多时把作者、SHA 顶到后面去"）：
+           WPF 原版结构 = 第 0 复合列(graph+refs+subject，UpdateResizableColumnWidth 钳制) + 固定列
+           (avatar 19/author 120/sha 70/date 129)，固定列永远在视口右缘固定偏移处；
+           迁移版曾把 author/sha/date 做成行 Grid 末尾的 Auto 列——左侧 Auto 列(多 lane 轨道图
+           +超长徽章)desired 超过视口时 star(subject)列先归零，随后 author/sha/date 被整体顶出
+           视口右缘裁剪不可见。修复：重建 WPF 两层结构——外层 "* ,Auto,Auto,Auto,Auto"
+           (左组合 star 列拿满剩余宽度 + 四个固定列)，左组合列内部 Auto,Auto,Auto,*
+           与 WPF 第 0 列 CellTemplate 完全同构；组合列 ClipToBounds 超宽裁剪(对齐 WPF
+           GridView 单元格裁剪语义)，author/sha/date 恒定可见、永不被顶走。 -->
       <DataTemplate x:Key="SingleRowRevisionTemplate">
-        <Grid Height="23" ClipToBounds="True" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto">
-          <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="8,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" />
-          <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Ellipse.Fill>
-              <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
-            </Ellipse.Fill>
-            <Ellipse.IsVisible>
-              <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
-            </Ellipse.IsVisible>
-          </Ellipse>
-          <!-- Bug1 修复：refs 徽章 ClipToBounds + MaxWidth（code-behind 动态计算），
-               防止超长分支名徽章把 Auto 列撑爆、溢出盖住 subject/日期列。 -->
-          <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ClipToBounds="True" MaxWidth="600" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
-            <ItemsControl.ItemsSource>
-              <Binding Path="References" />
-            </ItemsControl.ItemsSource>
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" />
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-          </ItemsControl>
-          <controls:RevisionSubjectTextField Grid.Column="3" VerticalAlignment="Center" Margin="2,0,0,2" TextTrimming="CharacterEllipsis" IsParentSelected="False">
-            <controls:RevisionSubjectTextField.StringValue>
-              <Binding Path="Subject" />
-            </controls:RevisionSubjectTextField.StringValue>
-            <controls:RevisionSubjectTextField.HasBody>
-              <Binding Path="HasBody" />
-            </controls:RevisionSubjectTextField.HasBody>
-            <controls:RevisionSubjectTextField.HighlightString>
-              <Binding Path="SubjectSearchString" />
-            </controls:RevisionSubjectTextField.HighlightString>
-          </controls:RevisionSubjectTextField>
-          <Border Grid.Column="4" Margin="4,2,4,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+        <Grid Height="23" ClipToBounds="True" ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+          <!-- 左组合列（等价 WPF 第 0 复合列）：graph + 上游状态 + refs 徽章 + subject -->
+          <Grid Grid.Column="0" ClipToBounds="True" ColumnDefinitions="Auto,Auto,Auto,*">
+            <controls:GraphCellView Grid.Column="0" CellHeight="23" Margin="8,0,0,0" ExpandToggle="GraphCellView_ExpandToggle" />
+            <Ellipse Grid.Column="1" Margin="4,0,4,0" Width="5" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Ellipse.Fill>
+                <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToBrushConverter /></Binding.Converter></Binding>
+              </Ellipse.Fill>
+              <Ellipse.IsVisible>
+                <Binding Path="UpstreamStatus"><Binding.Converter><usercontrols:RevisionUpstreamStatusToVisibilityConverter /></Binding.Converter></Binding>
+              </Ellipse.IsVisible>
+            </Ellipse>
+            <!-- Bug1 修复：refs 徽章 ClipToBounds + MaxWidth（code-behind 动态计算），
+                 防止超长分支名徽章把 Auto 列撑爆、溢出盖住 subject/日期列。 -->
+            <ItemsControl Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" ClipToBounds="True" MaxWidth="600" ItemTemplate="{DynamicResource ReferencesDataTemplates}">
+              <ItemsControl.ItemsSource>
+                <Binding Path="References" />
+              </ItemsControl.ItemsSource>
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <controls:RevisionSubjectTextField Grid.Column="3" VerticalAlignment="Center" Margin="2,0,0,2" TextTrimming="CharacterEllipsis" IsParentSelected="False">
+              <controls:RevisionSubjectTextField.StringValue>
+                <Binding Path="Subject" />
+              </controls:RevisionSubjectTextField.StringValue>
+              <controls:RevisionSubjectTextField.HasBody>
+                <Binding Path="HasBody" />
+              </controls:RevisionSubjectTextField.HasBody>
+              <controls:RevisionSubjectTextField.HighlightString>
+                <Binding Path="SubjectSearchString" />
+              </controls:RevisionSubjectTextField.HighlightString>
+            </controls:RevisionSubjectTextField>
+          </Grid>
+          <Border Grid.Column="1" Margin="4,2,4,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
             <Border.Background>
               <Binding Path="UserBackgroundBrush" />
             </Border.Background>
@@ -442,7 +454,7 @@
               </controls:AvatarImage.UserIdentity>
             </controls:AvatarImage>
           </Border>
-          <Border Grid.Column="5" Margin="0,2,0,2" Width="120" BorderThickness="0,1,1,1" CornerRadius="0,3,3,0">
+          <Border Grid.Column="2" Margin="0,2,0,2" Width="120" BorderThickness="0,1,1,1" CornerRadius="0,3,3,0">
             <Border.BorderBrush>
               <Binding Path="UserBackgroundBrush" />
             </Border.BorderBrush>
@@ -455,7 +467,7 @@
               </controls:HighlightableTextBlock.HighlightString>
             </controls:HighlightableTextBlock>
           </Border>
-          <controls:HighlightableTextBlock Grid.Column="6" VerticalAlignment="Center" Margin="5,0,0,0" Width="70" TextTrimming="CharacterEllipsis">
+          <controls:HighlightableTextBlock Grid.Column="3" VerticalAlignment="Center" Margin="5,0,0,0" Width="70" TextTrimming="CharacterEllipsis">
             <controls:HighlightableTextBlock.Text>
               <Binding Path="AbbreviatedSha" />
             </controls:HighlightableTextBlock.Text>
@@ -463,7 +475,7 @@
               <Binding Path="SearchString" />
             </controls:HighlightableTextBlock.HighlightString>
           </controls:HighlightableTextBlock>
-          <TextBlock Grid.Column="7" VerticalAlignment="Center" Margin="5,0,5,0" Width="130" TextTrimming="CharacterEllipsis">
+          <TextBlock Grid.Column="4" VerticalAlignment="Center" Margin="5,0,5,0" Width="130" TextTrimming="CharacterEllipsis">
             <TextBlock.Text>
               <Binding Path="AuthorDateLongString" />
             </TextBlock.Text>
