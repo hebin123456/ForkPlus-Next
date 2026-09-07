@@ -130,9 +130,40 @@ namespace ForkPlus
 
 		public static string GitPath => EnvironmentGitInstancePath ?? ForkPlusSettings.Default.GitInstancePath ?? ForkGitInstancePath;
 
-		public static string ShellPath => Path.Combine(Path.GetDirectoryName(GitPath), "sh.exe");
+		/// <summary>
+		/// sh 路径（运行钩子/自定义命令 ${sh} 用）。Windows：Git for Windows 与 git.exe 同目录
+		/// 自带 sh.exe（原版行为）；Unix：bash/sh 常与 git 不同目录（自编译 git 在
+		/// /usr/local/bin，sh 在 /usr/bin），先查同目录再回退 PATH。
+		/// </summary>
+		public static string ShellPath => ResolveGitShellExecutable("sh");
 
-		public static string BashPath => Path.Combine(Path.GetDirectoryName(GitPath), "bash.exe");
+		/// <summary>
+		/// bash 路径（ShCustomCommandAction/DiscardFileChangesGitCommand 用）。解析规则同 <see cref="ShellPath"/>。
+		/// </summary>
+		public static string BashPath => ResolveGitShellExecutable("bash");
+
+		/// <summary>
+		/// 解析 git 附带的 shell 可执行文件路径。Windows 保持原版（git 同目录 name.exe，
+		/// 不做存在性回退以免改变既有语义）；Unix 上 name 与 name.exe 都可能不在 git 目录旁，
+		/// 同目录命中失败后回退 PATH 查找，再不行返回同目录拼接值（调用方报错可诊断）。
+		/// </summary>
+		private static string ResolveGitShellExecutable(string name)
+		{
+			string gitDirectory = Path.GetDirectoryName(GitPath);
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			{
+				return (gitDirectory != null) ? Path.Combine(gitDirectory, name + ".exe") : (name + ".exe");
+			}
+			if (gitDirectory != null)
+			{
+				string sibling = Path.Combine(gitDirectory, name);
+				if (File.Exists(sibling))
+				{
+					return sibling;
+				}
+			}
+			return FindExecutableInPath(name) ?? ((gitDirectory != null) ? Path.Combine(gitDirectory, name) : name);
+		}
 
 		/// <summary>
 		/// PATH 查找 git-mm.exe 的缓存。PATH 在运行时通常不变，缓存避免每次访问 GitMmPath 都遍历 PATH。
@@ -274,9 +305,19 @@ namespace ForkPlus
 		/// </summary>
 		public static string FindExecutableInPath(string fileName)
 		{
+			return FindExecutableInPath(fileName, null);
+		}
+
+		/// <summary>
+		/// 同 <see cref="FindExecutableInPath(string)"/>，但允许注入 PATH 值（测试用：
+		/// xunit 跨 collection 并行，直接改进程级 PATH 环境变量有竞态风险，
+		/// TokeiResolutionTests 同款"参数注入"先例）。
+		/// </summary>
+		internal static string FindExecutableInPath(string fileName, string pathEnvironmentOverride)
+		{
 			try
 			{
-				string pathEnv = Environment.GetEnvironmentVariable("PATH");
+				string pathEnv = pathEnvironmentOverride ?? Environment.GetEnvironmentVariable("PATH");
 				if (string.IsNullOrEmpty(pathEnv))
 				{
 					return null;

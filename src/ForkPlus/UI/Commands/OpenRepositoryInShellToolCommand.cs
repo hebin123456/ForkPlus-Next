@@ -40,10 +40,14 @@ namespace ForkPlus.UI.Commands
 		{
 			ShellTool shellTool = ForkPlusSettings.Default.ShellTool;
 			string applicationPath = shellTool.ApplicationPath;
-			if (!File.Exists(applicationPath))
+			// Unix 上 ApplicationPath 可能为 null（找不到任何终端模拟器）；
+			// 空路径拼进错误提示会显示 "Cannot find shellToolPath at ''"，无诊断价值，
+			// 回退为候选终端列表，用户能看出该装哪个。
+			string notFoundDisplay = applicationPath ?? string.Join("/", ShellTool.UnixTerminalEmulatorCandidates);
+			if (string.IsNullOrEmpty(applicationPath) || !File.Exists(applicationPath))
 			{
-				Log.Error("Cannot find shellToolPath at '" + applicationPath + "'");
-				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find shellToolPath at '{0}'", applicationPath)).ShowDialog();
+				Log.Error("Cannot find shellToolPath at '" + notFoundDisplay + "'");
+				new ErrorWindow(PreferencesLocalization.FormatCurrent("Cannot find shellToolPath at '{0}'", notFoundDisplay)).ShowDialog();
 				return;
 			}
 			Process process = new Process
@@ -60,7 +64,7 @@ namespace ForkPlus.UI.Commands
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Cannot start '" + applicationPath + "'", ex);
+				Log.Error("Cannot start '" + notFoundDisplay + "'", ex);
 				new ErrorWindow(ex.Message).ShowDialog();
 			}
 		}
