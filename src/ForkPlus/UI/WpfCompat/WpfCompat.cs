@@ -502,6 +502,15 @@ namespace ForkPlus.UI.WpfCompat
             IsHitTestVisible = false;
         }
 
+        // Bug 修复（2026-09-07，"重命名仓库，仓库名没有选中整个名字，只是一个很窄的小框"）：
+        // AdornerLayer.RepositionAll() 原本把装饰器 Width/Height 强设为被装饰元素当前
+        // Bounds —— 对重命名编辑器（CustomAdorner）是错的：进入编辑态时 ETB 模板里的
+        // TextBlock 隐藏、自动宽度的 ETB 塌缩为 0 宽，RepositionAll 随之把编辑框压成
+        // 0 宽窄条。WPF 原版 AdornerLayer 从不强制装饰器尺寸（装饰器按内容自量）。
+        // true（默认）= 维持既有行为（DropPlace/DragAndDrop 等覆盖被装饰元素自身的装饰器）；
+        // false = 只跟随被装饰元素定位，尺寸由装饰器内容自量（重命名编辑框按名字宽度）。
+        public virtual bool TracksAdornedElementSize => true;
+
         // ===== WPF 视觉/逻辑子级管理 API 的 VisualChildren 化 shim =====
         protected void AddVisualChild(global::Avalonia.Controls.Control child)
         {
@@ -616,6 +625,15 @@ namespace ForkPlus.UI.WpfCompat
                 {
                     adorner.SetValue(LeftProperty, origin.X);
                     adorner.SetValue(TopProperty, origin.Y);
+                }
+                if (adorner is Adorner a2 && !a2.TracksAdornedElementSize)
+                {
+                    // 自量装饰器（重命名编辑框等）：不设 Width/Height（见 Adorner.TracksAdornedElementSize
+                    // 注释），只按图层剩余宽度设 MaxWidth —— 对齐 WPF 原版"装饰器可用尺寸 =
+                    // 图层尺寸"的语义：超长名字把编辑框限制在窗口内（TextBox 内部横向滚动），
+                    // 而不是溢出到窗口外。
+                    adorner.MaxWidth = Math.Max(0.0, Bounds.Width - origin.X);
+                    continue;
                 }
                 adorner.Width = size.Width;
                 adorner.Height = size.Height;

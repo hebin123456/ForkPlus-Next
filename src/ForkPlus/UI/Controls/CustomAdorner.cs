@@ -15,6 +15,11 @@ namespace ForkPlus.UI.Controls
 
 		private global::Avalonia.Controls.Control _child;
 
+		// Bug 修复（2026-09-07，"重命名仓库……只是一个很窄的小框"）：本装饰器承载重命名
+		// 编辑 TextBox，宽度必须按名字内容自量——进入编辑态后被装饰的 ETB 已塌缩为 0 宽，
+		// 若照默认把 Width 设成它的 Bounds 会得到 0 宽编辑框。见 Adorner.TracksAdornedElementSize。
+		public override bool TracksAdornedElementSize => false;
+
 		public global::Avalonia.Controls.Control Child
 		{
 			get
