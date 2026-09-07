@@ -31,7 +31,33 @@ namespace ForkPlus.UI
 
                 public static bool SelectExecutableFile([Null] Window parent, string title, string initialDirectory, out string filePath)
                 {
-                        return SelectFile(parent, title, initialDirectory, "Applications", "*.exe", out filePath);
+                        // Migration note（2026-09-07 用户反馈）：Linux/macOS 可执行文件没有 .exe 扩展名
+                        //（git / git-ai / git-mm / 终端模拟器...），*.exe 过滤会把所有可选目标挡在列表
+                        // 外——"添加自定义实例"永远选不到文件。非 Windows 改为不过滤（任意文件可选），
+                        // Windows 保持原版 *.exe 语义。
+                        if (OperatingSystem.IsWindows())
+                        {
+                                return SelectFile(parent, title, initialDirectory, "Applications", "*.exe", out filePath);
+                        }
+                        return SelectAnyFile(parent, title, initialDirectory, out filePath);
+                }
+
+                /// <summary>无过滤选择任意文件：Linux/macOS 可执行文件无扩展名，按扩展名过滤会挡住目标。</summary>
+                public static bool SelectAnyFile([Null] Window parent, string title, string initialDirectory, out string filePath)
+                {
+                        try
+                        {
+                                if (ShowOpen(parent, Translate(title), initialDirectory, folderPicker: false, filters: null, out filePath))
+                                {
+                                        return true;
+                                }
+                        }
+                        catch (Exception ex)
+                        {
+                                Log.Error("Failed to show open file dialog", ex);
+                        }
+                        filePath = null;
+                        return false;
                 }
 
                 public static bool SelectFile([Null] Window parent, string title, string initialDirectory, string fileTypeName, string extensionPattern, out string filePath)

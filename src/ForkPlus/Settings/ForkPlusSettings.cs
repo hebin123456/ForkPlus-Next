@@ -1105,7 +1105,7 @@ namespace ForkPlus.Settings
 
 		private string _gitAiInstancePath;
 
-		private bool _aiAttributionEnabled = true;
+		private bool _aiAttributionEnabled = false;
 
 		private bool _aiCheckpointReportingEnabled = true;
 
@@ -2518,7 +2518,7 @@ namespace ForkPlus.Settings
 			}
 		}
 
-		/// <summary>是否启用 AI 归属功能（git-ai：Blame 徽标 / AI 统计）。默认开启，git-ai 未安装时自动降级。</summary>
+		/// <summary>是否启用 AI 归属功能（git-ai：Blame 徽标 / AI 统计）。默认关闭（2026-09-07 用户约定），git-ai 未安装时自动降级。</summary>
 		public bool AiAttributionEnabled
 		{
 			get
@@ -2838,7 +2838,7 @@ namespace ForkPlus.Settings
 			string gitInstancePath = json["GitInstancePath"]?.Value<string>();
 			string gitMmInstancePath = json["GitMmInstancePath"]?.Value<string>();
 			string gitAiInstancePath = json["GitAiInstancePath"]?.Value<string>();
-			bool aiAttributionEnabled = json["AiAttributionEnabled"]?.Value<bool>() ?? true;
+			bool aiAttributionEnabled = json["AiAttributionEnabled"]?.Value<bool>() ?? false;
 			bool aiCheckpointReportingEnabled = json["AiCheckpointReportingEnabled"]?.Value<bool>() ?? true;
 			bool verboseGitOutput = json["VerboseGitOutput"]?.Value<bool>() ?? false;
 			string[] sshKeys = JsonHelper.DecodeStringArray(json["SshKeys"] as JArray) ?? new string[0];
