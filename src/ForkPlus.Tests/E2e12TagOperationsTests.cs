@@ -5,7 +5,7 @@
 // 模式：E2eMainWindowHarness.OpenRepository（真实 MainWindow 生产入口）→ 生产构造器建弹窗 →
 // 控件树交互（UiClick.Click/Toggle + 属性直设走生产 TextChanged 管线）→ WaitFor 弹窗关闭
 // （JobQueue 后台命令完成 → Close）→ TestRepoFactory.GitOutput 真实 git 状态断言。
-// 截图走 1920×1280 最大化口径（模块 10 用户约定，ScreenshotHelper.Snap 内置）。
+// 截图走 2026-09-06 口径（ScreenshotHelper.Snap 内置）：主窗口 1920×1080，弹窗按自然比例。
 //
 // 时序口径（模块 11 教训沿用）：
 // - CreateTagWindow / RemoveTagWindow 是 AddUndoable/JobQueue 型"命令完成才关"——

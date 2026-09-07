@@ -39,7 +39,7 @@
 // （git mm scan CLI），沙箱无 git-mm CLI 不可测——记为环境不可测（变更日志说明），以
 // Init 窗口 + 检测/版本逻辑 + 工作区 tab 装配覆盖 GitMm 的非 CLI 面。
 //
-// 截图走 1920×1280 最大化口径（模块10 用户约定，ScreenshotHelper.Snap 内置）。
+// 截图走 2026-09-06 口径（ScreenshotHelper.Snap 内置）：主窗口 1920×1080，弹窗按自然比例。
 using System;
 using System.IO;
 using System.Linq;

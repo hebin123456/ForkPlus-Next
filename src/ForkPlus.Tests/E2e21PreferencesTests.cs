@@ -16,7 +16,7 @@
 // 模式：PreferencesWindow 直构（生产入口 ShowPreferencesWindowCommand 即 new + ShowDialog，
 // 构造器内 Initialize() 全量初始化 7 个 tab——所有控件经 x:Name 字段可达，无需切 tab 即可
 // 断言；切 tab 仅为了截图与"内容进视觉树"（AI 技能输入框是代码构建的私有 TextBox，
-// 经 CustomSkillInputBorder 视觉子树定位）。截图 1920×1280 最大化口径（模块10 约定）。
+// 经 CustomSkillInputBorder 视觉子树定位）。截图走 2026-09-06 口径：主窗口 1920×1080，弹窗按自然比例。
 //
 // 设置污染防护（模块 7/12/14/19 教训沿用并扩展）：
 //   ① ForkPlusSettings 内存快照 + finally 恢复 + Save()——偏好设置的每个 tab 都直写设置，

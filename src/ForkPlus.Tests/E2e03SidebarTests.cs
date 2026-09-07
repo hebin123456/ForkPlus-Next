@@ -30,7 +30,7 @@ namespace ForkPlus.Tests
 				{
 					var control = new RepositoryUserControl();
 					control.OpenRepository(module);
-					var window = new ForkPlus.UI.CustomWindow { Width = 1400, Height = 900, Content = control };
+					var window = new ForkPlus.UI.CustomWindow { Width = 1920, Height = 1080, Content = control };
 					window.Show();
 					Dispatcher.UIThread.RunJobs();
 
@@ -145,7 +145,7 @@ namespace ForkPlus.Tests
 				{
 					var control = new RepositoryUserControl();
 					control.OpenRepository(module);
-					var window = new ForkPlus.UI.CustomWindow { Width = 1400, Height = 900, Content = control };
+					var window = new ForkPlus.UI.CustomWindow { Width = 1920, Height = 1080, Content = control };
 					window.Show();
 					Dispatcher.UIThread.RunJobs();
 					control.InvalidateAndRefresh(SubDomain.All);
@@ -192,7 +192,7 @@ namespace ForkPlus.Tests
 				{
 					var control = new RepositoryUserControl();
 					control.OpenRepository(stashModule);
-					var window = new ForkPlus.UI.CustomWindow { Width = 1400, Height = 900, Content = control };
+					var window = new ForkPlus.UI.CustomWindow { Width = 1920, Height = 1080, Content = control };
 					window.Show();
 					Dispatcher.UIThread.RunJobs();
 					control.InvalidateAndRefresh(SubDomain.All);

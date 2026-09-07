@@ -70,7 +70,7 @@ namespace ForkPlus.Tests
 
 					// ===== 1) 有仓库：列表展示 + 分组 =====
 					var control = new RepositoryManagerUserControl();
-					var window = new ForkPlus.UI.CustomWindow { Width = 1100, Height = 700, Content = control };
+					var window = new ForkPlus.UI.CustomWindow { Width = 1920, Height = 1080, Content = control };
 					window.Show();
 					Dispatcher.UIThread.RunJobs();
 					int before = ScreenshotHelper.Snap(window, "03-repomanager-with-repos", "01-welcome");
@@ -133,7 +133,7 @@ namespace ForkPlus.Tests
 			HeadlessAppBootstrap.Run(delegate
 			{
 				var tabs = new ClosableTabControl();
-				var window = new ForkPlus.UI.CustomWindow { Width = 700, Height = 400, Content = tabs };
+				var window = new ForkPlus.UI.CustomWindow { Width = 1920, Height = 1080, Content = tabs };
 				window.Show();
 				Dispatcher.UIThread.RunJobs();
 

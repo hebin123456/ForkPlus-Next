@@ -15,7 +15,7 @@
 //
 // 模式：窗口用例走 E2eMainWindowHarness.OpenRepository（真实 MainWindow 生产入口，弹窗
 // OnSubmit 走 repoControl.JobQueue）；纯命令用例（Export/SnapshotRestore）GitModule 直构
-// 免开主窗。截图 1920×1280 最大化口径（模块10 用户约定）。
+// 免开主窗。截图 2026-09-06 口径：主窗口 1920×1080，弹窗按自然比例。
 //
 // 探针实证（2026-09-06，本模块环境闭环）：
 // ① headless 的 TopLevel.StorageProvider 是 Avalonia.Platform.Storage.NoopStorageProvider

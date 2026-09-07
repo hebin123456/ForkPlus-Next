@@ -3,9 +3,15 @@
 // 每张截图自动做"非空白"像素断言；SnapDiff 额外断言交互前后存在可见差异。
 // 必须在 UI 线程内调用（HeadlessAppBootstrap.Run 的回调里）。
 //
-// 截图口径（2026-09-05 用户约定）：统一 1920×1280 最大化截图。实现 = 放大窗口 → 布局 → 截帧
-// → 复原窗口尺寸与全部滚动容器偏移（模块 1-9 的证据已随全量回归按新口径重生成；高度受
-// 内容约束的窗口——SizeToContent/固定高——按自然高度渲染，宽度仍放大到 1920）。
+// 截图口径（2026-09-06 用户约定，替代 2026-09-05 的统一 1920×1280 最大化口径）：
+//   ① 主窗口（MainWindow）：统一 1920×1080 最大化截图。实现 = 放大窗口 → 布局 → 截帧
+//      → 复原窗口尺寸与全部滚动容器偏移。
+//   ② 弹窗 / 对话框 / 辅助窗口（DiffPopupWindow、各 Dialog、Blame/FileHistory 等 viewer、
+//      测试自建的宿主窗）：保持窗口本身的真实比例——不放大不拉伸，按当前自然尺寸截帧
+//      （显式 Width/Height 的窗口按声明尺寸；SizeToContent 的窗口按内容尺寸；
+//      DiffPopupWindow 这类按父窗 90% 定尺寸的弹窗按当时实际尺寸）。
+//   口径动机：此前把弹窗也拉伸到 1920 宽会得到 1920×两三百的扁长截图，与真实运行形态
+//   相去甚远；弹窗证据按真实比例才可读（用户手册插图直接复用本目录截图）。
 // 复原滚动偏移的原因（模块 7/10 教训：AvaloniaEdit TextView 的滚动
 // extent 只由可见行决定，且布局期会把超界偏移钳回）：放大瞬间 viewport 超过文档 extent
 // 会把 ScrollViewer.Offset 钳到 0，截图点之后仍要断言滚动位置的用例（滚动同步回归）会被
@@ -25,12 +31,15 @@ namespace ForkPlus.Tests
 	internal static class ScreenshotHelper
 	{
 		private const double CaptureWidth = 1920.0;
-		private const double CaptureHeight = 1280.0;
+		private const double CaptureHeight = 1080.0;
 
-		/// <summary>截图并断言非空白（1920×1280 最大化口径）。返回非空白像素数（可做进一步断言）。</summary>
+		/// <summary>截图并断言非空白。主窗口按 1920×1080 最大化口径，其余窗口按自然比例
+		/// （窗口类型自动分流，见类头注释）。返回非空白像素数（可做进一步断言）。</summary>
 		public static int Snap(Window window, string scenario, string moduleDir)
 		{
-			using WriteableBitmap frame = CaptureMaximized(window)
+			using WriteableBitmap frame = (window is global::ForkPlus.UI.MainWindow
+					? CaptureMaximized(window)
+					: CaptureNatural(window))
 				?? throw new InvalidOperationException("CaptureRenderedFrame 返回 null（渲染管线未产出帧）");
 			int nonBlank = CountNonBlankPixels(frame);
 			string dir = EvidenceDir(moduleDir);
@@ -39,7 +48,8 @@ namespace ForkPlus.Tests
 			return nonBlank;
 		}
 
-		/// <summary>交互前后两帧截图 + 差异断言（同一控件交互有效果）。返回差异像素数。</summary>
+		/// <summary>交互前后两帧截图 + 差异断言（同一控件交互有效果）。两帧均按窗口当前
+		/// 尺寸截取（不做任何放大——交互前后视口必须一致才有可比性）。返回差异像素数。</summary>
 		public static int SnapDiff(Window window, string scenario, string moduleDir, int beforeNonBlank)
 		{
 			Dispatcher.UIThread.RunJobs();
@@ -60,7 +70,17 @@ namespace ForkPlus.Tests
 			return frame == null ? 0 : CountNonBlankPixels(frame);
 		}
 
-		/// <summary>1920×1280 最大化截图：放大 → 截帧 → 复原尺寸与全部滚动偏移（见类头注释）。
+		/// <summary>弹窗/辅助窗口自然比例截图：不动窗口尺寸，泵完布局直接截当前帧。
+		/// 窗口此刻的尺寸就是它的真实比例（显式尺寸 / SizeToContent 内容尺寸 /
+		/// DiffPopupWindow 类父窗 90% 尺寸 / 平台默认尺寸），截帧过程零副作用
+		/// （无放大-复原循环，滚动状态天然不受扰动）。</summary>
+		private static WriteableBitmap CaptureNatural(Window window)
+		{
+			Dispatcher.UIThread.RunJobs();
+			return window.CaptureRenderedFrame();
+		}
+
+		/// <summary>主窗口 1920×1080 最大化截图：放大 → 截帧 → 复原尺寸与全部滚动偏移（见类头注释）。
 		/// SizeToContent=WidthAndHeight 的窗口（如 CheckoutBranchWindow，MaxWidth=670，
 		/// WPF 原仓同款）内容驱动宽度会无视显式 Width 回缩自然宽——先临时降为 Height 让
 		/// 显式 Width 生效（仍受窗口自身 MaxWidth 钳制 = 窗口允许的最大宽），截后复原。</summary>

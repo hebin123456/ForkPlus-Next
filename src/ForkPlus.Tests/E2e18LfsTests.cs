@@ -8,7 +8,7 @@
 //（JobQueue 执行无错 + 预览匹配纯逻辑）。
 //
 // 模式：真实 MainWindow 打开仓库（Status/Fetch/Pull/Init/Deinit/Prune 走 JobQueue 生产管线），
-// Track 窗口仅需 GitModule（直构）。截图 1920×1280 最大化口径（模块10 用户约定）。
+// Track 窗口仅需 GitModule（直构）。截图 2026-09-06 口径：主窗口 1920×1080，弹窗按自然比例。
 //
 // 环境闭环（2026-09-06 探针实证）：
 // ① 沙箱 git-lfs 3.0.2 已装（/usr/bin/git-lfs）——app 派生 git 经 PATH 找到它（模块17

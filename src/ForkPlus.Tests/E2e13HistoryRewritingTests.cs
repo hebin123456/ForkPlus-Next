@@ -7,7 +7,7 @@
 // 模式：E2eMainWindowHarness.OpenRepository（真实 MainWindow 生产入口）→ 生产构造器建弹窗 →
 // 控件树交互（UiClick.Click/Toggle + ComboBox.SelectedItem 走生产 SelectionChanged 管线）→
 // WaitFor 弹窗关闭（AddUndoable/JobQueue 后台命令完成 → Close）→ TestRepoFactory.GitOutput
-// 真实 git 状态断言。截图走 1920×1280 最大化口径（模块 10 用户约定，ScreenshotHelper.Snap 内置）。
+// 真实 git 状态断言。截图走 2026-09-06 口径：主窗口 1920×1080，弹窗按自然比例。
 //
 // 时序口径（模块 11/12 教训沿用）：
 // - 本模块全部弹窗（Merge/Rebase/CherryPick/Revert/Reset/InteractiveRebase）均为

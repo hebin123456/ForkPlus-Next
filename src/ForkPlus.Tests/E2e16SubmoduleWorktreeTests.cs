@@ -20,7 +20,7 @@
 // CheckoutBranchAsWorktree 依赖 RepositoryData 的 References/Worktrees，先 WaitFor 装配）→
 // 控件树交互 → 提交等关（这些弹窗均为“命令完成才关”，与模块15 EditRemote 同类——直接
 // SubmitAndWaitClose 即可断言 GitResult）→ 真实 git 终态复核。
-// 截图走 1920×1280 最大化口径（模块10 用户约定，ScreenshotHelper.Snap 内置）。
+// 截图走 2026-09-06 口径（ScreenshotHelper.Snap 内置）：主窗口 1920×1080，弹窗按自然比例。
 //
 // 仓库形态（TestRepoFactory）：CreateSubmoduleSource（独立源仓，供 add 克隆）/
 // CreateSubmodule（parent + 前进脏子模块，供 delete/diff）/CreateWithWorktree（parent +

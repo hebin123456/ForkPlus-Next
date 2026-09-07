@@ -12,8 +12,9 @@
 // TextChanged）→ 终态轮询真实 git（fetch/pull/push 均为"入队即关"——关窗 ≠ 命令完成，
 // 模块 11 教训：轮询 rev-parse/ls-remote 而非弹窗关闭即查；EditRemote 为 JobQueue 型
 // "命令完成才关"（SubmitAndWaitClose 直接适用））。
-// 截图走 1920×1280 最大化口径（模块 10 用户约定，ScreenshotHelper.Snap 内置；本模块弹窗
-// 均为 SizeToContent=Height 或固定尺寸 → 按自然高度渲染、宽 1920，属口径内受限窗口形态）。
+// 截图走 2026-09-06 口径（ScreenshotHelper.Snap 内置）：主窗口 1920×1080，弹窗按自然
+// 比例（本模块弹窗
+// 比例（SizeToContent/固定尺寸 → 按真实形态截帧，不拉伸宽度）。
 //
 // 仓库形态（TestRepoFactory.CreateRemoteBehind/CreateBareRemote）：bare 远程 + work 克隆。
 // behind 形态：other 克隆推 c2 后 work 未 fetch（fetch/pull 拉平它）；ahead 形态：work 本地

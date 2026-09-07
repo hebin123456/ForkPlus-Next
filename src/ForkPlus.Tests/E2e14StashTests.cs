@@ -10,8 +10,8 @@
 // 控件树交互（UiClick.Toggle 走 IsCheckedChanged 生产管线 + TextBox.Text 直赋触发 TextChanged）→
 // WaitFor 弹窗关闭（JobQueue/AddUndoable 后台命令完成 → Close）→ TestRepoFactory.GitOutput
 // 真实 git 状态断言（stash list --format=%s / rev-parse / status --porcelain / 文件系统）。
-// 截图走 1920×1280 最大化口径（模块 10 用户约定，ScreenshotHelper.Snap 内置；本模块弹窗
-// 均为 SizeToContent=Height 或固定高 → 按自然高度渲染、宽 1920，属口径内受限窗口形态）。
+// 截图走 2026-09-06 口径（ScreenshotHelper.Snap 内置）：主窗口 1920×1080，弹窗按自然
+// 比例（本模块弹窗 SizeToContent/固定尺寸 → 按真实形态截帧，不拉伸宽度）。
 //
 // 时序口径（模块 11/12/13 教训沿用）：
 // - 本模块 5 个弹窗的 OnSubmit 全部为 JobQueue/AddUndoable 型"命令完成才关"——

@@ -14,7 +14,7 @@
 // 模式：全部走 E2eMainWindowHarness.OpenRepository（真实 MainWindow 生产入口）+ 窗口直构
 // （BlameWindow/FileHistoryWindow/RepositoryOverviewWindow/RepositoryStatisticsWindow/
 // RevisionDetailsWindow 构造器均为公开签名，入口命令的 FindBranchTip/GitModule 判空逻辑
-// 在模块 11/15 已覆盖）。截图 1920×1280 最大化口径（模块10 用户约定）。
+// 在模块 11/15 已覆盖）。截图 2026-09-06 口径：主窗口 1920×1080，弹窗按自然比例。
 //
 // 本模块修复的迁移期生产 bug（模块19 已探针实证同类，本模块修复落地）：
 // FileHistoryWindow.OnInitialized：WPF 原仓在 OnInitialized override 里加载文件历史，
