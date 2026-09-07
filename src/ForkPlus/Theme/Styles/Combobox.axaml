@@ -135,8 +135,11 @@
         </Popup.IsOpen>
         <Border Theme="{DynamicResource ComboboxShadowBorderStyle}">
           <Border MaxHeight="{TemplateBinding MaxDropDownHeight}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1,1,1,1" CornerRadius="6" x:Name="dropDownBorder">
+            <!-- Migration note（v3.13 修复）：WPF 原版绑定 ActualWidth——Avalonia 控件无此属性，
+                 绑定静默失败致下拉宽度退化为内容自适应（与最长选项同宽）。改绑 Bounds.Width
+                 （与组件同宽，WPF ComboBox 原生语义）。 -->
             <Border.Width>
-              <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
+              <Binding Path="Bounds.Width" RelativeSource="{RelativeSource TemplatedParent}" />
             </Border.Width>
             <ScrollViewer Background="#00FFFFFF" Margin="2" x:Name="DropDownScrollViewer">
               <Grid Background="#00FFFFFF" x:Name="grid">
@@ -146,10 +149,10 @@
                       <Binding ElementName="dropDownBorder" Path="Background" />
                     </Rectangle.Fill>
                     <Rectangle.Height>
-                      <Binding ElementName="dropDownBorder" Path="ActualHeight" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Height" />
                     </Rectangle.Height>
                     <Rectangle.Width>
-                      <Binding ElementName="dropDownBorder" Path="ActualWidth" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Width" />
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
@@ -206,7 +209,7 @@
         <Border Theme="{DynamicResource ComboboxShadowBorderStyle}">
           <Border MaxHeight="{TemplateBinding MaxDropDownHeight}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1,1,1,1" CornerRadius="6" x:Name="dropDownBorder">
             <Border.Width>
-              <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
+              <Binding Path="Bounds.Width" RelativeSource="{RelativeSource TemplatedParent}" />
             </Border.Width>
             <ScrollViewer Background="#00FFFFFF" Margin="2" x:Name="DropDownScrollViewer">
               <Grid Background="#00FFFFFF" x:Name="grid">
@@ -216,10 +219,10 @@
                       <Binding ElementName="dropDownBorder" Path="Background" />
                     </Rectangle.Fill>
                     <Rectangle.Height>
-                      <Binding ElementName="dropDownBorder" Path="ActualHeight" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Height" />
                     </Rectangle.Height>
                     <Rectangle.Width>
-                      <Binding ElementName="dropDownBorder" Path="ActualWidth" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Width" />
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
@@ -292,7 +295,7 @@
         <Border Theme="{DynamicResource ComboboxShadowBorderStyle}">
           <Border BorderBrush="{DynamicResource ComboBox.Popup.BorderBrush}" BorderThickness="1,1,1,1" Background="{DynamicResource ComboBox.Popup.BackgroundBrush}" MaxHeight="{TemplateBinding MaxDropDownHeight}" CornerRadius="6" x:Name="dropDownBorder">
             <Border.Width>
-              <Binding Path="ActualWidth" RelativeSource="{RelativeSource TemplatedParent}" />
+              <Binding Path="Bounds.Width" RelativeSource="{RelativeSource TemplatedParent}" />
             </Border.Width>
             <ScrollViewer Background="#00FFFFFF" Margin="2" x:Name="DropDownScrollViewer">
               <Grid x:Name="grid">
@@ -302,10 +305,10 @@
                       <Binding ElementName="dropDownBorder" Path="Background" />
                     </Rectangle.Fill>
                     <Rectangle.Height>
-                      <Binding ElementName="dropDownBorder" Path="ActualHeight" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Height" />
                     </Rectangle.Height>
                     <Rectangle.Width>
-                      <Binding ElementName="dropDownBorder" Path="ActualWidth" />
+                      <Binding ElementName="dropDownBorder" Path="Bounds.Width" />
                     </Rectangle.Width>
                   </Rectangle>
                 </Canvas>
