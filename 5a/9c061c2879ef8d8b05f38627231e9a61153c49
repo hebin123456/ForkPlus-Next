@@ -1,0 +1,14 @@
+src/ForkPlus.Tests/E2e05ChangesAndCommitTests.cs
+  h_e858f2c2faea28 237-242,245,248-267,310-326,351-352,415
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "5a9c061c2879ef8d8b05f38627231e9a61153c49",
+  "prompts": {},
+  "humans": {
+    "h_e858f2c2faea28": {
+      "author": "Test User <test@example.com>"
+    }
+  }
+}
