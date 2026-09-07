@@ -195,7 +195,9 @@ namespace ForkPlus.UI.QuickLaunch
 		private void RefreshCommandList(bool _)
 		{
 			_currentCommandProvider = RefreshCommandProvider(CommandTextBox.CurrentCommandArgument);
-			string filterString = CommandTextBox.Text.Trim().ToLower();
+			// Migration note：防御层——Text 理论上不应为 null（构造回填 + PushSection 已改写 string.Empty），
+			// 但任何第三方路径再把 Text 置 null 都不应导致快速启动崩溃（与 CommandTextBox 构造期回填同一模式）。
+			string filterString = (CommandTextBox.Text ?? string.Empty).Trim().ToLower();
 			_currentCommandProvider.Refresh(filterString);
 			RepositoriesListBox.ItemsSource = _currentCommandProvider.Items;
 			if (_showCheckout)

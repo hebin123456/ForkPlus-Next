@@ -50,10 +50,10 @@ footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border);
 </header>
 
 <div class="stats">
-<div class="stat"><b>26</b><span>模块（阶段0 + 25 功能模块）</span></div>
-<div class="stat"><b>145</b><span>E2E 用例</span></div>
-<div class="stat"><b>213</b><span>截图证据</span></div>
-<div class="stat"><b>1920×1280</b><span>统一截图口径</span></div>
+<div class="stat"><b>27</b><span>模块（阶段0 + 26 功能模块）</span></div>
+<div class="stat"><b>147</b><span>E2E 用例</span></div>
+<div class="stat"><b>214</b><span>截图证据</span></div>
+<div class="stat"><b>1920×1080 · 自然比例</b><span>截图口径（主窗口 / 弹窗）</span></div>
 </div>
 <nav class="chips">
 <a href="#m00-infra">阶段 0 · 测试基建</a>
@@ -82,6 +82,7 @@ footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border);
 <a href="#m23-ssh-environment">23 · SSH 与环境</a>
 <a href="#m24-ai">24 · AI 功能</a>
 <a href="#m25-common-dialogs">25 · 通用对话框</a>
+<a href="#m26-quicklaunch">26 · Quick Launch 快速启动</a>
 </nav>
 <table class="sum"><tr><th>模块</th><th>覆盖内容</th><th>E2E 用例</th><th>截图</th></tr>
 <tr><td><a href="#m00-infra">阶段 0 · 测试基建</a></td><td>headless 启动、截图助手、控件树查找基建冒烟</td><td class="num">7</td><td class="num">1</td></tr>
@@ -110,7 +111,8 @@ footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border);
 <tr><td><a href="#m23-ssh-environment">23 · SSH 与环境</a></td><td>SSH 密钥/生成密钥/Git 实例/Workspace</td><td class="num">6</td><td class="num">5</td></tr>
 <tr><td><a href="#m24-ai">24 · AI 功能</a></td><td>AI 提交/代码审查/开发助手（UI + OpenAI stub 全链路）</td><td class="num">6</td><td class="num">8</td></tr>
 <tr><td><a href="#m25-common-dialogs">25 · 通用对话框</a></td><td>MessageBox/Error/AskPass/颜色/快捷键/About/更新/诊断/通知</td><td class="num">7</td><td class="num">11</td></tr>
-<tr><td><b>合计</b></td><td></td><td class="num"><b>145</b></td><td class="num"><b>213</b></td></tr>
+<tr><td><a href="#m26-quicklaunch">26 · Quick Launch 快速启动</a></td><td>命令面板点击"切换工作区"进参数态（Linux NRE 崩溃回归 + 单元级根因锁定）</td><td class="num">2</td><td class="num">1</td></tr>
+<tr><td><b>合计</b></td><td></td><td class="num"><b>147</b></td><td class="num"><b>214</b></td></tr>
 </table>
 <section id="m00-infra">
 <h2>阶段 0 · 测试基建 <small style="color:var(--muted);font-size:13px">1 张 · 7 用例</small></h2>
@@ -481,5 +483,12 @@ footer { color:var(--muted); font-size:12px; border-top:1px solid var(--border);
 <figure><a href="25-common-dialogs/11-notification-panel.png" target="_blank"><img loading="lazy" src="25-common-dialogs/11-notification-panel.png" alt="11-notification-panel.png"></a><figcaption>11-notification-panel.png</figcaption></figure>
 </div>
 </section>
-<footer>生成日期 2026-09-06 · 截图随代码入库（docs/evidence/e2e/）· 每张截图至少配一条状态断言（铁律）· 生产 bug 修复均随模块提交并在测试计划变更日志记录</footer>
+<section id="m26-quicklaunch">
+<h2>26 · Quick Launch 快速启动 <small style="color:var(--muted);font-size:13px">1 张 · 2 用例</small></h2>
+<p class="desc">命令面板点击"切换工作区"进参数态（Linux 用户实测 NRE 崩溃回归：PushSection 清空输入写 null → 模板 TwoWay 绑定上传 → RefreshCommandList 的 .Text.Trim() 崩）+ 单元级根因锁定</p>
+<div class="grid">
+<figure><a href="26-quicklaunch/01-quicklaunch-switchworkspace-argument.png" target="_blank"><img loading="lazy" src="26-quicklaunch/01-quicklaunch-switchworkspace-argument.png" alt="01-quicklaunch-switchworkspace-argument.png"></a><figcaption>01-quicklaunch-switchworkspace-argument.png</figcaption></figure>
+</div>
+</section>
+<footer>生成日期 2026-09-07 · 截图随代码入库（docs/evidence/e2e/）· 每张截图至少配一条状态断言（铁律）· 生产 bug 修复均随模块提交并在测试计划变更日志记录</footer>
 </div></body></html>

@@ -162,7 +162,11 @@ namespace ForkPlus.UI.Controls
 			};
 			border.Child = child;
 			_labelsStackPanel.Children.Add(border);
-			_textBox.Text = null;
+			// Migration note：WPF TextBox.Text 对 null 有 CoerceText(null→"")，Avalonia 12 没有——
+			// 这里写 null 会经模板 TwoWay 绑定上传把外层 CommandTextBox.Text 也变成 null，
+			// 随后 QuickLaunchWindow.RefreshCommandList 的 `.Text.Trim()` 直接 NRE
+			// （Linux 用户实测：快速启动点击"切换工作区"必崩，2026-09-07）。清空请写 string.Empty。
+			_textBox.Text = string.Empty;
 		}
 
 		private void PopSection()
